@@ -39,12 +39,13 @@ async function topByClicks(
 
   const { data, error } = await q;
   if (error) {
-    // sans click_count
+    // events/establishments : created_at en prod (pas updated_at)
+    const orderCol = table === 'tools' ? 'updated_at' : 'created_at';
     const fallback = await supabase
       .from(table)
-      .select(`id, ${titleCol}, content_origin, country_code, updated_at`)
+      .select(`id, ${titleCol}, content_origin, country_code, ${orderCol}`)
       .eq('country_code', countryCode)
-      .order('updated_at', { ascending: false })
+      .order(orderCol, { ascending: false })
       .limit(10);
     return (fallback.data ?? [])
       .filter((r) => {
