@@ -1,29 +1,34 @@
 # Console admin web THE LOOP
 
 Front Vite + React pour `admin.theloop-app.com`.  
-Réutilise Supabase Auth + l’API `https://api.theloop-app.com` (JWT admin).
+Supabase Auth + API `https://api.theloop-app.com`.
 
-## Socle (étape 0)
+## Modules livrés
 
-- Shell sidebar alignée mobile (modules + permissions)
-- Filtre pays admin
-- Routes : Paiements, Users, PASS (+ placeholders des autres modules)
+| Route | Module |
+|-------|--------|
+| `/payments` | Paiements Djomy |
+| `/users` | Users, waitlist, invitations |
+| `/pass` | Catalogue PASS, prix, messages |
+| `/demandes` | Partenariats, modération, idées |
+| `/contenu` | Catalogue events/spots/outils |
+| `/accueil` | Blocs Accueil, À la une, éditoriaux |
+| `/loop` | Hub publication équipe |
+| `/privileges` | Validations, catalogue, octrois |
+| `/insights` | KPIs engagement |
+| `/parametres` | Gates, pays, catégories, droits, légal |
+
+Encore stubs : Onglets, TEAMS, Tirage.
 
 ## Dev local
 
 ```powershell
 cd admin-web
-..\.tools\node\npm.cmd install
-# .env : VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_URL=http://localhost:8787
-# ou VITE_API_URL=https://api.theloop-app.com
-..\.tools\node\npm.cmd run dev
+npm ci
+# .env : VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_URL
+npm run dev
 ```
 
 ## Prod
 
-1. Build : `npm run build` → `dist/`
-2. Héberger (Netlify / Cloudflare Pages / Render Static)
-3. DNS CNAME `admin` → hébergeur
-4. Variables : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL=https://api.theloop-app.com`
-
-Accès : comptes `admin` / `super_admin` actifs. Permissions via RPC `get_my_admin_permissions`.
+Voir [DEPLOY.md](./DEPLOY.md) — Netlify ou Cloudflare Pages + CNAME `admin`.
