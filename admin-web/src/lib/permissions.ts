@@ -67,6 +67,32 @@ export function hasAdminPermission(
   ) {
     return true;
   }
+  // Enfants Contenu → parent content
+  if (
+    (permission === 'content_events' ||
+      permission === 'content_spots' ||
+      permission === 'content_tools' ||
+      permission === 'content_walks' ||
+      permission === 'content_corner' ||
+      permission === 'content_chronique' ||
+      permission === 'content_logos') &&
+    list.includes('content')
+  ) {
+    return true;
+  }
+  // Enfants Accueil → parent featured
+  if (
+    (permission === 'featured_overview' ||
+      permission === 'featured_hero' ||
+      permission === 'featured_poll' ||
+      permission === 'featured_walks' ||
+      permission === 'featured_corner' ||
+      permission === 'featured_chronique' ||
+      permission === 'featured_logos') &&
+    list.includes('featured')
+  ) {
+    return true;
+  }
   return false;
 }
 

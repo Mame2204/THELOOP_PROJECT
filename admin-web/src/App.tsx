@@ -7,6 +7,8 @@ import { PaymentsPage } from './pages/PaymentsPage';
 import { UsersPage } from './pages/UsersPage';
 import { PassPage } from './pages/PassPage';
 import { DemandesPage } from './pages/DemandesPage';
+import { ContenuPage } from './pages/ContenuPage';
+import { AccueilPage } from './pages/AccueilPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 function HomeRedirect() {
@@ -64,10 +66,7 @@ export function App() {
           path="accueil"
           element={
             <RequirePermission permission="featured">
-              <PlaceholderPage
-                title="Accueil"
-                description="Blocs Accueil membre (À la une, sondage, parcours…)."
-              />
+              <AccueilPage />
             </RequirePermission>
           }
         />
@@ -97,10 +96,7 @@ export function App() {
           path="contenu"
           element={
             <RequirePermission permission="content">
-              <PlaceholderPage
-                title="Contenu"
-                description="Catalogue events, spots, outils, parcours…"
-              />
+              <ContenuPage />
             </RequirePermission>
           }
         />

@@ -397,6 +397,20 @@ a { color: var(--gold); }
   color: var(--danger);
   font-size: 13px;
 }
+.feature-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.feature-dates input {
+  border: 1px solid var(--border);
+  background: #0a0a0a;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
 .card .field {
   display: flex;
   flex-direction: column;
