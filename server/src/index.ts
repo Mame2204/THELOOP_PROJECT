@@ -13,7 +13,16 @@ import { webhookRouter } from './routes/webhook.js';
 
 const app = express();
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    // Djomy / Soutra chargent parfois returnUrl en iframe ou via fetch cross-origin.
+    // same-origin provoque un « request failed » côté portail alors que le paiement est OK.
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginEmbedderPolicy: false,
+    frameguard: false,
+  }),
+);
 app.use(requestLogger);
 app.use(
   cors({

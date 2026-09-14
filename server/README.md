@@ -88,6 +88,8 @@ Tester avec leurs comptes officiels :
 
 Montants Soutra / PayCard : **≤ 10 000 GNF** (déjà le cas avec nos tarifs sandbox).
 
+**Important :** les comptes PayCard / Soutra sont des **identifiants wallet**, pas des MSISDN. Le serveur ne doit **pas** les préfixer en `00224…` (sinon le portail affiche « request failed » alors que la carte bancaire peut réussir).
+
 Workaround interne uniquement si besoin produit : `POST /api/payments/:id/sandbox-complete` / bouton simulateur (`PAYMENT_SANDBOX_AMOUNTS=1`).
 
 ## Webhook Djomy (tunnel HTTPS)

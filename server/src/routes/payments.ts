@@ -20,17 +20,13 @@ import {
   loadPaymentIntentForUser,
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
-import { normalizePayerPhoneForDjomy } from '../lib/payer-phone.js';
+import { normalizePayerIdentifierForDjomy } from '../lib/payer-phone.js';
 
 export const paymentsRouter = Router();
 
 function parsePeriod(raw: unknown): BillingPeriod | null {
   if (raw === 'monthly' || raw === 'quarterly' || raw === 'annual' || raw === 'lifetime') return raw;
   return null;
-}
-
-function normalizePayerPhone(raw: string): string {
-  return normalizePayerPhoneForDjomy(raw);
 }
 
 /**
@@ -56,7 +52,7 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
     }
 
     const amountGnf = await resolveServerPassPrice(period);
-    const payerPhone = normalizePayerPhone(payerPhoneRaw);
+    const payerPhone = normalizePayerIdentifierForDjomy(payerPhoneRaw, paymentMethod);
     const localPassId = buildLocalPassId();
     const merchantReference = buildMerchantReference(userId);
     const supabase = getSupabaseAdmin();
