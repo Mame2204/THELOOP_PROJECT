@@ -134,7 +134,7 @@ export function TiragePage() {
       .eq('country_code', countryCode)
       .eq('is_active', true)
       .in('user_role', roleDb)
-      .limit(2000);
+      .limit(400);
     if (uErr) {
       setBusy(false);
       setMsg(uErr.message);

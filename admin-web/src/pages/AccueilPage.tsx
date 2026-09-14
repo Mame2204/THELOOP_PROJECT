@@ -34,6 +34,7 @@ import {
   type AppSectionsConfig,
 } from '../lib/accueil';
 import {
+  CATALOG_PICKER_LIMIT,
   KIND_LABELS,
   listCatalogContent,
   setCatalogContentFeatured,
@@ -116,7 +117,10 @@ export function AccueilPage() {
   }, [countryCode]);
 
   const loadFeatured = useCallback(async () => {
-    const res = await listCatalogContent(countryCode);
+    const res = await listCatalogContent(countryCode, undefined, {
+      pageSize: CATALOG_PICKER_LIMIT,
+      status: 'published',
+    });
     setFeaturedItems(res.items.filter((i) => i.contentStatus === 'published'));
   }, [countryCode]);
 

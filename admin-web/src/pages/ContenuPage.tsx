@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
 import {
+  CATALOG_PAGE_SIZE,
   CONTENT_STATUS_LABELS,
   CONTENT_STATUSES,
   KIND_LABELS,
@@ -15,8 +16,6 @@ import {
   type CatalogKind,
   type ContentStatus,
 } from '../lib/content';
-
-type TypeTab = 'all' | CatalogKind;
 
 function statusBadge(status: ContentStatus): string {
   if (status === 'published') return 'ok';
@@ -33,13 +32,20 @@ export function ContenuPage() {
   const canSpots = can('content_spots') || can('content');
   const canTools = can('content_tools') || can('content');
 
+  const defaultKind: CatalogKind = canEvents ? 'event' : canSpots ? 'spot' : 'tool';
   const tabParam = params.get('tab');
-  const typeTab: TypeTab =
-    tabParam === 'events' || tabParam === 'spots' || tabParam === 'tools'
-      ? (tabParam === 'events' ? 'event' : tabParam === 'spots' ? 'spot' : 'tool')
-      : 'all';
+  const typeTab: CatalogKind =
+    tabParam === 'events' && canEvents
+      ? 'event'
+      : tabParam === 'spots' && canSpots
+        ? 'spot'
+        : tabParam === 'tools' && canTools
+          ? 'tool'
+          : defaultKind;
 
   const [statusFilter, setStatusFilter] = useState<ContentStatus | 'all'>('all');
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
   const [items, setItems] = useState<CatalogContentItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -48,38 +54,38 @@ export function ContenuPage() {
     {},
   );
 
-  function setTypeTab(next: TypeTab) {
+  function setTypeTab(next: CatalogKind) {
+    setPage(0);
     setParams((prev) => {
       const p = new URLSearchParams(prev);
-      if (next === 'all') p.delete('tab');
-      else p.set('tab', next === 'event' ? 'events' : next === 'spot' ? 'spots' : 'tools');
+      p.set('tab', next === 'event' ? 'events' : next === 'spot' ? 'spots' : 'tools');
       return p;
     });
   }
 
   const load = useCallback(async () => {
     setError(null);
-    const kinds: CatalogKind[] = [];
-    if (typeTab === 'all') {
-      if (canEvents) kinds.push('event');
-      if (canSpots) kinds.push('spot');
-      if (canTools) kinds.push('tool');
-    } else {
-      kinds.push(typeTab);
-    }
-    const res = await listCatalogContent(countryCode, kinds);
+    // 1 table × 20 lignes + count — pas de « Tous » (3×200 = egress).
+    const res = await listCatalogContent(countryCode, [typeTab], {
+      page,
+      pageSize: CATALOG_PAGE_SIZE,
+      status: statusFilter,
+      withTotal: true,
+    });
     if (res.error) setError(res.error);
     setItems(res.items);
-  }, [countryCode, typeTab, canEvents, canSpots, canTools]);
+    setTotal(res.total);
+  }, [countryCode, typeTab, page, statusFilter]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const filtered = useMemo(
-    () => items.filter((i) => statusFilter === 'all' || i.contentStatus === statusFilter),
-    [items, statusFilter],
-  );
+  useEffect(() => {
+    setPage(0);
+  }, [countryCode, typeTab, statusFilter]);
+
+  const pages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
 
   async function applyStatus(item: CatalogContentItem, status: ContentStatus) {
     setBusy(true);
@@ -122,20 +128,14 @@ export function ContenuPage() {
           <p className="brand-kicker">Catalogue</p>
           <h2>Contenu</h2>
           <p className="meta">
-            Events, spots, outils — pays : {countryLabel}. Hub équipe :{' '}
-            <Link to="/loop">THE LOOP</Link> · blocs éditoriaux : <Link to="/accueil">Accueil</Link>.
+            Events, spots, outils — pays : {countryLabel}. Pages de {CATALOG_PAGE_SIZE} (egress
+            limité). Hub : <Link to="/loop">THE LOOP</Link> ·{' '}
+            <Link to="/accueil">Accueil</Link>.
           </p>
         </div>
       </header>
 
       <nav className="tabs">
-        <button
-          type="button"
-          className={`tab ${typeTab === 'all' ? 'active' : ''}`}
-          onClick={() => setTypeTab('all')}
-        >
-          Tous
-        </button>
         {canEvents ? (
           <button
             type="button"
@@ -200,7 +200,7 @@ export function ContenuPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item) => {
+            {items.map((item) => {
               const actions = adminContentActionsFor(item.contentStatus);
               const draft = featureDraft[item.id] ?? {
                 start: item.featuredStartDate ?? '',
@@ -307,12 +307,40 @@ export function ContenuPage() {
             })}
           </tbody>
         </table>
-        {filtered.length === 0 ? (
+        {items.length === 0 ? (
           <p className="muted" style={{ padding: 16 }}>
             Aucun contenu pour ces filtres.
           </p>
         ) : null}
       </div>
+
+      {total > CATALOG_PAGE_SIZE ? (
+        <div className="pager">
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={page <= 0}
+            onClick={() => setPage((x) => x - 1)}
+          >
+            Précédent
+          </button>
+          <span className="muted">
+            Page {page + 1}/{pages} · {total} {KIND_LABELS[typeTab].toLowerCase()}s
+          </span>
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={page + 1 >= pages}
+            onClick={() => setPage((x) => x + 1)}
+          >
+            Suivant
+          </button>
+        </div>
+      ) : total > 0 ? (
+        <p className="muted" style={{ marginTop: 12 }}>
+          {total} résultat{total > 1 ? 's' : ''}
+        </p>
+      ) : null}
     </section>
   );
 }

@@ -81,107 +81,205 @@ export function isFeaturedWindowActive(
   return true;
 }
 
+export const CATALOG_PAGE_SIZE = 20;
+/** Plafond pour les pickers Accueil / Loop — évite de tirer 200×3 tables (egress). */
+export const CATALOG_PICKER_LIMIT = 40;
+
 export async function listCatalogContent(
   countryCode: string,
   kinds?: CatalogKind[],
-  options?: { origins?: string[] },
-): Promise<{ items: CatalogContentItem[]; error?: string }> {
-  const want = new Set(kinds?.length ? kinds : (['event', 'spot', 'tool'] as CatalogKind[]));
+  options?: {
+    origins?: string[];
+    page?: number;
+    pageSize?: number;
+    status?: ContentStatus | 'all';
+    /** Compteur exact (1 round-trip count) — uniquement pour pager Contenu. */
+    withTotal?: boolean;
+  },
+): Promise<{ items: CatalogContentItem[]; total: number; error?: string }> {
+  const want = (kinds?.length ? kinds : (['event', 'spot', 'tool'] as CatalogKind[])).filter(
+    (k, i, arr) => arr.indexOf(k) === i,
+  );
   const origins = options?.origins?.map((o) => o.toLowerCase());
+  const page = Math.max(0, options?.page ?? 0);
+  const pageSize = Math.min(
+    50,
+    Math.max(1, options?.pageSize ?? (want.length > 1 ? CATALOG_PICKER_LIMIT : CATALOG_PAGE_SIZE)),
+  );
+  const status = options?.status && options.status !== 'all' ? options.status : null;
+  const withTotal = options?.withTotal === true && want.length === 1;
   const errors: string[] = [];
   const items: CatalogContentItem[] = [];
+  let total = 0;
 
   const matchesOrigin = (origin: string | null) => {
     if (!origins?.length) return true;
-    const o = (origin ?? '').toLowerCase();
-    return origins.includes(o);
+    return origins.includes((origin ?? '').toLowerCase());
   };
 
-  if (want.has('event')) {
-    // Schéma prod (aligné mobile) : start_date + custom_location_name ; pas venue_name/starts_at/updated_at.
-    let q = supabase
-      .from('events')
-      .select(
-        'id, title, custom_location_name, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, start_date, created_at',
-      )
-      .order('created_at', { ascending: false })
-      .limit(200);
-    if (countryCode) q = q.eq('country_code', countryCode);
-    const { data, error } = await q;
-    if (error) errors.push(`events: ${error.message}`);
-    for (const row of data ?? []) {
-      const end = row.featured_end_date ? String(row.featured_end_date) : null;
-      const featured = Boolean(row.is_featured);
-      const origin = row.content_origin ? String(row.content_origin) : null;
-      if (!matchesOrigin(origin)) continue;
-      items.push({
-        id: String(row.id),
-        kind: 'event',
-        title: String(row.title ?? 'Événement'),
-        subtitle: row.custom_location_name ? String(row.custom_location_name) : null,
-        contentStatus: mapStatus(row.content_status as string | null, row.is_active as boolean | null),
-        isFeatured: isFeaturedWindowActive(featured, null, end),
-        featuredStartDate: null,
-        featuredEndDate: normalizeFeaturedDate(end),
-        contentOrigin: origin,
-        countryCode: row.country_code ? String(row.country_code) : null,
-        startsAt: row.start_date ? String(row.start_date) : null,
-        updatedAt: row.created_at ? String(row.created_at) : null,
-        isActive: row.is_active !== false,
-      });
-    }
-  }
+  // Une seule table à la fois = pagination réelle + egress maîtrisé.
+  // Multi-types (pickers) : petit plafond partagé, sans count.
+  const perKindLimit =
+    want.length === 1 ? pageSize : Math.max(8, Math.floor(pageSize / want.length));
+  const from = want.length === 1 ? page * pageSize : 0;
+  const to = from + perKindLimit - 1;
 
-  if (want.has('spot')) {
-    // establishments : pas de address ni updated_at en prod.
-    let q = supabase
-      .from('establishments')
-      .select(
-        'id, name, opening_hours_label, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, created_at, category_slugs',
-      )
-      .order('created_at', { ascending: false })
-      .limit(200);
-    if (countryCode) q = q.eq('country_code', countryCode);
-    const { data, error } = await q;
-    if (error) errors.push(`spots: ${error.message}`);
-    for (const row of data ?? []) {
-      const end = row.featured_end_date ? String(row.featured_end_date) : null;
-      const featured = Boolean(row.is_featured);
-      const origin = row.content_origin ? String(row.content_origin) : null;
-      if (!matchesOrigin(origin)) continue;
-      const slugs = Array.isArray(row.category_slugs)
-        ? (row.category_slugs as unknown[]).map(String)
-        : [];
-      if (slugs.includes('tools')) continue;
-      items.push({
-        id: String(row.id),
-        kind: 'spot',
-        title: String(row.name ?? 'Spot'),
-        subtitle: row.opening_hours_label ? String(row.opening_hours_label) : null,
-        contentStatus: mapStatus(row.content_status as string | null, row.is_active as boolean | null),
-        isFeatured: isFeaturedWindowActive(featured, null, end),
-        featuredStartDate: null,
-        featuredEndDate: normalizeFeaturedDate(end),
-        contentOrigin: origin,
-        countryCode: row.country_code ? String(row.country_code) : null,
-        startsAt: null,
-        updatedAt: row.created_at ? String(row.created_at) : null,
-        isActive: row.is_active !== false,
-      });
+  async function fetchKind(kind: CatalogKind): Promise<void> {
+    if (kind === 'event') {
+      let q = supabase
+        .from('events')
+        .select(
+          'id, title, custom_location_name, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, start_date, created_at',
+          withTotal ? { count: 'exact' } : undefined,
+        )
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      if (countryCode) q = q.eq('country_code', countryCode);
+      if (status) q = q.eq('content_status', status);
+      if (origins?.length) q = q.in('content_origin', origins);
+      const { data, error, count } = await q;
+      if (error) {
+        errors.push(`events: ${error.message}`);
+        return;
+      }
+      if (withTotal && count != null) total = count;
+      for (const row of data ?? []) {
+        const end = row.featured_end_date ? String(row.featured_end_date) : null;
+        const featured = Boolean(row.is_featured);
+        const origin = row.content_origin ? String(row.content_origin) : null;
+        if (!matchesOrigin(origin)) continue;
+        items.push({
+          id: String(row.id),
+          kind: 'event',
+          title: String(row.title ?? 'Événement'),
+          subtitle: row.custom_location_name ? String(row.custom_location_name) : null,
+          contentStatus: mapStatus(
+            row.content_status as string | null,
+            row.is_active as boolean | null,
+          ),
+          isFeatured: isFeaturedWindowActive(featured, null, end),
+          featuredStartDate: null,
+          featuredEndDate: normalizeFeaturedDate(end),
+          contentOrigin: origin,
+          countryCode: row.country_code ? String(row.country_code) : null,
+          startsAt: row.start_date ? String(row.start_date) : null,
+          updatedAt: row.created_at ? String(row.created_at) : null,
+          isActive: row.is_active !== false,
+        });
+      }
+      return;
     }
-  }
 
-  if (want.has('tool')) {
+    if (kind === 'spot') {
+      let q = supabase
+        .from('establishments')
+        .select(
+          'id, name, opening_hours_label, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, created_at, category_slugs',
+          withTotal ? { count: 'exact' } : undefined,
+        )
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      // Exclure outils legacy stockés dans establishments (filtre SQL = moins d’egress client).
+      q = q.not('category_slugs', 'cs', '{tools}');
+      if (countryCode) q = q.eq('country_code', countryCode);
+      if (status) q = q.eq('content_status', status);
+      if (origins?.length) q = q.in('content_origin', origins);
+      const { data, error, count } = await q;
+      if (error) {
+        // Fallback si l’opérateur cs n’est pas dispo / colonne absente
+        let q2 = supabase
+          .from('establishments')
+          .select(
+            'id, name, opening_hours_label, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, created_at, category_slugs',
+            withTotal ? { count: 'exact' } : undefined,
+          )
+          .order('created_at', { ascending: false })
+          .range(from, to);
+        if (countryCode) q2 = q2.eq('country_code', countryCode);
+        if (status) q2 = q2.eq('content_status', status);
+        if (origins?.length) q2 = q2.in('content_origin', origins);
+        const res2 = await q2;
+        if (res2.error) {
+          errors.push(`spots: ${error.message}`);
+          return;
+        }
+        if (withTotal && res2.count != null) total = res2.count;
+        for (const row of res2.data ?? []) {
+          const slugs = Array.isArray(row.category_slugs)
+            ? (row.category_slugs as unknown[]).map(String)
+            : [];
+          if (slugs.includes('tools')) continue;
+          const end = row.featured_end_date ? String(row.featured_end_date) : null;
+          const featured = Boolean(row.is_featured);
+          const origin = row.content_origin ? String(row.content_origin) : null;
+          if (!matchesOrigin(origin)) continue;
+          items.push({
+            id: String(row.id),
+            kind: 'spot',
+            title: String(row.name ?? 'Spot'),
+            subtitle: row.opening_hours_label ? String(row.opening_hours_label) : null,
+            contentStatus: mapStatus(
+              row.content_status as string | null,
+              row.is_active as boolean | null,
+            ),
+            isFeatured: isFeaturedWindowActive(featured, null, end),
+            featuredStartDate: null,
+            featuredEndDate: normalizeFeaturedDate(end),
+            contentOrigin: origin,
+            countryCode: row.country_code ? String(row.country_code) : null,
+            startsAt: null,
+            updatedAt: row.created_at ? String(row.created_at) : null,
+            isActive: row.is_active !== false,
+          });
+        }
+        return;
+      }
+      if (withTotal && count != null) total = count;
+      for (const row of data ?? []) {
+        const end = row.featured_end_date ? String(row.featured_end_date) : null;
+        const featured = Boolean(row.is_featured);
+        const origin = row.content_origin ? String(row.content_origin) : null;
+        if (!matchesOrigin(origin)) continue;
+        items.push({
+          id: String(row.id),
+          kind: 'spot',
+          title: String(row.name ?? 'Spot'),
+          subtitle: row.opening_hours_label ? String(row.opening_hours_label) : null,
+          contentStatus: mapStatus(
+            row.content_status as string | null,
+            row.is_active as boolean | null,
+          ),
+          isFeatured: isFeaturedWindowActive(featured, null, end),
+          featuredStartDate: null,
+          featuredEndDate: normalizeFeaturedDate(end),
+          contentOrigin: origin,
+          countryCode: row.country_code ? String(row.country_code) : null,
+          startsAt: null,
+          updatedAt: row.created_at ? String(row.created_at) : null,
+          isActive: row.is_active !== false,
+        });
+      }
+      return;
+    }
+
+    // tool
     let q = supabase
       .from('tools')
       .select(
-        'id, name, description, content_status, is_active, is_featured, featured_start_date, featured_end_date, content_origin, country_code, updated_at',
+        'id, name, description, content_status, is_active, is_featured, featured_start_date, featured_end_date, content_origin, country_code, updated_at, created_at',
+        withTotal ? { count: 'exact' } : undefined,
       )
       .order('updated_at', { ascending: false })
-      .limit(200);
+      .range(from, to);
     if (countryCode) q = q.eq('country_code', countryCode);
-    const { data, error } = await q;
-    if (error) errors.push(`tools: ${error.message}`);
+    if (status) q = q.eq('content_status', status);
+    if (origins?.length) q = q.in('content_origin', origins);
+    const { data, error, count } = await q;
+    if (error) {
+      errors.push(`tools: ${error.message}`);
+      return;
+    }
+    if (withTotal && count != null) total = count;
     for (const row of data ?? []) {
       const start = row.featured_start_date ? String(row.featured_start_date) : null;
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
@@ -193,21 +291,33 @@ export async function listCatalogContent(
         kind: 'tool',
         title: String(row.name ?? 'Outil'),
         subtitle: row.description ? String(row.description).slice(0, 80) : null,
-        contentStatus: mapStatus(row.content_status as string | null, row.is_active as boolean | null),
+        contentStatus: mapStatus(
+          row.content_status as string | null,
+          row.is_active as boolean | null,
+        ),
         isFeatured: isFeaturedWindowActive(featured, start, end),
         featuredStartDate: normalizeFeaturedDate(start),
         featuredEndDate: normalizeFeaturedDate(end),
         contentOrigin: origin,
         countryCode: row.country_code ? String(row.country_code) : null,
         startsAt: null,
-        updatedAt: row.updated_at ? String(row.updated_at) : null,
+        updatedAt: row.updated_at
+          ? String(row.updated_at)
+          : row.created_at
+            ? String(row.created_at)
+            : null,
         isActive: row.is_active !== false,
       });
     }
   }
 
+  for (const kind of want) {
+    await fetchKind(kind);
+  }
+
+  if (!withTotal) total = items.length;
   items.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
-  return { items, error: errors.length ? errors.join(' · ') : undefined };
+  return { items, total, error: errors.length ? errors.join(' · ') : undefined };
 }
 
 export async function setCatalogContentStatus(

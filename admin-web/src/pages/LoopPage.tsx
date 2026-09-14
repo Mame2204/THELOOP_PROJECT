@@ -4,6 +4,7 @@ import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
 import {
+  CATALOG_PAGE_SIZE,
   CONTENT_STATUS_LABELS,
   CONTENT_STATUSES,
   KIND_LABELS,
@@ -56,19 +57,27 @@ export function LoopPage() {
 
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [typeTab, setTypeTab] = useState<CatalogKind | 'all'>('all');
+  const [typeTab, setTypeTab] = useState<CatalogKind>('event');
   const [statusFilter, setStatusFilter] = useState<ContentStatus | 'all'>('published');
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
   const [items, setItems] = useState<CatalogContentItem[]>([]);
   const [benefits, setBenefits] = useState<BenefitCatalogRow[]>([]);
   const [benefitFilter, setBenefitFilter] = useState<'active' | 'all'>('active');
   const [stats, setStats] = useState<InsightsBundle | null>(null);
 
   const loadContent = useCallback(async () => {
-    const kinds = typeTab === 'all' ? undefined : [typeTab];
-    const res = await listCatalogContent(countryCode, kinds, { origins: ['admin', 'loop'] });
+    const res = await listCatalogContent(countryCode, [typeTab], {
+      origins: ['admin', 'loop'],
+      page,
+      pageSize: CATALOG_PAGE_SIZE,
+      status: statusFilter,
+      withTotal: true,
+    });
     setItems(res.items);
+    setTotal(res.total);
     if (res.error) setMsg(res.error);
-  }, [countryCode, typeTab]);
+  }, [countryCode, typeTab, page, statusFilter]);
 
   const loadBenefits = useCallback(async () => {
     const res = await listBenefitCatalog(countryCode);
@@ -88,10 +97,16 @@ export function LoopPage() {
     if (tab === 'stats' && canStats) void loadStats();
   }, [tab, canContent, canBenefits, canFeatured, canStats, loadContent, loadBenefits, loadStats]);
 
-  const filtered = useMemo(() => {
-    if (tab === 'featured') return items.filter((i) => i.isFeatured && i.contentStatus === 'published');
-    return items.filter((i) => statusFilter === 'all' || i.contentStatus === statusFilter);
-  }, [items, statusFilter, tab]);
+  useEffect(() => {
+    setPage(0);
+  }, [typeTab, statusFilter, countryCode]);
+
+  const pages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
+
+  const featuredItems = useMemo(
+    () => items.filter((i) => i.isFeatured && i.contentStatus === 'published'),
+    [items],
+  );
 
   const filteredBenefits = useMemo(
     () => benefits.filter((b) => benefitFilter === 'all' || b.isActive),
@@ -166,13 +181,6 @@ export function LoopPage() {
       {tab === 'contenu' && canContent ? (
         <>
           <div className="tabs" style={{ marginBottom: 8 }}>
-            <button
-              type="button"
-              className={`tab ${typeTab === 'all' ? 'active' : ''}`}
-              onClick={() => setTypeTab('all')}
-            >
-              Tous
-            </button>
             {(Object.keys(KIND_LABELS) as CatalogKind[]).map((k) => (
               <button
                 key={k}
@@ -203,7 +211,30 @@ export function LoopPage() {
               </button>
             ))}
           </div>
-          <ContentTable items={filtered} busy={busy} onStatus={applyStatus} />
+          <ContentTable items={items} busy={busy} onStatus={applyStatus} />
+          {total > CATALOG_PAGE_SIZE ? (
+            <div className="pager">
+              <button
+                type="button"
+                className="btn ghost"
+                disabled={page <= 0}
+                onClick={() => setPage((x) => x - 1)}
+              >
+                Précédent
+              </button>
+              <span className="muted">
+                Page {page + 1}/{pages} · {total}
+              </span>
+              <button
+                type="button"
+                className="btn ghost"
+                disabled={page + 1 >= pages}
+                onClick={() => setPage((x) => x + 1)}
+              >
+                Suivant
+              </button>
+            </div>
+          ) : null}
         </>
       ) : null}
 
@@ -265,7 +296,7 @@ export function LoopPage() {
           <p className="meta" style={{ marginBottom: 12 }}>
             Lecture seule — édition dans <Link to="/accueil?tab=featured">Accueil → À la une</Link>.
           </p>
-          <ContentTable items={filtered} busy={busy} onStatus={applyStatus} readOnly />
+          <ContentTable items={featuredItems} busy={busy} onStatus={applyStatus} readOnly />
         </>
       ) : null}
 
