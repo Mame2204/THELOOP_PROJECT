@@ -63,7 +63,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [paymentMethod, setPaymentMethod] = useState<PassPaymentMethod>('all');
   const [payerPhone, setPayerPhone] = useState(
     user?.phoneNumber?.replace(/\D/g, '').slice(-9) ||
-      (isDjomyPaymentConfigured() ? DJOMY_SANDBOX_TEST.soutra.account : ''),
+      (isDjomyPaymentConfigured() ? DJOMY_SANDBOX_TEST.phone.local : ''),
   );
   const [chargedAmountGnf, setChargedAmountGnf] = useState<number | null>(null);
   const [passPrices, setPassPrices] = useState<PassPriceMap | null>(null);
@@ -74,7 +74,8 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'review' | 'processing' | 'done'>('review');
   const [lastSandboxIntentId, setLastSandboxIntentId] = useState<string | null>(null);
-  const [serverSandboxMode, setServerSandboxMode] = useState(false);
+  /** null = health pas encore reçu — on assume sandbox pour l’autofill. */
+  const [serverSandboxMode, setServerSandboxMode] = useState<boolean | null>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -95,9 +96,12 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   }, [navigation, passPurchaseEnabled]);
 
   useEffect(() => {
-    if (!isDjomyPaymentConfigured()) return;
+    if (!isDjomyPaymentConfigured()) {
+      setServerSandboxMode(false);
+      return;
+    }
     void fetchPaymentServerSandboxMode().then((sandbox) => {
-      if (sandbox) setServerSandboxMode(true);
+      setServerSandboxMode(sandbox);
     });
   }, []);
 
@@ -130,7 +134,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const willQueue = hasActivePass && Boolean(activeExpiry);
   const showSandboxTools =
     isDjomyPaymentConfigured() &&
-    (serverSandboxMode || (chargedAmountGnf != null && chargedAmountGnf < 50_000));
+    (serverSandboxMode === true || (chargedAmountGnf != null && chargedAmountGnf < 50_000));
+  /** Autofill comptes/téléphone test tant que le serveur n’a pas dit « pas sandbox ». */
+  const prefillSandboxPayer = isDjomyPaymentConfigured() && serverSandboxMode !== false;
 
   async function finishAfterFulfillment() {
     if (!user?.id) return;
@@ -192,7 +198,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         { text: 'Voir Mon PASS', onPress: () => resolve('pass') },
         { text: 'Réessayer', onPress: () => resolve('retry') },
       ];
-      if (showSandboxTools || serverSandboxMode) {
+      if (showSandboxTools || serverSandboxMode === true) {
         buttons.push({ text: 'Forcer sandbox', onPress: () => resolve('force') });
       }
       Alert.alert(
@@ -259,7 +265,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     if (!user?.id || amountGnf == null) return;
 
     if (
-      (showSandboxTools || serverSandboxMode) &&
+      (showSandboxTools || serverSandboxMode === true) &&
       paymentMethod === 'orange_money'
     ) {
       Alert.alert(
@@ -294,6 +300,18 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           setServerSandboxMode(true);
         }
         setLastSandboxIntentId(payment.paymentIntentId);
+
+        if (prefillSandboxPayer && (paymentMethod === 'paycard' || paymentMethod === 'soutra_money')) {
+          const portalTip =
+            paymentMethod === 'paycard'
+              ? `Sur le portail Djomy, saisissez le compte PayCard ${DJOMY_SANDBOX_TEST.paycard.display} puis OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`
+              : `Sur le portail Djomy, saisissez le compte Soutra ${DJOMY_SANDBOX_TEST.soutra.display} puis PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`;
+          await new Promise<void>((resolve) => {
+            Alert.alert('Compte à saisir sur Djomy', portalTip, [
+              { text: 'Continuer', onPress: () => resolve() },
+            ]);
+          });
+        }
 
         // Polling dès l’ouverture du portail (webhook / reconcile pendant Soutra).
         const waitPromise = waitForDjomyFulfillment(payment.paymentIntentId);
@@ -501,9 +519,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
             selected={paymentMethod === method}
             onPress={() => {
               setPaymentMethod(method);
-              if (showSandboxTools || showSandboxBanner) {
+              if (prefillSandboxPayer) {
                 const hint = sandboxPayerHint(method);
-                if (hint.local) setPayerPhone(hint.local);
+                setPayerPhone(hint.local);
               }
             }}
             shell={shell}
@@ -516,7 +534,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           : `Préférence : ${PASS_PAYMENT_LABELS[paymentMethod]} — finalisation sur le portail sécurisé ${PASS_PAYMENT_PROVIDER_LABEL}.`}
       </Text>
 
-      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Numéro du payeur</Text>
+      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Téléphone du payeur</Text>
       <FormTextInput
         shell={shell}
         accentColor={accent.accent}
@@ -524,16 +542,16 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         onChangeText={setPayerPhone}
         placeholder={
           paymentMethod === 'card'
-            ? 'Compte ou téléphone (carte saisie sur le portail)'
+            ? 'Téléphone (la carte se saisit sur le portail)'
             : `Ex. ${sandboxHint.display}`
         }
         placeholderTextColor={shell.pageKicker}
         keyboardType="phone-pad"
       />
       <Text style={[styles.phoneHint, { color: paymentMethod === 'orange_money' ? '#b45309' : shell.pageKicker }]}>
-        {showSandboxBanner || showSandboxTools
+        {prefillSandboxPayer || showSandboxBanner || showSandboxTools
           ? sandboxHint.tip
-          : 'Numéro Mobile Money / compte utiliséeur requis par Djomy.'}
+          : 'Numéro de téléphone Mobile Money requis par Djomy (préremplissage du portail). Les comptes Soutra/PayCard se saisissent sur le portail.'}
       </Text>
 
       {step === 'processing' ? (

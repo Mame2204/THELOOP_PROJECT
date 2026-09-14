@@ -81,14 +81,14 @@ Tester avec leurs comptes officiels :
 
 | Moyen | Compte test | Code |
 |-------|-------------|------|
-| **PayCard** | `537417414` | OTP `0000` |
-| **Soutra** | `622356781` | PIN `1111` |
+| **PayCard** | Compte portail `537417414` · OTP `0000` |
+| **Soutra** | Compte portail `622356781` · PIN `1111` |
 | **Carte (succès)** | `2303779999000275` | exp. future + CVV 3 chiffres |
 | Orange Money | — | **Ne pas tester en sandbox** |
 
-Montants Soutra / PayCard : **≤ 10 000 GNF** (déjà le cas avec nos tarifs sandbox).
+`payerNumber` envoyé à Djomy gateway = **téléphone MSISDN** (ex. `00224623707722`). Les comptes PayCard / Soutra se saisissent **sur le portail**, pas dans l’API.
 
-**Important :** les comptes PayCard / Soutra sont des **identifiants wallet**, pas des MSISDN. Le serveur ne doit **pas** les préfixer en `00224…` (sinon le portail affiche « request failed » alors que la carte bancaire peut réussir).
+Montants Soutra / PayCard : **≤ 10 000 GNF** (déjà le cas avec nos tarifs sandbox).
 
 Workaround interne uniquement si besoin produit : `POST /api/payments/:id/sandbox-complete` / bouton simulateur (`PAYMENT_SANDBOX_AMOUNTS=1`).
 

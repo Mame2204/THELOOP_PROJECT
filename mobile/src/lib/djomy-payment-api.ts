@@ -31,6 +31,12 @@ export interface CreateDjomyPaymentInput {
 export const DJOMY_SANDBOX_TEST = {
   /** Orange Money : tous les paiements échouent en sandbox — ne pas tester OM. */
   orangeMoneyUnavailable: true as const,
+  /** Téléphone sandbox pour payerNumber (API gateway = MSISDN, pas le wallet). */
+  phone: {
+    local: '623707722',
+    display: '623 70 77 22',
+    djomy: '00224623707722',
+  },
   paycard: {
     account: '537417414',
     display: '537 417 414',
@@ -51,29 +57,30 @@ export const DJOMY_SANDBOX_TEST = {
 } as const;
 
 /** @deprecated Préférer DJOMY_SANDBOX_TEST selon le moyen de paiement. */
-export const DJOMY_SANDBOX_TEST_PAYER_LOCAL = DJOMY_SANDBOX_TEST.soutra.account;
+export const DJOMY_SANDBOX_TEST_PAYER_LOCAL = DJOMY_SANDBOX_TEST.phone.local;
 /** @deprecated */
-export const DJOMY_SANDBOX_TEST_PAYER_DISPLAY = DJOMY_SANDBOX_TEST.soutra.display;
+export const DJOMY_SANDBOX_TEST_PAYER_DISPLAY = DJOMY_SANDBOX_TEST.phone.display;
 
 export function sandboxPayerHint(method: string): { local: string; display: string; tip: string } {
+  const phone = DJOMY_SANDBOX_TEST.phone;
   switch (method) {
     case 'paycard':
       return {
-        local: DJOMY_SANDBOX_TEST.paycard.account,
-        display: DJOMY_SANDBOX_TEST.paycard.display,
-        tip: `PayCard sandbox : compte ${DJOMY_SANDBOX_TEST.paycard.display}, OTP ${DJOMY_SANDBOX_TEST.paycard.otp} (montant ≤ 10 000 GNF).`,
+        local: phone.local,
+        display: phone.display,
+        tip: `Téléphone (API) : ${phone.display}. Sur le portail Djomy : compte PayCard ${DJOMY_SANDBOX_TEST.paycard.display}, OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`,
       };
     case 'soutra_money':
       return {
-        local: DJOMY_SANDBOX_TEST.soutra.account,
-        display: DJOMY_SANDBOX_TEST.soutra.display,
-        tip: `Soutra sandbox : compte ${DJOMY_SANDBOX_TEST.soutra.display}, PIN ${DJOMY_SANDBOX_TEST.soutra.pin} (montant ≤ 10 000 GNF).`,
+        local: phone.local,
+        display: phone.display,
+        tip: `Téléphone (API) : ${phone.display}. Sur le portail Djomy : compte Soutra ${DJOMY_SANDBOX_TEST.soutra.display}, PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
       };
     case 'card':
       return {
-        local: DJOMY_SANDBOX_TEST.soutra.account,
-        display: DJOMY_SANDBOX_TEST.cardSuccess.panDisplay,
-        tip: `Carte sandbox succès : ${DJOMY_SANDBOX_TEST.cardSuccess.panDisplay}, expiration future, CVV 3 chiffres.`,
+        local: phone.local,
+        display: phone.display,
+        tip: `Téléphone (API) : ${phone.display}. Sur le portail : carte ${DJOMY_SANDBOX_TEST.cardSuccess.panDisplay}, expiration future, CVV 3 chiffres.`,
       };
     case 'orange_money':
       return {
@@ -83,15 +90,15 @@ export function sandboxPayerHint(method: string): { local: string; display: stri
       };
     case 'mtn_momo':
       return {
-        local: DJOMY_SANDBOX_TEST.soutra.account,
-        display: DJOMY_SANDBOX_TEST.soutra.display,
-        tip: 'MTN MoMo : pas de compte test fourni par Djomy. Préférez PayCard, Soutra ou Carte en sandbox.',
+        local: phone.local,
+        display: phone.display,
+        tip: `Téléphone (API) : ${phone.display}. MTN MoMo : pas de compte test wallet fourni — préférez PayCard, Soutra ou Carte.`,
       };
     default:
       return {
-        local: DJOMY_SANDBOX_TEST.soutra.account,
-        display: DJOMY_SANDBOX_TEST.soutra.display,
-        tip: 'Sandbox : ne pas utiliser Orange Money (toujours en échec). Préférez PayCard, Soutra ou Carte avec les comptes test Djomy.',
+        local: phone.local,
+        display: phone.display,
+        tip: `Téléphone (API) : ${phone.display}. Sur le portail : PayCard ${DJOMY_SANDBOX_TEST.paycard.display}/OTP ${DJOMY_SANDBOX_TEST.paycard.otp} ou Soutra ${DJOMY_SANDBOX_TEST.soutra.display}/PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
       };
   }
 }

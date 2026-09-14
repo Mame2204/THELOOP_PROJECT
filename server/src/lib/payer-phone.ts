@@ -1,9 +1,9 @@
 import type { AppPaymentMethod } from './djomy.js';
 
-/** Format payeur MSISDN exigé par Djomy pour OM / MoMo (doc : 00224623707722). */
+/** Format payeur MSISDN exigé par Djomy gateway (doc : numéro de téléphone obligatoire). */
 export const DJOMY_SANDBOX_TEST_PAYER = '00224623707722';
 
-/** Comptes wallet sandbox Djomy — identifiants locaux, SANS préfixe 00224. */
+/** Comptes wallet sandbox — à saisir sur le portail Djomy, PAS comme payerNumber API. */
 export const DJOMY_SANDBOX_WALLET_ACCOUNTS = new Set(['537417414', '622356781']);
 
 function digitsOnly(raw: string): string {
@@ -40,27 +40,18 @@ export function normalizePayerPhoneForDjomy(raw: string): string {
 
 /**
  * Identifiant payeur pour create_payment_gateway.
- * - OM / MoMo / carte / all (téléphone) → MSISDN 00224…
- * - PayCard / Soutra → compte wallet tel quel (9 chiffres). Préfixer 00224 casse le sandbox.
+ * Djomy exige un **numéro de téléphone** (préremplissage portail).
+ * Les comptes test PayCard / Soutra se saisissent ensuite sur le portail (OTP/PIN).
+ * Si l’utilisateur a collé un compte wallet dans le champ, on le remplace par le MSISDN sandbox.
  */
 export function normalizePayerIdentifierForDjomy(
   raw: string,
-  method: AppPaymentMethod,
+  _method: AppPaymentMethod,
 ): string {
-  const digits = digitsOnly(raw);
-  if (!digits) return '';
-
   const local9 = extractGuineaLocal9(raw);
-
-  if (method === 'paycard' || method === 'soutra_money') {
-    return local9.length === 9 ? local9 : digits.slice(-9);
+  if (DJOMY_SANDBOX_WALLET_ACCOUNTS.has(local9)) {
+    return DJOMY_SANDBOX_TEST_PAYER;
   }
-
-  // Mode « tous » + compte test PayCard/Soutra : ne pas transformer en MSISDN.
-  if (method === 'all' && DJOMY_SANDBOX_WALLET_ACCOUNTS.has(local9)) {
-    return local9;
-  }
-
   return normalizePayerPhoneForDjomy(raw);
 }
 
