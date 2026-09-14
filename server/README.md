@@ -81,12 +81,13 @@ Tester avec leurs comptes officiels :
 
 | Moyen | Compte test | Code |
 |-------|-------------|------|
-| **PayCard** | Compte portail `537417414` · OTP `0000` |
-| **Soutra** | Compte portail `622356781` · PIN `1111` |
+| **PayCard** | `537417414` | OTP `0000` |
+| **Soutra** | `622356781` | PIN `1111` |
 | **Carte (succès)** | `2303779999000275` | exp. future + CVV 3 chiffres |
 | Orange Money | — | **Ne pas tester en sandbox** |
 
-`payerNumber` envoyé à Djomy gateway = **téléphone MSISDN** (ex. `00224623707722`). Les comptes PayCard / Soutra se saisissent **sur le portail**, pas dans l’API.
+Règle : **même identifiant payeur dans l’app et sur Djomy** (le champ préremplit le portail).  
+Soutra/PayCard : envoyer le compte **sans** préfixe `00224`.
 
 Montants Soutra / PayCard : **≤ 10 000 GNF** (déjà le cas avec nos tarifs sandbox).
 

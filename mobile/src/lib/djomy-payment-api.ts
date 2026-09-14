@@ -31,7 +31,6 @@ export interface CreateDjomyPaymentInput {
 export const DJOMY_SANDBOX_TEST = {
   /** Orange Money : tous les paiements échouent en sandbox — ne pas tester OM. */
   orangeMoneyUnavailable: true as const,
-  /** Téléphone sandbox pour payerNumber (API gateway = MSISDN, pas le wallet). */
   phone: {
     local: '623707722',
     display: '623 70 77 22',
@@ -52,53 +51,54 @@ export const DJOMY_SANDBOX_TEST = {
     pan: '2303779999000275',
     panDisplay: '2303 7799 9900 0275',
   },
-  /** Montant max Soutra / PayCard en sandbox. */
   maxAmountSoutraPaycardGnf: 10_000,
 } as const;
 
-/** @deprecated Préférer DJOMY_SANDBOX_TEST selon le moyen de paiement. */
-export const DJOMY_SANDBOX_TEST_PAYER_LOCAL = DJOMY_SANDBOX_TEST.phone.local;
 /** @deprecated */
-export const DJOMY_SANDBOX_TEST_PAYER_DISPLAY = DJOMY_SANDBOX_TEST.phone.display;
+export const DJOMY_SANDBOX_TEST_PAYER_LOCAL = DJOMY_SANDBOX_TEST.soutra.account;
+/** @deprecated */
+export const DJOMY_SANDBOX_TEST_PAYER_DISPLAY = DJOMY_SANDBOX_TEST.soutra.display;
 
+/**
+ * Valeur à mettre dans le champ payeur app (= même identifiant sur Djomy).
+ */
 export function sandboxPayerHint(method: string): { local: string; display: string; tip: string } {
-  const phone = DJOMY_SANDBOX_TEST.phone;
   switch (method) {
     case 'paycard':
       return {
-        local: phone.local,
-        display: phone.display,
-        tip: `Téléphone (API) : ${phone.display}. Sur le portail Djomy : compte PayCard ${DJOMY_SANDBOX_TEST.paycard.display}, OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`,
+        local: DJOMY_SANDBOX_TEST.paycard.account,
+        display: DJOMY_SANDBOX_TEST.paycard.display,
+        tip: `Même payeur sur Djomy : ${DJOMY_SANDBOX_TEST.paycard.display}, puis OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`,
       };
     case 'soutra_money':
       return {
-        local: phone.local,
-        display: phone.display,
-        tip: `Téléphone (API) : ${phone.display}. Sur le portail Djomy : compte Soutra ${DJOMY_SANDBOX_TEST.soutra.display}, PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
+        local: DJOMY_SANDBOX_TEST.soutra.account,
+        display: DJOMY_SANDBOX_TEST.soutra.display,
+        tip: `Même payeur sur Djomy : ${DJOMY_SANDBOX_TEST.soutra.display}, puis PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
       };
     case 'card':
       return {
-        local: phone.local,
-        display: phone.display,
-        tip: `Téléphone (API) : ${phone.display}. Sur le portail : carte ${DJOMY_SANDBOX_TEST.cardSuccess.panDisplay}, expiration future, CVV 3 chiffres.`,
+        local: DJOMY_SANDBOX_TEST.cardSuccess.pan,
+        display: DJOMY_SANDBOX_TEST.cardSuccess.panDisplay,
+        tip: `Même carte sur Djomy : ${DJOMY_SANDBOX_TEST.cardSuccess.panDisplay}, expiration future, CVV 3 chiffres.`,
       };
     case 'orange_money':
       return {
         local: '',
         display: '—',
-        tip: 'Orange Money : tous les paiements échouent en sandbox Djomy. Choisissez PayCard, Soutra ou Carte.',
+        tip: 'Orange Money échoue toujours en sandbox Djomy. Choisissez PayCard, Soutra ou Carte.',
       };
     case 'mtn_momo':
       return {
-        local: phone.local,
-        display: phone.display,
-        tip: `Téléphone (API) : ${phone.display}. MTN MoMo : pas de compte test wallet fourni — préférez PayCard, Soutra ou Carte.`,
+        local: DJOMY_SANDBOX_TEST.phone.local,
+        display: DJOMY_SANDBOX_TEST.phone.display,
+        tip: `Même numéro sur Djomy si demandé : ${DJOMY_SANDBOX_TEST.phone.display}.`,
       };
     default:
       return {
-        local: phone.local,
-        display: phone.display,
-        tip: `Téléphone (API) : ${phone.display}. Sur le portail : PayCard ${DJOMY_SANDBOX_TEST.paycard.display}/OTP ${DJOMY_SANDBOX_TEST.paycard.otp} ou Soutra ${DJOMY_SANDBOX_TEST.soutra.display}/PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
+        local: DJOMY_SANDBOX_TEST.soutra.account,
+        display: DJOMY_SANDBOX_TEST.soutra.display,
+        tip: `Choisissez un moyen, puis utilisez le même identifiant sur Djomy (Soutra ${DJOMY_SANDBOX_TEST.soutra.display} / PayCard ${DJOMY_SANDBOX_TEST.paycard.display} / carte test).`,
       };
   }
 }

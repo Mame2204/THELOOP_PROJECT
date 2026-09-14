@@ -63,7 +63,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [paymentMethod, setPaymentMethod] = useState<PassPaymentMethod>('all');
   const [payerPhone, setPayerPhone] = useState(
     user?.phoneNumber?.replace(/\D/g, '').slice(-9) ||
-      (isDjomyPaymentConfigured() ? DJOMY_SANDBOX_TEST.phone.local : ''),
+      (isDjomyPaymentConfigured() ? DJOMY_SANDBOX_TEST.soutra.account : ''),
   );
   const [chargedAmountGnf, setChargedAmountGnf] = useState<number | null>(null);
   const [passPrices, setPassPrices] = useState<PassPriceMap | null>(null);
@@ -301,18 +301,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         }
         setLastSandboxIntentId(payment.paymentIntentId);
 
-        if (prefillSandboxPayer && (paymentMethod === 'paycard' || paymentMethod === 'soutra_money')) {
-          const portalTip =
-            paymentMethod === 'paycard'
-              ? `Sur le portail Djomy, saisissez le compte PayCard ${DJOMY_SANDBOX_TEST.paycard.display} puis OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`
-              : `Sur le portail Djomy, saisissez le compte Soutra ${DJOMY_SANDBOX_TEST.soutra.display} puis PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`;
-          await new Promise<void>((resolve) => {
-            Alert.alert('Compte à saisir sur Djomy', portalTip, [
-              { text: 'Continuer', onPress: () => resolve() },
-            ]);
-          });
-        }
-
         // Polling dès l’ouverture du portail (webhook / reconcile pendant Soutra).
         const waitPromise = waitForDjomyFulfillment(payment.paymentIntentId);
         // Évite « Unhandled promise rejection » si le poll échoue pendant que le navigateur est ouvert.
@@ -534,24 +522,20 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           : `Préférence : ${PASS_PAYMENT_LABELS[paymentMethod]} — finalisation sur le portail sécurisé ${PASS_PAYMENT_PROVIDER_LABEL}.`}
       </Text>
 
-      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Téléphone du payeur</Text>
+      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Identifiant payeur</Text>
       <FormTextInput
         shell={shell}
         accentColor={accent.accent}
         value={payerPhone}
         onChangeText={setPayerPhone}
-        placeholder={
-          paymentMethod === 'card'
-            ? 'Téléphone (la carte se saisit sur le portail)'
-            : `Ex. ${sandboxHint.display}`
-        }
+        placeholder={`Ex. ${sandboxHint.display}`}
         placeholderTextColor={shell.pageKicker}
-        keyboardType="phone-pad"
+        keyboardType="number-pad"
       />
       <Text style={[styles.phoneHint, { color: paymentMethod === 'orange_money' ? '#b45309' : shell.pageKicker }]}>
         {prefillSandboxPayer || showSandboxBanner || showSandboxTools
           ? sandboxHint.tip
-          : 'Numéro de téléphone Mobile Money requis par Djomy (préremplissage du portail). Les comptes Soutra/PayCard se saisissent sur le portail.'}
+          : 'Mettez le même identifiant payeur sur Djomy (préremplissage du portail).'}
       </Text>
 
       {step === 'processing' ? (
