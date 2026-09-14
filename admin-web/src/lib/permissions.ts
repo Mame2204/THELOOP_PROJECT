@@ -58,6 +58,15 @@ export function hasAdminPermission(
   ) {
     return true;
   }
+  // Sous-filtres modération → parent moderation
+  if (
+    (permission === 'moderation_events' ||
+      permission === 'moderation_spots' ||
+      permission === 'moderation_tools') &&
+    list.includes('moderation')
+  ) {
+    return true;
+  }
   return false;
 }
 

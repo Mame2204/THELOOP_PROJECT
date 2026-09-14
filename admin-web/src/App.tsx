@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { PaymentsPage } from './pages/PaymentsPage';
 import { UsersPage } from './pages/UsersPage';
 import { PassPage } from './pages/PassPage';
+import { DemandesPage } from './pages/DemandesPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 function HomeRedirect() {
@@ -107,10 +108,7 @@ export function App() {
           path="demandes"
           element={
             <RequirePermission permission="demandes">
-              <PlaceholderPage
-                title="Demandes"
-                description="Partenariats, modération staging et suggestions."
-              />
+              <DemandesPage />
             </RequirePermission>
           }
         />
