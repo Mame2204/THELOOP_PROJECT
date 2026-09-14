@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { LoopLogo } from '../components/LoopLogo';
 import { usePermissions } from '../context/PermissionsContext';
 import type { AdminPermissionId } from '../lib/permissions';
 
@@ -6,7 +7,6 @@ export interface NavItem {
   to: string;
   label: string;
   icon: string;
-  /** Permission requise ; `demandes` = hub spécial */
   permission: AdminPermissionId | 'demandes';
 }
 
@@ -23,7 +23,10 @@ export const ADMIN_NAV: NavItem[] = [
   { to: '/tirage', label: 'Tirage', icon: '🎲', permission: 'benefit_draw' },
   { to: '/pass', label: 'PASS', icon: '🎫', permission: 'pass_management' },
   { to: '/payments', label: 'Paiements', icon: '💳', permission: 'pass_payments' },
-  { to: '/parametres', label: 'Param.', icon: '⚙️', permission: 'manage_admins' },
+  { to: '/notifications', label: 'Notifs', icon: '🔔', permission: 'notifications' },
+  { to: '/automation', label: 'Auto', icon: '⚙️', permission: 'automation' },
+  { to: '/milestones', label: 'Paliers', icon: '🏁', permission: 'partner_milestones' },
+  { to: '/parametres', label: 'Param.', icon: '🛠️', permission: 'manage_admins' },
 ];
 
 export function Sidebar() {
@@ -51,7 +54,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="sidebar-mark" aria-hidden />
+        <LoopLogo variant="light" size={28} />
         <span className="sidebar-brand-text">
           THE
           <br />

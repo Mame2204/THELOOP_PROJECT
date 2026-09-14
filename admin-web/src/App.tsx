@@ -13,7 +13,12 @@ import { LoopPage } from './pages/LoopPage';
 import { PrivilegesPage } from './pages/PrivilegesPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { ParametresPage } from './pages/ParametresPage';
-import { PlaceholderPage } from './pages/PlaceholderPage';
+import { OngletsPage } from './pages/OngletsPage';
+import { TeamsPage } from './pages/TeamsPage';
+import { TiragePage } from './pages/TiragePage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { AutomationPage } from './pages/AutomationPage';
+import { MilestonesPage } from './pages/MilestonesPage';
 
 function HomeRedirect() {
   const { can, canDemandes } = usePermissions();
@@ -75,10 +80,7 @@ export function App() {
           path="onglets"
           element={
             <RequirePermission permission="rubrique">
-              <PlaceholderPage
-                title="Onglets app"
-                description="Visibilité Agenda / Spots / Outils et espace pro."
-              />
+              <OngletsPage />
             </RequirePermission>
           }
         />
@@ -118,7 +120,7 @@ export function App() {
           path="teams"
           element={
             <RequirePermission permission="staff_benefits">
-              <PlaceholderPage title="TEAMS" description="Pack privilèges équipe admin." />
+              <TeamsPage />
             </RequirePermission>
           }
         />
@@ -126,7 +128,31 @@ export function App() {
           path="tirage"
           element={
             <RequirePermission permission="benefit_draw">
-              <PlaceholderPage title="Tirage" description="Tirages privilèges par rôle." />
+              <TiragePage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <RequirePermission permission="notifications">
+              <NotificationsPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="automation"
+          element={
+            <RequirePermission permission="automation">
+              <AutomationPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="milestones"
+          element={
+            <RequirePermission permission="partner_milestones">
+              <MilestonesPage />
             </RequirePermission>
           }
         />

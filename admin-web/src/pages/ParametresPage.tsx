@@ -617,12 +617,21 @@ export function ParametresPage() {
           <h3>Modules encore sur mobile / autres routes</h3>
           <ul className="meta" style={{ lineHeight: 1.8 }}>
             <li>
+              Notifications push → <Link to="/notifications">/notifications</Link>
+            </li>
+            <li>
+              Automatisations → <Link to="/automation">/automation</Link>
+            </li>
+            <li>
+              Paliers partenaires → <Link to="/milestones">/milestones</Link>
+            </li>
+            <li>
+              Onglets app → <Link to="/onglets">/onglets</Link>
+            </li>
+            <li>
               Prix & messages PASS → <Link to="/pass">/pass</Link>
             </li>
-            <li>Étoiles, paliers partenaires, automatisations, notifications — app mobile Control Tower</li>
-            <li>
-              Onglets app → <Link to="/onglets">/onglets</Link> (bientôt)
-            </li>
+            <li>Étoiles spots / horaires d’ouverture — création avancée encore sur mobile</li>
           </ul>
         </div>
       ) : null}

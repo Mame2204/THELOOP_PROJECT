@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
+import { LoopLogo } from '../components/LoopLogo';
 import { useAuth } from '../context/AuthContext';
 import { getApiUrl } from '../lib/api';
 
@@ -21,11 +22,15 @@ export function LoginPage() {
   return (
     <div className="login">
       <form className="login-card" onSubmit={(e) => void handleSubmit(e)}>
-        <div className="brand-kicker">THE LOOP</div>
-        <h1>Admin</h1>
-        <p className="meta">
-          Console web Control Tower. API : {getApiUrl() || 'non configurée'}
-        </p>
+        <div className="login-brand">
+          <LoopLogo variant="dark" size={40} />
+          <div>
+            <p className="brand-kicker">THE LOOP</p>
+            <strong style={{ fontSize: 14 }}>Control Tower</strong>
+          </div>
+        </div>
+        <h1>Administration</h1>
+        <p className="meta">Console web — API : {getApiUrl() || 'non configurée'}</p>
         <div className="field">
           <label htmlFor="email">E-mail</label>
           <input

@@ -58,6 +58,7 @@ export function UsersPage() {
   const [filterCountry, setFilterCountry] = useState(true);
   const [roleFilter, setRoleFilter] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [inactiveDays, setInactiveDays] = useState<0 | 7 | 30 | 90>(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -143,6 +144,22 @@ export function UsersPage() {
     },
     [],
   );
+
+  function daysSinceActivity(u: AdminUserRow): number | null {
+    const iso = activityOf(u);
+    if (!iso) return null;
+    const ms = Date.now() - new Date(iso).getTime();
+    if (!Number.isFinite(ms) || ms < 0) return null;
+    return Math.floor(ms / (24 * 60 * 60 * 1000));
+  }
+
+  const visibleUsers = useMemo(() => {
+    if (!inactiveDays) return users;
+    return users.filter((u) => {
+      const d = daysSinceActivity(u);
+      return d == null || d >= inactiveDays;
+    });
+  }, [users, inactiveDays, activityOf]);
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
@@ -278,6 +295,15 @@ export function UsersPage() {
               <option value="active">Actifs</option>
               <option value="suspended">Suspendus</option>
             </select>
+            <select
+              value={inactiveDays}
+              onChange={(e) => setInactiveDays(Number(e.target.value) as 0 | 7 | 30 | 90)}
+            >
+              <option value={0}>Toute activité</option>
+              <option value={7}>Sans activité ≥ 7 j</option>
+              <option value={30}>Sans activité ≥ 30 j</option>
+              <option value={90}>Sans activité ≥ 90 j</option>
+            </select>
             <label className="check-inline">
               <input
                 type="checkbox"
@@ -301,11 +327,15 @@ export function UsersPage() {
                     <th>Nom</th>
                     <th>Rôle</th>
                     <th>Pays</th>
-                    <th>Activité</th>
+                    <th>Dernière connexion</th>
+                    <th>Dernière activité</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
+                  {visibleUsers.map((u) => {
+                    const days = daysSinceActivity(u);
+                    const stale = days == null || days >= 30;
+                    return (
                     <tr
                       key={u.id}
                       className={selected?.id === u.id ? 'row-selected' : undefined}
@@ -325,12 +355,28 @@ export function UsersPage() {
                         </span>
                       </td>
                       <td>{u.countryCode ?? '—'}</td>
-                      <td>{formatWhen(activityOf(u))}</td>
+                      <td className="activity-cell">
+                        <strong>{formatWhen(u.lastSignInAt)}</strong>
+                        {u.lastSignInAt ? (
+                          <div className="meta">Auth Supabase</div>
+                        ) : (
+                          <div className="meta activity-stale">Jamais connecté</div>
+                        )}
+                      </td>
+                      <td className="activity-cell">
+                        <strong className={stale ? 'activity-stale' : undefined}>
+                          {formatWhen(u.lastSeenAt)}
+                        </strong>
+                        <div className="meta">
+                          {days == null ? 'Aucune' : `il y a ${days} j`}
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
-              {users.length === 0 && !error ? (
+              {visibleUsers.length === 0 && !error ? (
                 <p className="muted" style={{ padding: 16 }}>
                   Aucun utilisateur.
                 </p>
@@ -340,6 +386,36 @@ export function UsersPage() {
             {selected ? (
               <form className="edit-panel card" onSubmit={(e) => void handleSave(e)}>
                 <h3>Édition</h3>
+                <div className="card" style={{ marginBottom: 14, background: 'var(--bg)' }}>
+                  <p className="brand-kicker" style={{ marginBottom: 8 }}>
+                    Connexion
+                  </p>
+                  <div className="meta" style={{ marginBottom: 6 }}>
+                    Dernière connexion (Auth) :{' '}
+                    <strong style={{ color: 'var(--text)' }}>
+                      {formatWhen(selected.lastSignInAt)}
+                    </strong>
+                    {!selected.lastSignInAt ? ' — jamais' : null}
+                  </div>
+                  <div className="meta">
+                    Dernière activité app :{' '}
+                    <strong
+                      style={{
+                        color:
+                          daysSinceActivity(selected) == null ||
+                          (daysSinceActivity(selected) ?? 0) >= 30
+                            ? 'var(--danger)'
+                            : 'var(--text)',
+                      }}
+                    >
+                      {formatWhen(selected.lastSeenAt)}
+                    </strong>
+                    {(() => {
+                      const d = daysSinceActivity(selected);
+                      return d == null ? ' — aucune' : ` — il y a ${d} j`;
+                    })()}
+                  </div>
+                </div>
                 <div className="field">
                   <label>Prénom</label>
                   <input
