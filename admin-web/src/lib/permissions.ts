@@ -93,6 +93,39 @@ export function hasAdminPermission(
   ) {
     return true;
   }
+  // Enfants Insights → parent insights
+  if (
+    (permission === 'insights_overview' ||
+      permission === 'insights_events' ||
+      permission === 'insights_spots' ||
+      permission === 'insights_tools' ||
+      permission === 'insights_benefits' ||
+      permission === 'insights_platform') &&
+    list.includes('insights')
+  ) {
+    return true;
+  }
+  // Enfants Privilèges → parent prime_benefits
+  if (
+    (permission === 'prime_benefits_creation' ||
+      permission === 'prime_benefits_validations' ||
+      permission === 'prime_benefits_catalog' ||
+      permission === 'prime_benefits_suivi' ||
+      permission === 'prime_benefits_grant') &&
+    list.includes('prime_benefits')
+  ) {
+    return true;
+  }
+  // Alias hub THE LOOP (mobile) : content | featured | prime_benefits
+  if (
+    permission === 'loop_hub' &&
+    (list.includes('loop_hub') ||
+      list.includes('content') ||
+      list.includes('featured') ||
+      list.includes('prime_benefits'))
+  ) {
+    return true;
+  }
   return false;
 }
 

@@ -23,7 +23,9 @@ export function RequirePermission({
             can('pass_catalog') ||
             can('pass_prices') ||
             can('pass_messages')
-          : can(permission);
+          : permission === 'loop_hub'
+            ? can('loop_hub') || can('content') || can('featured') || can('prime_benefits')
+            : can(permission);
 
   if (!ok) return <Navigate to="/" replace />;
   return children;

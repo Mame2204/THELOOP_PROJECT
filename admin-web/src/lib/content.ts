@@ -84,10 +84,18 @@ export function isFeaturedWindowActive(
 export async function listCatalogContent(
   countryCode: string,
   kinds?: CatalogKind[],
+  options?: { origins?: string[] },
 ): Promise<{ items: CatalogContentItem[]; error?: string }> {
   const want = new Set(kinds?.length ? kinds : (['event', 'spot', 'tool'] as CatalogKind[]));
+  const origins = options?.origins?.map((o) => o.toLowerCase());
   const errors: string[] = [];
   const items: CatalogContentItem[] = [];
+
+  const matchesOrigin = (origin: string | null) => {
+    if (!origins?.length) return true;
+    const o = (origin ?? '').toLowerCase();
+    return origins.includes(o);
+  };
 
   if (want.has('event')) {
     let q = supabase
@@ -103,6 +111,8 @@ export async function listCatalogContent(
     for (const row of data ?? []) {
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
       const featured = Boolean(row.is_featured);
+      const origin = row.content_origin ? String(row.content_origin) : null;
+      if (!matchesOrigin(origin)) continue;
       items.push({
         id: String(row.id),
         kind: 'event',
@@ -112,7 +122,7 @@ export async function listCatalogContent(
         isFeatured: isFeaturedWindowActive(featured, null, end),
         featuredStartDate: null,
         featuredEndDate: normalizeFeaturedDate(end),
-        contentOrigin: row.content_origin ? String(row.content_origin) : null,
+        contentOrigin: origin,
         countryCode: row.country_code ? String(row.country_code) : null,
         startsAt: row.starts_at ? String(row.starts_at) : null,
         updatedAt: row.updated_at ? String(row.updated_at) : null,
@@ -135,6 +145,8 @@ export async function listCatalogContent(
     for (const row of data ?? []) {
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
       const featured = Boolean(row.is_featured);
+      const origin = row.content_origin ? String(row.content_origin) : null;
+      if (!matchesOrigin(origin)) continue;
       items.push({
         id: String(row.id),
         kind: 'spot',
@@ -144,7 +156,7 @@ export async function listCatalogContent(
         isFeatured: isFeaturedWindowActive(featured, null, end),
         featuredStartDate: null,
         featuredEndDate: normalizeFeaturedDate(end),
-        contentOrigin: row.content_origin ? String(row.content_origin) : null,
+        contentOrigin: origin,
         countryCode: row.country_code ? String(row.country_code) : null,
         startsAt: null,
         updatedAt: row.updated_at ? String(row.updated_at) : null,
@@ -168,6 +180,8 @@ export async function listCatalogContent(
       const start = row.featured_start_date ? String(row.featured_start_date) : null;
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
       const featured = Boolean(row.is_featured);
+      const origin = row.content_origin ? String(row.content_origin) : null;
+      if (!matchesOrigin(origin)) continue;
       items.push({
         id: String(row.id),
         kind: 'tool',
@@ -177,7 +191,7 @@ export async function listCatalogContent(
         isFeatured: isFeaturedWindowActive(featured, start, end),
         featuredStartDate: normalizeFeaturedDate(start),
         featuredEndDate: normalizeFeaturedDate(end),
-        contentOrigin: row.content_origin ? String(row.content_origin) : null,
+        contentOrigin: origin,
         countryCode: row.country_code ? String(row.country_code) : null,
         startsAt: null,
         updatedAt: row.updated_at ? String(row.updated_at) : null,

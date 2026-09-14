@@ -9,6 +9,9 @@ import { PassPage } from './pages/PassPage';
 import { DemandesPage } from './pages/DemandesPage';
 import { ContenuPage } from './pages/ContenuPage';
 import { AccueilPage } from './pages/AccueilPage';
+import { LoopPage } from './pages/LoopPage';
+import { PrivilegesPage } from './pages/PrivilegesPage';
+import { InsightsPage } from './pages/InsightsPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 function HomeRedirect() {
@@ -55,10 +58,7 @@ export function App() {
           path="insights"
           element={
             <RequirePermission permission="insights">
-              <PlaceholderPage
-                title="Insights"
-                description="Statistiques d’engagement et du catalogue."
-              />
+              <InsightsPage />
             </RequirePermission>
           }
         />
@@ -85,10 +85,7 @@ export function App() {
           path="loop"
           element={
             <RequirePermission permission="loop_hub">
-              <PlaceholderPage
-                title="THE LOOP"
-                description="Hub publication équipe THE LOOP."
-              />
+              <LoopPage />
             </RequirePermission>
           }
         />
@@ -112,10 +109,7 @@ export function App() {
           path="privileges"
           element={
             <RequirePermission permission="prime_benefits">
-              <PlaceholderPage
-                title="Privilèges"
-                description="Catalogue, validation partenaire et octrois."
-              />
+              <PrivilegesPage />
             </RequirePermission>
           }
         />

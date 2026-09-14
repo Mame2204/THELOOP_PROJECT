@@ -42,6 +42,9 @@ export function Sidebar() {
         can('pass_messages')
       );
     }
+    if (item.permission === 'loop_hub') {
+      return can('loop_hub') || can('content') || can('featured') || can('prime_benefits');
+    }
     return can(item.permission);
   });
 
