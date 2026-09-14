@@ -126,6 +126,21 @@ export function hasAdminPermission(
   ) {
     return true;
   }
+  // Enfants Paramètres → parent manage_admins
+  if (
+    (permission === 'content_countries' ||
+      permission === 'categories' ||
+      permission === 'legal' ||
+      permission === 'admin_permissions' ||
+      permission === 'partner_milestones' ||
+      permission === 'automation' ||
+      permission === 'notifications' ||
+      permission === 'standalone_benefit' ||
+      permission === 'opening_hours') &&
+    list.includes('manage_admins')
+  ) {
+    return true;
+  }
   return false;
 }
 

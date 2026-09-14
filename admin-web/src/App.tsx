@@ -12,6 +12,7 @@ import { AccueilPage } from './pages/AccueilPage';
 import { LoopPage } from './pages/LoopPage';
 import { PrivilegesPage } from './pages/PrivilegesPage';
 import { InsightsPage } from './pages/InsightsPage';
+import { ParametresPage } from './pages/ParametresPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 function HomeRedirect() {
@@ -133,10 +134,7 @@ export function App() {
           path="parametres"
           element={
             <RequirePermission permission="manage_admins">
-              <PlaceholderPage
-                title="Paramètres"
-                description="Gates plateforme, permissions, catégories, légal…"
-              />
+              <ParametresPage />
             </RequirePermission>
           }
         />
