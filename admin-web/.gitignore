@@ -1,0 +1,5 @@
+# Console admin web
+dist
+node_modules
+.env
+!.env.example

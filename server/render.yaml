@@ -1,0 +1,33 @@
+# https://render.com — Blueprint
+services:
+  - type: web
+    name: theloop-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8787"
+      - key: CORS_ORIGINS
+        value: https://admin.theloop-app.com,https://www.theloop-app.com,https://theloop-app.com
+      - key: DJOMY_RETURN_URL
+        value: https://api.theloop-app.com/payment/success
+      - key: DJOMY_CANCEL_URL
+        value: https://api.theloop-app.com/payment/cancel
+      - key: PAYMENT_SANDBOX_AMOUNTS
+        value: "1"
+      - key: DJOMY_BASE_URL
+        value: https://sandbox-api.djomy.africa
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: DJOMY_CLIENT_ID
+        sync: false
+      - key: DJOMY_CLIENT_SECRET
+        sync: false

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE LOOP — Logo Kit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #F2F2F2;
+    padding: 40px 24px 80px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .kit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .variant-card {
+    border-radius: 16px;
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .variant-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.45;
+    position: absolute;
+    bottom: 14px;
+    left: 0; right: 0;
+    text-align: center;
+  }
+
+  /* Backgrounds */
+  .bg-white   { background: #FFFFFF; border: 1px solid #E8E8E8; }
+  .bg-black   { background: #000000; }
+  .bg-offwhite{ background: #FAFAFA; border: 1px solid #E8E8E8; }
+  .bg-gold    { background: linear-gradient(135deg, #1A1200, #3D2B00); }
+  .bg-dark    { background: #111111; }
+  .bg-mid     { background: #333333; }
+
+  /* ── Logo lockup: horizontal (mark + wordmark) ── */
+  .logo-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wm {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .wm.black { color: #000; }
+  .wm.white { color: #fff; }
+  .wm.gold  { color: #C9A84C; }
+
+  /* ── Logo lockup: stacked ── */
+  .logo-v {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .sub-tagline {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .sub-tagline.black { color: #555; }
+  .sub-tagline.white { color: rgba(255,255,255,0.55); }
+  .sub-tagline.gold  { color: rgba(201,168,76,0.7); }
+
+  /* ── Icon only ── */
+  .icon-only-wrap {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .icon-bg {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-bg.white-bg { background: white; }
+  .icon-bg.black-bg { background: black; }
+  .icon-bg.gold-bg  { background: linear-gradient(135deg, #C9A84C, #A07830); }
+
+  .section-title-kit {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    margin: 32px auto 12px;
+    max-width: 960px;
+    padding: 0 4px;
+  }
+
+  /* Usage note */
+  .usage-row {
+    max-width: 960px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .usage-card {
+    background: white;
+    border: 1px solid #E8E8E8;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .usage-title { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 5px; }
+  .usage-text  { font-size: 10px; color: #888; line-height: 1.6; }
+  .usage-dot   { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<h1>The Loop — Brand Identity Kit · Logo Variants</h1>
+
+<!-- ════════════════════════════════════════
+     SECTION 1 — HORIZONTAL LOCKUP
+════════════════════════════════════════ -->
+<div class="section-title-kit">① Horizontal Lockup — Usage principal</div>
+<div class="kit-grid">
+
+  <!-- White background, black logo -->
+  <div class="variant-card bg-white">
+    <div class="logo-h">
+      <!-- The Loop Mark: circle with open arc + dot = loop metaphor -->
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="15" stroke="#000" stroke-width="3"/>
+        <path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="10" cy="18" r="2" fill="#000"/>
+      </svg>
+      <span class="wm black">THE LOOP</span>
+    </div>
+    <div class="variant-label" style="color:#000;">Blanc · Usage standard · Print & Web</div>
+  </div>
+
+  <!-- Black background, white logo -->
+  <div class="variant-card bg-black">
+    <div class="logo-h">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="15" stroke="#FFF" stroke-width="3"/>
+        <path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#FFF" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="10" cy="18" r="2" fill="#FFF"/>
+      </svg>
+      <span class="wm white">THE LOOP</span>
+    </div>
+    <div class="variant-label" style="color:#fff;">Noir · Carte de visite · Fond sombre</div>
+  </div>
+
+  <!-- Gold / Prestige -->
+  <div class="variant-card bg-gold">
+    <div class="logo-h">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="15" stroke="#C9A84C" stroke-width="3"/>
+        <path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#C9A84C" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="10" cy="18" r="2" fill="#C9A84C"/>
+      </svg>
+      <span class="wm gold">THE LOOP</span>
+    </div>
+    <div class="variant-label" style="color:#C9A84C;">Or · Version Prestige · Partenaires VIP</div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════
+     SECTION 2 — STACKED / VERTICAL
+════════════════════════════════════════ -->
+<div class="section-title-kit">② Stacked Lockup — Affiches · Écrans intro · Splash</div>
+<div class="kit-grid">
+
+  <!-- Stacked black on white -->
+  <div class="variant-card bg-white" style="gap:16px;">
+    <div class="logo-v">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="22" stroke="#000" stroke-width="3.5"/>
+        <path d="M 19.5 14.74 A 13 13 0 1 1 19.5 37.26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="14" cy="26" r="3" fill="#000"/>
+      </svg>
+      <span class="wm black" style="font-size:22px;letter-spacing:0.26em;">THE LOOP</span>
+      <span class="sub-tagline black">Événements · Lieux · Guinée</span>
+    </div>
+    <div class="variant-label" style="color:#000;">Stacked · Noir sur blanc</div>
+  </div>
+
+  <!-- Stacked white on black -->
+  <div class="variant-card bg-black" style="gap:16px;">
+    <div class="logo-v">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="22" stroke="#FFF" stroke-width="3.5"/>
+        <path d="M 19.5 14.74 A 13 13 0 1 1 19.5 37.26" stroke="#FFF" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="14" cy="26" r="3" fill="#FFF"/>
+      </svg>
+      <span class="wm white" style="font-size:22px;letter-spacing:0.26em;">THE LOOP</span>
+      <span class="sub-tagline white">Événements · Lieux · Guinée</span>
+    </div>
+    <div class="variant-label" style="color:#fff;">Stacked · Blanc sur noir</div>
+  </div>
+
+  <!-- Stacked gold prestige -->
+  <div class="variant-card bg-dark" style="gap:16px;">
+    <div class="logo-v">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="22" stroke="#C9A84C" stroke-width="3.5"/>
+        <path d="M 19.5 14.74 A 13 13 0 1 1 19.5 37.26" stroke="#C9A84C" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="14" cy="26" r="3" fill="#C9A84C"/>
+      </svg>
+      <span class="wm gold" style="font-size:22px;letter-spacing:0.26em;">THE LOOP</span>
+      <span class="sub-tagline gold">Événements · Lieux · Guinée</span>
+    </div>
+    <div class="variant-label" style="color:#C9A84C;">Stacked · Or sur noir · Prestige</div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════
+     SECTION 3 — ICON / MARK SEUL
+════════════════════════════════════════ -->
+<div class="section-title-kit">③ Icône seule — App icon · Favicon · Tampon</div>
+<div class="kit-grid" style="grid-template-columns: 1fr;">
+  <div class="variant-card bg-offwhite" style="flex-direction:row;flex-wrap:wrap;gap:20px;justify-content:center;padding:32px;">
+
+    <!-- Black on white rounded square -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div class="icon-bg white-bg" style="border:1px solid #eee;">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#000" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#000"/></svg>
+      </div>
+      <span style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:0.08em;">BLANC</span>
+    </div>
+
+    <!-- White on black rounded square -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div class="icon-bg black-bg">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#FFF" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#FFF" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#FFF"/></svg>
+      </div>
+      <span style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:0.08em;">NOIR</span>
+    </div>
+
+    <!-- Gold on dark -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div class="icon-bg gold-bg">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#FFF" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#FFF" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#FFF"/></svg>
+      </div>
+      <span style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:0.08em;">OR</span>
+    </div>
+
+    <!-- Large icon -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div class="icon-bg black-bg" style="width:80px;height:80px;border-radius:22px;">
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="22" stroke="#FFF" stroke-width="3.5"/><path d="M 19.5 14.74 A 13 13 0 1 1 19.5 37.26" stroke="#FFF" stroke-width="3.5" stroke-linecap="round"/><circle cx="14" cy="26" r="3" fill="#FFF"/></svg>
+      </div>
+      <span style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:0.08em;">APP ICON</span>
+    </div>
+
+    <!-- Circle stamp -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div style="width:72px;height:72px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;">
+        <svg width="44" height="44" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="22" stroke="#FFF" stroke-width="3.5"/><path d="M 19.5 14.74 A 13 13 0 1 1 19.5 37.26" stroke="#FFF" stroke-width="3.5" stroke-linecap="round"/><circle cx="14" cy="26" r="3" fill="#FFF"/></svg>
+      </div>
+      <span style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:0.08em;">TAMPON</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SECTION 4 — NOTES D'USAGE
+════════════════════════════════════════ -->
+<div class="section-title-kit" style="margin-top:36px;">④ Notes d'usage</div>
+<div class="usage-row">
+  <div class="usage-card">
+    <div class="usage-title">✅ À faire</div>
+    <div class="usage-text">
+      Utiliser uniquement les variantes définies ici.<br>
+      Respecter les zones d'aération autour du logo.<br>
+      Préférer le noir sur blanc pour le print standard.
+    </div>
+  </div>
+  <div class="usage-card">
+    <div class="usage-title">❌ À ne pas faire</div>
+    <div class="usage-text">
+      Ne pas déformer ou étirer le logo.<br>
+      Ne pas changer les couleurs en dehors du kit.<br>
+      Ne pas placer le logo sur une photo sans overlay.
+    </div>
+  </div>
+  <div class="usage-card">
+    <div class="usage-title">🎨 Palette officielle</div>
+    <div class="usage-text">
+      <span class="usage-dot" style="background:#000;"></span>#000000 — Noir principal<br>
+      <span class="usage-dot" style="background:#fff;border:1px solid #ddd;"></span>#FFFFFF — Blanc<br>
+      <span class="usage-dot" style="background:#C9A84C;"></span>#C9A84C — Or prestige<br>
+      <span class="usage-dot" style="background:#FAFAFA;border:1px solid #ddd;"></span>#FAFAFA — Off-white UI
+    </div>
+  </div>
+  <div class="usage-card">
+    <div class="usage-title">🔤 Typographie</div>
+    <div class="usage-text">
+      Wordmark : Inter Black 900<br>
+      Titres UI : Inter Bold 700<br>
+      Corps : Inter Regular 400<br>
+      Badges : Inter SemiBold 600
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

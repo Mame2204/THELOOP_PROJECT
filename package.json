@@ -1,0 +1,40 @@
+{
+  "name": "the-loop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "mobile": "powershell -ExecutionPolicy Bypass -File scripts/start-mobile.ps1",
+    "mobile:install": "powershell -ExecutionPolicy Bypass -File scripts/start-mobile.ps1 -InstallOnly",
+    "mobile:tunnel": "powershell -ExecutionPolicy Bypass -File scripts/start-mobile.ps1 -Tunnel",
+    "payment-server": "powershell -ExecutionPolicy Bypass -File scripts/start-payment-server.ps1",
+    "payment-server:install": "powershell -ExecutionPolicy Bypass -File scripts/start-payment-server.ps1 -InstallOnly"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@tailwindcss/vite": "^4.0.6",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.19.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "globals": "^15.14.0",
+    "tailwindcss": "^4.0.6",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.22.0",
+    "vite": "^6.1.0",
+    "vite-plugin-pwa": "^0.21.1"
+  }
+}

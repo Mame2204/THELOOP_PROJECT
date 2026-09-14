@@ -1,0 +1,258 @@
+# THE LOOP — Règles architecturales et techniques
+# Ce fichier guide toutes les générations de code pour ce projet.
+# Dernière mise à jour : juillet 2026
+
+---
+
+## 1. CONTEXTE & STACK TECHNIQUE
+
+### Projet
+- **THE LOOP** — PWA mobile-first pour Conakry (agenda, guide, abonnement Loop Prime, portail partenaire, console admin).
+- Alias d'import : `@/` → `src/`
+- Point d'entrée : `src/main.tsx`
+- Routes : `src/routes/index.tsx`
+- Guards : `src/routes/ProtectedRoute.tsx`
+
+### Stack
+| Couche | Technologie |
+|--------|-------------|
+| UI | React 19 + TypeScript 5.7 |
+| Build | Vite 6 |
+| Routing | React Router DOM 7 (`createBrowserRouter`) |
+| Styles | Tailwind CSS 4 (`@tailwindcss/vite`) |
+| Backend (optionnel) | Supabase JS 2 (`src/lib/supabase.ts`) |
+| PWA | `vite-plugin-pwa` |
+
+### Commandes
+```powershell
+.\.tools\node\npm.cmd install
+.\.tools\node\npm.cmd run dev      # port 5173
+.\.tools\node\npm.cmd run build
+.\.tools\node\npm.cmd run lint
+```
+
+### Mode démo (par défaut)
+- Tant que `.env` Supabase n'est pas configuré (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`), `isSupabaseConfigured()` retourne `false`.
+- Toutes les données persistantes passent par **localStorage** / **sessionStorage** + contextes React.
+- Ne pas supposer l'existence d'un backend réel sans vérifier la config.
+
+### Clés de persistance démo
+| Clé | Fichier | Contenu |
+|-----|---------|---------|
+| `loop_admin_store` | `src/lib/admin-store.ts` | Store admin complet |
+| `loop_prime_store` | `src/lib/prime-store.ts` | Contacts répertoire Prime |
+| `loop_partner_workspace_{partnerId}` | `src/lib/partner-store.ts` | Workspace partenaire |
+| `loop_demo_session` | `src/lib/demo-auth.ts` (sessionStorage) | Session utilisateur |
+| `loop_demo_favorites_{userId}` | `src/lib/demo-auth.ts` | Favoris |
+| `loop_profile_extras_{userId}` | `src/lib/profile-extras.ts` | Extras profil |
+
+### Events custom window
+- `loop-admin-store-changed` — émis par `saveAdminStore()`
+- `loop-prime-store-changed` — émis par `savePrimeStore()`
+
+### DIRECTIVE TAILWIND 4
+- **Interdiction stricte** de créer ou modifier un fichier `tailwind.config.js` (ou `.ts`).
+- Toutes les configurations de style, couleurs, thèmes et tokens doivent se faire **exclusivement** via les directives `@theme` dans les fichiers CSS (principalement `src/index.css`), conformément aux spécifications Tailwind 4.
+- Utiliser les classes utilitaires Tailwind et les variables CSS custom déjà définies (`--color-loop-gold`, `--color-loop-public-*`, etc.).
+
+### Layout & conventions visuelles
+- Shell public mobile : `max-w-lg md:max-w-xl lg:max-w-2xl`, centré, fond latéral gris, ombre `shadow-xl`.
+- Console admin : `max-w-7xl` dans `AdminLayout`.
+- Safe areas : classes `.safe-top`, `.safe-bottom`.
+- Couleur accent or : `#C9A84C` (`loop-gold`).
+- Labels surtitres : `text-[10px] uppercase tracking-[0.2em]`.
+
+---
+
+## 2. LOGIQUE DES 5 RÔLES & ACCÈS EXCLUSIFS
+
+### Définition des rôles (`src/types/index.ts`)
+| Rôle (`UserRole`) | Label | Hiérarchie |
+|-------------------|-------|------------|
+| `USER_ANONYMOUS` | Visiteur | 0 |
+| `USER_FREE` | Membre gratuit | 1 |
+| `USER_PRIME` | Loop Prime | 2 |
+| `PARTNER` | Partenaire Pro | 2 |
+| `ADMIN` | Administrateur | 3 |
+
+### Helpers de permission
+```typescript
+hasMinimumRole(userRole, requiredRole)  // comparaison ROLE_HIERARCHY
+canInteract(role)                       // !== USER_ANONYMOUS (favoris, like)
+isPrimeMember(role)                     // USER_PRIME (thème sombre shell)
+canViewPrimeContent(role)              // USER_PRIME strict (visibility: 'prime')
+isAuthenticated(role)                   // !== USER_ANONYMOUS
+```
+
+### USER_ANONYMOUS (Visiteur)
+- Flux publics uniquement : Agenda `/`, Guide `/guide`, fiches détail.
+- **Thème Clair** (`theme-visitor`, fond `#FAFAFA`).
+- Pas de favoris (modal auth si tentative).
+- Pas de filtre pill « LoopX » / « Loop Prime ».
+- Pas de contenu `visibility: 'prime'`.
+
+### USER_FREE (Membre Gratuit)
+- Accès aux **Favoris UNIQUEMENT via la barre de navigation basse** (`BottomNav` → `/favoris`).
+- **Favoris retirés** du menu bonhomme (`UserAccountMenu`) et de la page Profil.
+- **Thème Clair** (`theme-visitor` / `theme-member`).
+- Pas de filtre pill « LoopX » / « Loop Prime ».
+- Pas de contenu `visibility: 'prime'`.
+
+### PARTNER (Partenaire)
+- Espace pro : `/espace-partenaire` (onglets Adresses, Événements, Catégories lecture seule).
+- Statistiques : `/espace-partenaire/stats` (bottom nav).
+- **Favoris** dans le menu bonhomme uniquement (pas en bottom nav).
+- Login jeton : `/partenaires` (format `SPOT-XXXX-YYYY`).
+- Workflow publication : workspace → `enqueueStaging*` → admin modère → `approveStaging*` → `published*`.
+- Statuts staging : `pending` (modifier/supprimer), `rejected` (voir motif/resoumettre), `approved` (demande rétraction admin).
+- **Thème visuel dédié « Gris Platinium »** : gris métallique très clair et épuré, pour différencier des visiteurs basiques. Appliquer via classes/thème CSS dédié sur les routes partenaire (`/espace-partenaire`, `/espace-partenaire/stats`).
+
+### USER_PRIME (Loop Prime)
+- Accès exclusif au contenu `visibility: 'prime'` (événements LoopX, lieux exclusifs).
+- Pill filtre « LoopX » (agenda) et « Loop Prime » (guide) visibles.
+- Routes : `/prime/repertoire` (Répertoire Prime), `/abonnement`.
+- **Favoris + Abonnement** dans le menu bonhomme ; bottom nav : Agenda · Guide · Répertoire · Abonnement.
+- **Thème Sombre & Or** (`bg-black`, accent `#C9A84C`).
+- `GlobalSearchResults` masqué ; recherche inline OK.
+- Pas de conciergerie ni messagerie in-app (répertoire = annuaire + mise en relation).
+
+### ADMIN (Control Tower)
+- Accès total à la console `/admin` (dashboard, modération, catégories, utilisateurs, slider, jetons).
+- Admin voit le contenu `prime` pour modération (control tower).
+- L'Admin peut accéder à l'espace partenaire (`allowedRoles: ['PARTNER', 'ADMIN']`).
+- Bascule démo des 5 rôles disponible dans `AdminSidebar`.
+
+### Navigation par rôle (`src/layouts/BottomNav.tsx`)
+
+| Rôle | Bottom nav (max 4 items pour BL/Partenaire) |
+|------|---------------------------------------------|
+| Visiteur | Agenda · Guide |
+| USER_FREE | Agenda · Guide · **Favoris** |
+| USER_PRIME | Agenda · Guide · Répertoire · Abonnement |
+| PARTNER | Agenda · Guide · Espace Pro · Statistiques |
+| ADMIN | Agenda · Guide · Favoris · Admin |
+
+### Menu bonhomme (`src/components/public/UserAccountMenu.tsx`)
+- Toujours : Mon Profil, Déconnexion.
+- **Favoris** : `USER_PRIME` et `PARTNER` uniquement (pas `USER_FREE`).
+- **Abonnement** : `USER_PRIME` uniquement.
+- Badge Loop Prime selon rôle.
+
+### Routes importantes
+```
+/                              → Agenda (HomePage)
+/guide                         → Guide adresses
+/favoris                       → Favoris (auth requis)
+/profil                        → Profil (auth requis)
+/abonnement                    → Abonnement (USER_PRIME)
+/exclusif/activation?token=…   → Activation Loop Prime
+/prime/repertoire              → Répertoire Prime (USER_PRIME)
+/partenaires                   → Login partenaire
+/espace-partenaire             → Hub partenaire (PARTNER + ADMIN)
+/espace-partenaire/stats       → Stats (PARTNER + ADMIN)
+/admin/*                       → Console admin (ADMIN)
+```
+
+### Tokens et comptes démo
+| Type | Valeur |
+|------|--------|
+| Jeton partenaire | `SPOT-DEMO-2026` |
+| Jeton VIP | `INVIT-DEMO-2026` |
+| OTP activation BL | `1234` |
+| Membre free | `membre@theloop.gn` |
+| Loop Prime | `prime@theloop.gn` |
+| Partenaire | `contact@lavenue.gn` |
+| Admin | `admin@theloop.gn` |
+
+### Contexts React (ordre providers dans `main.tsx`)
+```
+AuthProvider → AdminDataProvider → FavoritesProvider → PartnerDataProvider → PublicSearchProvider → Router
+```
+
+### Fichiers clés à consulter avant toute modification
+- `src/types/index.ts` — modèle domaine + permissions
+- `src/lib/admin-store.ts` — persistance centrale admin
+- `src/lib/partner-store.ts` — workspace partenaire
+- `src/lib/black-loop-store.ts` — handshake / messages
+- `src/lib/demo-data.ts` — seed + merge contenu publié
+- `src/context/AuthContext.tsx` — auth + personas démo
+- `src/context/PartnerDataContext.tsx` — flux publication
+- `src/layouts/MainLayout.tsx` — shell + thèmes
+- `src/layouts/BottomNav.tsx` — navigation par rôle
+- `src/components/public/UserAccountMenu.tsx` — menu compte
+- `src/components/public/GlobalSearchResults.tsx` — recherche globale
+- `src/pages/public/HomePage.tsx` / `GuidePage.tsx` — filtres BL
+
+---
+
+## 3. DIRECTIVES DE PRODUCTION & CODE
+
+### Langue
+- Tous les textes de l'interface utilisateur (boutons, labels, alertes, placeholders, toasts, titres) doivent être rédigés **strictement en Français**.
+
+### Qualité du code
+- TypeScript **strict** : pas de type `any` (sauf justification documentée et temporaire).
+- Pas de placeholders fainéants du type `// ... reste du code ici` ou `// TODO: implémenter`.
+- Si un fichier est modifié, fournir les blocs de code **complets et fonctionnels**, ou indiquer précisément les lignes à remplacer.
+- Respecter les conventions existantes : nommage, imports, structure des composants, patterns des stores.
+- Minimiser la portée des diffs : ne pas modifier de code non lié à la tâche.
+- Réutiliser et étendre les fonctions/composants existants plutôt que de réimplémenter.
+- Commentaires uniquement pour la logique métier non évidente.
+
+### Git
+- **Ne fais aucun commit automatique** sauf demande explicite de l'utilisateur.
+- Ne pas pousser sur le remote sauf demande explicite.
+- Ne pas modifier la config git.
+
+### Tests & build
+- Lancer `npm run lint` après modifications substantielles.
+- Vérifier `npm run build` si des types ou imports sont touchés.
+
+### Comportements critiques à préserver
+1. Favoris `USER_FREE` : bottom nav **uniquement**.
+2. Favoris `USER_PRIME` / `PARTNER` : menu bonhomme **uniquement**.
+3. Contenu `prime` : visible pour `USER_PRIME` strict (`canViewPrimeContent`).
+4. Filtre LoopX/Loop Prime : visible pour `USER_PRIME` uniquement.
+5. `GlobalSearchResults` masqué pour `USER_PRIME` (recherche inline OK).
+6. Workflow partenaire : staging → modération admin → publication.
+7. Slider hero admin : référence événement/lieu **déjà publié** (pas de contenu autonome).
+8. Bottom nav BL et Partenaire : **exactement 4 items**.
+9. Pas de `tailwind.config.js` — thèmes via `@theme` dans CSS.
+
+---
+
+## 4. PROCHAINE ÉTAPE
+
+### Migration Supabase (priorité future)
+Les prochaines tâches concerneront la **migration progressive** du localStorage vers le backend réel Supabase, en préservant scrupuleusement :
+- La matrice des 5 rôles et leurs permissions (notamment le droit de survol admin sur le contenu BL).
+- Les thèmes visuels par rôle (Clair, Gris Platinium partenaire, Sombre & Or BL).
+- La navigation par rôle (bottom nav, menu bonhomme).
+- Le workflow partenaire (staging → modération → publication → rétraction).
+- Le répertoire Prime (contacts locaux, sans chat).
+- Les stores démo comme fallback tant que Supabase n'est pas configuré.
+
+### Fichiers Supabase concernés
+- `supabase/schema.sql` — schéma à aligner avec les types TypeScript.
+- Politiques **RLS** à définir par rôle :
+  - Public : lecture contenu non-BL.
+  - `USER_FREE` : favoris utilisateur.
+  - `USER_PRIME` : lecture contenu `visibility = 'prime'`.
+  - `ADMIN` : lecture/écriture totale (control tower).
+  - `PARTNER` : CRUD sur son propre workspace + staging.
+- `src/lib/supabase.ts` — client et détection config.
+- Types `Database` à synchroniser avec le schéma réel.
+
+### Stratégie de migration recommandée
+1. Définir/compléter `schema.sql` + RLS alignés sur la matrice de rôles.
+2. Créer des adaptateurs (ex. `admin-store` → Supabase) derrière les contextes existants.
+3. Conserver localStorage comme fallback si `!isSupabaseConfigured()`.
+4. Migrer module par module : auth → favoris → admin store → partner workspace → black-loop store.
+5. Tester chaque rôle après chaque migration.
+
+### Dette technique connue (à traiter pendant la migration)
+- Pages orphelines : `FavoritesPage.tsx`, `EventsPage.tsx`, `MonEspacePage.tsx`, `PartnerSubmitPage.tsx`, `AdminHeroPage.tsx`.
+- `theme-black-loop` référencée mais peu définie en CSS (fallback `bg-black text-white`).
+- KPIs dashboard admin partiellement mock (`getCategoryClickRates`, `getTopPerformers`).
+- Workflow rétraction : affichage admin, pas de retrait publication complet.
+- `/black-loop` (BlackLoopHomePage) protégé mais absent de la bottom nav.

@@ -1,0 +1,12 @@
+# Static deploy hints for admin.theloop-app.com (Cloudflare Pages / Netlify / Render Static)
+
+Build: `npm ci && npm run build`
+Publish directory: `dist`
+
+Environment (build-time):
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_ANON_KEY
+- VITE_API_URL=https://api.theloop-app.com
+
+DNS: CNAME `admin` → pages host
+CORS on API must include https://admin.theloop-app.com

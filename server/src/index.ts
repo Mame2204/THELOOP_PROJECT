@@ -1,0 +1,72 @@
+import cors from 'cors';
+import express from 'express';
+import helmet from 'helmet';
+import { config } from './config.js';
+import { requestLogger } from './middleware/request-logger.js';
+import { adminRouter } from './routes/admin.js';
+import { partnerValidationRouter } from './routes/partner-validation.js';
+import { partnerBenefitOffersRouter } from './routes/partner-benefit-offers.js';
+import { partnerSpotSessionRouter } from './routes/partner-spot-session.js';
+import { paymentsRouter } from './routes/payments.js';
+import { publicPagesRouter } from './routes/public-pages.js';
+import { webhookRouter } from './routes/webhook.js';
+
+const app = express();
+
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(requestLogger);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Apps natives / healthchecks sans Origin
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (config.corsOrigins.includes(origin) || config.corsOrigins.includes('*')) {
+        callback(null, true);
+        return;
+      }
+      console.warn('[cors] Origin refusée:', origin);
+      callback(null, false);
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+  }),
+);
+
+app.use('/api/webhook/djomy', express.raw({ type: 'application/json' }));
+
+app.use(express.json({ limit: '1mb' }));
+
+app.get('/health', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'the-loop-payment-server',
+    env: config.nodeEnv,
+    sandboxMode: config.paymentSandboxAmounts,
+    djomyHost: new URL(config.djomyBaseUrl).host,
+    publicBaseHint: 'https://api.theloop-app.com',
+  });
+});
+
+app.use(publicPagesRouter);
+app.use('/api', paymentsRouter);
+app.use('/api', partnerValidationRouter);
+app.use('/api', partnerBenefitOffersRouter);
+app.use('/api', partnerSpotSessionRouter);
+app.use('/api', adminRouter);
+app.use('/api', webhookRouter);
+
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Route introuvable.' });
+});
+
+app.listen(config.port, '0.0.0.0', () => {
+  console.log(`[payment-server] Écoute sur 0.0.0.0:${config.port} (${config.nodeEnv})`);
+  console.log(`[payment-server] Djomy base: ${config.djomyBaseUrl}`);
+  console.log(`[payment-server] CORS: ${config.corsOrigins.join(', ') || '(vide)'}`);
+  if (config.paymentSandboxAmounts) {
+    console.log('[payment-server] Montants sandbox GNF:', config.passPricesGnf);
+  }
+});

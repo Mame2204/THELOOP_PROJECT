@@ -1,0 +1,7 @@
+project_id = "eeyhtulpixvftvhppinz"
+
+[functions.auth-callback]
+verify_jwt = false
+
+[functions.send-push]
+verify_jwt = true
