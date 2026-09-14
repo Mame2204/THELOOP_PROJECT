@@ -34,6 +34,14 @@ export function Sidebar() {
     if (item.permission === 'pass_payments') {
       return can('pass_payments') || can('pass_management');
     }
+    if (item.permission === 'pass_management') {
+      return (
+        can('pass_management') ||
+        can('pass_catalog') ||
+        can('pass_prices') ||
+        can('pass_messages')
+      );
+    }
     return can(item.permission);
   });
 

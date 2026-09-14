@@ -18,7 +18,12 @@ export function RequirePermission({
       ? canDemandes
       : permission === 'pass_payments'
         ? can('pass_payments') || can('pass_management')
-        : can(permission);
+        : permission === 'pass_management'
+          ? can('pass_management') ||
+            can('pass_catalog') ||
+            can('pass_prices') ||
+            can('pass_messages')
+          : can(permission);
 
   if (!ok) return <Navigate to="/" replace />;
   return children;

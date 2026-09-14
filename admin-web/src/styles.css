@@ -336,6 +336,49 @@ a { color: var(--gold); }
   gap: 10px;
   margin-bottom: 12px;
 }
+.target-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.target-chip {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.target-chip.active {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold);
+}
+.card .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.card .field label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.card .field input,
+.card .field select,
+.card .field textarea {
+  border: 1px solid var(--border);
+  background: #0a0a0a;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  font: inherit;
+}
 
 @media (max-width: 800px) {
   .admin-frame { grid-template-columns: 72px 1fr; }
