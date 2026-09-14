@@ -10,6 +10,7 @@ import {
   deleteCorner,
   deleteLogo,
   deletePoll,
+  createPoll,
   deleteWalk,
   listAccueilChroniques,
   listAccueilCorners,
@@ -392,6 +393,47 @@ export function AccueilPage() {
       ) : null}
 
       {tab === 'poll' && canPoll ? (
+        <>
+          <div className="card" style={{ marginBottom: 12 }}>
+            <h3>Nouveau sondage</h3>
+            <div className="toolbar">
+              <input
+                id="new-poll-q"
+                placeholder="Question du sondage…"
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter') return;
+                  const input = e.currentTarget;
+                  const q = input.value;
+                  void createPoll(countryCode, q).then((r) => {
+                    if (!r.ok) setMsg(r.error ?? 'Erreur');
+                    else {
+                      input.value = '';
+                      setMsg('Sondage créé.');
+                      void loadPolls();
+                    }
+                  });
+                }}
+              />
+              <button
+                type="button"
+                className="btn small"
+                onClick={() => {
+                  const input = document.getElementById('new-poll-q') as HTMLInputElement | null;
+                  if (!input) return;
+                  void createPoll(countryCode, input.value).then((r) => {
+                    if (!r.ok) setMsg(r.error ?? 'Erreur');
+                    else {
+                      input.value = '';
+                      setMsg('Sondage créé.');
+                      void loadPolls();
+                    }
+                  });
+                }}
+              >
+                Créer
+              </button>
+            </div>
+          </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -454,10 +496,11 @@ export function AccueilPage() {
           </table>
           {polls.length === 0 ? (
             <p className="muted" style={{ padding: 16 }}>
-              Aucun sondage. Création complète encore sur mobile.
+              Aucun sondage.
             </p>
           ) : null}
         </div>
+        </>
       ) : null}
 
       {tab === 'walks' && canWalks ? (
@@ -559,7 +602,7 @@ export function AccueilPage() {
           ) : null}
           {walks.length === 0 ? (
             <p className="muted" style={{ padding: 16 }}>
-              Aucun parcours. Éditeur riche encore sur mobile.
+              Aucun parcours.
             </p>
           ) : null}
         </div>

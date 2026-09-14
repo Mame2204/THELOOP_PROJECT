@@ -11,7 +11,7 @@ import { useAdminCountry } from '../context/AdminCountryContext';
 const PAGE = 20;
 
 export function PaymentsPage() {
-  const { countryLabel } = useAdminCountry();
+  const { countryCode, countryLabel } = useAdminCountry();
   const [payments, setPayments] = useState<PaymentIntent[]>([]);
   const [summary, setSummary] = useState<PaymentSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -19,12 +19,20 @@ export function PaymentsPage() {
   const [total, setTotal] = useState(0);
 
   const load = useCallback(async () => {
-    const res = await fetchPaymentIntents({ limit: PAGE, offset: page * PAGE });
+    const res = await fetchPaymentIntents({
+      limit: PAGE,
+      offset: page * PAGE,
+      countryCode,
+    });
     setError(res.error ?? null);
     setPayments(res.intents);
     setSummary(res.summary ?? null);
     setTotal(res.total ?? res.intents.length);
-  }, [page]);
+  }, [page, countryCode]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [countryCode]);
 
   useEffect(() => {
     void load();
@@ -38,7 +46,7 @@ export function PaymentsPage() {
         <div>
           <p className="brand-kicker">PASS</p>
           <h2>Paiements Djomy</h2>
-          <p className="meta">Suivi des intents et resync — filtre pays UI : {countryLabel}</p>
+          <p className="meta">Intents filtrés pour {countryLabel} (via pays du membre).</p>
         </div>
         <button type="button" className="btn small ghost" onClick={() => void load()}>
           Actualiser

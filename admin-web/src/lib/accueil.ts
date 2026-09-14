@@ -173,6 +173,26 @@ export async function listAccueilPolls(countryCode: string): Promise<AccueilPoll
   }));
 }
 
+export async function createPoll(
+  countryCode: string,
+  question: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const q = question.trim();
+  if (!q) return { ok: false, error: 'Question requise.' };
+  const { error } = await supabase.from('home_polls').insert({
+    id: crypto.randomUUID(),
+    question: q,
+    is_active: true,
+    country_code: countryCode,
+    period_start: null,
+    period_end: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export async function setPollActive(
   id: string,
   active: boolean,

@@ -122,9 +122,8 @@ export function ContenuPage() {
           <p className="brand-kicker">Catalogue</p>
           <h2>Contenu</h2>
           <p className="meta">
-            Events, spots, outils — pays : {countryLabel}. Création riche via{' '}
-            <Link to="/loop">THE LOOP</Link> · blocs éditoriaux via <Link to="/accueil">Accueil</Link>
-            .
+            Events, spots, outils — pays : {countryLabel}. Hub équipe :{' '}
+            <Link to="/loop">THE LOOP</Link> · blocs éditoriaux : <Link to="/accueil">Accueil</Link>.
           </p>
         </div>
       </header>

@@ -236,7 +236,35 @@ export async function saveActivationMessages(
   return upsertSetting(remoteKey('pass_activation_messages_v1', countryCode), messages);
 }
 
-export async function listActiveGrants(): Promise<ActiveGrantRow[]> {
+export async function listActiveGrants(countryCode?: string): Promise<ActiveGrantRow[]> {
+  const mapRows = (
+    rows: Array<Record<string, unknown>>,
+    usersById: Map<
+      string,
+      { email?: string | null; first_name?: string | null; last_name?: string | null; country_code?: string | null }
+    >,
+  ): ActiveGrantRow[] =>
+    rows
+      .map((r) => {
+        const u = usersById.get(String(r.user_id));
+        return {
+          localId: String(r.local_id ?? r.user_id),
+          userId: String(r.user_id),
+          userName:
+            `${u?.first_name ?? ''} ${u?.last_name ?? ''}`.trim() ||
+            u?.email ||
+            String(r.user_id).slice(0, 8),
+          userEmail: u?.email ?? null,
+          countryCode: u?.country_code ?? null,
+          catalogId: r.pass_catalog_id ? String(r.pass_catalog_id) : null,
+          label: String(r.label ?? 'PASS'),
+          startedAt: String(r.started_at),
+          expiresAt: r.expires_at ? String(r.expires_at) : null,
+          grantNote: r.grant_note ? String(r.grant_note) : null,
+        };
+      })
+      .filter((g) => !countryCode || g.countryCode === countryCode);
+
   const { data, error } = await supabase
     .from('user_pass_grants')
     .select(
@@ -244,59 +272,36 @@ export async function listActiveGrants(): Promise<ActiveGrantRow[]> {
     )
     .eq('status', 'active')
     .order('started_at', { ascending: false })
-    .limit(200);
+    .limit(400);
 
   if (error) {
-    // Fallback without embed if FK name differs
     const plain = await supabase
       .from('user_pass_grants')
       .select('local_id, user_id, pass_catalog_id, label, started_at, expires_at, grant_note')
       .eq('status', 'active')
       .order('started_at', { ascending: false })
-      .limit(200);
+      .limit(400);
     if (plain.error || !plain.data) return [];
     const userIds = [...new Set(plain.data.map((r) => String(r.user_id)))];
     const { data: users } = await supabase
       .from('users')
       .select('id, email, first_name, last_name, country_code')
       .in('id', userIds);
-    const byId = new Map((users ?? []).map((u) => [u.id, u]));
-    return plain.data.map((r) => {
-      const u = byId.get(String(r.user_id));
-      return {
-        localId: String(r.local_id ?? r.user_id),
-        userId: String(r.user_id),
-        userName:
-          `${u?.first_name ?? ''} ${u?.last_name ?? ''}`.trim() || u?.email || String(r.user_id).slice(0, 8),
-        userEmail: u?.email ?? null,
-        countryCode: u?.country_code ?? null,
-        catalogId: r.pass_catalog_id ? String(r.pass_catalog_id) : null,
-        label: String(r.label ?? 'PASS'),
-        startedAt: String(r.started_at),
-        expiresAt: r.expires_at ? String(r.expires_at) : null,
-        grantNote: r.grant_note ? String(r.grant_note) : null,
-      };
-    });
+    const byId = new Map((users ?? []).map((u) => [String(u.id), u]));
+    return mapRows(plain.data as Array<Record<string, unknown>>, byId);
   }
 
-  return (data ?? []).map((r) => {
+  const byId = new Map<
+    string,
+    { email?: string | null; first_name?: string | null; last_name?: string | null; country_code?: string | null }
+  >();
+  for (const r of data ?? []) {
     const u = r.users as
       | { email?: string; first_name?: string; last_name?: string; country_code?: string }
       | null;
-    return {
-      localId: String(r.local_id),
-      userId: String(r.user_id),
-      userName:
-        `${u?.first_name ?? ''} ${u?.last_name ?? ''}`.trim() || u?.email || String(r.user_id).slice(0, 8),
-      userEmail: u?.email ?? null,
-      countryCode: u?.country_code ?? null,
-      catalogId: r.pass_catalog_id ? String(r.pass_catalog_id) : null,
-      label: String(r.label ?? 'PASS'),
-      startedAt: String(r.started_at),
-      expiresAt: r.expires_at ? String(r.expires_at) : null,
-      grantNote: r.grant_note ? String(r.grant_note) : null,
-    };
-  });
+    if (u) byId.set(String(r.user_id), u);
+  }
+  return mapRows((data ?? []) as Array<Record<string, unknown>>, byId);
 }
 
 export async function countActiveGrantsForCatalog(catalogId: string): Promise<number> {

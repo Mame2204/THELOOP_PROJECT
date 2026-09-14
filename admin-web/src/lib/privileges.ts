@@ -356,3 +356,73 @@ export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
   auto_accepted: 'Auto',
   disabled: 'Archivé',
 };
+
+/** Octroi privilèges (RPC alignée mobile). */
+export async function grantBenefitsToUsers(input: {
+  catalogLocalId: string;
+  title: string;
+  description: string;
+  partnerName?: string | null;
+  userIds: string[];
+  countryCode: string;
+  validityDays?: number | null;
+  customNote?: string | null;
+}): Promise<{ ok: boolean; granted: number; error?: string }> {
+  if (!input.userIds.length) return { ok: false, granted: 0, error: 'Aucun destinataire.' };
+  const now = new Date();
+  const days = input.validityDays ?? 30;
+  const expiresAt =
+    days > 0
+      ? new Date(now.getTime() + days * 86400000).toISOString()
+      : new Date('2099-12-31T23:59:59.000Z').toISOString();
+  let granted = 0;
+  for (const userId of input.userIds) {
+    const localId = crypto.randomUUID();
+    const { error } = await supabase.rpc('upsert_prime_benefit_grant', {
+      p_local_id: localId,
+      p_user_id: userId,
+      p_title: input.title,
+      p_description: input.description + (input.customNote ? `\n${input.customNote}` : ''),
+      p_partner_name: input.partnerName ?? null,
+      p_status: 'active',
+      p_granted_at: now.toISOString(),
+      p_expires_at: expiresAt,
+      p_used_at: null,
+      p_grant_audience: 'individual',
+      p_grant_country_code: input.countryCode,
+      p_grant_city: null,
+      p_catalog_local_id: input.catalogLocalId,
+      p_role_entitlement: null,
+    });
+    if (!error) granted += 1;
+  }
+  if (!granted) return { ok: false, granted: 0, error: 'Octroi impossible (RPC).' };
+  return { ok: true, granted };
+}
+
+export async function createBenefitCatalogItem(input: {
+  title: string;
+  description: string;
+  countryCode: string;
+  partnerName?: string | null;
+}): Promise<{ ok: boolean; localId?: string; error?: string }> {
+  const localId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const row = {
+    local_id: localId,
+    title: input.title.trim(),
+    description: input.description.trim(),
+    is_active: true,
+    country_code: input.countryCode,
+    offering_partners: input.partnerName
+      ? [{ displayName: input.partnerName, partnerId: 'loop' }]
+      : [],
+    benefit_kind: 'unlimited',
+    updated_at: now,
+    created_at: now,
+  };
+  const { error } = await supabase.from('benefit_catalog').insert(row);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, localId };
+}
+

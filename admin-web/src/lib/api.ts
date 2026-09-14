@@ -27,6 +27,7 @@ export interface PaymentIntent {
   userId: string;
   userEmail: string | null;
   userName: string | null;
+  countryCode?: string | null;
   billingPeriod: string;
   amountGnf: number;
   status: string;
@@ -41,12 +42,14 @@ export async function fetchPaymentIntents(options?: {
   limit?: number;
   offset?: number;
   status?: string;
+  countryCode?: string;
 }): Promise<{ intents: PaymentIntent[]; summary?: PaymentSummary; total?: number; error?: string }> {
   if (!API_URL) return { intents: [], error: 'VITE_API_URL manquant.' };
   const params = new URLSearchParams();
   if (options?.limit) params.set('limit', String(options.limit));
   if (options?.offset != null) params.set('offset', String(options.offset));
   if (options?.status) params.set('status', options.status);
+  if (options?.countryCode) params.set('country', options.countryCode);
   const qs = params.toString();
   try {
     const res = await fetch(`${API_URL}/api/admin/payment-intents${qs ? `?${qs}` : ''}`, {

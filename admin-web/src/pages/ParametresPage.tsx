@@ -614,25 +614,44 @@ export function ParametresPage() {
 
       {tab === 'more' ? (
         <div className="card">
-          <h3>Modules encore sur mobile / autres routes</h3>
-          <ul className="meta" style={{ lineHeight: 1.8 }}>
-            <li>
-              Notifications push → <Link to="/notifications">/notifications</Link>
-            </li>
-            <li>
-              Automatisations → <Link to="/automation">/automation</Link>
-            </li>
-            <li>
-              Paliers partenaires → <Link to="/milestones">/milestones</Link>
-            </li>
-            <li>
-              Onglets app → <Link to="/onglets">/onglets</Link>
-            </li>
-            <li>
-              Prix & messages PASS → <Link to="/pass">/pass</Link>
-            </li>
-            <li>Étoiles spots / horaires d’ouverture — création avancée encore sur mobile</li>
-          </ul>
+          <h3>Modules Paramètres</h3>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Hub Control Tower — mêmes entrées que le mobile.
+          </p>
+          <div className="kpi-grid">
+            <Link className="card kpi-card" to="/notifications">
+              <div className="meta">🔔 Notifications</div>
+              <strong>Push</strong>
+            </Link>
+            <Link className="card kpi-card" to="/automation">
+              <div className="meta">⚡ Automatisations</div>
+              <strong>Jobs</strong>
+            </Link>
+            <Link className="card kpi-card" to="/milestones">
+              <div className="meta">🏅 Paliers</div>
+              <strong>Partenaires</strong>
+            </Link>
+            <Link className="card kpi-card" to="/etoiles">
+              <div className="meta">⭐ Étoiles</div>
+              <strong>Spots</strong>
+            </Link>
+            <Link className="card kpi-card" to="/horaires">
+              <div className="meta">🕒 Horaires</div>
+              <strong>Presets</strong>
+            </Link>
+            <Link className="card kpi-card" to="/payments">
+              <div className="meta">💳 Paiements</div>
+              <strong>Djomy</strong>
+            </Link>
+            <Link className="card kpi-card" to="/pass">
+              <div className="meta">🎫 PASS</div>
+              <strong>Catalogue</strong>
+            </Link>
+            <Link className="card kpi-card" to="/onglets">
+              <div className="meta">📱 Onglets</div>
+              <strong>App</strong>
+            </Link>
+          </div>
         </div>
       ) : null}
     </section>

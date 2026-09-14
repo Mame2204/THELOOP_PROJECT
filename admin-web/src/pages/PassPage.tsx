@@ -83,7 +83,7 @@ export function PassPage() {
   });
 
   const reloadOps = useCallback(async () => {
-    const [c, g] = await Promise.all([loadPassCatalog(countryCode), listActiveGrants()]);
+    const [c, g] = await Promise.all([loadPassCatalog(countryCode), listActiveGrants(countryCode)]);
     setCatalog(c);
     setGrants(g);
     if (!grantCatalogId) {

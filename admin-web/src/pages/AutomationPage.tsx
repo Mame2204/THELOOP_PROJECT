@@ -21,6 +21,12 @@ export function AutomationPage() {
   const [rows, setRows] = useState<JobRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [jobType, setJobType] = useState('push_notification');
+  const [schedule, setSchedule] = useState('daily');
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifMessage, setNotifMessage] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -72,16 +78,51 @@ export function AutomationPage() {
     void load();
   }
 
+  async function createJob() {
+    if (!name.trim()) {
+      setMsg('Nom requis.');
+      return;
+    }
+    setBusy(true);
+    const now = new Date().toISOString();
+    const { error: err } = await supabase.from('admin_automation_jobs').insert({
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      job_type: jobType,
+      status: 'inactive',
+      schedule,
+      country_code: countryCode,
+      city: null,
+      payload: {
+        notifTitle: notifTitle.trim() || name.trim(),
+        notifMessage: notifMessage.trim() || 'Message THE LOOP',
+        audienceScope: 'country',
+      },
+      last_run_at: null,
+      last_run_count: 0,
+      last_run_summary: null,
+      created_at: now,
+      updated_at: now,
+    });
+    setBusy(false);
+    if (err) {
+      setMsg(err.message);
+      return;
+    }
+    setName('');
+    setNotifTitle('');
+    setNotifMessage('');
+    setMsg('Job créé (inactif). Activez-le quand prêt.');
+    void load();
+  }
+
   return (
     <section>
       <header className="page-header">
         <div>
           <p className="brand-kicker">Paramètres</p>
           <h2>Automatisations</h2>
-          <p className="meta">
-            Jobs planifiés (bienvenue, anniversaire, push…) — {countryLabel}. Création avancée
-            encore disponible sur mobile.
-          </p>
+          <p className="meta">Jobs planifiés (bienvenue, anniversaire, push…) — {countryLabel}.</p>
         </div>
         <button type="button" className="btn ghost small" onClick={() => void load()}>
           Actualiser
@@ -90,75 +131,118 @@ export function AutomationPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {msg ? <p className="muted">{msg}</p> : null}
 
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Job</th>
-              <th>Type</th>
-              <th>Planning</th>
-              <th>Dernière exécution</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  <strong>{r.name}</strong>
-                  <div className="meta">{r.city || countryCode}</div>
-                </td>
-                <td className="meta">{r.jobType}</td>
-                <td>
-                  <span className={`badge ${r.status === 'active' ? 'ok' : 'warn'}`}>
-                    {r.status}
-                  </span>
-                  <div className="meta">{r.schedule}</div>
-                </td>
-                <td className="meta">
-                  {formatWhen(r.lastRunAt)}
-                  {r.lastRunCount ? <div>{r.lastRunCount} envois</div> : null}
-                  {r.lastRunSummary ? <div>{r.lastRunSummary.slice(0, 60)}</div> : null}
-                </td>
-                <td>
-                  <div className="toolbar" style={{ margin: 0 }}>
-                    {r.status !== 'active' ? (
-                      <button
-                        type="button"
-                        className="btn small"
-                        onClick={() => void setStatus(r.id, 'active')}
-                      >
-                        Activer
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn ghost small"
-                        onClick={() => void setStatus(r.id, 'inactive')}
-                      >
-                        Pause
-                      </button>
-                    )}
-                    {r.status !== 'archived' ? (
-                      <button
-                        type="button"
-                        className="btn ghost small"
-                        onClick={() => void setStatus(r.id, 'archived')}
-                      >
-                        Archiver
-                      </button>
-                    ) : null}
-                  </div>
-                </td>
+      <div className="split-pane">
+        <div className="card">
+          <h3>Nouveau job</h3>
+          <div className="field">
+            <label>Nom</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Type</label>
+            <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
+              <option value="push_notification">Notification push</option>
+              <option value="birthday_greeting">Anniversaire</option>
+              <option value="welcome">Bienvenue</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Planning</label>
+            <select value={schedule} onChange={(e) => setSchedule(e.target.value)}>
+              <option value="daily">Quotidien</option>
+              <option value="monthly">Mensuel</option>
+              <option value="yearly">Annuel</option>
+              <option value="on_signup">À l’inscription</option>
+              <option value="on_demand">À la demande</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Titre notif</label>
+            <input value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Message</label>
+            <textarea
+              rows={3}
+              value={notifMessage}
+              onChange={(e) => setNotifMessage(e.target.value)}
+            />
+          </div>
+          <button type="button" className="btn" disabled={busy} onClick={() => void createJob()}>
+            Créer
+          </button>
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Type</th>
+                <th>Planning</th>
+                <th>Dernière exécution</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {rows.length === 0 && !error ? (
-          <p className="muted" style={{ padding: 16 }}>
-            Aucun job pour ce pays.
-          </p>
-        ) : null}
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    <strong>{r.name}</strong>
+                    <div className="meta">{r.city || countryCode}</div>
+                  </td>
+                  <td className="meta">{r.jobType}</td>
+                  <td>
+                    <span className={`badge ${r.status === 'active' ? 'ok' : 'warn'}`}>
+                      {r.status}
+                    </span>
+                    <div className="meta">{r.schedule}</div>
+                  </td>
+                  <td className="meta">
+                    {formatWhen(r.lastRunAt)}
+                    {r.lastRunCount ? <div>{r.lastRunCount} envois</div> : null}
+                    {r.lastRunSummary ? <div>{r.lastRunSummary.slice(0, 60)}</div> : null}
+                  </td>
+                  <td>
+                    <div className="toolbar" style={{ margin: 0 }}>
+                      {r.status !== 'active' ? (
+                        <button
+                          type="button"
+                          className="btn small"
+                          onClick={() => void setStatus(r.id, 'active')}
+                        >
+                          Activer
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn ghost small"
+                          onClick={() => void setStatus(r.id, 'inactive')}
+                        >
+                          Pause
+                        </button>
+                      )}
+                      {r.status !== 'archived' ? (
+                        <button
+                          type="button"
+                          className="btn ghost small"
+                          onClick={() => void setStatus(r.id, 'archived')}
+                        >
+                          Archiver
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {rows.length === 0 && !error ? (
+            <p className="muted" style={{ padding: 16 }}>
+              Aucun job pour ce pays.
+            </p>
+          ) : null}
+        </div>
       </div>
     </section>
   );

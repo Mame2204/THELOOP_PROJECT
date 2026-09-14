@@ -4,6 +4,8 @@ import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
 import {
+  createBenefitCatalogItem,
+  grantBenefitsToUsers,
   OFFER_STATUS_LABELS,
   deleteOffer,
   getCatalogUsageStats,
@@ -88,7 +90,10 @@ export function PrivilegesPage() {
     if (tab === 'validations' && canValidations) void loadOffers();
     if (tab === 'catalog' && canCatalog) void loadCatalog();
     if (tab === 'suivi' && canSuivi) void loadSuivi();
-    if (tab === 'grants' && canGrants) void loadGrants();
+    if (tab === 'grants' && canGrants) {
+      void loadGrants();
+      void loadCatalog();
+    }
   }, [
     tab,
     canValidations,
@@ -270,6 +275,44 @@ export function PrivilegesPage() {
 
       {tab === 'catalog' && canCatalog ? (
         <>
+          <div className="card" style={{ marginBottom: 12 }}>
+            <h3>Nouveau privilège</h3>
+            <div className="toolbar">
+              <input id="new-ben-title" placeholder="Titre" />
+              <input id="new-ben-desc" placeholder="Description" />
+              <button
+                type="button"
+                className="btn small"
+                disabled={busy}
+                onClick={() => {
+                  const title = (document.getElementById('new-ben-title') as HTMLInputElement)
+                    ?.value;
+                  const description = (document.getElementById('new-ben-desc') as HTMLInputElement)
+                    ?.value;
+                  if (!title?.trim()) {
+                    setMsg('Titre requis.');
+                    return;
+                  }
+                  setBusy(true);
+                  void createBenefitCatalogItem({
+                    title,
+                    description: description || title,
+                    countryCode,
+                    partnerName: 'THE LOOP',
+                  }).then((r) => {
+                    setBusy(false);
+                    if (!r.ok) setMsg(r.error ?? 'Erreur');
+                    else {
+                      setMsg('Privilège créé.');
+                      void loadCatalog();
+                    }
+                  });
+                }}
+              >
+                Créer
+              </button>
+            </div>
+          </div>
           <div className="tabs" style={{ marginBottom: 12 }}>
             {(['all', 'active', 'inactive'] as const).map((f) => (
               <button
@@ -328,7 +371,7 @@ export function PrivilegesPage() {
             </table>
             {filteredCatalog.length === 0 ? (
               <p className="muted" style={{ padding: 16 }}>
-                Catalogue vide. Création riche encore sur mobile.
+                Catalogue vide.
               </p>
             ) : null}
           </div>
@@ -374,6 +417,60 @@ export function PrivilegesPage() {
       ) : null}
 
       {tab === 'grants' && canGrants ? (
+        <>
+          <div className="card" style={{ marginBottom: 12 }}>
+            <h3>Octroyer un privilège</h3>
+            <div className="toolbar">
+              <select id="grant-catalog">
+                {catalog
+                  .filter((c) => c.isActive)
+                  .map((c) => (
+                    <option key={c.localId} value={c.localId}>
+                      {c.title}
+                    </option>
+                  ))}
+              </select>
+              <input id="grant-user" placeholder="UUID utilisateur" />
+              <button
+                type="button"
+                className="btn small"
+                disabled={busy}
+                onClick={() => {
+                  const catalogLocalId = (
+                    document.getElementById('grant-catalog') as HTMLSelectElement
+                  )?.value;
+                  const userId = (
+                    document.getElementById('grant-user') as HTMLInputElement
+                  )?.value?.trim();
+                  const item = catalog.find((c) => c.localId === catalogLocalId);
+                  if (!item || !userId) {
+                    setMsg('Catalogue et user id requis.');
+                    return;
+                  }
+                  setBusy(true);
+                  void grantBenefitsToUsers({
+                    catalogLocalId: item.localId,
+                    title: item.title,
+                    description: item.description,
+                    partnerName: item.partnerNames[0] ?? 'THE LOOP',
+                    userIds: [userId],
+                    countryCode,
+                    validityDays: 30,
+                  }).then((r) => {
+                    setBusy(false);
+                    setMsg(r.ok ? `Octroyé (${r.granted}).` : r.error ?? 'Erreur');
+                    if (r.ok) void loadGrants();
+                  });
+                }}
+              >
+                Octroyer
+              </button>
+            </div>
+            <p className="meta">
+              Astuce : copiez l’id depuis Users, ou lancez un tirage multi-gagnants via{' '}
+              <a href="/tirage">Tirage</a>.
+            </p>
+          </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -434,10 +531,11 @@ export function PrivilegesPage() {
           </table>
           {grants.length === 0 ? (
             <p className="muted" style={{ padding: 16 }}>
-              Aucun octroi récent. Campagnes d’octroi encore sur mobile.
+              Aucun octroi récent.
             </p>
           ) : null}
         </div>
+        </>
       ) : null}
     </section>
   );

@@ -121,6 +121,10 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
   try {
     const status = String(req.query.status ?? '').trim();
     const fulfillment = String(req.query.fulfillment ?? '').trim();
+    const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
+      .trim()
+      .toUpperCase()
+      .slice(0, 2);
     const limitRaw = Number(req.query.limit ?? 30);
     const offsetRaw = Number(req.query.offset ?? 0);
     const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(1, limitRaw), 100) : 30;
@@ -128,24 +132,66 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
 
     const supabase = getSupabaseAdmin();
 
+    /** Si filtre pays : résoudre les user_id du pays d’abord (payment_intents n’a pas country_code). */
+    let countryUserIds: string[] | null = null;
+    if (countryCode) {
+      const { data: countryUsers, error: countryErr } = await supabase
+        .from('users')
+        .select('id')
+        .eq('country_code', countryCode)
+        .limit(5000);
+      if (countryErr) {
+        res.status(500).json({ error: countryErr.message });
+        return;
+      }
+      countryUserIds = (countryUsers ?? []).map((u) => String(u.id));
+      if (countryUserIds.length === 0) {
+        res.json({
+          summary: { paid: 0, failed: 0, pending: 0, paidVolumeGnf: 0 },
+          total: 0,
+          limit,
+          offset,
+          intents: [],
+        });
+        return;
+      }
+    }
+
+    let paidQ = supabase
+      .from('payment_intents')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'paid');
+    let failedQ = supabase
+      .from('payment_intents')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['failed', 'cancelled']);
+    let pendingQ = supabase
+      .from('payment_intents')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['created', 'redirected']);
+    let volumeQ = supabase
+      .from('payment_intents')
+      .select('djomy_paid_amount, amount_gnf')
+      .eq('status', 'paid')
+      .limit(500);
+    let listQ = supabase
+      .from('payment_intents')
+      .select(PAYMENT_INTENT_COLUMNS, { count: 'exact' })
+      .order('created_at', { ascending: false });
+
+    if (countryUserIds) {
+      paidQ = paidQ.in('user_id', countryUserIds);
+      failedQ = failedQ.in('user_id', countryUserIds);
+      pendingQ = pendingQ.in('user_id', countryUserIds);
+      volumeQ = volumeQ.in('user_id', countryUserIds);
+      listQ = listQ.in('user_id', countryUserIds);
+    }
+
     const [paidCountRes, failedCountRes, pendingCountRes, volumeRes] = await Promise.all([
-      supabase
-        .from('payment_intents')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'paid'),
-      supabase
-        .from('payment_intents')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['failed', 'cancelled']),
-      supabase
-        .from('payment_intents')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['created', 'redirected']),
-      supabase
-        .from('payment_intents')
-        .select('djomy_paid_amount, amount_gnf')
-        .eq('status', 'paid')
-        .limit(500),
+      paidQ,
+      failedQ,
+      pendingQ,
+      volumeQ,
     ]);
 
     const paidVolumeGnf = (volumeRes.data ?? []).reduce((sum, row) => {
@@ -153,16 +199,10 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
       return sum + (Number.isFinite(n) ? n : 0);
     }, 0);
 
-    let query = supabase
-      .from('payment_intents')
-      .select(PAYMENT_INTENT_COLUMNS, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    if (status) listQ = listQ.eq('status', status);
+    if (fulfillment) listQ = listQ.eq('fulfillment_status', fulfillment);
 
-    if (status) query = query.eq('status', status);
-    if (fulfillment) query = query.eq('fulfillment_status', fulfillment);
-
-    const { data, error, count } = await query;
+    const { data, error, count } = await listQ.range(offset, offset + limit - 1);
     if (error) {
       res.status(500).json({ error: error.message });
       return;
@@ -173,19 +213,20 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
 
     const usersById = new Map<
       string,
-      { email: string | null; firstName: string | null; lastName: string | null }
+      { email: string | null; firstName: string | null; lastName: string | null; countryCode: string | null }
     >();
 
     if (userIds.length > 0) {
       const { data: users } = await supabase
         .from('users')
-        .select('id, email, first_name, last_name')
+        .select('id, email, first_name, last_name, country_code')
         .in('id', userIds);
       for (const u of users ?? []) {
         usersById.set(u.id, {
           email: u.email ?? null,
           firstName: u.first_name ?? null,
           lastName: u.last_name ?? null,
+          countryCode: u.country_code ?? null,
         });
       }
     }
@@ -207,6 +248,7 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
           userId: intent.user_id,
           userEmail: user?.email ?? null,
           userName: [user?.firstName, user?.lastName].filter(Boolean).join(' ') || null,
+          countryCode: user?.countryCode ?? null,
           billingPeriod: intent.billing_period,
           amountGnf: intent.amount_gnf,
           payerPhone: intent.payer_phone,

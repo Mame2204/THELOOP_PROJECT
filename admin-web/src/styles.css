@@ -167,7 +167,7 @@ a { color: var(--accent); }
 /* —— Shell Control Tower —— */
 .admin-frame {
   display: grid;
-  grid-template-columns: 88px 1fr;
+  grid-template-columns: 72px 1fr;
   min-height: 100vh;
   background: var(--bg);
 }
@@ -176,7 +176,7 @@ a { color: var(--accent); }
   border-right: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
-  padding: 12px 8px 16px;
+  padding: 10px 6px 12px;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -186,10 +186,11 @@ a { color: var(--accent); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding-bottom: 12px;
+  gap: 4px;
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 .sidebar-brand-text {
   font-size: 7px;
@@ -203,32 +204,41 @@ a { color: var(--accent); }
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   overflow-y: auto;
   flex: 1;
-  padding-top: 4px;
+  padding-top: 2px;
+  /* Comme mobile Control Tower : défile sans barre visible */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-nav::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 .sidebar-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 4px;
+  gap: 1px;
+  padding: 6px 2px;
   border-radius: 10px;
   text-decoration: none;
   color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
 }
 .sidebar-item:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
 .sidebar-item.active {
   background: #fff;
   color: #000;
 }
-.sidebar-icon { font-size: 14px; line-height: 1; }
+.sidebar-icon { font-size: 13px; line-height: 1; }
 .sidebar-label {
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
   text-align: center;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 .admin-main {

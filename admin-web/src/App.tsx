@@ -19,6 +19,8 @@ import { TiragePage } from './pages/TiragePage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { AutomationPage } from './pages/AutomationPage';
 import { MilestonesPage } from './pages/MilestonesPage';
+import { SpotStarsPage } from './pages/SpotStarsPage';
+import { OpeningHoursPage } from './pages/OpeningHoursPage';
 
 function HomeRedirect() {
   const { can, canDemandes } = usePermissions();
@@ -153,6 +155,22 @@ export function App() {
           element={
             <RequirePermission permission="partner_milestones">
               <MilestonesPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="etoiles"
+          element={
+            <RequirePermission permission="spot_stars_settings">
+              <SpotStarsPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="horaires"
+          element={
+            <RequirePermission permission="opening_hours">
+              <OpeningHoursPage />
             </RequirePermission>
           }
         />
