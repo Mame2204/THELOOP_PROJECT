@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+.expo-export-test/
+.expo-export-test2/
+.expo-ios-test/
+dist/
+dist-test/
+.env
+google-services.json
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*

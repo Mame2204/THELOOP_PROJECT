@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://eeyhtulpixvftvhppinz.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_l78zClzs1ldqOElbaLVT0w__KrKrlZv",
+        "EXPO_PUBLIC_AUTH_REDIRECT_URL": "theloop://auth/callback",
+        "EXPO_PUBLIC_PAYMENT_API_URL": "https://api.theloop-app.com"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://eeyhtulpixvftvhppinz.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_l78zClzs1ldqOElbaLVT0w__KrKrlZv",
+        "EXPO_PUBLIC_AUTH_REDIRECT_URL": "theloop://auth/callback",
+        "EXPO_PUBLIC_PAYMENT_API_URL": "https://api.theloop-app.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal"
+      }
+    }
+  }
+}

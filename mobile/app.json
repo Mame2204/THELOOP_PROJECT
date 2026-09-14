@@ -1,0 +1,113 @@
+{
+  "expo": {
+    "name": "THE LOOP",
+    "slug": "theloop",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4FCFD",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F4FCFD",
+      "imageWidth": 220
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "gn.theloop.app",
+      "buildNumber": "32",
+      "icon": "./assets/icon.png",
+      "backgroundColor": "#F4FCFD",
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#F4FCFD"
+      },
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        },
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["remote-notification"]
+      }
+    },
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F4FCFD"
+      },
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#F4FCFD",
+        "imageWidth": 220
+      },
+      "package": "gn.theloop.app",
+      "versionCode": 32,
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "scheme": "theloop",
+    "extra": {
+      "eas": {
+        "projectId": "311f8ed1-3525-46d2-bba0-47bec482b32e"
+      }
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#12A8BC",
+          "defaultChannel": "theloop-default"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "THE LOOP a besoin d'accéder à vos photos pour les événements et spots."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "THE LOOP utilise la caméra pour scanner les QR codes membres."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F4FCFD",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "android": {
+            "backgroundColor": "#F4FCFD",
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 220,
+            "resizeMode": "contain"
+          },
+          "ios": {
+            "backgroundColor": "#F4FCFD",
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 220,
+            "resizeMode": "contain"
+          }
+        }
+      ]
+    ]
+  }
+}

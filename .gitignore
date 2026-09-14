@@ -15,6 +15,20 @@ dist-ssr
 .env
 .env.local
 
+# Mobile / Expo
+mobile/node_modules/
+mobile/.expo/
+mobile/.expo-*/
+mobile/dist/
+mobile/dist-*/
+mobile/.env
+mobile/google-services.json
+mobile/.git-bak-absorb/
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.mobileprovision
+
 # Editor
 .vscode/*
 !.vscode/extensions.json

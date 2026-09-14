@@ -1,0 +1,10 @@
+# Réduit l’upload EAS (le cloud réinstalle les deps)
+node_modules/
+.expo/
+coverage/
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+.env
+.env.local
+*.log
