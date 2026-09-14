@@ -98,16 +98,17 @@ export async function listCatalogContent(
   };
 
   if (want.has('event')) {
+    // Schéma prod (aligné mobile) : start_date + custom_location_name ; pas venue_name/starts_at/updated_at.
     let q = supabase
       .from('events')
       .select(
-        'id, title, venue_name, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, starts_at, updated_at',
+        'id, title, custom_location_name, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, start_date, created_at',
       )
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(200);
     if (countryCode) q = q.eq('country_code', countryCode);
     const { data, error } = await q;
-    if (error) errors.push(error.message);
+    if (error) errors.push(`events: ${error.message}`);
     for (const row of data ?? []) {
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
       const featured = Boolean(row.is_featured);
@@ -117,41 +118,46 @@ export async function listCatalogContent(
         id: String(row.id),
         kind: 'event',
         title: String(row.title ?? 'Événement'),
-        subtitle: row.venue_name ? String(row.venue_name) : null,
+        subtitle: row.custom_location_name ? String(row.custom_location_name) : null,
         contentStatus: mapStatus(row.content_status as string | null, row.is_active as boolean | null),
         isFeatured: isFeaturedWindowActive(featured, null, end),
         featuredStartDate: null,
         featuredEndDate: normalizeFeaturedDate(end),
         contentOrigin: origin,
         countryCode: row.country_code ? String(row.country_code) : null,
-        startsAt: row.starts_at ? String(row.starts_at) : null,
-        updatedAt: row.updated_at ? String(row.updated_at) : null,
+        startsAt: row.start_date ? String(row.start_date) : null,
+        updatedAt: row.created_at ? String(row.created_at) : null,
         isActive: row.is_active !== false,
       });
     }
   }
 
   if (want.has('spot')) {
+    // establishments : pas de address ni updated_at en prod.
     let q = supabase
       .from('establishments')
       .select(
-        'id, name, address, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, updated_at',
+        'id, name, opening_hours_label, content_status, is_active, is_featured, featured_end_date, content_origin, country_code, created_at, category_slugs',
       )
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(200);
     if (countryCode) q = q.eq('country_code', countryCode);
     const { data, error } = await q;
-    if (error) errors.push(error.message);
+    if (error) errors.push(`spots: ${error.message}`);
     for (const row of data ?? []) {
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
       const featured = Boolean(row.is_featured);
       const origin = row.content_origin ? String(row.content_origin) : null;
       if (!matchesOrigin(origin)) continue;
+      const slugs = Array.isArray(row.category_slugs)
+        ? (row.category_slugs as unknown[]).map(String)
+        : [];
+      if (slugs.includes('tools')) continue;
       items.push({
         id: String(row.id),
         kind: 'spot',
         title: String(row.name ?? 'Spot'),
-        subtitle: row.address ? String(row.address) : null,
+        subtitle: row.opening_hours_label ? String(row.opening_hours_label) : null,
         contentStatus: mapStatus(row.content_status as string | null, row.is_active as boolean | null),
         isFeatured: isFeaturedWindowActive(featured, null, end),
         featuredStartDate: null,
@@ -159,7 +165,7 @@ export async function listCatalogContent(
         contentOrigin: origin,
         countryCode: row.country_code ? String(row.country_code) : null,
         startsAt: null,
-        updatedAt: row.updated_at ? String(row.updated_at) : null,
+        updatedAt: row.created_at ? String(row.created_at) : null,
         isActive: row.is_active !== false,
       });
     }
@@ -175,7 +181,7 @@ export async function listCatalogContent(
       .limit(200);
     if (countryCode) q = q.eq('country_code', countryCode);
     const { data, error } = await q;
-    if (error) errors.push(error.message);
+    if (error) errors.push(`tools: ${error.message}`);
     for (const row of data ?? []) {
       const start = row.featured_start_date ? String(row.featured_start_date) : null;
       const end = row.featured_end_date ? String(row.featured_end_date) : null;
@@ -201,7 +207,7 @@ export async function listCatalogContent(
   }
 
   items.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
-  return { items, error: errors[0] };
+  return { items, error: errors.length ? errors.join(' · ') : undefined };
 }
 
 export async function setCatalogContentStatus(
