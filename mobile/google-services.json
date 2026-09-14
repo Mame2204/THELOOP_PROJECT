@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "10734268237",
+    "project_id": "the-loop-fbb23",
+    "storage_bucket": "the-loop-fbb23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10734268237:android:d0750e11b041e835d8d104",
+        "android_client_info": {
+          "package_name": "gn.theloop.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY4Vn_Wdnbp-rN6sGK9o5NsQwmKDd3cZw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

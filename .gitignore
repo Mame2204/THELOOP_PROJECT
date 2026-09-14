@@ -22,7 +22,6 @@ mobile/.expo-*/
 mobile/dist/
 mobile/dist-*/
 mobile/.env
-mobile/google-services.json
 mobile/.git-bak-absorb/
 mobile/*.jks
 mobile/*.p8

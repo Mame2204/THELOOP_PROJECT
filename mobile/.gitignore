@@ -6,7 +6,6 @@ node_modules/
 dist/
 dist-test/
 .env
-google-services.json
 *.jks
 *.p8
 *.p12
