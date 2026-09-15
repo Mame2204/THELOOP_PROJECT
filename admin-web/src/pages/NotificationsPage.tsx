@@ -3,6 +3,7 @@ import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
 import { formatWhen } from '../lib/format';
 import {
+  campaignStatusLabel,
   listPushCampaigns,
   sendPushCampaign,
   type NotificationAudience,
@@ -154,8 +155,10 @@ export function NotificationsPage() {
                   </td>
                   <td className="meta">{r.audience}</td>
                   <td>
-                    <span className={`badge ${r.status === 'sent' ? 'ok' : 'warn'}`}>
-                      {r.status}
+                    <span
+                      className={`badge ${r.status === 'sent' ? 'ok' : r.status === 'failed' ? 'err' : 'warn'}`}
+                    >
+                      {campaignStatusLabel(r.status)}
                     </span>
                     <div className="meta">{r.recipientCount} dest.</div>
                   </td>

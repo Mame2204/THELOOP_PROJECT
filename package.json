@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev:pwa-legacy": "vite",
+    "build:pwa-legacy": "tsc -b && vite build",
+    "preview:pwa-legacy": "vite preview",
     "lint": "eslint .",
-    "preview": "vite preview",
     "mobile": "powershell -ExecutionPolicy Bypass -File scripts/start-mobile.ps1",
     "mobile:install": "powershell -ExecutionPolicy Bypass -File scripts/start-mobile.ps1 -InstallOnly",
     "mobile:tunnel": "powershell -ExecutionPolicy Bypass -File scripts/start-mobile.ps1 -Tunnel",

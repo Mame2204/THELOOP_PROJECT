@@ -177,6 +177,12 @@ Les campagnes `admin_push_campaigns` en statut `scheduled` sont traitées par le
 
 ```http
 POST https://api.theloop-app.com/api/internal/cron
+
+### Push OS unifié
+
+| Méthode | Route | Rôle |
+|---------|-------|------|
+| POST | `/api/admin/push/deliver` | Push Expo après inbox (mobile + admin-web + cron) |
 X-Cron-Secret: <CRON_SECRET>
 ```
 

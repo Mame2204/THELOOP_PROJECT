@@ -1,6 +1,12 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import {
+  getLoopBackendApiUrl,
+  isLoopBackendConfigured,
+  markLoopBackendUnreachable,
+  shouldSkipLoopBackendFetch,
+} from '@/lib/loop-backend-api';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 type NotificationsModule = typeof import('expo-notifications');
@@ -180,8 +186,53 @@ export async function presentLocalOsNotification(input: {
   }
 }
 
+async function requestServerPushDelivery(input: {
+  userIds: string[];
+  title: string;
+  body: string;
+  data?: Record<string, string>;
+}): Promise<boolean> {
+  if (!isLoopBackendConfigured() || shouldSkipLoopBackendFetch() || !supabase) return false;
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) return false;
+
+  const base = getLoopBackendApiUrl();
+  try {
+    const res = await fetch(`${base}/api/admin/push/deliver`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userIds: input.userIds,
+        title: input.title,
+        body: input.body,
+        data: input.data ?? {},
+      }),
+    });
+    if (!res.ok) {
+      console.warn('[Push] serveur push/deliver HTTP', res.status);
+      return false;
+    }
+    const body = (await res.json()) as { sent?: number; failed?: number; reason?: string | null };
+    if (body.reason === 'no_tokens') {
+      console.warn('[Push] aucun token enregistré pour ces utilisateurs');
+    } else {
+      console.log('[Push] serveur OK', body.sent ?? 0, 'message(s)');
+    }
+    return true;
+  } catch (err) {
+    markLoopBackendUnreachable();
+    console.warn('[Push] serveur push/deliver', err);
+    return false;
+  }
+}
+
 /**
- * Déclenche l’envoi OS via Edge Function (arrière-plan / app fermée).
+ * Push OS unifié : serveur THE LOOP (prod) puis fallback Edge Function send-push.
  * Fire-and-forget : l’inbox in-app reste la source de vérité.
  */
 export async function requestExpoPushDelivery(input: {
@@ -192,6 +243,9 @@ export async function requestExpoPushDelivery(input: {
 }): Promise<void> {
   const ids = [...new Set(input.userIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)))];
   if (!ids.length) return;
+
+  if (await requestServerPushDelivery({ ...input, userIds: ids })) return;
+
   if (!isSupabaseConfigured() || !supabase) {
     console.warn('[Push] send-push ignoré : Supabase non configuré');
     return;

@@ -1,64 +1,33 @@
-# THE LOOP — Conakry
+# THE LOOP — Monorepo
 
-Progressive Web App mobile-first : agenda, guide VIP et networking d'affaires pour Conakry (Guinée).
+Application **mobile native** (Expo), **console admin web** et **serveur paiement** pour Conakry (Guinée).
 
-## Stack
+> **PWA legacy (`src/`)** : gelée, non déployée, non maintenue. Code conservé pour référence.  
+> Lancement local uniquement : `npm run dev:pwa-legacy` (nécessite les deps Vite du `package.json` racine).
 
-- **React 19** + **TypeScript** + **Vite 6**
-- **Tailwind CSS 4**
-- **React Router 7** (routage par rôles)
-- **Supabase** (PostgreSQL + Auth + Realtime)
-- **vite-plugin-pwa** (installable sur mobile)
+## Packages actifs
 
-## Démarrage
+| Dossier | Rôle | Démarrage |
+|---------|------|-----------|
+| `mobile/` | App membre + admin ops (source de vérité) | `npm run mobile` |
+| `admin-web/` | Console admin bureau (`admin.theloop-app.com`) | `cd admin-web && npm run dev` |
+| `server/` | API Djomy + cron push (`api.theloop-app.com`) | `npm run payment-server` |
 
-```bash
-npm install
-cp .env.example .env   # renseigner VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY
-npm run dev
+## Scripts racine
+
+```powershell
+npm run mobile              # Expo dev
+npm run payment-server      # Serveur paiement Node
+npm run dev:pwa-legacy      # PWA legacy (dépréciée)
 ```
 
-> **Note :** L'app fonctionne en mode démo sans Supabase (données mockées dans `src/lib/demo-data.ts`).
+## Documentation
 
-## Architecture
+- `mobile/README.md` — build EAS, env, comptes test
+- `admin-web/README.md` — deploy Netlify
+- `server/README.md` — Djomy prod, webhook, cron
+- `DocumentationsTheLoop/` — référentiel métier Supabase
 
-```
-src/
-├── components/
-│   ├── public/       # Agenda, guide VIP
-│   ├── blackloop/    # Répertoire, chat
-│   ├── partners/     # (pages dans pages/partners)
-│   ├── admin/        # (pages dans pages/admin)
-│   └── shared/       # AuthModal, FavoriteButton, HeroSlider
-├── context/          # AuthContext, FavoritesContext
-├── hooks/            # useAuth, useFavorites
-├── layouts/          # MainLayout, BottomNav
-├── lib/              # supabase client, demo-data
-├── pages/            # Écrans par espace
-├── routes/           # Router + ProtectedRoute
-└── types/            # Interfaces TypeScript globales
-```
+## Supabase
 
-## Espaces & rôles
-
-| Espace | Route | Acteur / rôle |
-|--------|-------|---------------|
-| Public | `/`, `/agenda`, `/guide` | Visiteur (lecture) · Membre · Black Loop · Admin |
-| Favoris | `/favoris` | Membre · Black Loop · Admin |
-| Black Loop | `/black-loop/*` | Black Loop · Admin |
-| Partenaires | `/partenaires` | Partenaire (jeton SPOT) |
-| Admin | `/admin/*` | Admin |
-
-## Base de données
-
-Exécuter `supabase/schema.sql` dans l'éditeur SQL Supabase. Le script inclut :
-
-- Tables : profiles, events, locations, hero_banners, partner_tokens, handshake_requests, messages, favoris…
-- RLS sur `user_favorite_events` et `user_favorite_locations`
-- Trigger auto-création profil à l'inscription
-
-## Démo locale
-
-- Jeton partenaire : `SPOT-DEMO-2026`
-- Like/Sauvegarder sans compte → pop-up d'engagement
-- Compte gratuit → favoris débloqués
+Migrations dans `supabase/migrations/`. Backend prod : projet Supabase configuré dans `mobile/.env` et `admin-web/.env`.

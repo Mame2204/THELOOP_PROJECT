@@ -89,6 +89,40 @@ export async function reconcilePayment(id: string): Promise<{ ok: boolean; error
   }
 }
 
+export async function deliverPushToUsers(input: {
+  userIds: string[];
+  title: string;
+  body: string;
+  data?: Record<string, string>;
+}): Promise<{ ok: boolean; sent?: number; failed?: number; error?: string }> {
+  if (!API_URL) return { ok: false, error: 'VITE_API_URL manquant.' };
+  const ids = [...new Set(input.userIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)))];
+  if (!ids.length) return { ok: true, sent: 0, failed: 0 };
+  try {
+    const res = await fetch(`${API_URL}/api/admin/push/deliver`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({
+        userIds: ids,
+        title: input.title,
+        body: input.body,
+        data: input.data,
+      }),
+    });
+    const body = (await res.json()) as {
+      ok?: boolean;
+      sent?: number;
+      failed?: number;
+      error?: string;
+      reason?: string | null;
+    };
+    if (!res.ok) return { ok: false, error: body.error ?? 'Push impossible.' };
+    return { ok: true, sent: body.sent ?? 0, failed: body.failed ?? 0 };
+  } catch {
+    return { ok: false, error: 'API injoignable — push OS non envoyé.' };
+  }
+}
+
 export async function fetchUsersActivity(
   userIds: string[],
 ): Promise<Record<string, { lastSignInAt: string | null }>> {

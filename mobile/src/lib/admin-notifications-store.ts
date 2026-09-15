@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import { isLoopBackendConfigured } from '@/lib/loop-backend-api';
 import { distributeNotification } from '@/lib/user-notifications-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { NotificationAudience } from '@/lib/notification-audience';
@@ -8,7 +9,7 @@ import type { EventCategory, LocationSubCategory } from '@/types';
 export type { NotificationAudience };
 export { AUDIENCE_LABELS } from '@/lib/notification-audience';
 
-export type PushCampaignStatus = 'draft' | 'scheduled' | 'sent' | 'cancelled';
+export type PushCampaignStatus = 'draft' | 'scheduled' | 'sent' | 'cancelled' | 'failed';
 
 export interface AdminNotification {
   id: string;
@@ -328,6 +329,28 @@ export async function sendAdminNotification(input: {
   return entry;
 }
 
+const SERVER_CRON_AUDIENCES = new Set<NotificationAudience>([
+  'all',
+  'everyone',
+  'members',
+  'prime',
+  'prime_members',
+  'partner',
+  'admin',
+  'individual',
+]);
+
+/** Campagnes basiques déjà traitées par le cron serveur (api.theloop-app.com). */
+function isHandledByServerCron(entry: AdminNotification): boolean {
+  if (!isLoopBackendConfigured()) return false;
+  if (!SERVER_CRON_AUDIENCES.has(entry.audience)) return false;
+  const hasFavoriteFilters =
+    entry.favoriteEventCategories.length > 0 ||
+    entry.favoriteSpotCategories.length > 0 ||
+    entry.favoriteToolCategories.length > 0;
+  return !hasFavoriteFilters;
+}
+
 export async function processDueScheduledNotifications(): Promise<number> {
   const all = await listAdminNotifications();
   const now = Date.now();
@@ -338,6 +361,7 @@ export async function processDueScheduledNotifications(): Promise<number> {
     all.map(async (entry) => {
       if (entry.status !== 'scheduled' || !entry.scheduledAt) return entry;
       if (new Date(entry.scheduledAt).getTime() > now) return entry;
+      if (isHandledByServerCron(entry)) return entry;
 
       const recipientCount = await distributeNotification({
         title: entry.title,

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { sendExpoPushToUserIds } from './expo-push.js';
+import { deliverPushToUserIds } from './push-delivery.js';
 
 export interface CronRunResult {
   pushCampaignsProcessed: number;
@@ -108,9 +108,10 @@ async function processPushCampaign(
   }
 
   if (userIds.length && campaign.title && campaign.message) {
-    await sendExpoPushToUserIds(supabase, userIds, campaign.title, campaign.message, {
+    await deliverPushToUserIds(supabase, userIds, campaign.title, campaign.message, {
       audience,
       campaignId: campaign.id,
+      source: 'theloop-cron',
     }).catch(() => undefined);
   }
 

@@ -7,6 +7,7 @@ import {
   loadPaymentIntentForUser,
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
+import { deliverPushToUserIds } from '../services/push-delivery.js';
 
 export const adminRouter = Router();
 
@@ -368,6 +369,46 @@ adminRouter.post('/admin/users-activity', requireSupabaseAuth, requireAdmin, asy
     );
 
     res.json({ activity });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * POST /api/admin/push/deliver
+ * Body: { userIds: string[], title: string, body: string, data?: Record<string, string> }
+ * Push OS unifié (Expo) après écriture inbox.
+ */
+adminRouter.post('/admin/push/deliver', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const userIds = Array.isArray(req.body?.userIds)
+      ? (req.body.userIds as unknown[]).map(String)
+      : [];
+    const title = String(req.body?.title ?? '').trim();
+    const body = String(req.body?.body ?? '').trim();
+    const data =
+      req.body?.data && typeof req.body.data === 'object' && !Array.isArray(req.body.data)
+        ? (req.body.data as Record<string, string>)
+        : undefined;
+
+    if (!title || !body) {
+      res.status(400).json({ error: 'title_and_body_required' });
+      return;
+    }
+
+    const supabase = getSupabaseAdmin();
+    const result = await deliverPushToUserIds(supabase, userIds, title, body, {
+      ...(data ?? {}),
+      source: 'theloop-admin-api',
+    });
+
+    res.json({
+      ok: true,
+      sent: result.sent,
+      failed: result.failed,
+      reason: result.reason ?? null,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erreur serveur.';
     res.status(500).json({ error: message });

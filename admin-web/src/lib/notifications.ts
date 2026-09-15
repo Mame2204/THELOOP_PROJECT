@@ -1,4 +1,32 @@
+import { deliverPushToUsers } from './api';
 import { supabase } from './supabase';
+
+const CAMPAIGN_STATUS_LABELS: Record<string, string> = {
+  draft: 'Brouillon',
+  scheduled: 'Planifiée',
+  sent: 'Envoyée',
+  cancelled: 'Annulée',
+  failed: 'Échec',
+};
+
+export function campaignStatusLabel(status: string): string {
+  return CAMPAIGN_STATUS_LABELS[status] ?? status;
+}
+
+async function pushOsAfterInbox(
+  userIds: string[],
+  title: string,
+  message: string,
+  meta?: Record<string, string>,
+): Promise<void> {
+  if (!userIds.length) return;
+  await deliverPushToUsers({
+    userIds,
+    title,
+    body: message,
+    data: meta,
+  });
+}
 
 export type NotificationAudience =
   | 'all'
@@ -142,6 +170,11 @@ export async function sendPushCampaign(input: {
       })
       .eq('id', id);
     if (upd) return { ok: false, error: upd.message };
+    const pushIds = rows.map((r) => String(r.user_id));
+    void pushOsAfterInbox(pushIds, title, message, {
+      audience: input.audience,
+      campaignId: id,
+    });
     return { ok: true, recipientCount: rows.length };
   }
 
@@ -162,7 +195,15 @@ export async function sendPushCampaign(input: {
     return { ok: false, error: error.message };
   }
 
-  const count = Array.isArray(data) ? data.length : Number(data ?? 0);
+  const userIds = Array.isArray(data)
+    ? data.map((uid) => String(uid)).filter((uid) => /^[0-9a-f-]{36}$/i.test(uid))
+    : [];
+  const count = userIds.length;
+  void pushOsAfterInbox(userIds, title, message, {
+    audience: rpcAudience,
+    campaignId: id,
+  });
+
   const { error: upd } = await supabase
     .from('admin_push_campaigns')
     .update({
