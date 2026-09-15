@@ -46,7 +46,11 @@ export function PaymentsPage() {
         <div>
           <p className="brand-kicker">PASS</p>
           <h2>Paiements Djomy</h2>
-          <p className="meta">Intents filtrés pour {countryLabel} (via pays du membre).</p>
+          <p className="meta">
+            Intents filtrés pour {countryLabel} (via pays du membre).{' '}
+            <strong>Resync</strong> = re-vérifier chez Djomy un paiement bloqué (payé mais PASS pas
+            encore activé) et forcer l’octroi si le statut Djomy est SUCCESS.
+          </p>
         </div>
         <button type="button" className="btn small ghost" onClick={() => void load()}>
           Actualiser
@@ -116,8 +120,11 @@ export function PaymentsPage() {
                       });
                     }}
                   >
-                    Resync
+                    Resync Djomy
                   </button>
+                  <div className="meta" style={{ marginTop: 4, maxWidth: 120 }}>
+                    Si payé côté Djomy mais PASS non activé
+                  </div>
                 </td>
               </tr>
             ))}

@@ -23,7 +23,9 @@ export function AdminPageHeader({
   const insets = useSafeAreaInsets();
   const { theme } = useMemberTheme();
   const accent = theme.colors.accent;
-  const paddingTop = embedded ? 10 : Math.max(insets.top, 8);
+  // Le panneau droit du Control Tower n’a pas de safe-area : sans insets,
+  // « ← Retour » passe sous le cran / Dynamic Island et seul « Pays piloté » reste lisible.
+  const paddingTop = Math.max(insets.top, embedded ? 14 : 8);
 
   return (
     <View
@@ -37,7 +39,7 @@ export function AdminPageHeader({
       ]}
     >
       {onBack ? (
-        <Pressable onPress={onBack} hitSlop={12}>
+        <Pressable onPress={onBack} hitSlop={12} style={styles.backHit}>
           <Text style={[styles.back, { color: accent }]}>← Retour</Text>
         </Pressable>
       ) : null}
@@ -178,8 +180,9 @@ export const ADMIN_THEME = {
 };
 
 const styles = StyleSheet.create({
-  header: { paddingBottom: 10 },
-  back: { fontSize: 12, fontWeight: '700', marginBottom: 4 },
+  header: { paddingBottom: 12 },
+  backHit: { alignSelf: 'flex-start', marginBottom: 8, paddingVertical: 2 },
+  back: { fontSize: 13, fontWeight: '700' },
   title: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
   subtitle: { marginTop: 2, fontSize: 11, lineHeight: 15 },
   kpi: {

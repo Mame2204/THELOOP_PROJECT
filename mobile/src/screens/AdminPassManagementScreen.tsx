@@ -575,11 +575,13 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
             ? `Tarifs standards · ${countryLabel} (${priceCurrency})`
             : messagesOnly
               ? 'Messages envoyés à l\'activation d\'un PASS'
-              : 'Catalogue & octroi (super admin)'
+              : 'Catalogue, octroi & suivi paiements Djomy'
         }
         shell={shell}
         onBack={() => navigation.goBack()}
       />
+
+      <AdminCountryBar shell={shell} compact />
 
       {!pricesOnly && !messagesOnly ? (
         <Pressable
@@ -587,11 +589,10 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
           onPress={() => navigation.navigate('AdminPayments')}
         >
           <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 13 }}>
-            Voir les paiements Djomy / PASS
+            Suivre les paiements Djomy / PASS →
           </Text>
         </Pressable>
       ) : null}
-      {pricesOnly || messagesOnly || operationsOnly ? <AdminCountryBar shell={shell} compact /> : null}
 
       {pricesOnly ? (
         <>

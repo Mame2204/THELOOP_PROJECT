@@ -90,11 +90,12 @@ export function UsersPage() {
       filterCountry,
       role: roleFilter || null,
       activeOnly: activeFilter === 'all' ? null : activeFilter === 'active',
+      inactiveDays: inactiveDays || null,
     });
     if (res.error) setError(res.error);
     setUsers(res.users);
     setTotal(res.total);
-  }, [activeFilter, countryCode, filterCountry, page, roleFilter, searchApplied]);
+  }, [activeFilter, countryCode, filterCountry, inactiveDays, page, roleFilter, searchApplied]);
 
   const loadWaitlist = useCallback(async () => {
     setWlError(null);
@@ -153,13 +154,7 @@ export function UsersPage() {
     return Math.floor(ms / (24 * 60 * 60 * 1000));
   }
 
-  const visibleUsers = useMemo(() => {
-    if (!inactiveDays) return users;
-    return users.filter((u) => {
-      const d = daysSinceActivity(u);
-      return d == null || d >= inactiveDays;
-    });
-  }, [users, inactiveDays, activityOf]);
+  const visibleUsers = users;
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
@@ -297,12 +292,15 @@ export function UsersPage() {
             </select>
             <select
               value={inactiveDays}
-              onChange={(e) => setInactiveDays(Number(e.target.value) as 0 | 7 | 30 | 90)}
+              onChange={(e) => {
+                setPage(0);
+                setInactiveDays(Number(e.target.value) as 0 | 7 | 30 | 90);
+              }}
             >
               <option value={0}>Toute activité</option>
-              <option value={7}>Sans activité ≥ 7 j</option>
-              <option value={30}>Sans activité ≥ 30 j</option>
-              <option value={90}>Sans activité ≥ 90 j</option>
+              <option value={7}>Sans activité app ≥ 7 j</option>
+              <option value={30}>Sans activité app ≥ 30 j</option>
+              <option value={90}>Sans activité app ≥ 90 j</option>
             </select>
             <label className="check-inline">
               <input

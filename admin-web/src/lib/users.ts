@@ -113,6 +113,8 @@ export async function listAdminUsers(options: {
   filterCountry?: boolean;
   role?: string | null;
   activeOnly?: boolean | null;
+  /** Sans activité app (last_seen_at) depuis N jours — filtre SQL, pas seulement la page courante. */
+  inactiveDays?: number | null;
 }): Promise<{ users: AdminUserRow[]; total: number; error?: string }> {
   const pageSize = options.pageSize ?? 20;
   let query = supabase
@@ -127,6 +129,12 @@ export async function listAdminUsers(options: {
   if (options.role) query = query.eq('user_role', options.role);
   if (options.activeOnly === true) query = query.eq('is_active', true);
   if (options.activeOnly === false) query = query.eq('is_active', false);
+  if (options.inactiveDays && options.inactiveDays > 0) {
+    const cutoff = new Date(
+      Date.now() - options.inactiveDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    query = query.or(`last_seen_at.is.null,last_seen_at.lt.${cutoff}`);
+  }
 
   const q = options.search?.trim();
   if (q) {
@@ -136,7 +144,13 @@ export async function listAdminUsers(options: {
   }
 
   const { data, error, count } = await query;
-  if (error) return { users: [], total: 0, error: error.message };
+  if (error) {
+    // Colonne last_seen_at absente → retenter sans filtre inactivité
+    if (options.inactiveDays && /last_seen_at/i.test(error.message)) {
+      return listAdminUsers({ ...options, inactiveDays: null });
+    }
+    return { users: [], total: 0, error: error.message };
+  }
 
   const ids = (data ?? []).map((r) => String(r.id));
   const activity = await fetchUsersActivity(ids);
