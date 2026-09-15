@@ -13,11 +13,14 @@
 
 | Variable | Sandbox | Production |
 |----------|---------|------------|
-| `DJOMY_BASE_URL` | `https://sandbox-api.djomy.africa` | URL API prod Djomy (doc dashboard) |
-| `DJOMY_CLIENT_ID` / `SECRET` | clés sandbox | clés prod |
+| `DJOMY_BASE_URL` | `https://sandbox-api.djomy.africa` | `https://api.djomy.africa` |
+| `DJOMY_PARTNER_API_KEY` | *(vide)* | clé fournie par Djomy → header `X-PARTNER-API` |
+| `DJOMY_CLIENT_ID` / `SECRET` | clés sandbox | clés **production** (dashboard marchand) |
 | `PAYMENT_SANDBOX_AMOUNTS` | `1` | `0` |
 | Webhook dashboard | sandbox URL | `https://api.theloop-app.com/api/webhook/djomy` |
 | Return / Cancel | déjà `api.theloop-app.com/payment/*` | inchangé |
+
+Le serveur THE LOOP envoie automatiquement `X-PARTNER-API` sur **auth**, **create payment** et **verify status** dès que `DJOMY_PARTNER_API_KEY` est renseigné (obligatoire si `DJOMY_BASE_URL` = prod).
 
 ## Smoke test
 

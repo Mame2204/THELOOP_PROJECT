@@ -20,9 +20,9 @@ services:
       - key: DJOMY_CANCEL_URL
         value: https://api.theloop-app.com/payment/cancel
       - key: PAYMENT_SANDBOX_AMOUNTS
-        value: "1"
+        value: "0"
       - key: DJOMY_BASE_URL
-        value: https://sandbox-api.djomy.africa
+        value: https://api.djomy.africa
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
@@ -30,4 +30,6 @@ services:
       - key: DJOMY_CLIENT_ID
         sync: false
       - key: DJOMY_CLIENT_SECRET
+        sync: false
+      - key: DJOMY_PARTNER_API_KEY
         sync: false

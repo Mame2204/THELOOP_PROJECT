@@ -55,6 +55,8 @@ app.get('/health', (_req, res) => {
     env: config.nodeEnv,
     sandboxMode: config.paymentSandboxAmounts,
     djomyHost: new URL(config.djomyBaseUrl).host,
+    djomyProduction: config.isDjomyProduction,
+    partnerApiConfigured: Boolean(config.djomyPartnerApiKey),
     publicBaseHint: 'https://api.theloop-app.com',
   });
 });
@@ -74,6 +76,9 @@ app.use((_req, res) => {
 app.listen(config.port, '0.0.0.0', () => {
   console.log(`[payment-server] Écoute sur 0.0.0.0:${config.port} (${config.nodeEnv})`);
   console.log(`[payment-server] Djomy base: ${config.djomyBaseUrl}`);
+  if (config.isDjomyProduction) {
+    console.log('[payment-server] Djomy production — X-PARTNER-API activé');
+  }
   console.log(`[payment-server] CORS: ${config.corsOrigins.join(', ') || '(vide)'}`);
   if (config.paymentSandboxAmounts) {
     console.log('[payment-server] Montants sandbox GNF:', config.passPricesGnf);

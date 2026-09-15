@@ -71,13 +71,22 @@ function apiKeyHeader(): string {
   return `${config.djomyClientId}:${signature}`;
 }
 
+/** Headers communs Djomy (auth, gateway, verify). X-PARTNER-API requis en production. */
+function djomyRequestHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    'X-API-KEY': apiKeyHeader(),
+    ...extra,
+  };
+  if (config.djomyPartnerApiKey) {
+    headers['X-PARTNER-API'] = config.djomyPartnerApiKey;
+  }
+  return headers;
+}
+
 async function getAccessToken(): Promise<string> {
   const response = await fetch(`${config.djomyBaseUrl}/v1/auth`, {
     method: 'POST',
-    headers: {
-      'X-API-KEY': apiKeyHeader(),
-      'Content-Type': 'application/json',
-    },
+    headers: djomyRequestHeaders({ 'Content-Type': 'application/json' }),
   });
 
   if (!response.ok) {
@@ -97,11 +106,10 @@ export async function createPaymentGateway(
   const accessToken = await getAccessToken();
   const response = await fetch(`${config.djomyBaseUrl}/v1/payments/gateway`, {
     method: 'POST',
-    headers: {
+    headers: djomyRequestHeaders({
       Authorization: `Bearer ${accessToken}`,
-      'X-API-KEY': apiKeyHeader(),
       'Content-Type': 'application/json',
-    },
+    }),
     body: JSON.stringify({
       amount: input.amount,
       countryCode: input.countryCode,
@@ -128,10 +136,7 @@ export async function verifyPayment(transactionId: string): Promise<VerifiedPaym
   const accessToken = await getAccessToken();
   const response = await fetch(`${config.djomyBaseUrl}/v1/payments/${transactionId}/status`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'X-API-KEY': apiKeyHeader(),
-    },
+    headers: djomyRequestHeaders({ Authorization: `Bearer ${accessToken}` }),
   });
 
   const result = (await response.json()) as DjomyResponse<VerifiedPaymentData>;

@@ -26,6 +26,24 @@ function parseBoolEnv(name: string): boolean {
 }
 
 const djomyBaseUrl = optional('DJOMY_BASE_URL', 'https://sandbox-api.djomy.africa').replace(/\/$/, '');
+
+function isDjomyProductionHost(baseUrl: string): boolean {
+  try {
+    return new URL(baseUrl).host === 'api.djomy.africa';
+  } catch {
+    return false;
+  }
+}
+
+const isDjomyProduction = isDjomyProductionHost(djomyBaseUrl);
+const djomyPartnerApiKey = optional('DJOMY_PARTNER_API_KEY', '');
+
+if (isDjomyProduction && !djomyPartnerApiKey) {
+  throw new Error(
+    "Variable d'environnement manquante : DJOMY_PARTNER_API_KEY (obligatoire avec l'API Djomy production)",
+  );
+}
+
 const useSandboxAmounts =
   parseBoolEnv('PAYMENT_SANDBOX_AMOUNTS') || djomyBaseUrl.includes('sandbox-api.djomy');
 
@@ -64,6 +82,8 @@ export const config = {
   supabaseUrl: required('SUPABASE_URL'),
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   djomyBaseUrl,
+  isDjomyProduction,
+  djomyPartnerApiKey,
   djomyClientId: required('DJOMY_CLIENT_ID'),
   djomyClientSecret: required('DJOMY_CLIENT_SECRET'),
   djomyReturnUrl: required('DJOMY_RETURN_URL'),
