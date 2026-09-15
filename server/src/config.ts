@@ -62,11 +62,23 @@ const sandboxPassPrices = {
   lifetime: parseIntEnv('PASS_SANDBOX_PRICE_LIFETIME_GNF', 10_000),
 } satisfies Record<BillingPeriod, number>;
 
+const nodeEnv = optional('NODE_ENV', 'development');
+const cronSecret = optional('CRON_SECRET', '');
+
 export const config = {
   port: parseIntEnv('PORT', 8787),
-  nodeEnv: optional('NODE_ENV', 'development'),
+  nodeEnv,
   /** Secret pour POST /api/internal/cron (Render Cron, etc.). */
-  cronSecret: optional('CRON_SECRET', ''),
+  cronSecret,
+  /**
+   * Push planifiés : timer interne au serveur (prod + CRON_SECRET par défaut).
+   * Désactiver avec DISABLE_INTERNAL_PUSH_CRON=1 si un cron HTTP externe est utilisé.
+   */
+  internalPushCronEnabled:
+    !parseBoolEnv('DISABLE_INTERNAL_PUSH_CRON')
+    && (parseBoolEnv('ENABLE_INTERNAL_PUSH_CRON')
+      || (nodeEnv === 'production' && Boolean(cronSecret))),
+  pushCronIntervalMinutes: parseIntEnv('PUSH_CRON_INTERVAL_MINUTES', 5),
   corsOrigins: optional(
     'CORS_ORIGINS',
     [

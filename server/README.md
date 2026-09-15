@@ -182,4 +182,13 @@ X-Cron-Secret: <CRON_SECRET>
 
 Fréquence recommandée : **toutes les 5 minutes**. Réponse JSON : `{ ok, push: { pushCampaignsSent, pushRecipients, errors } }`.
 
+> **Note :** ouvrir l’URL dans un navigateur renvoie `Route introuvable` — le navigateur fait un **GET**, la route n’accepte que **POST**.
+
+### Planificateur interne (défaut en prod)
+
+Si `CRON_SECRET` est défini en production, le serveur lance **automatiquement** un timer toutes les 5 minutes (`internalPushCron: true` dans `/health`). **Aucun cron HTTP externe requis.**
+
+- Désactiver : `DISABLE_INTERNAL_PUSH_CRON=1`
+- Intervalle : `PUSH_CRON_INTERVAL_MINUTES=5` (défaut)
+
 Le runner mobile (`admin-background-runner`) reste utile pour les automatisations locales ; le cron serveur couvre surtout les push planifiés Supabase.

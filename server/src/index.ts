@@ -11,6 +11,7 @@ import { paymentsRouter } from './routes/payments.js';
 import { publicPagesRouter } from './routes/public-pages.js';
 import { webhookRouter } from './routes/webhook.js';
 import { cronRouter } from './routes/cron.js';
+import { startInternalPushCron } from './services/internal-push-cron.js';
 
 const app = express();
 
@@ -59,6 +60,8 @@ app.get('/health', (_req, res) => {
     djomyProduction: config.isDjomyProduction,
     partnerApiConfigured: Boolean(config.djomyPartnerApiKey),
     cronConfigured: Boolean(config.cronSecret),
+    internalPushCron: config.internalPushCronEnabled,
+    pushCronIntervalMinutes: config.pushCronIntervalMinutes,
     publicBaseHint: 'https://api.theloop-app.com',
   });
 });
@@ -86,4 +89,5 @@ app.listen(config.port, '0.0.0.0', () => {
   if (config.paymentSandboxAmounts) {
     console.log('[payment-server] Montants sandbox GNF:', config.passPricesGnf);
   }
+  startInternalPushCron();
 });
