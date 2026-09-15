@@ -33,3 +33,5 @@ services:
         sync: false
       - key: DJOMY_PARTNER_API_KEY
         sync: false
+      - key: CRON_SECRET
+        sync: false

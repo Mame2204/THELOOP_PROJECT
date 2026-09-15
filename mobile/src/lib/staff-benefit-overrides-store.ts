@@ -238,6 +238,26 @@ export function isTeamBenefitEnabledForUser(
   return !overrides.revokedCatalogIds.includes(catalogId);
 }
 
+/** Précharge les overrides distants pour une liste d’admins (onglet TEAMS « Par admin »). */
+export async function prefetchStaffBenefitOverridesForUsers(userIds: string[]): Promise<void> {
+  if (!isSupabaseConfigured() || !supabase || !userIds.length) return;
+  const map = await loadAllMap();
+  let changed = false;
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const remote = await fetchRemoteOverride(userId);
+      if (!remote) return;
+      const local = normalizeOverrides(map[userId], userId);
+      const merged = pickNewestByTimestamp(local, remote);
+      if (JSON.stringify(merged) !== JSON.stringify(map[userId] ?? null)) {
+        map[userId] = merged;
+        changed = true;
+      }
+    }),
+  );
+  if (changed) await saveAllMap(map);
+}
+
 export async function setTeamBenefitEnabledForUser(
   userId: string,
   catalogId: string,
@@ -245,7 +265,7 @@ export async function setTeamBenefitEnabledForUser(
   isSuperAdmin: boolean,
   updatedBy?: string | null,
 ): Promise<StaffBenefitOverrides> {
-  const current = await getLocalStaffBenefitOverrides(userId);
+  const current = await getStaffBenefitOverrides(userId);
 
   if (isSuperAdmin) {
     const enabledSet = new Set(current.enabledCatalogIds);

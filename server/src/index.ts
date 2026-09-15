@@ -10,6 +10,7 @@ import { partnerSpotSessionRouter } from './routes/partner-spot-session.js';
 import { paymentsRouter } from './routes/payments.js';
 import { publicPagesRouter } from './routes/public-pages.js';
 import { webhookRouter } from './routes/webhook.js';
+import { cronRouter } from './routes/cron.js';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.get('/health', (_req, res) => {
     djomyHost: new URL(config.djomyBaseUrl).host,
     djomyProduction: config.isDjomyProduction,
     partnerApiConfigured: Boolean(config.djomyPartnerApiKey),
+    cronConfigured: Boolean(config.cronSecret),
     publicBaseHint: 'https://api.theloop-app.com',
   });
 });
@@ -68,6 +70,7 @@ app.use('/api', partnerBenefitOffersRouter);
 app.use('/api', partnerSpotSessionRouter);
 app.use('/api', adminRouter);
 app.use('/api', webhookRouter);
+app.use('/api', cronRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route introuvable.' });

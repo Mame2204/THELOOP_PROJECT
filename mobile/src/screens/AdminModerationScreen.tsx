@@ -27,6 +27,13 @@ import {
   type StagingEvent,
   type StagingSpot,
 } from '@/lib/partner-staging-store';
+import {
+  approvePartnerWithdrawalRequest,
+  listWithdrawalRequestedEvents,
+  listWithdrawalRequestedSpots,
+  rejectPartnerWithdrawalRequest,
+  type PartnerContentKind,
+} from '@/lib/partner-withdrawal-request';
 import { moderationResultCopy } from '@/lib/publication-messages';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -68,6 +75,8 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [events, setEvents] = useState<StagingEvent[]>([]);
   const [spots, setSpots] = useState<StagingSpot[]>([]);
+  const [withdrawalEvents, setWithdrawalEvents] = useState<StagingEvent[]>([]);
+  const [withdrawalSpots, setWithdrawalSpots] = useState<StagingSpot[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -99,9 +108,16 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   }, [visibleTabs, tab]);
 
   const load = useCallback(async () => {
-    const [ev, sp] = await Promise.all([listPendingEvents(countryCode), listPendingSpots(countryCode)]);
+    const [ev, sp, wEv, wSp] = await Promise.all([
+      listPendingEvents(countryCode),
+      listPendingSpots(countryCode),
+      listWithdrawalRequestedEvents(countryCode),
+      listWithdrawalRequestedSpots(countryCode),
+    ]);
     setEvents(Array.isArray(ev) ? ev : []);
     setSpots(Array.isArray(sp) ? sp : []);
+    setWithdrawalEvents(wEv);
+    setWithdrawalSpots(wSp);
   }, [countryCode]);
 
   useEffect(() => {
@@ -134,6 +150,42 @@ export function AdminModerationScreen({ route, navigation }: Props) {
     const title = row.kind === 'event' ? row.item.title : row.item.name;
     setRejectReason('');
     setRejectTarget({ kind: row.kind, id: row.item.id, title });
+  }
+
+  async function handleApproveWithdrawal(kind: PartnerContentKind, item: StagingEvent | StagingSpot) {
+    const title = kind === 'event' ? (item as StagingEvent).title : (item as StagingSpot).name;
+    Alert.alert(
+      'Confirmer le retrait',
+      `Retirer définitivement « ${title} » du catalogue public ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Retirer',
+          style: 'destructive',
+          onPress: () => {
+            void approvePartnerWithdrawalRequest(kind, item).then(async (res) => {
+              if (!res.ok) {
+                Alert.alert('Erreur', res.error ?? 'Retrait impossible.');
+                return;
+              }
+              invalidateContentCache();
+              await Promise.all([load(), refresh()]);
+              Alert.alert('Retrait effectué', 'Le contenu n’est plus visible publiquement.');
+            });
+          },
+        },
+      ],
+    );
+  }
+
+  async function handleRejectWithdrawal(kind: PartnerContentKind, item: StagingEvent | StagingSpot) {
+    const res = await rejectPartnerWithdrawalRequest(kind, item);
+    if (!res.ok) {
+      Alert.alert('Erreur', res.error ?? 'Action impossible.');
+      return;
+    }
+    await load();
+    Alert.alert('Demande refusée', 'Le contenu reste publié.');
   }
 
   async function confirmReject() {
@@ -267,6 +319,58 @@ export function AdminModerationScreen({ route, navigation }: Props) {
           accent={ADMIN_THEME.accent}
         />
 
+        {withdrawalEvents.length + withdrawalSpots.length > 0 ? (
+          <View style={styles.withdrawSection}>
+            <Text style={[styles.withdrawTitle, { color: shell.pageTitle }]}>Demandes de retrait</Text>
+            {withdrawalEvents.map((item) => (
+              <View
+                key={`w-ev-${item.id}`}
+                style={[styles.card, { backgroundColor: '#fff7ed', borderColor: '#fdba74' }]}
+              >
+                <Text style={[styles.kind, { color: '#c2410c' }]}>Événement · retrait</Text>
+                <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>{item.title}</Text>
+                <Text style={[styles.meta, { color: shell.pageKicker }]}>{item.partnerName}</Text>
+                <View style={styles.row}>
+                  <AdminActionIcon
+                    action="approve"
+                    onPress={() => void handleApproveWithdrawal('event', item)}
+                  />
+                  <AdminActionIcon
+                    action="reject"
+                    onPress={() => void handleRejectWithdrawal('event', item)}
+                  />
+                </View>
+              </View>
+            ))}
+            {withdrawalSpots.map((item) => {
+              const isTool = item.subCategory === 'tools';
+              const kind: PartnerContentKind = isTool ? 'tool' : 'spot';
+              return (
+                <View
+                  key={`w-sp-${item.id}`}
+                  style={[styles.card, { backgroundColor: '#fff7ed', borderColor: '#fdba74' }]}
+                >
+                  <Text style={[styles.kind, { color: '#c2410c' }]}>
+                    {isTool ? 'Outil' : 'Spot'} · retrait
+                  </Text>
+                  <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>{item.name}</Text>
+                  <Text style={[styles.meta, { color: shell.pageKicker }]}>{item.partnerName}</Text>
+                  <View style={styles.row}>
+                    <AdminActionIcon
+                      action="approve"
+                      onPress={() => void handleApproveWithdrawal(kind, item)}
+                    />
+                    <AdminActionIcon
+                      action="reject"
+                      onPress={() => void handleRejectWithdrawal(kind, item)}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        ) : null}
+
         {rows.map((row) => {
           const title = row.kind === 'event' ? row.item.title : row.item.name;
           const meta =
@@ -347,6 +451,8 @@ export function AdminModerationScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { paddingHorizontal: 16, paddingBottom: 32 },
+  withdrawSection: { marginBottom: 16 },
+  withdrawTitle: { fontSize: 13, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   card: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 10 },
   kind: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
   cardTitle: { fontWeight: '700', fontSize: 15 },

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
+import { useContent } from '@/context/ContentContext';
+import { runAdminBackgroundJobs } from '@/lib/admin-background-runner';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   AdminSidebar,
@@ -137,6 +139,7 @@ const KEY_TO_NAV: Record<AdminSidebarKey, SidebarNav> = {
 export function AdminWorkspaceScreen() {
   const { hasPermission, isSuperAdmin } = useAdminPermissions();
   const { countryCode } = useAdminCountry();
+  const { getHomeLocations } = useContent();
   const [moderationCount, setModerationCount] = useState(0);
   const [partnershipPending, setPartnershipPending] = useState(0);
   const [suggestionsPending, setSuggestionsPending] = useState(0);
@@ -163,6 +166,19 @@ export function AdminWorkspaceScreen() {
       cancelled = true;
     };
   }, [countryCode]);
+
+  useEffect(() => {
+    const tick = () => void runAdminBackgroundJobs(countryCode, getHomeLocations);
+    tick();
+    const interval = setInterval(tick, 60_000);
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') tick();
+    });
+    return () => {
+      clearInterval(interval);
+      sub.remove();
+    };
+  }, [countryCode, getHomeLocations]);
 
   const items = useMemo((): AdminSidebarItem[] => {
     const all: Array<AdminSidebarItem & { permission?: AdminPermissionId; superOnly?: boolean }> = [

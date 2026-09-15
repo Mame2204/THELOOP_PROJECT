@@ -29,3 +29,28 @@ export async function notifyPartnerModerationDecision(params: {
     audience: 'partner',
   });
 }
+
+export async function notifyPartnerWithdrawalDecision(params: {
+  partnerUserId: string;
+  kind: 'event' | 'spot' | 'tool';
+  title: string;
+  approved: boolean;
+}): Promise<void> {
+  const kindLabel =
+    params.kind === 'event' ? 'Événement' : params.kind === 'tool' ? 'Outil' : 'Spot';
+
+  if (params.approved) {
+    await appendUserNotification(params.partnerUserId, {
+      title: `${kindLabel} retiré`,
+      message: `Votre demande de retrait pour « ${params.title} » a été acceptée. Le contenu n'est plus visible dans l'application.`,
+      audience: 'partner',
+    });
+    return;
+  }
+
+  await appendUserNotification(params.partnerUserId, {
+    title: 'Retrait refusé',
+    message: `Votre demande de retrait pour « ${params.title} » a été refusée. Le contenu reste publié.`,
+    audience: 'partner',
+  });
+}

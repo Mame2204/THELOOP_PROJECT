@@ -14,6 +14,7 @@ import {
   type StagingEvent,
   type StagingSpot,
 } from '@/lib/partner-staging-store';
+import { requestPartnerContentWithdrawal, type PartnerContentKind } from '@/lib/partner-withdrawal-request';
 import { PARTNER_PUBLICATION_NOTICE } from '@/lib/legal-content-store';
 import { navigateRoot } from '@/lib/navigation-utils';
 import { slugify } from '@/lib/content-mappers';
@@ -37,6 +38,40 @@ const FILTERS_ALL: { value: ContentFilter; label: string }[] = [
 
 function canPartnerEdit(status: string): boolean {
   return status === 'draft' || status === 'pending' || status === 'rejected';
+}
+
+function withdrawalKind(type: 'event' | 'spot', isTool: boolean): PartnerContentKind {
+  if (type === 'event') return 'event';
+  return isTool ? 'tool' : 'spot';
+}
+
+function confirmWithdrawal(
+  kind: PartnerContentKind,
+  localId: string,
+  title: string,
+  onDone: () => void,
+) {
+  Alert.alert(
+    'Demander le retrait',
+    `« ${title} » sera retiré du guide/agenda après validation par THE LOOP.`,
+    [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Confirmer',
+        style: 'destructive',
+        onPress: () => {
+          void requestPartnerContentWithdrawal(kind, localId).then((res) => {
+            if (!res.ok) {
+              Alert.alert('Demande impossible', res.error ?? 'Réessayez.');
+              return;
+            }
+            Alert.alert('Demande envoyée', 'L’équipe THE LOOP traitera votre demande de retrait.');
+            onDone();
+          });
+        },
+      },
+    ],
+  );
 }
 
 export function PartnerContentScreen({ navigation }: Props) {
@@ -206,6 +241,17 @@ export function PartnerContentScreen({ navigation }: Props) {
             {item.status === 'rejected' && item.rejectionReason ? (
               <Text style={[styles.rejection, { color: '#f87171' }]}>Motif : {item.rejectionReason}</Text>
             ) : null}
+            {item.status === 'approved' ? (
+              <Pressable
+                style={[styles.withdrawBtn, { borderColor: shell.cardBorder }]}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  confirmWithdrawal(withdrawalKind(type, isTool), item.id, title, () => void run(true));
+                }}
+              >
+                <Text style={[styles.withdrawBtnText, { color: '#b45309' }]}>Demander le retrait</Text>
+              </Pressable>
+            ) : null}
           </Pressable>
         );
       })}
@@ -227,6 +273,15 @@ const styles = StyleSheet.create({
   status: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
   meta: { marginTop: 4, fontSize: 11 },
   rejection: { marginTop: 6, fontSize: 11, lineHeight: 16 },
+  withdrawBtn: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  withdrawBtnText: { fontSize: 11, fontWeight: '700' },
   notice: { fontSize: 11, lineHeight: 16, marginBottom: 12, fontStyle: 'italic' },
   empty: { textAlign: 'center', marginTop: 24 },
   denied: { flex: 1, alignItems: 'center', justifyContent: 'center' },

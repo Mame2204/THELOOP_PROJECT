@@ -6,7 +6,7 @@ import { guineaLocationSnapshotFromLabel, guineaLocationSnapshotFromStored, type
 import { partnerNamesMatch } from '@/lib/partner-name-utils';
 import { scheduleScopedRefresh } from '@/lib/swr-cache';
 
-export type SubmissionStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+export type SubmissionStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'withdrawal_requested';
 
 export interface StagingEvent {
   id: string;
@@ -860,6 +860,7 @@ export const STATUS_LABELS: Record<SubmissionStatus, string> = {
   pending: 'En attente',
   approved: 'Publié',
   rejected: 'Refusé',
+  withdrawal_requested: 'Retrait demandé',
 };
 
 /** Vide tout le staging local (AsyncStorage). Utile pour reset sandbox sur l'appareil. */

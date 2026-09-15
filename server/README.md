@@ -165,3 +165,21 @@ Mobile EAS : `EXPO_PUBLIC_PAYMENT_API_URL=https://api.theloop-app.com` (plus de 
 | POST | `/api/webhook/djomy` | Signature HMAC | Active PASS en base |
 | GET | `/payment/success` · `/payment/cancel` | — | Retour portail Djomy |
 | GET | `/health` | — | Santé |
+| POST | `/api/internal/cron` | `CRON_SECRET` (header `X-Cron-Secret` ou Bearer) | Push planifiés dus |
+
+## Cron push planifiés
+
+Les campagnes `admin_push_campaigns` en statut `scheduled` sont traitées par le serveur lorsque leur `scheduled_at` est dépassé — **sans** ouvrir l’app admin mobile.
+
+1. Définir `CRON_SECRET` sur Render (long aléatoire).
+2. Appliquer `supabase/migrations/20260915_cron_service_role_rpc.sql`.
+3. Planifier un job HTTP (Render Cron, cron-job.org, etc.) :
+
+```http
+POST https://api.theloop-app.com/api/internal/cron
+X-Cron-Secret: <CRON_SECRET>
+```
+
+Fréquence recommandée : **toutes les 5 minutes**. Réponse JSON : `{ ok, push: { pushCampaignsSent, pushRecipients, errors } }`.
+
+Le runner mobile (`admin-background-runner`) reste utile pour les automatisations locales ; le cron serveur couvre surtout les push planifiés Supabase.

@@ -65,6 +65,8 @@ const sandboxPassPrices = {
 export const config = {
   port: parseIntEnv('PORT', 8787),
   nodeEnv: optional('NODE_ENV', 'development'),
+  /** Secret pour POST /api/internal/cron (Render Cron, etc.). */
+  cronSecret: optional('CRON_SECRET', ''),
   corsOrigins: optional(
     'CORS_ORIGINS',
     [

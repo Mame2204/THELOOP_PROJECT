@@ -23,7 +23,6 @@ import {
   isTransientPaymentNetworkError,
   sandboxPayerHint,
   warmPaymentApi,
-  DJOMY_SANDBOX_TEST,
 } from '@/lib/djomy-payment-api';
 import { syncPassAfterDjomyPayment } from '@/lib/pass-purchase-store';
 import * as WebBrowser from 'expo-web-browser';
@@ -62,8 +61,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const accent = getProfileAccent(role, shell, grade, theme);
   const [paymentMethod, setPaymentMethod] = useState<PassPaymentMethod>('all');
   const [payerPhone, setPayerPhone] = useState(
-    user?.phoneNumber?.replace(/\D/g, '').slice(-9) ||
-      (isDjomyPaymentConfigured() ? DJOMY_SANDBOX_TEST.soutra.account : ''),
+    user?.phoneNumber?.replace(/\D/g, '').slice(-9) || '',
   );
   const [chargedAmountGnf, setChargedAmountGnf] = useState<number | null>(null);
   const [passPrices, setPassPrices] = useState<PassPriceMap | null>(null);
@@ -74,7 +72,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'review' | 'processing' | 'done'>('review');
   const [lastSandboxIntentId, setLastSandboxIntentId] = useState<string | null>(null);
-  /** null = health pas encore reçu — on assume sandbox pour l’autofill. */
+  /** null = health pas encore reçu — pas d’UX sandbox tant qu’on ne sait pas. */
   const [serverSandboxMode, setServerSandboxMode] = useState<boolean | null>(null);
 
   useLayoutEffect(() => {
@@ -132,11 +130,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const previewExpiry = computeSubscriptionExpiry(period);
   const hasActivePass = Boolean(activeExpiry) || role === 'USER_PRIME';
   const willQueue = hasActivePass && Boolean(activeExpiry);
-  const showSandboxTools =
-    isDjomyPaymentConfigured() &&
-    (serverSandboxMode === true || (chargedAmountGnf != null && chargedAmountGnf < 50_000));
-  /** Autofill comptes/téléphone test tant que le serveur n’a pas dit « pas sandbox ». */
-  const prefillSandboxPayer = isDjomyPaymentConfigured() && serverSandboxMode !== false;
+  const isSandboxMode = serverSandboxMode === true;
+  const showSandboxTools = isDjomyPaymentConfigured() && isSandboxMode;
+  const prefillSandboxPayer = showSandboxTools;
 
   async function finishAfterFulfillment() {
     if (!user?.id) return;
@@ -198,7 +194,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         { text: 'Voir Mon PASS', onPress: () => resolve('pass') },
         { text: 'Réessayer', onPress: () => resolve('retry') },
       ];
-      if (showSandboxTools || serverSandboxMode === true) {
+      if (isSandboxMode) {
         buttons.push({ text: 'Forcer sandbox', onPress: () => resolve('force') });
       }
       Alert.alert(
@@ -264,10 +260,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     if (!passPurchaseEnabled) return;
     if (!user?.id || amountGnf == null) return;
 
-    if (
-      (showSandboxTools || serverSandboxMode === true) &&
-      paymentMethod === 'orange_money'
-    ) {
+    if (isSandboxMode && paymentMethod === 'orange_money') {
       Alert.alert(
         'Orange Money indisponible en sandbox',
         'Djomy confirme que tous les paiements OM échouent en sandbox. Choisissez PayCard, Soutra Money ou Carte avec leurs comptes de test.',
@@ -319,9 +312,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           }
 
           const reason = waitErr instanceof Error ? waitErr.message : 'Confirmation impossible.';
-          const canForce =
-            Boolean(payment.sandboxMode) ||
-            (payment.chargedAmountGnf != null && payment.chargedAmountGnf < 50_000);
+          const canForce = isSandboxMode || Boolean(payment.sandboxMode);
 
           if (isTransientPaymentNetworkError(waitErr) || /connexion.*interrompue/i.test(reason)) {
             const choice = await offerAfterNetworkGap(reason);
@@ -456,9 +447,12 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   }
 
   const djomyReady = isDjomyPaymentConfigured();
-  const showSandboxBanner =
-    !djomyReady || showSandboxTools || Boolean(chargedAmountGnf && chargedAmountGnf < 50_000);
+  const showSandboxBanner = !djomyReady || isSandboxMode;
   const sandboxHint = sandboxPayerHint(paymentMethod);
+  const payerPlaceholder = isSandboxMode ? `Ex. ${sandboxHint.display}` : 'Ex. 620 00 00 01';
+  const payerHint = isSandboxMode
+    ? sandboxHint.tip
+    : 'Numéro ou compte payeur — identique sur le portail Djomy (Orange Money, Soutra, PayCard…).';
 
   return (
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
@@ -528,14 +522,12 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         accentColor={accent.accent}
         value={payerPhone}
         onChangeText={setPayerPhone}
-        placeholder={`Ex. ${sandboxHint.display}`}
+        placeholder={payerPlaceholder}
         placeholderTextColor={shell.pageKicker}
         keyboardType="number-pad"
       />
-      <Text style={[styles.phoneHint, { color: paymentMethod === 'orange_money' ? '#b45309' : shell.pageKicker }]}>
-        {prefillSandboxPayer || showSandboxBanner || showSandboxTools
-          ? sandboxHint.tip
-          : 'Mettez le même identifiant payeur sur Djomy (préremplissage du portail).'}
+      <Text style={[styles.phoneHint, { color: shell.pageKicker }]}>
+        {payerHint}
       </Text>
 
       {step === 'processing' ? (
@@ -560,7 +552,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         </Text>
       </Pressable>
 
-      {showSandboxTools || showSandboxBanner ? (
+      {showSandboxTools ? (
         <Pressable
           style={[styles.btnOutline, { borderColor: '#92400e', opacity: loading ? 0.65 : 1 }]}
           onPress={() => void handleSandboxForcePay()}

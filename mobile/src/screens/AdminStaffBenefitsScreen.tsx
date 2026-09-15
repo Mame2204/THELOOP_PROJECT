@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { AdminTabMenu } from '@/components/admin/AdminTabMenu';
@@ -24,7 +24,10 @@ import { syncUserRoleBenefitEntitlements } from '@/lib/prime-benefits-store';
 import {
   catalogEntryFromItem,
   getStaffBenefitOverrides,
+  isBenefitEffectiveForAdmin,
   isTeamBenefitEnabledForUser,
+  prefetchStaffBenefitOverridesForUsers,
+  setAdminStaffBenefitEnabled,
   setTeamBenefitEnabledForUser,
   type StaffBenefitOverrides,
 } from '@/lib/staff-benefit-overrides-store';
@@ -40,7 +43,7 @@ import type { RootStackParamList } from '@/navigation/types';
 import type { User } from '@/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminStaffBenefits'>;
-type Tab = 'founder' | 'team';
+type Tab = 'founder' | 'team' | 'delegate';
 
 function registryToUser(
   registryUser: Awaited<ReturnType<typeof listRegistryUsers>>[number],
@@ -85,8 +88,13 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
   const [teamDraft, setTeamDraft] = useState<RoleBenefitEntitlementEntry[]>([]);
   const [search, setSearch] = useState('');
   const [founderOverrides, setFounderOverrides] = useState<StaffBenefitOverrides | null>(null);
+  const [delegatedAdmins, setDelegatedAdmins] = useState<User[]>([]);
+  const [selectedDelegateId, setSelectedDelegateId] = useState<string | null>(null);
+  const [delegateOverrides, setDelegateOverrides] = useState<StaffBenefitOverrides | null>(null);
   const [tick, setTick] = useState(0);
   const founderWriteAtRef = useRef(0);
+
+  const teamCatalogIds = useMemo(() => new Set(teamDraft.map((e) => e.catalogId)), [teamDraft]);
 
   const teamSelectableCatalog = useMemo(
     () => allCatalog.filter((item) => item.isActive && isPartnerAssociatedBenefit(item)),
@@ -121,12 +129,38 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
       const overrides = await getStaffBenefitOverrides(user.id);
       if (Date.now() - founderWriteAtRef.current < 4_000) return;
       setFounderOverrides(overrides);
+
+      const registry = await listRegistryUsers();
+      const admins = registry
+        .filter((u) => {
+          if ((u.userRole ?? '').toLowerCase() !== 'admin') return false;
+          const adminUser = registryToUser(u, countryCode);
+          if (isSuperAdminAccount(adminUser)) return false;
+          return resolveCountryCode(u.countryCode, u.phoneNumber) === countryCode;
+        })
+        .map((u) => registryToUser(u, countryCode));
+      await prefetchStaffBenefitOverridesForUsers(admins.map((a) => a.id));
+      setDelegatedAdmins(admins);
+      if (admins.length) {
+        setSelectedDelegateId((prev) => (prev && admins.some((a) => a.id === prev) ? prev : admins[0].id));
+      } else {
+        setSelectedDelegateId(null);
+        setDelegateOverrides(null);
+      }
     }
   }, [countryCode, user]);
 
   useEffect(() => {
     if (role === 'ADMIN') void load();
   }, [role, load, tick]);
+
+  useEffect(() => {
+    if (!selectedDelegateId) {
+      setDelegateOverrides(null);
+      return;
+    }
+    void getStaffBenefitOverrides(selectedDelegateId).then(setDelegateOverrides);
+  }, [selectedDelegateId, tick]);
 
   const inputStyle = [
     styles.input,
@@ -176,6 +210,52 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
     }
   }
 
+  async function handleDelegateToggle(catalogId: string, enabled: boolean) {
+    if (!user || !selectedDelegateId || !delegateOverrides) return;
+    const item = countryCatalog.find((c) => c.id === catalogId);
+    const previous = delegateOverrides;
+    setDelegateOverrides((prev) => {
+      if (!prev) return prev;
+      const revoked = new Set(prev.revokedCatalogIds);
+      const extra = [...prev.extra];
+      const inTeam = teamCatalogIds.has(catalogId);
+      if (enabled) {
+        revoked.delete(catalogId);
+        if (!inTeam && item && !extra.some((e) => e.catalogId === catalogId)) {
+          extra.push(catalogEntryFromItem(item));
+        }
+      } else if (inTeam) {
+        revoked.add(catalogId);
+      } else {
+        const idx = extra.findIndex((e) => e.catalogId === catalogId);
+        if (idx >= 0) extra.splice(idx, 1);
+      }
+      return {
+        ...prev,
+        revokedCatalogIds: Array.from(revoked),
+        extra,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+    try {
+      const saved = await setAdminStaffBenefitEnabled(
+        selectedDelegateId,
+        catalogId,
+        enabled,
+        teamCatalogIds,
+        item,
+        user.id,
+      );
+      setDelegateOverrides(saved);
+      const target = delegatedAdmins.find((a) => a.id === selectedDelegateId);
+      if (target) void syncUserRoleBenefitEntitlements(target).catch(() => undefined);
+    } catch (e) {
+      console.warn('[TEAMS] delegate toggle:', e);
+      setDelegateOverrides(previous);
+      setTick((t) => t + 1);
+    }
+  }
+
   async function handleTeamToggle(catalogId: string, enabled: boolean) {
     const item = countryCatalog.find((c) => c.id === catalogId);
     if (!item) return;
@@ -212,6 +292,7 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
   const tabs: { id: Tab; label: string; badge?: number }[] = isFounder
     ? [
         { id: 'founder', label: 'Super admin' },
+        { id: 'delegate', label: 'Par admin', badge: delegatedAdmins.length || undefined },
         ...staffSubTabs.map((t) => ({ ...t, badge: teamDraft.length })),
       ]
     : staffSubTabs.map((t) => ({ ...t, badge: teamDraft.length }));
@@ -254,6 +335,75 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
               <TogglePill
                 value={isTeamBenefitEnabledForUser(founderOverrides, item.id, true)}
                 onChange={(next) => void handleFounderToggle(item.id, next)}
+                activeLabel="Oui"
+                inactiveLabel="Non"
+                activeColor={shell.tabIndicator}
+                shell={shell}
+              />
+            </View>
+          ))}
+        </>
+      ) : null}
+
+      {tab === 'delegate' && isFounder && delegateOverrides ? (
+        <>
+          <Text style={[styles.hint, { color: shell.pageKicker }]}>
+            Ajustements individuels par admin délégué (retirer du pack ou ajouter un privilège hors pack).
+          </Text>
+          {delegatedAdmins.length === 0 ? (
+            <Text style={[styles.hint, { color: shell.pageKicker }]}>Aucun admin délégué pour {countryLabel}.</Text>
+          ) : (
+            <View style={styles.delegateRow}>
+              {delegatedAdmins.map((admin) => {
+                const active = admin.id === selectedDelegateId;
+                return (
+                  <Pressable
+                    key={admin.id}
+                    onPress={() => setSelectedDelegateId(admin.id)}
+                    style={[
+                      styles.delegateChip,
+                      {
+                        borderColor: active ? shell.tabIndicator : shell.filterInactiveBorder,
+                        backgroundColor: active ? shell.tabIndicator : shell.filterInactiveBg,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.delegateChipText,
+                        { color: active ? '#fff' : shell.pageTitle },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {admin.fullName}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+          <TextInput
+            style={inputStyle}
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Rechercher…"
+            placeholderTextColor={shell.pageKicker}
+          />
+          {filteredCatalog.map((item) => (
+            <View
+              key={`d-${item.id}`}
+              style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
+            >
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
+                <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
+                  {item.offeringPartners.map((p) => p.displayName).join(' · ')}
+                  {teamCatalogIds.has(item.id) ? ' · pack' : ''}
+                </Text>
+              </View>
+              <TogglePill
+                value={isBenefitEffectiveForAdmin(delegateOverrides, item.id, teamCatalogIds)}
+                onChange={(next) => void handleDelegateToggle(item.id, next)}
                 activeLabel="Oui"
                 inactiveLabel="Non"
                 activeColor={shell.tabIndicator}
@@ -314,4 +464,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8 },
   title: { fontSize: 14, fontWeight: '700' },
   meta: { marginTop: 2, fontSize: 11 },
+  delegateRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+  delegateChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, maxWidth: '100%' },
+  delegateChipText: { fontSize: 12, fontWeight: '600' },
 });

@@ -253,7 +253,7 @@ export function PartnerProScreen({ navigation }: Props) {
       ))}
 
       <Text style={[styles.hint, { color: shell.pageKicker }]}>
-        {PARTNER_PUBLICATION_NOTICE} Contenu publié ou désactivé : lecture seule. Pour supprimer, contactez l'administrateur.
+        {PARTNER_PUBLICATION_NOTICE} Contenu publié : lecture seule — demandez le retrait depuis Mes contenus.
       </Text>
 
       <PartnerSubmissionChoiceModal
