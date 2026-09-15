@@ -11,6 +11,10 @@ import {
   deleteLogo,
   deletePoll,
   createPoll,
+  createWalkSimple,
+  createCornerSimple,
+  createChroniqueSimple,
+  createLogo,
   deleteWalk,
   listAccueilChroniques,
   listAccueilCorners,
@@ -53,16 +57,16 @@ type Tab =
 
 export function AccueilPage() {
   const { countryCode, countryLabel } = useAdminCountry();
-  const { can } = usePermissions();
+  const { canSub } = usePermissions();
   const [params, setParams] = useSearchParams();
 
-  const canOverview = can('featured_overview') || can('featured');
-  const canHero = can('featured_hero') || can('featured');
-  const canPoll = can('featured_poll') || can('featured');
-  const canWalks = can('featured_walks') || can('featured');
-  const canCorner = can('featured_corner') || can('featured');
-  const canChronique = can('featured_chronique') || can('featured');
-  const canLogos = can('featured_logos') || can('featured');
+  const canOverview = canSub('featured', 'featured_overview');
+  const canHero = canSub('featured', 'featured_hero');
+  const canPoll = canSub('featured', 'featured_poll');
+  const canWalks = canSub('featured', 'featured_walks');
+  const canCorner = canSub('featured', 'featured_corner');
+  const canChronique = canSub('featured', 'featured_chronique');
+  const canLogos = canSub('featured', 'featured_logos');
 
   const defaultTab: Tab = canOverview
     ? 'overview'
@@ -111,6 +115,16 @@ export function AccueilPage() {
   const [corners, setCorners] = useState<AccueilCornerRow[]>([]);
   const [chroniques, setChroniques] = useState<AccueilChroniqueRow[]>([]);
   const [logos, setLogos] = useState<AccueilLogoRow[]>([]);
+
+  const [newWalkTitle, setNewWalkTitle] = useState('');
+  const [newWalkDuration, setNewWalkDuration] = useState('');
+  const [newCornerSubject, setNewCornerSubject] = useState('');
+  const [newCornerTitle, setNewCornerTitle] = useState('');
+  const [newCornerImpact, setNewCornerImpact] = useState('');
+  const [newChroniqueTitle, setNewChroniqueTitle] = useState('');
+  const [newChroniqueBody, setNewChroniqueBody] = useState('');
+  const [newLogoName, setNewLogoName] = useState('');
+  const [newLogoUrl, setNewLogoUrl] = useState('');
 
   const loadOverview = useCallback(async () => {
     setSections(await loadAppSections(countryCode));
@@ -508,6 +522,39 @@ export function AccueilPage() {
       ) : null}
 
       {tab === 'walks' && canWalks ? (
+        <>
+        <div className="card" style={{ maxWidth: 480, marginBottom: 12 }}>
+          <h3>Nouveau parcours</h3>
+          <div className="field">
+            <label>Titre</label>
+            <input value={newWalkTitle} onChange={(e) => setNewWalkTitle(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Durée (min, optionnel)</label>
+            <input value={newWalkDuration} onChange={(e) => setNewWalkDuration(e.target.value)} />
+          </div>
+          <button
+            type="button"
+            className="btn"
+            disabled={busy}
+            onClick={() => {
+              setBusy(true);
+              const dur = Number.parseInt(newWalkDuration, 10);
+              void createWalkSimple(countryCode, newWalkTitle, Number.isFinite(dur) ? dur : undefined).then((r) => {
+                setBusy(false);
+                if (!r.ok) setMsg(r.error ?? 'Erreur');
+                else {
+                  setNewWalkTitle('');
+                  setNewWalkDuration('');
+                  setMsg('Parcours créé (brouillon). Complétez les étapes sur mobile si besoin.');
+                  void loadWalks();
+                }
+              });
+            }}
+          >
+            Créer
+          </button>
+        </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -610,9 +657,25 @@ export function AccueilPage() {
             </p>
           ) : null}
         </div>
+        </>
       ) : null}
 
       {tab === 'corner' && canCorner ? (
+        <>
+        <div className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
+          <h3>Nouveau Singulier</h3>
+          <div className="field"><label>Sujet</label><input value={newCornerSubject} onChange={(e) => setNewCornerSubject(e.target.value)} /></div>
+          <div className="field"><label>Titre œuvre</label><input value={newCornerTitle} onChange={(e) => setNewCornerTitle(e.target.value)} /></div>
+          <div className="field"><label>Impact</label><textarea rows={2} value={newCornerImpact} onChange={(e) => setNewCornerImpact(e.target.value)} /></div>
+          <button type="button" className="btn" disabled={busy} onClick={() => {
+            setBusy(true);
+            void createCornerSimple(countryCode, { subjectName: newCornerSubject, title: newCornerTitle, impactDescription: newCornerImpact }).then((r) => {
+              setBusy(false);
+              if (!r.ok) setMsg(r.error ?? 'Erreur');
+              else { setNewCornerSubject(''); setNewCornerTitle(''); setNewCornerImpact(''); setMsg('Singulier créé.'); void loadCorners(); }
+            });
+          }}>Créer</button>
+        </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -679,9 +742,24 @@ export function AccueilPage() {
             </p>
           ) : null}
         </div>
+        </>
       ) : null}
 
       {tab === 'chronique' && canChronique ? (
+        <>
+        <div className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
+          <h3>Nouveau Fragment</h3>
+          <div className="field"><label>Titre</label><input value={newChroniqueTitle} onChange={(e) => setNewChroniqueTitle(e.target.value)} /></div>
+          <div className="field"><label>Texte</label><textarea rows={3} value={newChroniqueBody} onChange={(e) => setNewChroniqueBody(e.target.value)} /></div>
+          <button type="button" className="btn" disabled={busy} onClick={() => {
+            setBusy(true);
+            void createChroniqueSimple(countryCode, { title: newChroniqueTitle, body: newChroniqueBody }).then((r) => {
+              setBusy(false);
+              if (!r.ok) setMsg(r.error ?? 'Erreur');
+              else { setNewChroniqueTitle(''); setNewChroniqueBody(''); setMsg('Fragment créé.'); void loadChroniques(); }
+            });
+          }}>Créer</button>
+        </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -748,9 +826,24 @@ export function AccueilPage() {
             </p>
           ) : null}
         </div>
+        </>
       ) : null}
 
       {tab === 'logos' && canLogos ? (
+        <>
+        <div className="card" style={{ maxWidth: 480, marginBottom: 12 }}>
+          <h3>Nouveau logo</h3>
+          <div className="field"><label>Nom</label><input value={newLogoName} onChange={(e) => setNewLogoName(e.target.value)} /></div>
+          <div className="field"><label>URL image</label><input value={newLogoUrl} onChange={(e) => setNewLogoUrl(e.target.value)} placeholder="https://…" /></div>
+          <button type="button" className="btn" disabled={busy} onClick={() => {
+            setBusy(true);
+            void createLogo(countryCode, { name: newLogoName, logoUrl: newLogoUrl }).then((r) => {
+              setBusy(false);
+              if (!r.ok) setMsg(r.error ?? 'Erreur');
+              else { setNewLogoName(''); setNewLogoUrl(''); setMsg('Logo créé.'); void loadLogos(); }
+            });
+          }}>Créer</button>
+        </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -824,6 +917,7 @@ export function AccueilPage() {
             </p>
           ) : null}
         </div>
+        </>
       ) : null}
     </section>
   );

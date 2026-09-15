@@ -21,6 +21,9 @@ import { AutomationPage } from './pages/AutomationPage';
 import { MilestonesPage } from './pages/MilestonesPage';
 import { SpotStarsPage } from './pages/SpotStarsPage';
 import { OpeningHoursPage } from './pages/OpeningHoursPage';
+import { BenefitTypesPage } from './pages/BenefitTypesPage';
+import { StandaloneBenefitPage } from './pages/StandaloneBenefitPage';
+import { ContentEditorPage } from './pages/ContentEditorPage';
 
 function HomeRedirect() {
   const { can, canDemandes } = usePermissions();
@@ -103,6 +106,14 @@ export function App() {
           }
         />
         <Route
+          path="contenu/editer/:kind/:id?"
+          element={
+            <RequirePermission permission="content">
+              <ContentEditorPage />
+            </RequirePermission>
+          }
+        />
+        <Route
           path="demandes"
           element={
             <RequirePermission permission="demandes">
@@ -179,6 +190,22 @@ export function App() {
           element={
             <RequirePermission permission="manage_admins">
               <ParametresPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="types-privileges"
+          element={
+            <RequirePermission permission="benefit_types">
+              <BenefitTypesPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="privilege-standalone"
+          element={
+            <RequirePermission permission="standalone_benefit">
+              <StandaloneBenefitPage />
             </RequirePermission>
           }
         />

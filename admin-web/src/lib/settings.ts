@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { COUNTRY_OPTIONS } from './countries';
-import { ALL_NAV_PERMISSIONS, type AdminPermissionId } from './permissions';
+import type { AdminPermissionId } from './permissions';
 
 // ─── Gates ───────────────────────────────────────────────────────────────────
 
@@ -306,7 +306,7 @@ export async function loadDefaultPermissions(): Promise<AdminPermissionId[]> {
 export async function saveDefaultPermissions(
   permissions: AdminPermissionId[],
 ): Promise<{ ok: boolean; error?: string }> {
-  const safe = permissions.filter((p) => ALL_NAV_PERMISSIONS.includes(p as never) || typeof p === 'string');
+  const safe = permissions.filter((p) => typeof p === 'string');
   const { error } = await supabase.rpc('set_admin_default_permissions', {
     p_permissions: safe,
   });

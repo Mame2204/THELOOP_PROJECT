@@ -25,13 +25,14 @@ type Tab = 'validations' | 'catalog' | 'suivi' | 'grants';
 
 export function PrivilegesPage() {
   const { countryCode, countryLabel } = useAdminCountry();
-  const { can } = usePermissions();
+  const { canSub } = usePermissions();
   const [params, setParams] = useSearchParams();
 
-  const canValidations = can('prime_benefits_validations') || can('prime_benefits');
-  const canCatalog = can('prime_benefits_catalog') || can('prime_benefits');
-  const canSuivi = can('prime_benefits_suivi') || can('prime_benefits');
-  const canGrants = can('prime_benefits_grant') || can('prime_benefits');
+  const canValidations = canSub('prime_benefits', 'prime_benefits_validations');
+  const canCatalog = canSub('prime_benefits', 'prime_benefits_catalog');
+  const canSuivi = canSub('prime_benefits', 'prime_benefits_suivi');
+  const canGrants = canSub('prime_benefits', 'prime_benefits_grant');
+  const canCreation = canSub('prime_benefits', 'prime_benefits_creation');
 
   const defaultTab: Tab = canValidations
     ? 'validations'
@@ -275,44 +276,46 @@ export function PrivilegesPage() {
 
       {tab === 'catalog' && canCatalog ? (
         <>
-          <div className="card" style={{ marginBottom: 12 }}>
-            <h3>Nouveau privilège</h3>
-            <div className="toolbar">
-              <input id="new-ben-title" placeholder="Titre" />
-              <input id="new-ben-desc" placeholder="Description" />
-              <button
-                type="button"
-                className="btn small"
-                disabled={busy}
-                onClick={() => {
-                  const title = (document.getElementById('new-ben-title') as HTMLInputElement)
-                    ?.value;
-                  const description = (document.getElementById('new-ben-desc') as HTMLInputElement)
-                    ?.value;
-                  if (!title?.trim()) {
-                    setMsg('Titre requis.');
-                    return;
-                  }
-                  setBusy(true);
-                  void createBenefitCatalogItem({
-                    title,
-                    description: description || title,
-                    countryCode,
-                    partnerName: 'THE LOOP',
-                  }).then((r) => {
-                    setBusy(false);
-                    if (!r.ok) setMsg(r.error ?? 'Erreur');
-                    else {
-                      setMsg('Privilège créé.');
-                      void loadCatalog();
+          {canCreation ? (
+            <div className="card" style={{ marginBottom: 12 }}>
+              <h3>Nouveau privilège</h3>
+              <div className="toolbar">
+                <input id="new-ben-title" placeholder="Titre" />
+                <input id="new-ben-desc" placeholder="Description" />
+                <button
+                  type="button"
+                  className="btn small"
+                  disabled={busy}
+                  onClick={() => {
+                    const title = (document.getElementById('new-ben-title') as HTMLInputElement)
+                      ?.value;
+                    const description = (document.getElementById('new-ben-desc') as HTMLInputElement)
+                      ?.value;
+                    if (!title?.trim()) {
+                      setMsg('Titre requis.');
+                      return;
                     }
-                  });
-                }}
-              >
-                Créer
-              </button>
+                    setBusy(true);
+                    void createBenefitCatalogItem({
+                      title,
+                      description: description || title,
+                      countryCode,
+                      partnerName: 'THE LOOP',
+                    }).then((r) => {
+                      setBusy(false);
+                      if (!r.ok) setMsg(r.error ?? 'Erreur');
+                      else {
+                        setMsg('Privilège créé.');
+                        void loadCatalog();
+                      }
+                    });
+                  }}
+                >
+                  Créer
+                </button>
+              </div>
             </div>
-          </div>
+          ) : null}
           <div className="tabs" style={{ marginBottom: 12 }}>
             {(['all', 'active', 'inactive'] as const).map((f) => (
               <button

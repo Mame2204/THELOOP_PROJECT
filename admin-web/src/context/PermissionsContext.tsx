@@ -9,8 +9,9 @@ import {
 } from 'react';
 import { supabase } from '../lib/supabase';
 import {
-  ALL_NAV_PERMISSIONS,
+  ALL_ADMIN_PERMISSION_IDS,
   hasAdminPermission,
+  hasAdminSubPermission,
   hasAnyDemandesAccess,
   isSuperAdminUser,
   sanitizePermissions,
@@ -22,6 +23,7 @@ interface PermissionsContextValue {
   ready: boolean;
   permissions: AdminPermissionId[];
   can: (permission: AdminPermissionId) => boolean;
+  canSub: (parent: AdminPermissionId, sub: AdminPermissionId) => boolean;
   canDemandes: boolean;
 }
 
@@ -44,7 +46,7 @@ export function PermissionsProvider({ children }: { children: ReactNode }) {
       setReady(false);
       if (isSuperAdminUser(profile.role)) {
         if (!cancelled) {
-          setPermissions([...ALL_NAV_PERMISSIONS]);
+          setPermissions([...ALL_ADMIN_PERMISSION_IDS]);
           setReady(true);
         }
         return;
@@ -72,14 +74,21 @@ export function PermissionsProvider({ children }: { children: ReactNode }) {
     [permissions, profile?.role],
   );
 
+  const canSub = useCallback(
+    (parent: AdminPermissionId, sub: AdminPermissionId) =>
+      hasAdminSubPermission(permissions, parent, sub, profile?.role),
+    [permissions, profile?.role],
+  );
+
   const value = useMemo(
     () => ({
       ready,
       permissions,
       can,
+      canSub,
       canDemandes: hasAnyDemandesAccess(permissions, profile?.role),
     }),
-    [ready, permissions, can, profile?.role],
+    [ready, permissions, can, canSub, profile?.role],
   );
 
   return (

@@ -22,13 +22,17 @@ type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
 
 export function LoopPage() {
   const { countryCode, countryLabel } = useAdminCountry();
-  const { can } = usePermissions();
+  const { can, canSub } = usePermissions();
   const [params, setParams] = useSearchParams();
 
-  const canContent = can('content') || can('loop_hub');
-  const canBenefits = can('prime_benefits') || can('loop_hub');
-  const canFeatured = can('featured') || can('loop_hub');
-  const canStats = can('insights') || can('loop_hub');
+  const canContent = can('loop_hub') || can('content');
+  const canBenefits = can('loop_hub') || can('prime_benefits');
+  const canFeatured = can('loop_hub') || can('featured');
+  const canStats = can('loop_hub') || can('insights');
+
+  const canEvents = can('loop_hub') || canSub('content', 'content_events');
+  const canSpots = can('loop_hub') || canSub('content', 'content_spots');
+  const canTools = can('loop_hub') || canSub('content', 'content_tools');
 
   const defaultTab: Tab = canContent
     ? 'contenu'
@@ -57,7 +61,8 @@ export function LoopPage() {
 
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [typeTab, setTypeTab] = useState<CatalogKind>('event');
+  const defaultKind: CatalogKind = canEvents ? 'event' : canSpots ? 'spot' : 'tool';
+  const [typeTab, setTypeTab] = useState<CatalogKind>(defaultKind);
   const [statusFilter, setStatusFilter] = useState<ContentStatus | 'all'>('published');
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
@@ -100,6 +105,12 @@ export function LoopPage() {
   useEffect(() => {
     setPage(0);
   }, [typeTab, statusFilter, countryCode]);
+
+  useEffect(() => {
+    const allowed =
+      typeTab === 'event' ? canEvents : typeTab === 'spot' ? canSpots : canTools;
+    if (!allowed) setTypeTab(defaultKind);
+  }, [typeTab, canEvents, canSpots, canTools, defaultKind]);
 
   const pages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
 
@@ -181,16 +192,33 @@ export function LoopPage() {
       {tab === 'contenu' && canContent ? (
         <>
           <div className="tabs" style={{ marginBottom: 8 }}>
-            {(Object.keys(KIND_LABELS) as CatalogKind[]).map((k) => (
+            {canEvents ? (
               <button
-                key={k}
                 type="button"
-                className={`tab ${typeTab === k ? 'active' : ''}`}
-                onClick={() => setTypeTab(k)}
+                className={`tab ${typeTab === 'event' ? 'active' : ''}`}
+                onClick={() => setTypeTab('event')}
               >
-                {KIND_LABELS[k]}
+                {KIND_LABELS.event}
               </button>
-            ))}
+            ) : null}
+            {canSpots ? (
+              <button
+                type="button"
+                className={`tab ${typeTab === 'spot' ? 'active' : ''}`}
+                onClick={() => setTypeTab('spot')}
+              >
+                {KIND_LABELS.spot}
+              </button>
+            ) : null}
+            {canTools ? (
+              <button
+                type="button"
+                className={`tab ${typeTab === 'tool' ? 'active' : ''}`}
+                onClick={() => setTypeTab('tool')}
+              >
+                {KIND_LABELS.tool}
+              </button>
+            ) : null}
           </div>
           <div className="tabs" style={{ marginBottom: 12 }}>
             <button

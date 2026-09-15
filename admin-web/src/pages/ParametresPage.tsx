@@ -5,11 +5,11 @@ import { usePermissions } from '../context/PermissionsContext';
 import { isSuperAdminUser } from '../lib/permissions';
 import { COUNTRY_OPTIONS } from '../lib/countries';
 import { formatWhen } from '../lib/format';
+import { PermissionGroupEditor } from '../components/PermissionGroupEditor';
 import {
   CATEGORY_KIND_LABELS,
   DEFAULT_APP_GATES,
   LEGAL_DOCS,
-  SETTINGS_PERMISSION_OPTIONS,
   listAdminUsersLite,
   listCategories,
   loadAppGates,
@@ -477,20 +477,7 @@ export function ParametresPage() {
         <div className="split-pane">
           <div className="card">
             <h3>Droits par défaut (admins délégués)</h3>
-            {SETTINGS_PERMISSION_OPTIONS.map((opt) => (
-              <label key={opt.id} className="check-inline" style={{ display: 'flex', marginBottom: 8 }}>
-                <input
-                  type="checkbox"
-                  checked={defaultPerms.includes(opt.id)}
-                  onChange={(e) => {
-                    setDefaultPerms((prev) =>
-                      e.target.checked ? [...prev, opt.id] : prev.filter((p) => p !== opt.id),
-                    );
-                  }}
-                />
-                {opt.label}
-              </label>
-            ))}
+            <PermissionGroupEditor value={defaultPerms} onChange={setDefaultPerms} />
             <button
               type="button"
               className="btn"
@@ -522,24 +509,7 @@ export function ParametresPage() {
             </div>
             {selectedAdmin ? (
               <>
-                {SETTINGS_PERMISSION_OPTIONS.map((opt) => (
-                  <label
-                    key={opt.id}
-                    className="check-inline"
-                    style={{ display: 'flex', marginBottom: 8 }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={userPerms.includes(opt.id)}
-                      onChange={(e) => {
-                        setUserPerms((prev) =>
-                          e.target.checked ? [...prev, opt.id] : prev.filter((p) => p !== opt.id),
-                        );
-                      }}
-                    />
-                    {opt.label}
-                  </label>
-                ))}
+                <PermissionGroupEditor value={userPerms} onChange={setUserPerms} />
                 <button
                   type="button"
                   className="btn"
@@ -650,6 +620,14 @@ export function ParametresPage() {
             <Link className="card kpi-card" to="/onglets">
               <div className="meta">📱 Onglets</div>
               <strong>App</strong>
+            </Link>
+            <Link className="card kpi-card" to="/types-privileges">
+              <div className="meta">🏷️ Types</div>
+              <strong>Privilèges</strong>
+            </Link>
+            <Link className="card kpi-card" to="/privilege-standalone">
+              <div className="meta">✨ Standalone</div>
+              <strong>THE LOOP</strong>
             </Link>
           </div>
         </div>

@@ -25,12 +25,12 @@ function statusBadge(status: ContentStatus): string {
 
 export function ContenuPage() {
   const { countryCode, countryLabel } = useAdminCountry();
-  const { can } = usePermissions();
+  const { canSub } = usePermissions();
   const [params, setParams] = useSearchParams();
 
-  const canEvents = can('content_events') || can('content');
-  const canSpots = can('content_spots') || can('content');
-  const canTools = can('content_tools') || can('content');
+  const canEvents = canSub('content', 'content_events');
+  const canSpots = canSub('content', 'content_spots');
+  const canTools = canSub('content', 'content_tools');
 
   const defaultKind: CatalogKind = canEvents ? 'event' : canSpots ? 'spot' : 'tool';
   const tabParam = params.get('tab');
@@ -42,6 +42,9 @@ export function ContenuPage() {
         : tabParam === 'tools' && canTools
           ? 'tool'
           : defaultKind;
+
+  const canEditCurrent =
+    typeTab === 'event' ? canEvents : typeTab === 'spot' ? canSpots : canTools;
 
   const [statusFilter, setStatusFilter] = useState<ContentStatus | 'all'>('all');
   const [page, setPage] = useState(0);
@@ -133,6 +136,11 @@ export function ContenuPage() {
             <Link to="/accueil">Accueil</Link>.
           </p>
         </div>
+        {canEditCurrent ? (
+          <Link to={`/contenu/editer/${typeTab}`} className="btn">
+            Nouveau {KIND_LABELS[typeTab].toLowerCase()}
+          </Link>
+        ) : null}
       </header>
 
       <nav className="tabs">
@@ -257,6 +265,16 @@ export function ContenuPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      {(item.kind === 'event' && canEvents) ||
+                      (item.kind === 'spot' && canSpots) ||
+                      (item.kind === 'tool' && canTools) ? (
+                        <Link
+                          to={`/contenu/editer/${item.kind}/${item.id}`}
+                          className="btn small ghost"
+                        >
+                          Modifier
+                        </Link>
+                      ) : null}
                       {actions.canPublish ? (
                         <button
                           type="button"

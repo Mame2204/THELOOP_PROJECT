@@ -72,18 +72,23 @@ export async function saveStaffTeamPack(
   return { ok: true };
 }
 
-export async function listStaffOverrides(): Promise<
-  Array<{ userId: string; enabled: boolean; updatedAt: string | null }>
+export async function listDelegatedAdmins(countryCode: string): Promise<
+  Array<{ id: string; name: string; email: string }>
 > {
+  const cc = countryCode.toUpperCase().slice(0, 2);
   const { data, error } = await supabase
-    .from('staff_benefit_overrides')
-    .select('user_id, enabled, updated_at')
-    .order('updated_at', { ascending: false })
+    .from('users')
+    .select('id, email, first_name, last_name, user_role, country_code')
+    .eq('user_role', 'admin')
+    .eq('is_active', true)
+    .order('email')
     .limit(100);
-  if (error) return [];
-  return (data ?? []).map((r) => ({
-    userId: String(r.user_id),
-    enabled: r.enabled !== false,
-    updatedAt: r.updated_at ? String(r.updated_at) : null,
-  }));
+  if (error || !data) return [];
+  return data
+    .filter((u) => (u.country_code ?? 'GN').toUpperCase().slice(0, 2) === cc)
+    .map((u) => ({
+      id: String(u.id),
+      email: String(u.email ?? ''),
+      name: `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || String(u.email ?? u.id).slice(0, 8),
+    }));
 }

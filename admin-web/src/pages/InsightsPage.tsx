@@ -11,16 +11,16 @@ type Tab = 'overview' | 'events' | 'spots' | 'tools' | 'benefits' | 'platform';
 export function InsightsPage() {
   const { profile } = useAuth();
   const { countryCode, countryLabel } = useAdminCountry();
-  const { can } = usePermissions();
+  const { canSub } = usePermissions();
   const [params, setParams] = useSearchParams();
   const isSuper = isSuperAdminUser(profile?.role);
 
-  const canOverview = can('insights_overview') || can('insights');
-  const canEvents = can('insights_events') || can('insights');
-  const canSpots = can('insights_spots') || can('insights');
-  const canTools = can('insights_tools') || can('insights');
-  const canBenefits = can('insights_benefits') || can('insights');
-  const canPlatform = (can('insights_platform') || can('insights')) && isSuper;
+  const canOverview = canSub('insights', 'insights_overview');
+  const canEvents = canSub('insights', 'insights_events');
+  const canSpots = canSub('insights', 'insights_spots');
+  const canTools = canSub('insights', 'insights_tools');
+  const canBenefits = canSub('insights', 'insights_benefits');
+  const canPlatform = canSub('insights', 'insights_platform') && isSuper;
 
   const defaultTab: Tab = canOverview
     ? 'overview'

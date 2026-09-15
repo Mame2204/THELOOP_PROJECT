@@ -1,3 +1,8 @@
+import {
+  ALL_ADMIN_PERMISSION_IDS,
+  getChildPermissions,
+} from './permission-catalog';
+
 /** Catalogue permissions admin (aligné mobile — modules navigation). */
 export const NAV_PERMISSION_IDS = [
   'insights',
@@ -159,3 +164,27 @@ export function sanitizePermissions(raw: unknown): AdminPermissionId[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter((p): p is string => typeof p === 'string');
 }
+
+/**
+ * Sous-onglet : parent requis ; si aucun enfant coché → accès complet ;
+ * si au moins un enfant coché → uniquement les enfants cochés.
+ */
+export function hasAdminSubPermission(
+  permissions: readonly AdminPermissionId[] | null | undefined,
+  parentId: AdminPermissionId,
+  subId: AdminPermissionId,
+  userRole?: string | null,
+): boolean {
+  if (isSuperAdminUser(userRole)) return true;
+  if (!hasAdminPermission(permissions, parentId, userRole)) return false;
+
+  const children = getChildPermissions(parentId);
+  if (!children.length) return true;
+
+  const list = permissions ?? [];
+  const grantedChildren = children.filter((c) => list.includes(c.id));
+  if (grantedChildren.length === 0) return true;
+  return list.includes(subId);
+}
+
+export { ALL_ADMIN_PERMISSION_IDS, getChildPermissions };

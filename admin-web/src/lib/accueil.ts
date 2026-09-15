@@ -399,3 +399,94 @@ export async function deleteLogo(id: string): Promise<{ ok: boolean; error?: str
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
+
+/** Création rapide parcours (brouillon — édition complète sur mobile). */
+export async function createWalkSimple(
+  countryCode: string,
+  title: string,
+  durationMinutes?: number,
+): Promise<{ ok: boolean; error?: string }> {
+  const t = title.trim();
+  if (!t) return { ok: false, error: 'Titre requis.' };
+  const now = new Date().toISOString();
+  const { error } = await supabase.from('loop_walks').insert({
+    id: crypto.randomUUID(),
+    title: t,
+    summary: '',
+    description: '',
+    country_code: countryCode,
+    is_published: false,
+    is_featured_week: false,
+    duration_minutes: durationMinutes && durationMinutes > 0 ? durationMinutes : null,
+    steps: [],
+    sort_order: 999,
+    created_at: now,
+    updated_at: now,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function createCornerSimple(
+  countryCode: string,
+  input: { subjectName: string; title: string; impactDescription: string },
+): Promise<{ ok: boolean; error?: string }> {
+  if (!input.subjectName.trim() || !input.title.trim() || !input.impactDescription.trim()) {
+    return { ok: false, error: 'Sujet, titre et impact requis.' };
+  }
+  const now = new Date().toISOString();
+  const { error } = await supabase.from('creator_corner_features').insert({
+    id: crypto.randomUUID(),
+    country_code: countryCode,
+    subject_name: input.subjectName.trim(),
+    title: input.title.trim(),
+    impact_description: input.impactDescription.trim(),
+    is_active: false,
+    created_at: now,
+    updated_at: now,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function createChroniqueSimple(
+  countryCode: string,
+  input: { title: string; body: string; volumeLabel?: string },
+): Promise<{ ok: boolean; error?: string }> {
+  if (!input.title.trim() || !input.body.trim()) {
+    return { ok: false, error: 'Titre et texte requis.' };
+  }
+  const now = new Date().toISOString();
+  const { error } = await supabase.from('chronique_features').insert({
+    id: crypto.randomUUID(),
+    country_code: countryCode,
+    title: input.title.trim(),
+    body: input.body.trim(),
+    volume_label: input.volumeLabel?.trim() || null,
+    is_active: false,
+    created_at: now,
+    updated_at: now,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function createLogo(
+  countryCode: string,
+  input: { name: string; logoUrl: string; websiteUrl?: string },
+): Promise<{ ok: boolean; error?: string }> {
+  if (!input.name.trim() || !input.logoUrl.trim()) {
+    return { ok: false, error: 'Nom et URL image requis.' };
+  }
+  const { error } = await supabase.from('home_partner_logos').insert({
+    id: crypto.randomUUID(),
+    name: input.name.trim(),
+    logo_url: input.logoUrl.trim(),
+    website_url: input.websiteUrl?.trim() || null,
+    country_code: countryCode,
+    is_active: true,
+    sort_order: 999,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
