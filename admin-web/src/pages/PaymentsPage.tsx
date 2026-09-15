@@ -85,6 +85,7 @@ export function PaymentsPage() {
           <thead>
             <tr>
               <th>Membre</th>
+              <th>Références (revendication)</th>
               <th>Période</th>
               <th>Montant</th>
               <th>Statut</th>
@@ -98,7 +99,62 @@ export function PaymentsPage() {
                 <td>
                   <strong>{p.userName || p.userEmail || '—'}</strong>
                   <div className="meta">{p.userEmail}</div>
-                  <div className="meta">Tx {p.djomyTransactionId ?? '—'}</div>
+                  <div className="meta">{p.payerPhone ? `Tél. ${p.payerPhone}` : null}</div>
+                </td>
+                <td className="activity-cell">
+                  <div>
+                    <span className="meta">Marchand</span>
+                    <br />
+                    <strong style={{ fontSize: 12, wordBreak: 'break-all' }}>
+                      {p.merchantReference || '—'}
+                    </strong>
+                    {p.merchantReference ? (
+                      <button
+                        type="button"
+                        className="btn ghost small"
+                        style={{ marginLeft: 6, padding: '2px 8px' }}
+                        onClick={() => void navigator.clipboard.writeText(p.merchantReference!)}
+                      >
+                        Copier
+                      </button>
+                    ) : null}
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <span className="meta">Tx Djomy</span>
+                    <br />
+                    <strong style={{ fontSize: 12, wordBreak: 'break-all' }}>
+                      {p.djomyTransactionId || '—'}
+                    </strong>
+                    {p.djomyTransactionId ? (
+                      <button
+                        type="button"
+                        className="btn ghost small"
+                        style={{ marginLeft: 6, padding: '2px 8px' }}
+                        onClick={() => void navigator.clipboard.writeText(p.djomyTransactionId!)}
+                      >
+                        Copier
+                      </button>
+                    ) : null}
+                  </div>
+                  {p.djomyProviderReference ? (
+                    <div style={{ marginTop: 8 }}>
+                      <span className="meta">Ref opérateur (OM/PayCard)</span>
+                      <br />
+                      <strong style={{ fontSize: 12, wordBreak: 'break-all' }}>
+                        {p.djomyProviderReference}
+                      </strong>
+                      <button
+                        type="button"
+                        className="btn ghost small"
+                        style={{ marginLeft: 6, padding: '2px 8px' }}
+                        onClick={() =>
+                          void navigator.clipboard.writeText(p.djomyProviderReference!)
+                        }
+                      >
+                        Copier
+                      </button>
+                    </div>
+                  ) : null}
                 </td>
                 <td>{p.billingPeriod}</td>
                 <td>{p.amountGnf.toLocaleString('fr-FR')} GNF</td>

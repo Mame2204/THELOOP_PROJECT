@@ -234,6 +234,12 @@ export function AdminPaymentsScreen({ navigation }: Props) {
             <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
               {intent.userEmail ?? intent.userId}
             </Text>
+            <Text style={[styles.meta, { color: shell.pageTitle, fontWeight: '600' }]} numberOfLines={1}>
+              Ref : {intent.merchantReference || '—'}
+            </Text>
+            <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
+              Tx Djomy : {intent.djomyTransactionId ?? '—'}
+            </Text>
 
             {expanded ? (
               <View style={styles.detail}>

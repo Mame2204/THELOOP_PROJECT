@@ -30,10 +30,16 @@ export interface PaymentIntent {
   countryCode?: string | null;
   billingPeriod: string;
   amountGnf: number;
+  payerPhone?: string | null;
+  paymentMethod?: string | null;
+  merchantReference?: string | null;
   status: string;
   fulfillmentStatus: string;
+  passGrantStatus?: string | null;
   djomyTransactionId: string | null;
   djomyStatus: string | null;
+  djomyProviderReference?: string | null;
+  djomyPaidAmount?: number | null;
   createdAt: string;
   paidAt: string | null;
 }
