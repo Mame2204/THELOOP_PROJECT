@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
-import { listBenefitCatalog, type BenefitCatalogRow } from '../lib/privileges';
+import { listTeamsAssignableCatalog, type BenefitCatalogRow } from '../lib/privileges';
 import { isSuperAdminUser } from '../lib/permissions';
 import {
   getStaffBenefitOverrides,
@@ -55,11 +55,11 @@ export function TeamsPage() {
 
   const load = useCallback(async () => {
     const [c, p, admins] = await Promise.all([
-      listBenefitCatalog(countryCode),
+      listTeamsAssignableCatalog(countryCode),
       getStaffTeamPack(countryCode),
       listDelegatedAdmins(countryCode),
     ]);
-    setCatalog(c.items.filter((i) => i.isActive));
+    setCatalog(c.items);
     setPack(p);
     setDelegatedAdmins(admins);
     if (c.error) setMsg(c.error);
@@ -252,7 +252,8 @@ export function TeamsPage() {
       {tab === 'team' && canTeam ? (
         <>
           <p className="meta" style={{ marginBottom: 12 }}>
-            Pack pour les admins délégués de {countryLabel} (rôle admin, hors super admin).
+            Pack pour les admins délégués de {countryLabel} (rôle admin, hors super admin). Seuls les
+            privilèges validés et liés à un event, spot ou outil sont proposés (aligné app mobile).
           </p>
           <div className="table-wrap">
             <table className="data-table">

@@ -22,6 +22,7 @@ interface AdminCountryContextValue {
   countryLabel: string;
   enabledCountries: string[];
   setCountryCode: (code: string) => void;
+  refreshEnabledCountries: () => Promise<void>;
   ready: boolean;
 }
 
@@ -35,53 +36,46 @@ export function AdminCountryProvider({ children }: { children: ReactNode }) {
   );
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
+  const refreshEnabledCountries = useCallback(async () => {
+    const { data } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'enabled_content_countries')
+      .maybeSingle();
+
+    const raw = data?.value;
+    let enabled = COUNTRY_OPTIONS.map((c) => c.code);
+    if (Array.isArray(raw) && raw.every((x) => typeof x === 'string')) {
+      enabled = (raw as string[]).map((c) => c.toUpperCase().slice(0, 2));
+    } else if (typeof raw === 'string') {
       try {
-        const { data } = await supabase
-          .from('app_settings')
-          .select('value')
-          .eq('key', 'enabled_content_countries')
-          .maybeSingle();
-
-        const raw = data?.value;
-        let enabled = COUNTRY_OPTIONS.map((c) => c.code);
-        if (Array.isArray(raw) && raw.every((x) => typeof x === 'string')) {
-          enabled = (raw as string[]).map((c) => c.toUpperCase().slice(0, 2));
-        } else if (typeof raw === 'string') {
-          try {
-            const parsed = JSON.parse(raw) as unknown;
-            if (Array.isArray(parsed)) {
-              enabled = parsed
-                .filter((x): x is string => typeof x === 'string')
-                .map((c) => c.toUpperCase().slice(0, 2));
-            }
-          } catch {
-            /* ignore */
-          }
+        const parsed = JSON.parse(raw) as unknown;
+        if (Array.isArray(parsed)) {
+          enabled = parsed
+            .filter((x): x is string => typeof x === 'string')
+            .map((c) => c.toUpperCase().slice(0, 2));
         }
-        if (!enabled.length) enabled = [DEFAULT_COUNTRY_CODE];
-        if (!cancelled) setEnabledCountries(enabled);
-
-        const stored = localStorage.getItem(STORAGE_KEY);
-        let next =
-          stored && stored.length === 2
-            ? stored.toUpperCase()
-            : (profile?.countryCode ?? DEFAULT_COUNTRY_CODE).toUpperCase().slice(0, 2);
-        if (!enabled.includes(next)) next = enabled[0];
-        if (!cancelled) {
-          setCountryCodeState(next);
-          localStorage.setItem(STORAGE_KEY, next);
-        }
-      } finally {
-        if (!cancelled) setReady(true);
+      } catch {
+        /* ignore */
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    }
+    if (!enabled.length) enabled = [DEFAULT_COUNTRY_CODE];
+    setEnabledCountries(enabled);
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    let next =
+      stored && stored.length === 2
+        ? stored.toUpperCase()
+        : (profile?.countryCode ?? DEFAULT_COUNTRY_CODE).toUpperCase().slice(0, 2);
+    if (!enabled.includes(next)) next = enabled[0];
+    setCountryCodeState(next);
+    localStorage.setItem(STORAGE_KEY, next);
+    setReady(true);
   }, [profile?.countryCode]);
+
+  useEffect(() => {
+    void refreshEnabledCountries();
+  }, [refreshEnabledCountries]);
 
   const setCountryCode = useCallback(
     (code: string) => {
@@ -99,9 +93,10 @@ export function AdminCountryProvider({ children }: { children: ReactNode }) {
       countryLabel: getCountryLabel(countryCode),
       enabledCountries,
       setCountryCode,
+      refreshEnabledCountries,
       ready,
     }),
-    [countryCode, enabledCountries, setCountryCode, ready],
+    [countryCode, enabledCountries, setCountryCode, refreshEnabledCountries, ready],
   );
 
   return (

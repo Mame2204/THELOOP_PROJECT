@@ -1,5 +1,14 @@
 import { supabase } from './supabase';
 
+const EXTERNAL_PARTNER_ID = '__external__';
+
+export interface BenefitOfferingPartner {
+  partnerId: string;
+  displayName: string;
+  contentId?: string | null;
+  contentType?: 'event' | 'spot' | 'tool' | null;
+}
+
 export interface BenefitCatalogRow {
   id: string;
   localId: string;
@@ -8,6 +17,7 @@ export interface BenefitCatalogRow {
   isActive: boolean;
   countryCode: string | null;
   partnerNames: string[];
+  offeringPartners: BenefitOfferingPartner[];
   benefitKind: string;
   updatedAt: string | null;
 }
@@ -59,6 +69,37 @@ export interface BenefitKpis {
   consumed: number;
 }
 
+function parseOfferingPartner(raw: unknown): BenefitOfferingPartner {
+  if (!raw || typeof raw !== 'object') {
+    return { partnerId: EXTERNAL_PARTNER_ID, displayName: 'Partenaire' };
+  }
+  const o = raw as Record<string, unknown>;
+  const partnerId = String(o.partnerId ?? o.partner_id ?? EXTERNAL_PARTNER_ID).trim() || EXTERNAL_PARTNER_ID;
+  const displayName = String(o.displayName ?? o.display_name ?? 'Partenaire').trim() || 'Partenaire';
+  const contentIdRaw = o.contentId ?? o.content_id;
+  const contentTypeRaw = o.contentType ?? o.content_type;
+  const contentId =
+    contentIdRaw != null && String(contentIdRaw).trim() ? String(contentIdRaw).trim() : null;
+  const contentType =
+    contentTypeRaw === 'event' || contentTypeRaw === 'spot' || contentTypeRaw === 'tool'
+      ? contentTypeRaw
+      : null;
+  return { partnerId, displayName, contentId, contentType };
+}
+
+function parseOfferingPartnersFromRow(row: {
+  offering_partners: unknown;
+  partner_name?: string | null;
+}): BenefitOfferingPartner[] {
+  if (Array.isArray(row.offering_partners) && row.offering_partners.length) {
+    return row.offering_partners.map(parseOfferingPartner);
+  }
+  if (row.partner_name?.trim()) {
+    return [{ partnerId: EXTERNAL_PARTNER_ID, displayName: row.partner_name.trim() }];
+  }
+  return [{ partnerId: EXTERNAL_PARTNER_ID, displayName: 'Partenaire' }];
+}
+
 function parsePartners(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -68,6 +109,157 @@ function parsePartners(raw: unknown): string[] {
       return String(o.displayName ?? o.display_name ?? '').trim();
     })
     .filter(Boolean);
+}
+
+/** Modèles Paramètres sans lieu — exclus des listes TEAMS / offres partenaire. */
+export function isStandaloneTheLoopBenefit(item: Pick<BenefitCatalogRow, 'offeringPartners'>): boolean {
+  const partners = item.offeringPartners ?? [];
+  if (partners.length === 0) return false;
+  return partners.every(
+    (p) =>
+      p.partnerId === EXTERNAL_PARTNER_ID
+      && p.displayName.trim().toUpperCase() === 'THE LOOP'
+      && !p.contentId,
+  );
+}
+
+/** Aligné mobile : avantage lié à un partenaire / event·spot·outil (hors modèle Paramètres seul). */
+export function isPartnerAssociatedBenefit(item: Pick<BenefitCatalogRow, 'offeringPartners'>): boolean {
+  if (isStandaloneTheLoopBenefit(item)) return false;
+  const partners = item.offeringPartners ?? [];
+  if (!partners.length) return false;
+  return partners.some((p) => {
+    const name = p.displayName.trim();
+    if (!name) return false;
+    if (p.partnerId !== EXTERNAL_PARTNER_ID) return true;
+    if (name.toUpperCase() === 'THE LOOP') {
+      return Boolean(p.contentId?.trim());
+    }
+    return true;
+  });
+}
+
+const EVENT_CATALOG_PREFIX = 'catalog-event-';
+
+export interface PublishedContentIndex {
+  events: Set<string>;
+  spots: Set<string>;
+  tools: Set<string>;
+}
+
+function resolveEventLookupIds(contentId: string): string[] {
+  const id = contentId.trim();
+  if (!id) return [];
+  const ids = new Set<string>([id]);
+  if (id.startsWith(EVENT_CATALOG_PREFIX)) {
+    ids.add(id.slice(EVENT_CATALOG_PREFIX.length));
+  } else {
+    ids.add(`${EVENT_CATALOG_PREFIX}${id}`);
+  }
+  return [...ids];
+}
+
+function eventIsPublished(contentId: string, index: PublishedContentIndex): boolean {
+  return resolveEventLookupIds(contentId).some((id) => index.events.has(id));
+}
+
+/** Offre liée à un event / spot / outil publié et actif en base. */
+export function offeringMatchesPublishedContent(
+  offering: BenefitOfferingPartner,
+  index: PublishedContentIndex,
+): boolean {
+  const contentId = offering.contentId?.trim();
+  if (!contentId) return false;
+  const type = offering.contentType ?? null;
+  if (type === 'event') return eventIsPublished(contentId, index);
+  if (type === 'spot') return index.spots.has(contentId);
+  if (type === 'tool') return index.tools.has(contentId);
+  return (
+    eventIsPublished(contentId, index)
+    || index.spots.has(contentId)
+    || index.tools.has(contentId)
+  );
+}
+
+export function isTeamsAssignableCatalogItem(
+  item: BenefitCatalogRow,
+  index: PublishedContentIndex,
+): boolean {
+  if (!item.isActive || isStandaloneTheLoopBenefit(item)) return false;
+  if (!isPartnerAssociatedBenefit(item)) return false;
+  return (item.offeringPartners ?? []).some((o) => offeringMatchesPublishedContent(o, index));
+}
+
+export async function loadPublishedContentIndex(countryCode?: string): Promise<PublishedContentIndex> {
+  const cc = countryCode?.toUpperCase().slice(0, 2);
+  const events = new Set<string>();
+  const spots = new Set<string>();
+  const tools = new Set<string>();
+
+  let eventsQ = supabase
+    .from('events')
+    .select('id')
+    .eq('content_status', 'published')
+    .eq('is_active', true);
+  if (cc) eventsQ = eventsQ.eq('country_code', cc);
+  const eventsRes = await eventsQ;
+
+  let spotsQ = supabase
+    .from('establishments')
+    .select('id, category_slugs')
+    .eq('content_status', 'published')
+    .eq('is_active', true)
+    .not('category_slugs', 'cs', '{tools}');
+  if (cc) spotsQ = spotsQ.eq('country_code', cc);
+  const spotsRes = await spotsQ;
+
+  let toolsQ = supabase
+    .from('tools')
+    .select('id')
+    .eq('content_status', 'published')
+    .eq('is_active', true);
+  if (cc) toolsQ = toolsQ.eq('country_code', cc);
+  const toolsRes = await toolsQ;
+
+  for (const row of eventsRes.data ?? []) {
+    const id = String(row.id ?? '').trim();
+    if (id) {
+      events.add(id);
+      events.add(`${EVENT_CATALOG_PREFIX}${id}`);
+    }
+  }
+
+  for (const row of spotsRes.data ?? []) {
+    const slugs = Array.isArray(row.category_slugs)
+      ? (row.category_slugs as unknown[]).map(String)
+      : [];
+    if (slugs.includes('tools')) continue;
+    const id = String(row.id ?? '').trim();
+    if (id) spots.add(id);
+  }
+
+  for (const row of toolsRes.data ?? []) {
+    const id = String(row.id ?? '').trim();
+    if (id) tools.add(id);
+  }
+
+  return { events, spots, tools };
+}
+
+/** Catalogue TEAMS : actif + partenaire + contenu publié (aligné octroi mobile). */
+export async function listTeamsAssignableCatalog(
+  countryCode?: string,
+): Promise<{ items: BenefitCatalogRow[]; error?: string }> {
+  const [catalogRes, index] = await Promise.all([
+    listBenefitCatalog(countryCode),
+    loadPublishedContentIndex(countryCode),
+  ]);
+  if (catalogRes.error) {
+    return { items: [], error: catalogRes.error };
+  }
+  return {
+    items: catalogRes.items.filter((item) => isTeamsAssignableCatalogItem(item, index)),
+  };
 }
 
 export function isTheLoopLinked(partners: string[]): boolean {
@@ -80,7 +272,7 @@ export async function listBenefitCatalog(
   const { data, error } = await supabase
     .from('benefit_catalog')
     .select(
-      'id, local_id, title, description, is_active, offering_partners, benefit_kind, country_code, updated_at',
+      'id, local_id, title, description, is_active, offering_partners, partner_name, benefit_kind, country_code, updated_at',
     )
     .order('updated_at', { ascending: false })
     .limit(200);
@@ -89,7 +281,8 @@ export async function listBenefitCatalog(
 
   const items = (data ?? [])
     .map((row) => {
-      const partners = parsePartners(row.offering_partners);
+      const offeringPartners = parseOfferingPartnersFromRow(row);
+      const partners = offeringPartners.map((p) => p.displayName).filter(Boolean);
       return {
         id: String(row.id),
         localId: String(row.local_id ?? row.id),
@@ -97,7 +290,8 @@ export async function listBenefitCatalog(
         description: String(row.description ?? ''),
         isActive: row.is_active !== false,
         countryCode: row.country_code ? String(row.country_code) : null,
-        partnerNames: partners,
+        partnerNames: partners.length ? partners : parsePartners(row.offering_partners),
+        offeringPartners,
         benefitKind: String(row.benefit_kind ?? 'unlimited'),
         updatedAt: row.updated_at ? String(row.updated_at) : null,
       };

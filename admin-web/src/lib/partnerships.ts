@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { onboardApprovedPartnership } from './partner-tokens';
 
 export type PartnershipStatus =
   | 'pending'
@@ -118,20 +117,22 @@ export async function updatePartnershipStatus(
   return { ok: true };
 }
 
-/** Valide le partenariat + génère jeton SPOT + note système. */
+/** Valide le partenariat + note rappel d'inviter le contact (Espace Pro). */
 export async function approvePartnershipWithOnboarding(
   request: PartnershipRequest,
-): Promise<{ ok: boolean; tokenCode?: string; error?: string }> {
+): Promise<{ ok: boolean; error?: string }> {
   const statusRes = await updatePartnershipStatus(request.id, 'approved');
   if (!statusRes.ok) return statusRes;
 
-  return onboardApprovedPartnership({
-    partnershipId: request.id,
-    establishmentName: request.establishmentName,
-    managerName: request.managerName,
-    email: request.email,
-    countryCode: request.countryCode,
-  });
+  const email = request.email.trim().toLowerCase();
+  const label = request.establishmentName.trim() || request.managerName.trim() || 'Partenaire';
+  const noteBody = email
+    ? `Partenariat validé pour « ${label} ». Prochaine étape : inviter ${email} depuis Utilisateurs (rôle Partenaire) pour activer l'Espace Pro.`
+    : `Partenariat validé pour « ${label} ». Prochaine étape : inviter le contact depuis Utilisateurs (rôle Partenaire).`;
+
+  const noteRes = await addPartnershipNote(request.id, noteBody, null, 'Système THE LOOP');
+  if (!noteRes.ok) return { ok: false, error: noteRes.error ?? 'Note système impossible.' };
+  return { ok: true };
 }
 
 export async function addPartnershipNote(

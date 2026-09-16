@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { isSuperAdminUser } from '../lib/permissions';
@@ -38,6 +39,7 @@ import type { AdminPermissionId } from '../lib/permissions';
 type Tab = 'gates' | 'countries' | 'categories' | 'permissions' | 'legal' | 'more';
 
 export function ParametresPage() {
+  const { refreshEnabledCountries } = useAdminCountry();
   const { profile } = useAuth();
   const { can } = usePermissions();
   const isSuper = isSuperAdminUser(profile?.role);
@@ -359,9 +361,10 @@ export function ParametresPage() {
             disabled={busy}
             onClick={() => {
               setBusy(true);
-              void saveEnabledCountries(countries).then((r) => {
+              void saveEnabledCountries(countries).then(async (r) => {
                 setBusy(false);
                 setMsg(r.ok ? 'Pays enregistrés.' : r.error ?? 'Erreur');
+                if (r.ok) await refreshEnabledCountries();
               });
             }}
           >

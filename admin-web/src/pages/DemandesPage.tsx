@@ -192,7 +192,7 @@ export function DemandesPage() {
     if (status === 'approved' && partnership && partnership.status !== 'approved') {
       if (
         !window.confirm(
-          `Valider « ${partnership.establishmentName || partnership.managerName} » et générer un jeton SPOT ?`,
+          `Valider « ${partnership.establishmentName || partnership.managerName} » ?\n\nEnsuite, inviter le contact depuis Utilisateurs (rôle Partenaire).`,
         )
       ) {
         return;
@@ -205,9 +205,7 @@ export function DemandesPage() {
         return;
       }
       setMsg(
-        res.tokenCode
-          ? `Partenaire validé. Jeton SPOT : ${res.tokenCode}`
-          : 'Partenaire validé.',
+        'Partenaire validé. Invitez le contact depuis Utilisateurs (rôle Partenaire) pour activer l’Espace Pro.',
       );
       void loadPartnerships();
       return;
