@@ -109,6 +109,11 @@ export const config = {
     .map((o) => o.trim())
     .filter(Boolean),
   supabaseUrl: required('SUPABASE_URL'),
+  /** Clé publishable/anon — validation JWT admin/mobile (sb_publishable_* ou legacy anon). */
+  supabaseAnonKey:
+    optional('SUPABASE_ANON_KEY', '')
+    || optional('SUPABASE_PUBLISHABLE_KEY', '')
+    || optional('VITE_SUPABASE_ANON_KEY', ''),
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   djomyBaseUrl,
   isDjomyProduction,

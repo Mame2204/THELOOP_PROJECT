@@ -8,11 +8,23 @@ export function getApiUrl(): string {
 
 async function authHeaders(): Promise<HeadersInit> {
   const token = await getAccessToken();
-  if (!token) throw new Error('Session expirée.');
+  if (!token) {
+    throw new Error('Session expirée — reconnectez-vous à la console admin.');
+  }
   return {
     Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
   };
+}
+
+function mapApiError(status: number, bodyError?: string): string {
+  if (status === 401) {
+    return bodyError?.includes('Session')
+      ? `${bodyError} Reconnectez-vous à la console admin.`
+      : 'Session expirée — reconnectez-vous à la console admin.';
+  }
+  if (status === 403) return 'Accès refusé — compte admin requis.';
+  return bodyError ?? 'Erreur serveur.';
 }
 
 export interface PaymentSummary {
@@ -99,7 +111,7 @@ export async function fetchPaymentIntents(options?: {
       total?: number;
       error?: string;
     };
-    if (!res.ok) return { intents: [], error: body.error ?? 'Erreur paiements.' };
+    if (!res.ok) return { intents: [], error: mapApiError(res.status, body.error) };
     return { intents: body.intents ?? [], summary: body.summary, total: body.total };
   } catch {
     return { intents: [], error: 'API injoignable — vérifiez api.theloop-app.com.' };

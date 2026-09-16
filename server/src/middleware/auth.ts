@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import { config } from '../config.js';
 
 export interface AuthenticatedUser {
@@ -16,8 +15,8 @@ declare global {
 }
 
 /**
- * Vérifie le JWT Supabase envoyé par l'app mobile (Authorization: Bearer …).
- * Aucune clé secrète Djomy côté client — seulement ce token utilisateur.
+ * Vérifie le JWT utilisateur Supabase (Authorization: Bearer …).
+ * Utilise la clé publishable/anon + endpoint Auth (compatible clés sb_publishable_* et JWT asymétriques).
  */
 export async function requireSupabaseAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization;
@@ -32,16 +31,31 @@ export async function requireSupabaseAuth(req: Request, res: Response, next: Nex
     return;
   }
 
-  const client = createClient(config.supabaseUrl, config.supabaseServiceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const apiKey = config.supabaseAnonKey || config.supabaseServiceRoleKey;
+  let authResponse: globalThis.Response;
+  try {
+    authResponse = await fetch(`${config.supabaseUrl}/auth/v1/user`, {
+      headers: {
+        apikey: apiKey,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch {
+    res.status(503).json({ error: 'Auth Supabase injoignable.' });
+    return;
+  }
 
-  const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) {
+  if (!authResponse.ok) {
     res.status(401).json({ error: 'Session invalide ou expirée.' });
     return;
   }
 
-  req.authUser = { id: data.user.id, email: data.user.email ?? undefined };
+  const body = (await authResponse.json()) as { id?: string; email?: string | null };
+  if (!body.id) {
+    res.status(401).json({ error: 'Session invalide ou expirée.' });
+    return;
+  }
+
+  req.authUser = { id: body.id, email: body.email ?? undefined };
   next();
 }

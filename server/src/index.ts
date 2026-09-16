@@ -79,6 +79,7 @@ app.get('/health', async (_req, res) => {
     djomyAuthStatus: djomyAuth.httpStatus ?? null,
     djomySandboxKeysOnProd: djomyAuth.sandboxKeysOnProd ?? false,
     djomyAuthHint: djomyAuth.ok ? null : djomyAuth.hint ?? null,
+    anonKeyConfigured: Boolean(config.supabaseAnonKey),
     cronConfigured: Boolean(config.cronSecret),
     internalPushCron: config.internalPushCronEnabled,
     pushCronIntervalMinutes: config.pushCronIntervalMinutes,
