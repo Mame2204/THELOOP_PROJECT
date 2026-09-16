@@ -15,7 +15,7 @@ import { getOrCreatePartnerValidationCode } from '@/lib/partner-validation-code-
 import { getReferralStats, type ReferralStats } from '@/lib/referral-store';
 import {
   getUserFacingPrimePass,
-  hasPrimePassHistory,
+  hasMeaningfulPrimePassHistory,
   passDisplayLabel,
 } from '@/lib/subscription-history';
 import { hydrateAndSyncPassGrantsFromSupabase } from '@/lib/pass-admin-store';
@@ -60,7 +60,7 @@ export function ProfilScreen({ navigation }: Props) {
 
     if (role === 'USER_PRIME') {
       const history = await hydrateAndSyncPassGrantsFromSupabase(user.id);
-      setHasPrimeHistory(hasPrimePassHistory(history));
+      setHasPrimeHistory(hasMeaningfulPrimePassHistory(history));
       const facing = getUserFacingPrimePass(history);
       setActivePassLabel(facing ? passDisplayLabel(facing) : null);
       setPassProfileReady(true);
@@ -69,7 +69,7 @@ export function ProfilScreen({ navigation }: Props) {
 
     if (role === 'USER_FREE') {
       const history = await hydrateAndSyncPassGrantsFromSupabase(user.id);
-      setHasPrimeHistory(hasPrimePassHistory(history));
+      setHasPrimeHistory(hasMeaningfulPrimePassHistory(history));
       setActivePassLabel(null);
       setPassProfileReady(true);
       return;

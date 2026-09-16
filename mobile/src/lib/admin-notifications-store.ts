@@ -398,15 +398,59 @@ export function isPushCampaignEditable(status: PushCampaignStatus): boolean {
   return status === 'draft' || status === 'scheduled';
 }
 
+export function isPushCampaignDeletable(status: PushCampaignStatus): boolean {
+  return status !== 'sent';
+}
+
 export async function cancelPushCampaign(id: string): Promise<boolean> {
   const all = await listAdminNotifications();
   const idx = all.findIndex((n) => n.id === id && isPushCampaignEditable(n.status));
   if (idx < 0) return false;
+
+  if (isSupabaseConfigured() && supabase) {
+    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
+    await ensurePartnerSupabaseSession();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('admin_push_campaigns')
+      .update({ status: 'cancelled', updated_at: now })
+      .eq('id', id)
+      .in('status', ['draft', 'scheduled'])
+      .select('id')
+      .maybeSingle();
+    if (error || !data) return false;
+  }
+
   const cancelled = { ...all[idx], status: 'cancelled' as const };
   all[idx] = cancelled;
   await saveAll(all);
-  await persistPushCampaignRemote(cancelled);
   return true;
+}
+
+export async function deletePushCampaign(id: string): Promise<{ ok: boolean; error?: string }> {
+  const all = await listAdminNotifications();
+  const idx = all.findIndex((n) => n.id === id && isPushCampaignDeletable(n.status));
+  if (idx < 0) {
+    return { ok: false, error: 'Campagne introuvable ou déjà envoyée.' };
+  }
+
+  if (isSupabaseConfigured() && supabase) {
+    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
+    await ensurePartnerSupabaseSession();
+    const { data, error } = await supabase
+      .from('admin_push_campaigns')
+      .delete()
+      .eq('id', id)
+      .neq('status', 'sent')
+      .select('id')
+      .maybeSingle();
+    if (error) return { ok: false, error: error.message };
+    if (!data) return { ok: false, error: 'Campagne introuvable ou déjà envoyée.' };
+  }
+
+  all.splice(idx, 1);
+  await saveAll(all);
+  return { ok: true };
 }
 
 /** @deprecated Utiliser cancelPushCampaign */

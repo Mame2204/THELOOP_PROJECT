@@ -1,6 +1,7 @@
-import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { COMMUNITY_CONTACT_SUGGESTION_CTA } from '@/lib/community-copy';
+import { openExternalUrlAfterModalClose } from '@/lib/open-external-url';
 import {
   SUPPORT_EMAIL,
   SUPPORT_EMAIL_URL,
@@ -34,16 +35,34 @@ export function ContactChoiceSheet({
 
   function open(url: string, after?: () => void) {
     onClose();
-    void Linking.openURL(url);
-    after?.();
+    openExternalUrlAfterModalClose(url);
+    if (after) {
+      const delay = Platform.OS === 'android' ? 320 : 0;
+      if (delay > 0) {
+        setTimeout(after, delay);
+      } else {
+        after();
+      }
+    }
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <View style={styles.backdrop}>
         <Pressable
+          style={StyleSheet.absoluteFillObject}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Fermer"
+        />
+        <View
           style={[styles.sheet, { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder }]}
-          onPress={(e) => e.stopPropagation()}
         >
           <Pressable style={styles.closeBtn} onPress={onClose} hitSlop={12}>
             <Text style={[styles.closeText, { color: shell.pageKicker }]}>✕</Text>
@@ -120,8 +139,8 @@ export function ContactChoiceSheet({
               </Pressable>
             ) : null}
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -134,6 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 20,
+    elevation: 8,
   },
   closeBtn: { position: 'absolute', top: 16, right: 18, zIndex: 2, padding: 4 },
   closeText: { fontSize: 18, fontWeight: '300' },

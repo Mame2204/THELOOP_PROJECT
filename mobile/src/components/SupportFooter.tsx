@@ -5,10 +5,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { ContactChoiceSheet } from '@/components/ContactChoiceSheet';
 import { COMMUNITY_CONTACT_CTA, COMMUNITY_PARTNERSHIP_CTA } from '@/lib/community-copy';
+import { openExternalUrl } from '@/lib/open-external-url';
 import {
   SUPPORT_EMAIL,
+  SUPPORT_EMAIL_URL,
   SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_TEL_URL,
   SUPPORT_WEBSITE_DISPLAY,
+  SUPPORT_WEBSITE_URL,
 } from '@/lib/support-contact';
 import type { RootStackParamList } from '@/navigation/types';
 import type { ShellTheme } from '@/lib/member-grade-theme';
@@ -32,13 +36,17 @@ export function SupportFooter({ shell, showPartnership = false }: SupportFooterP
         </Pressable>
       </View>
 
-      <Text style={[styles.coords, { color: shell.pageKicker }]}>
-        {SUPPORT_WEBSITE_DISPLAY}
-        {'\n'}
-        {SUPPORT_EMAIL}
-        {'\n'}
-        {SUPPORT_PHONE_DISPLAY}
-      </Text>
+      <View style={styles.coords}>
+        <Pressable onPress={() => void openExternalUrl(SUPPORT_WEBSITE_URL)} hitSlop={6}>
+          <Text style={[styles.coordLine, { color: shell.pageKicker }]}>{SUPPORT_WEBSITE_DISPLAY}</Text>
+        </Pressable>
+        <Pressable onPress={() => void openExternalUrl(SUPPORT_EMAIL_URL)} hitSlop={6}>
+          <Text style={[styles.coordLine, { color: shell.pageKicker }]}>{SUPPORT_EMAIL}</Text>
+        </Pressable>
+        <Pressable onPress={() => void openExternalUrl(SUPPORT_PHONE_TEL_URL)} hitSlop={6}>
+          <Text style={[styles.coordLine, { color: shell.pageKicker }]}>{SUPPORT_PHONE_DISPLAY}</Text>
+        </Pressable>
+      </View>
 
       {showPartnership ? (
         <Pressable style={styles.footerLink} onPress={() => navigation.navigate('PartnerApply')}>
@@ -75,12 +83,13 @@ const styles = StyleSheet.create({
   },
   contactPrefix: { fontSize: 13 },
   contactLink: { fontSize: 13, fontWeight: '800', textDecorationLine: 'underline' },
-  coords: {
-    marginTop: 10,
+  coords: { marginTop: 10, alignItems: 'center', gap: 4 },
+  coordLine: {
     fontSize: 12,
     lineHeight: 18,
     textAlign: 'center',
     fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   footerLink: { marginTop: 10, paddingVertical: 6, paddingHorizontal: 12 },
   footerLinkText: { fontSize: 13, fontWeight: '700', textAlign: 'center' },

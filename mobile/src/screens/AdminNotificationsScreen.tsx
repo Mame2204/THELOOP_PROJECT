@@ -15,6 +15,8 @@ import {
   AUDIENCE_LABELS,
   cancelPushCampaign,
   clearAdminNotificationHistory,
+  deletePushCampaign,
+  isPushCampaignDeletable,
   isPushCampaignEditable,
   listAdminNotifications,
   sendAdminNotification,
@@ -239,6 +241,26 @@ export function AdminNotificationsScreen({ navigation }: Props) {
     ]);
   }
 
+  function handleDeleteCampaign(id: string) {
+    Alert.alert('Supprimer la campagne', 'Supprimer définitivement cette campagne ?', [
+      { text: 'Non', style: 'cancel' },
+      {
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: () => {
+          void deletePushCampaign(id).then((res) => {
+            if (!res.ok) {
+              Alert.alert('Erreur', res.error ?? 'Suppression impossible.');
+              return;
+            }
+            if (editingId === id) resetForm();
+            void load();
+          });
+        },
+      },
+    ]);
+  }
+
   if (!allowed && !isLoading) {
     return <AdminModuleDenied shell={shell} moduleLabel={permissionLabel} onBack={() => navigation.goBack()} />;
   }
@@ -436,14 +458,23 @@ export function AdminNotificationsScreen({ navigation }: Props) {
               {item.sentAt ? `Envoyé ${formatDateFr(item.sentAt)}` : item.scheduledAt ? `Prévu ${formatDateFr(item.scheduledAt)}` : '—'}
             </Text>
             <CollapsibleMessage message={item.message} color={shell.pageTitle} accentColor={ADMIN_THEME.accent} />
-            {isPushCampaignEditable(item.status) ? (
+            {isPushCampaignEditable(item.status) || isPushCampaignDeletable(item.status) ? (
               <View style={styles.historyActions}>
-                <Pressable onPress={() => startEdit(item)}>
-                  <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 11 }}>Modifier</Text>
-                </Pressable>
-                <Pressable onPress={() => handleCancelCampaign(item.id)}>
-                  <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 11 }}>Annuler</Text>
-                </Pressable>
+                {isPushCampaignEditable(item.status) ? (
+                  <>
+                    <Pressable onPress={() => startEdit(item)}>
+                      <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 11 }}>Modifier</Text>
+                    </Pressable>
+                    <Pressable onPress={() => handleCancelCampaign(item.id)}>
+                      <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 11 }}>Annuler</Text>
+                    </Pressable>
+                  </>
+                ) : null}
+                {isPushCampaignDeletable(item.status) ? (
+                  <Pressable onPress={() => handleDeleteCampaign(item.id)}>
+                    <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 11 }}>Supprimer</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
           </View>

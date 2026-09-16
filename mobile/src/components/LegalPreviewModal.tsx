@@ -1,7 +1,7 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-/** Contraste lecture longue — indépendant du thème Auth (évite fond/teintes trop proches). */
+/** Contraste lecture longue — indépendant du thème Auth. */
 const LEGAL_READING = {
   cardBg: '#FFFFFF',
   cardBorder: '#CBD5E1',
@@ -9,7 +9,7 @@ const LEGAL_READING = {
   body: '#1F2937',
   bodyBg: '#F8FAFC',
   bodyBorder: '#E2E8F0',
-  backdrop: 'rgba(15, 23, 42, 0.72)',
+  backdrop: 'rgba(15, 23, 42, 0.78)',
 } as const;
 
 interface LegalPreviewModalProps {
@@ -30,75 +30,109 @@ export function LegalPreviewModal({
   accentText,
 }: LegalPreviewModalProps) {
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.card}>
-          <Text style={styles.title}>{title}</Text>
-          <KeyboardAwareFormScroll style={styles.scroll}>
-            <View style={styles.bodyPanel}>
-              <Text style={styles.body} selectable>
-                {body}
-              </Text>
-            </View>
-          </KeyboardAwareFormScroll>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <View style={styles.header}>
+          <Text style={styles.title} accessibilityRole="header">
+            {title}
+          </Text>
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Fermer"
+          >
+            <Text style={styles.closeLink}>Fermer</Text>
+          </Pressable>
+        </View>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.bodyPanel}>
+            <Text style={styles.body} selectable>
+              {body}
+            </Text>
+          </View>
+        </ScrollView>
+        <View style={styles.footer}>
           <Pressable
             style={[styles.btn, { backgroundColor: accentBg }]}
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel="Fermer"
+            accessibilityLabel="Fermer le document"
           >
-            <Text style={[styles.btnText, { color: accentText }]}>Fermer</Text>
+            <Text style={[styles.btnText, { color: accentText }]}>J&apos;ai lu</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  safe: {
     flex: 1,
-    backgroundColor: LEGAL_READING.backdrop,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  card: {
-    maxHeight: '88%',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: LEGAL_READING.cardBorder,
     backgroundColor: LEGAL_READING.cardBg,
-    padding: 18,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.22,
-    shadowRadius: 20,
-    elevation: 12,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: LEGAL_READING.bodyBorder,
   },
   title: {
-    fontSize: 18,
+    flex: 1,
+    fontSize: 20,
     fontWeight: '800',
     color: LEGAL_READING.title,
-    marginBottom: 12,
-    lineHeight: 24,
+    lineHeight: 26,
+  },
+  closeLink: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#2563EB',
+    paddingTop: 2,
   },
   scroll: {
-    maxHeight: 420,
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 32,
   },
   bodyPanel: {
     borderWidth: 1,
     borderColor: LEGAL_READING.bodyBorder,
     borderRadius: 12,
     backgroundColor: LEGAL_READING.bodyBg,
-    padding: 14,
+    padding: 16,
   },
   body: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 26,
     color: LEGAL_READING.body,
   },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: LEGAL_READING.bodyBorder,
+  },
   btn: {
-    marginTop: 14,
     width: '100%',
     minHeight: 48,
     paddingVertical: 14,
@@ -109,7 +143,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 16,
     textAlign: 'center',
   },
 });

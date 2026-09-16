@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "gn.theloop.app",
-      "buildNumber": "37",
+      "buildNumber": "38",
       "icon": "./assets/icon.png",
       "backgroundColor": "#F4FCFD",
       "splash": {
@@ -29,7 +29,8 @@
           "NSAllowsLocalNetworking": true
         },
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": ["remote-notification"],
+        "LSApplicationQueriesSchemes": ["mailto", "tel", "whatsapp", "https", "http"]
       }
     },
     "android": {
@@ -45,7 +46,7 @@
         "imageWidth": 220
       },
       "package": "gn.theloop.app",
-      "versionCode": 37,
+      "versionCode": 38,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "android.permission.RECORD_AUDIO",
@@ -66,6 +67,7 @@
       }
     },
     "plugins": [
+      "./plugins/with-android-linking-queries",
       "@react-native-community/datetimepicker",
       [
         "expo-notifications",

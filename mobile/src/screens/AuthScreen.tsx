@@ -8,6 +8,7 @@ import { DateTimeField } from '@/components/DateTimeField';
 import { InternationalPhoneField } from '@/components/InternationalPhoneField';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { LegalPreviewModal } from '@/components/LegalPreviewModal';
+import { formatLegalBodyForDisplay } from '@/lib/legal-display';
 import { LoopLogo } from '@/components/LoopLogo';
 import { PasswordInput } from '@/components/PasswordInput';
 import { useAuthContext } from '@/context/AuthContext';
@@ -202,9 +203,9 @@ export function AuthScreen({ navigation, route }: Props) {
   }
 
   async function openLegalDoc(key: LegalContentKey) {
-    const content = await getLegalContent(key);
+    const content = await getLegalContent(key, { force: true });
     setLegalPreviewTitle(content.title);
-    setLegalPreviewBody(content.body);
+    setLegalPreviewBody(formatLegalBodyForDisplay(content.body));
     setLegalPreviewKey(key);
   }
 

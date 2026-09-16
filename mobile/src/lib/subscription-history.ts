@@ -429,9 +429,28 @@ export function getPastSubscriptions(
   return history.filter((r) => r.type === type && !skip.has(r.id) && r.status !== 'pending' && r.status !== 'active');
 }
 
-/** Au moins un PASS Prime acheté, activé ou expiré. */
+/** Au moins une ligne PASS Prime en base (tout statut). */
 export function hasPrimePassHistory(history: SubscriptionRecord[]): boolean {
   return history.some((r) => r.type === 'prime');
+}
+
+/**
+ * Profil membre : afficher « Mon PASS » seulement si le membre a déjà eu un PASS
+ * (achat, file d’attente payée, octroi admin activé/expiré) — pas les comptes neufs.
+ */
+export function hasMeaningfulPrimePassHistory(history: SubscriptionRecord[]): boolean {
+  return history.some((r) => {
+    if (r.type !== 'prime') return false;
+    const purchased =
+      Boolean(r.paymentMethod) ||
+      Boolean(r.paidAt) ||
+      (r.amountGnf != null && r.amountGnf > 0);
+    if (purchased) return true;
+    if (isAdminGrantedPass(r)) {
+      return r.status === 'active' || r.status === 'expired' || r.status === 'suspended';
+    }
+    return false;
+  });
 }
 
 /** PASS achetés (hors octrois admin gratuits) pour l’historique membre. */

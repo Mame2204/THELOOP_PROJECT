@@ -38,16 +38,17 @@ async function hasOpenPartnershipRequest(email: string): Promise<boolean> {
   const normalized = email.trim().toLowerCase();
   const { data, error } = await supabase
     .from('partnership_requests')
-    .select('id')
-    .eq('email', normalized)
+    .select('id, email, status')
     .in('status', [...OPEN_PARTNERSHIP_STATUSES])
-    .limit(1);
+    .limit(20);
 
   if (error) {
     console.warn('[Partenariat] recherche doublon:', error.message);
     return false;
   }
-  return (data?.length ?? 0) > 0;
+  return (data ?? []).some(
+    (row) => String(row.email ?? '').trim().toLowerCase() === normalized,
+  );
 }
 
 export async function submitPartnershipRequest(
@@ -66,6 +67,43 @@ export async function submitPartnershipRequest(
     return { ok: false, error: PARTNERSHIP_DUPLICATE_MESSAGE, duplicate: true };
   }
 
+  const rpcPayload = {
+    p_manager_name: input.companyName.trim(),
+    p_establishment_name: input.companyName.trim(),
+    p_email: email,
+    p_phone: phone,
+    p_country_code: countryCode,
+    p_admin_notes: projectNote || null,
+  };
+
+  const { data: rpcId, error: rpcError } = await supabase.rpc('submit_partnership_request', rpcPayload);
+
+  if (rpcError) {
+    if (isDuplicatePartnershipError(rpcError) || rpcError.message.includes('open_request_exists')) {
+      return { ok: false, error: PARTNERSHIP_DUPLICATE_MESSAGE, duplicate: true };
+    }
+    if (!rpcError.message.includes('Could not find the function')) {
+      console.warn('[Partenariat] RPC:', rpcError.message);
+      return { ok: false, error: 'Envoi impossible. Réessayez dans quelques instants.' };
+    }
+  }
+
+  if (!rpcError && rpcId) {
+    const title = 'Nouvelle demande de partenariat';
+    const message = `${input.companyName.trim()} — ${email} · ${phone}`;
+    const { data: adminIds, error: notifyError } = await supabase.rpc(
+      'notify_admins_for_partnership_request',
+      { p_email: email },
+    );
+    if (!notifyError) {
+      await deliverPushToAdminUserIds(adminIds, title, message, 'admin');
+      return { ok: true };
+    }
+    console.warn('[Partenariat] notify_admins_for_partnership_request:', notifyError.message);
+    await notifyAdminUsers({ title, message, countryCode });
+    return { ok: true };
+  }
+
   const { error } = await supabase.from('partnership_requests').insert({
     manager_name: input.companyName,
     establishment_name: input.companyName,
@@ -79,7 +117,15 @@ export async function submitPartnershipRequest(
   if (error) {
     console.warn('[Partenariat]', error.message);
     if (isDuplicatePartnershipError(error)) {
-      return { ok: false, error: PARTNERSHIP_DUPLICATE_MESSAGE, duplicate: true };
+      const stillOpen = await hasOpenPartnershipRequest(email);
+      if (stillOpen) {
+        return { ok: false, error: PARTNERSHIP_DUPLICATE_MESSAGE, duplicate: true };
+      }
+      return {
+        ok: false,
+        error:
+          'Impossible de renouveler la demande (configuration serveur). Contactez contact@theloop-app.com ou réessayez après mise à jour de l’app.',
+      };
     }
     return { ok: false, error: 'Envoi impossible. Réessayez dans quelques instants.' };
   }

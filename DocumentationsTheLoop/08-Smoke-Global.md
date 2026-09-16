@@ -1,8 +1,8 @@
 # THE LOOP — Smoke test complet (à cocher)
 
 > **Màj :** 16 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
-> **App mobile :** build **36** (TestFlight / Play internal)  
-> **Admin web :** `https://admin.theloop-app.com`  
+> **App mobile :** build **37** (TestFlight / Play internal) · build **38** prévu (contact Android, CGU, profil Prime, agenda jour J)  
+> **Admin web :** `https://admin.theloop-app.com` (deploy `2a1a1ce` — supprimer campagnes push)  
 > **Serveur :** `https://api.theloop-app.com` (cron push, paiements)
 
 ---
@@ -48,8 +48,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## 0 — Avant de commencer
 
 ### Environnement
-- [ x ] **📱** Build **36** installé (TestFlight)
-- [ x ] **🤖** Build **36** installé (Play internal)
+- [ x ] **📱** Build **37** installé (TestFlight)
+- [ x ] **🤖** Build **37** installé (Play internal)
 - [ x ] **💻** Admin-web accessible
 - [ x ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
 
@@ -89,15 +89,15 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** « Mot de passe oublié ? »
 - [ x ] **🤖** Idem
-- [ r ] **📱** « Activer un compte invité par l’équipe »
-- [ r ] **🤖** Idem
-- [ r ] **📱** Lien **Pro ? Rejoindre THE LOOP →** (demande partenariat)
-- [ r ] **📱** Même e-mail + demande **en cours** (`pending` / `to_contact` / `in_discussion`) → alerte **Demande déjà enregistrée** (pas « duplicate » brut Postgres)
-- [ r ] **📱** Nouvelle demande autorisée si statut admin **rejeté** ou **approuvé**
-- [ r ] **📱** Après envoi : **tous** les appareils admin (iOS + Android) reçoivent la notif inbox + push OS (pas seulement l’appareil du test)
-- [ r ] **🤖** Idem
-- [ r ] **📱** CGU / Politique de confidentialité (modales légales)
-- [ r ] **🤖** Idem
+- [ x ] **📱** « Activer un compte invité par l’équipe »
+- [ x ] **🤖** Idem
+- [ x ] **📱** Lien **Pro ? Rejoindre THE LOOP →** (demande partenariat)
+- [ x ] **📱** Même e-mail + demande **en cours** (`pending` / `to_contact` / `in_discussion`) → alerte **Demande déjà enregistrée** (pas « duplicate » brut Postgres)
+- [ k ] **📱** Nouvelle demande autorisée si statut admin **rejeté** ou **approuvé**
+- [ x ] **📱** Après envoi : **tous** les appareils admin (iOS + Android) reçoivent la notif inbox + push OS (pas seulement l’appareil du test)
+- [ x ] **🤖** Idem
+- [ k ] **📱** CGU / Politique de confidentialité (modales légales)
+- [ k ] **🤖** Idem
 
 ### Validation privilège (double tap logo)
 - [ x ] **📱** **Double tap** logo THE LOOP → écran **Code établissement**
@@ -140,10 +140,10 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Profil & upgrade (gate achat PASS **ON**)
 - [ x ] **📱** Profil : QR membre · parrainage · paramètres
 - [ x ] **🤖** Idem
-- [ r ] **📱** **Membre jamais Prime** → carte **« Passez à l’expérience premium »** (Découvrir Prime) · **pas** de bouton **Mon PASS**
+- [ k ] **📱** **Membre jamais Prime** → carte **« Passez à l’expérience premium »** (Découvrir Prime) · **pas** de bouton **Mon PASS**
 - [ r ] **🤖** Idem
-- [ r ] **📱** **Membre ex-Prime** (PASS expiré / historique en base ou local) → **Mon PASS** visible · **pas** de carte Découvrir Prime
-- [ r ] **🤖** Idem
+- [ x ] **📱** **Membre ex-Prime** (PASS expiré / historique en base ou local) → **Mon PASS** visible · **pas** de carte Découvrir Prime
+- [ x ] **🤖** Idem
 - [ x ] **📱** Pas d’accès aux privilèges Prime octroyés (tant que rôle `member`)
 - [ x ] **🤖** Idem
 
@@ -168,8 +168,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Navigation & contenu
 - [ x ] **📱** Mêmes onglets que membre (+ accès contenu exclusif Prime)
 - [ x ] **🤖** Idem
-- [ r ] **📱** Profil → bouton **Mon PASS** (pas de carte « Découvrir Prime ») · historique PASS
-- [ r ] **🤖** Idem
+- [ x ] **📱** Profil → bouton **Mon PASS** (pas de carte « Découvrir Prime ») · historique PASS
+- [ x ] **🤖** Idem
 - [ ] **📱** Profil → **Mes avantages** / privilèges octroyés
 - [ ] **🤖** Idem
 - [ x ] **📱** Contenu et offres réservés Prime accessibles
@@ -186,8 +186,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Paiement Orange Money ou carte · succès
 - [ x ] **🤖** Idem
-- [ r ] **📱** Rôle Prime actif · notif confirmation
-- [ r ] **🤖** Idem
+- [ k ] **📱** Rôle Prime actif · notif confirmation
+- [ k ] **🤖** Idem
 - [ x ] **💻** Paiement visible admin-web → Paiements
 - [ x ] **📱** Échec paiement → message clair · pas Prime fantôme
 - [ x ] **🤖** Idem
@@ -274,8 +274,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### PASS & paiements
 - [ x ] **📱** Gestion PASS · prix Guinée (super admin)
 - [ x ] **🤖** Idem
-- [ ] **📱** Paiements · refs Djomy · **Resync**
-- [ ] **🤖** Idem
+- [ x ] **📱** Paiements · refs Djomy · **Resync**
+- [ x ] **🤖** Idem
 - [ ] **📱** Octroi manuel privilège
 - [ ] **🤖** Idem
 
@@ -284,8 +284,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Accueil : hero · sondage · parcours · singulier
 - [ x ] **🤖** Idem
-- [ ] **📱** Partenariat approuvé → note système · inviter le contact (Utilisateurs · rôle **Partenaire**)
-- [ ] **🤖** Idem
+- [ x ] **📱** Partenariat approuvé → note système · inviter le contact (Utilisateurs · rôle **Partenaire**)
+- [ x ] **🤖** Idem
 - [ ] **📱** Idée utilisateur → préremplir éditeur contenu
 - [ ] **🤖** Idem
 
@@ -325,12 +325,12 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 
 ### Invitations & waitlist
-- [ ] **💻** Users → **Inviter** → mail invitation reçu
-- [ ] **💻** Inviter un **partenaire** (rôle Partenaire) après validation demande partenariat § E
-- [ ] **📱** Clic lien → compte activé · bon rôle
-- [ ] **🤖** Idem
-- [ ] **📱** Partenaire invité → connexion e-mail + MDP → Espace Pro
-- [ ] **🤖** Idem
+- [ x ] **💻** Users → **Inviter** → mail invitation reçu
+- [ x ] **💻** Inviter un **partenaire** (rôle Partenaire) après validation demande partenariat § E
+- [ x ] **📱** Clic lien → compte activé · bon rôle
+- [ x ] **🤖** Idem
+- [ x ] **📱** Partenaire invité → connexion e-mail + MDP → Espace Pro
+- [ x ] **🤖** Idem
 - [ ] **💻** Users → **Waitlist** → pré-créer compte → statut `invited`
 - [ ] **📱** Admin mobile → Waitlist → pré-créer (même flux)
 - [ ] **🤖** Idem
@@ -344,7 +344,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Accès
 - [ x ] **💻** Login admin · session stable
 - [ x ] **💻** Sélecteur pays GN · données filtrées
-- [ r ] **💻** Menu masque modules sans permission
+- [ x ] **💻** Menu masque modules sans permission
 
 ### Users · PASS · paiements
 - [ ] **💻** Users · liste · édition · invite · waitlist
@@ -357,7 +357,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Contenu · liste events / spots / outils
 - [ x ] **💻** Créer / modifier (ContentEditor)
 - [ x ] **💻** À la une · archiver
-- [ ] **💻** Idée → ouvrir éditeur prérempli
+- [ x ] **💻** Idée → ouvrir éditeur prérempli
 
 ### Accueil · Loop · étoiles
 - [ x ] **💻** Accueil · sondage · parcours · singulier · logos
@@ -366,15 +366,15 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** TEAMS · toggles overrides par membre
 
 ### Paramètres
-- [ ] **💻** Gates · pays · catégories · permissions · legal
+- [ x ] **💻** Gates · pays · catégories · permissions · legal
 - [ x ] **💻** Types privilège · standalone benefit
-- [ ] **💻** Automatisations · jobs · exécuter (si bouton présent)
+- [ x ] **💻** Automatisations · jobs · exécuter (si bouton présent)
 - [ ] **💻** Horaires · onglets · milestones · tirage
 
 ### Notifications (admin-web)
 - [ x ] **💻** Envoi immédiat · audience Tous
-- [ ] **💻** Audiences : favoris · anniversaires · individuel
-- [ r ] **💻** Planifier · annuler campagne
+- [ x ] **💻** Audiences : favoris · anniversaires · individuel
+- [ r ] **💻** Planifier · modifier · annuler · **supprimer** campagne (retest post-deploy `2a1a1ce`)
 - [ x ] **💻** Historique · statuts `sent` / `failed` / `cancelled`
 
 > Détail push : voir aussi `07-Smoke-Push.md`
@@ -450,31 +450,32 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **📱🤖** Non connecté → Auth bloqué identique
 - [ x ] **📱🤖** Login / logout identique
 - [ x ] **📱🤖** Navigation par rôle identique
-- [ ] **📱🤖** Push OS reçu sur les deux
-- [ ] **📱🤖** Partenaire : soumission + modération OK
-- [ ] **📱🤖** Admin : modération OK
+- [ x ] **📱🤖** Push OS reçu sur les deux
+- [ x ] **📱🤖** Partenaire : soumission + modération OK
+- [ x ] **📱🤖** Admin : modération OK
 - [ x ] **📱🤖** PASS Djomy (si testé) OK des deux côtés
 
 ---
 
 # M — Plus tard (non bloquant)
 
-- [ ] **🔜** Build **37** TestFlight + Play (quota EAS)
-- [ ] **🔜** E-mail support dans le binaire app (build 37+)
-- [ ] **🔜** Refaire § F (bienvenue immédiate) sur build 37
-- [ ] **🔜** Reset MDP via page web sans app installée
+- [ x ] **🔜** Build **37** TestFlight + Play (quota EAS)
+- [ r ] **🔜** E-mail support dans le binaire app (build 37+)
+- [ x ] **🔜** Refaire § F (bienvenue immédiate) sur build 37
+- [ x ] **🔜** Reset MDP via page web sans app installée
 
 ---
 
 ## Notes de session
 
 ```
-Date :
+Date : 16 sept. 2026
 Testeur :
-Build iPhone :
-Build Android :
-Admin-web à jour : oui / non
-Serveur Render à jour : oui / non
-Migration e-mail appliquée : oui / non
-Bloquants trouvés :
+Build iPhone : 37
+Build Android : 37
+Admin-web à jour : oui (2a1a1ce)
+Serveur Render à jour : oui
+Migration e-mail appliquée : oui
+Migration partenariat 20260918 : non (à appliquer)
+Bloquants trouvés : CGU illisibles · contact Android · profil Prime nouveau compte · partenariat après rejet
 ```
