@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Keyboard, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { AppState, Keyboard, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { PrimeBadge } from '@/components/PrimeBadge';
@@ -9,6 +9,7 @@ import { useContent } from '@/context/ContentContext';
 import { useFavoritesSignup } from '@/context/FavoritesSignupContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { DEFAULT_SECTIONS, getAppSections, type AppSectionsConfig } from '@/lib/app-sections-store';
+import { subscribeHomeRefresh } from '@/lib/home-refresh';
 import { canViewPrimeContent, isAuthenticated, type UserRole } from '@/types';
 
 /** Onglets réservés aux comptes connectés — sans compte = écran Auth uniquement (RootNavigator). */
@@ -72,9 +73,35 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const currentRoute = state.routes[state.index]?.name;
   const tabSurface = shell.tabBarBg;
 
-  useEffect(() => {
-    void getAppSections(activeCountryCode).then(setSections);
+  const reloadTabSections = useCallback(async (force = false) => {
+    const next = await getAppSections(activeCountryCode, { force });
+    setSections(next);
   }, [activeCountryCode]);
+
+  useEffect(() => {
+    void reloadTabSections(false);
+  }, [activeCountryCode, user?.id, role, reloadTabSections]);
+
+  useEffect(
+    () =>
+      subscribeHomeRefresh((reason) => {
+        if (reason === 'sections') {
+          void reloadTabSections(false);
+          return;
+        }
+        if (reason === 'auth-session') {
+          void reloadTabSections(true);
+        }
+      }),
+    [reloadTabSections],
+  );
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') void reloadTabSections(true);
+    });
+    return () => sub.remove();
+  }, [reloadTabSections]);
 
   useEffect(() => {
     const allowed: string[] = ALL_TABS.filter((t) => t.roles.includes(role) && isTabVisibleBySections(t, sections)).map(

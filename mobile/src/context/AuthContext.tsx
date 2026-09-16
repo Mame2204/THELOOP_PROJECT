@@ -55,7 +55,7 @@ import {
   normalizeEmail,
   validateSignupEmail,
 } from '@/lib/email-auth';
-import { completeAuthSessionFromUrl, describeAuthUrlParams } from '@/lib/auth-deep-link';
+import { completeAuthSessionFromUrl, describeAuthUrlParams, extractAuthParams } from '@/lib/auth-deep-link';
 import { emitAuthFlowEvent } from '@/lib/auth-flow-events';
 import {
   getAuthEmailRedirectUrl,
@@ -102,6 +102,7 @@ import { bootstrapPlatformRoles } from '@/lib/platform-roles-store';
 import { clearPartnerSpotSession, loadPartnerSpotSession, savePartnerSpotSession } from '@/lib/partner-session-store';
 import {
   accountLoginBlockedMessage,
+  isAccountAccessAllowedForSession,
   resolveAccountAccessStatus,
   type AccountAccessStatus,
 } from '@/lib/account-access';
@@ -264,7 +265,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         account_status: typeof row.account_status === 'string' ? row.account_status : null,
         is_active: row.is_active as boolean | undefined,
       });
-      if (access !== 'active') {
+      if (!isAccountAccessAllowedForSession(access)) {
         return null;
       }
       return mapDbUser(row);
@@ -373,7 +374,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const access = statusRow
             ? resolveAccountAccessStatus(statusRow)
             : 'deleted';
-          if (access !== 'active') {
+          if (!isAccountAccessAllowedForSession(access)) {
             // Différer signOut hors du callback auth pour éviter un verrou mort.
             setTimeout(() => {
               void supabase.auth.signOut();
@@ -544,7 +545,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!active) return;
             void (async () => {
               await runApply(session);
-              if (session?.user) {
+              if (session?.user && !passwordRecoveryPendingRef.current) {
                 await fulfillPendingWelcomeRef.current(session.user);
               }
             })();
@@ -575,6 +576,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const paramHint = describeAuthUrlParams(url);
       if (__DEV__) {
         console.log('[Auth] deep link reçu:', url.split('#')[0].split('?')[0], '|', paramHint);
+      }
+      const linkParams = extractAuthParams(url);
+      const linkType = (linkParams.type ?? '').toLowerCase();
+      if (
+        linkParams.token_hash
+        || linkType === 'recovery'
+        || linkType === 'invite'
+      ) {
+        beginPasswordRecovery();
       }
       const result = await completeAuthSessionFromUrl(url);
       if (result.ok && supabase) {
@@ -992,6 +1002,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('id', authUser.id)
       .maybeSingle();
     const access = statusRow ? resolveAccountAccessStatus(statusRow) : 'deleted';
+    if (access === 'invited') {
+      await supabase.auth.signOut();
+      throw new Error(accountLoginBlockedMessage('invited'));
+    }
     if (access !== 'active') {
       await supabase.auth.signOut();
       throw new Error(accountLoginBlockedMessage(access));
@@ -1074,7 +1088,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const access = resolveAccountAccessStatus(userRow);
-    if (access !== 'active') {
+    if (!isAccountAccessAllowedForSession(access)) {
       throw new Error(accountLoginBlockedMessage(access));
     }
 
@@ -1139,7 +1153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const access = resolveAccountAccessStatus(userRow);
-      if (access !== 'active') {
+      if (!isAccountAccessAllowedForSession(access)) {
         throw new Error(accountLoginBlockedMessage(access));
       }
 
@@ -1190,7 +1204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const access = statusRow
           ? resolveAccountAccessStatus(statusRow)
           : 'deleted';
-        if (access !== 'active') {
+        if (!isAccountAccessAllowedForSession(access)) {
           await supabase.auth.signOut();
           throw new Error(accountLoginBlockedMessage(access));
         }
@@ -1617,18 +1631,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (newPassword.trim().length < 8) {
       throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
     }
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      throw new Error('Lien expiré. Demandez un nouveau lien de réinitialisation.');
+    let sessionData = await supabase.auth.getSession();
+    if (!sessionData.data.session) {
+      const refreshed = await supabase.auth.refreshSession();
+      sessionData = { data: refreshed.data, error: refreshed.error };
     }
+    if (!sessionData.data.session) {
+      throw new Error(
+        'Lien expiré ou session perdue. Ouvrez le dernier e-mail reçu sur ce téléphone, puis réessayez.',
+      );
+    }
+    const activeSession = sessionData.data.session;
     const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
     if (error) {
       throw new Error(error.message || 'Impossible d’enregistrer le nouveau mot de passe.');
     }
     endPasswordRecovery();
-    await fulfillPendingWelcomeRef.current(sessionData.session.user);
+    await fulfillPendingWelcomeRef.current(activeSession.user);
     // Marquer invitation admin si présente
-    const email = sessionData.session.user.email;
+    const email = activeSession.user.email;
     if (email) {
       try {
         const { findPendingInviteByEmail, markInviteActivated } = await import('@/lib/admin-invite-store');

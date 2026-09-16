@@ -13,7 +13,12 @@ import { SupportFooter } from '@/components/SupportFooter';
 import { formatDateFr } from '@/lib/date-utils';
 import { getOrCreatePartnerValidationCode } from '@/lib/partner-validation-code-store';
 import { getReferralStats, type ReferralStats } from '@/lib/referral-store';
-import { getUserFacingPrimePass, loadSubscriptionHistory, passDisplayLabel } from '@/lib/subscription-history';
+import {
+  getUserFacingPrimePass,
+  hasPrimePassHistory,
+  passDisplayLabel,
+} from '@/lib/subscription-history';
+import { hydrateAndSyncPassGrantsFromSupabase } from '@/lib/pass-admin-store';
 import { getCountryLabel } from '@/lib/countries';
 import { getProfileAccent } from '@/lib/profile-accent';
 import { isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
@@ -32,6 +37,8 @@ export function ProfilScreen({ navigation }: Props) {
   const isFocused = useIsFocused();
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [activePassLabel, setActivePassLabel] = useState<string | null>(null);
+  const [hasPrimeHistory, setHasPrimeHistory] = useState(false);
+  const [passProfileReady, setPassProfileReady] = useState(false);
   const [partnerValidationCode, setPartnerValidationCode] = useState<string | null>(null);
 
   const isPartner = role === 'PARTNER';
@@ -43,18 +50,34 @@ export function ProfilScreen({ navigation }: Props) {
     setReferralStats(await getReferralStats(user.id, user));
   }, [user?.id, user?.referralCode, user?.phoneNumber, user?.email]);
 
-  const loadPassLabel = useCallback(async () => {
-    if (!user || user.id === 'anonymous' || role !== 'USER_PRIME') {
+  const loadPassProfile = useCallback(async () => {
+    if (!user || user.id === 'anonymous') {
       setActivePassLabel(null);
+      setHasPrimeHistory(false);
+      setPassProfileReady(false);
       return;
     }
-    const history = await loadSubscriptionHistory(user.id);
-    const facing = getUserFacingPrimePass(history);
-    if (!facing) {
-      setActivePassLabel(null);
+
+    if (role === 'USER_PRIME') {
+      const history = await hydrateAndSyncPassGrantsFromSupabase(user.id);
+      setHasPrimeHistory(hasPrimePassHistory(history));
+      const facing = getUserFacingPrimePass(history);
+      setActivePassLabel(facing ? passDisplayLabel(facing) : null);
+      setPassProfileReady(true);
       return;
     }
-    setActivePassLabel(passDisplayLabel(facing));
+
+    if (role === 'USER_FREE') {
+      const history = await hydrateAndSyncPassGrantsFromSupabase(user.id);
+      setHasPrimeHistory(hasPrimePassHistory(history));
+      setActivePassLabel(null);
+      setPassProfileReady(true);
+      return;
+    }
+
+    setActivePassLabel(null);
+    setHasPrimeHistory(false);
+    setPassProfileReady(true);
   }, [user?.id, role]);
 
   const loadPartnerCode = useCallback(async () => {
@@ -76,7 +99,7 @@ export function ProfilScreen({ navigation }: Props) {
 
   useFocusLoad(
     async () => {
-      await loadPassLabel();
+      await loadPassProfile();
       await loadPartnerCode();
       // syncExpiredBenefitPendingStates retiré du focus Profil (egress) — reste sur Mes privilèges.
     },
@@ -118,8 +141,13 @@ export function ProfilScreen({ navigation }: Props) {
   const accent = getProfileAccent(role, shell, grade, theme);
   const showReferralCard = role === 'USER_FREE' || role === 'USER_PRIME' || role === 'ADMIN' || isPartner;
   // Achat PASS / Djomy — gate remote `passPurchaseEnabled`
-  const showPrimeUpgrade = passPurchaseEnabled && role === 'USER_FREE';
-  const showPassManagement = passPurchaseEnabled && (role === 'USER_FREE' || role === 'USER_PRIME');
+  // Jamais Prime → carte découverte ; déjà eu un PASS → « Mon PASS » uniquement.
+  const showPrimeUpgrade =
+    passPurchaseEnabled && role === 'USER_FREE' && passProfileReady && !hasPrimeHistory;
+  const showPassManagement =
+    passPurchaseEnabled &&
+    passProfileReady &&
+    (role === 'USER_PRIME' || (role === 'USER_FREE' && hasPrimeHistory));
   const showPartnershipLink = role === 'USER_FREE' || role === 'USER_PRIME';
   return (
     <ScrollView style={{ backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>

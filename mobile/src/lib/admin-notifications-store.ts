@@ -394,15 +394,116 @@ export async function processDueScheduledNotifications(): Promise<number> {
   return sent;
 }
 
-export async function cancelScheduledNotification(id: string): Promise<boolean> {
+export function isPushCampaignEditable(status: PushCampaignStatus): boolean {
+  return status === 'draft' || status === 'scheduled';
+}
+
+export async function cancelPushCampaign(id: string): Promise<boolean> {
   const all = await listAdminNotifications();
-  const idx = all.findIndex((n) => n.id === id && n.status === 'scheduled');
+  const idx = all.findIndex((n) => n.id === id && isPushCampaignEditable(n.status));
   if (idx < 0) return false;
   const cancelled = { ...all[idx], status: 'cancelled' as const };
   all[idx] = cancelled;
   await saveAll(all);
   await persistPushCampaignRemote(cancelled);
   return true;
+}
+
+/** @deprecated Utiliser cancelPushCampaign */
+export async function cancelScheduledNotification(id: string): Promise<boolean> {
+  return cancelPushCampaign(id);
+}
+
+export async function updateAdminNotification(
+  id: string,
+  input: {
+    title: string;
+    message: string;
+    audience: NotificationAudience;
+    targetPhone?: string | null;
+    favoriteEventCategories?: EventCategory[];
+    favoriteSpotCategories?: LocationSubCategory[];
+    favoriteToolCategories?: string[];
+    scheduledAt?: string | null;
+    countryCode: string;
+    sendNow: boolean;
+  },
+): Promise<{ ok: boolean; entry?: AdminNotification; error?: string }> {
+  const all = await listAdminNotifications();
+  const idx = all.findIndex((n) => n.id === id);
+  if (idx < 0) return { ok: false, error: 'Campagne introuvable.' };
+  const existing = all[idx];
+  if (!isPushCampaignEditable(existing.status)) {
+    return { ok: false, error: 'Campagne déjà envoyée.' };
+  }
+
+  const title = input.title.trim();
+  const message = input.message.trim();
+  if (!title || !message) return { ok: false, error: 'Titre et message requis.' };
+
+  const now = new Date().toISOString();
+  const isScheduled =
+    !input.sendNow &&
+    Boolean(input.scheduledAt && new Date(input.scheduledAt).getTime() > Date.now());
+
+  if (!input.sendNow && !isScheduled) {
+    return { ok: false, error: 'Indiquez une date et une heure dans le futur.' };
+  }
+
+  const base: AdminNotification = {
+    ...existing,
+    title,
+    message,
+    audience: input.audience,
+    targetPhone: input.targetPhone?.trim() || null,
+    favoriteEventCategories: input.favoriteEventCategories ?? [],
+    favoriteSpotCategories: input.favoriteSpotCategories ?? [],
+    favoriteToolCategories: input.favoriteToolCategories ?? [],
+    countryCode: input.countryCode,
+    scheduledAt: isScheduled ? (input.scheduledAt ?? null) : null,
+    sentAt: null,
+    status: isScheduled ? 'scheduled' : 'draft',
+    recipientCount: 0,
+  };
+
+  if (isScheduled) {
+    all[idx] = base;
+    await saveAll(all);
+    await persistPushCampaignRemote(base);
+    return { ok: true, entry: base };
+  }
+
+  await ensurePushCampaignDraft(base);
+  try {
+    const recipientCount = await distributeNotification({
+      title: base.title,
+      message: base.message,
+      audience: base.audience,
+      targetPhone: base.targetPhone,
+      favoriteEventCategories: base.favoriteEventCategories,
+      favoriteSpotCategories: base.favoriteSpotCategories,
+      favoriteToolCategories: base.favoriteToolCategories,
+      countryCode: base.countryCode,
+      campaignId: base.id,
+    });
+    const sent: AdminNotification = {
+      ...base,
+      status: 'sent',
+      sentAt: now,
+      recipientCount,
+    };
+    all[idx] = sent;
+    await saveAll(all);
+    await persistPushCampaignRemote(sent);
+    return { ok: true, entry: sent };
+  } catch (err) {
+    const failed: AdminNotification = { ...base, status: 'failed' };
+    all[idx] = failed;
+    await saveAll(all);
+    await persistPushCampaignRemote(failed);
+    const msg = err instanceof Error ? err.message : 'Échec de diffusion';
+    return { ok: false, error: msg };
+  }
 }
 
 /** Vide l'historique des campagnes push admin (AsyncStorage local). */
@@ -416,4 +517,5 @@ export const STATUS_LABELS: Record<PushCampaignStatus, string> = {
   scheduled: 'Planifié',
   sent: 'Envoyé',
   cancelled: 'Annulé',
+  failed: 'Échec',
 };

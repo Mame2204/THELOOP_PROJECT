@@ -44,6 +44,11 @@ export function audienceLabel(audience: string): string {
   return AUDIENCE_LABELS[audience as NotificationAudience] ?? audience;
 }
 
+/** Campagne modifiable / annulable tant qu’elle n’a pas été envoyée. */
+export function isPushCampaignEditable(status: string): boolean {
+  return status === 'draft' || status === 'scheduled';
+}
+
 export interface PushCampaign {
   id: string;
   title: string;
@@ -238,12 +243,186 @@ export async function cancelPushCampaign(id: string): Promise<{ ok: boolean; err
     .from('admin_push_campaigns')
     .update({ status: 'cancelled', updated_at: now })
     .eq('id', id)
-    .eq('status', 'scheduled')
+    .in('status', ['draft', 'scheduled'])
     .select('id')
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
-  if (!data) return { ok: false, error: 'Campagne introuvable ou déjà traitée.' };
+  if (!data) return { ok: false, error: 'Campagne introuvable ou déjà envoyée.' };
   return { ok: true };
+}
+
+async function distributePushCampaignNow(input: {
+  id: string;
+  title: string;
+  message: string;
+  audience: NotificationAudience;
+  countryCode: string;
+  targetPhone?: string | null;
+  favoriteEventCategories?: string[];
+  favoriteSpotCategories?: string[];
+  favoriteToolCategories?: string[];
+}): Promise<number> {
+  const { title, message, audience, countryCode, id } = input;
+  const favEvents = input.favoriteEventCategories ?? [];
+  const favSpots = input.favoriteSpotCategories ?? [];
+  const favTools = input.favoriteToolCategories ?? [];
+
+  if (audience === 'individual') {
+    const phone = input.targetPhone!.trim();
+    const { data: users } = await supabase
+      .from('users')
+      .select('id')
+      .eq('country_code', countryCode)
+      .or(`phone_number.eq.${phone},phone_number.ilike.%${phone.slice(-9)}`)
+      .limit(20);
+    const userIds = (users ?? []).map((u) => String(u.id));
+    return distributeInboxAndPush({ userIds, title, message, audience, campaignId: id });
+  }
+  if (audience === 'favorites') {
+    const userIds = await resolveFavoriteUserIds(favEvents, favSpots, favTools, countryCode);
+    return distributeInboxAndPush({ userIds, title, message, audience, campaignId: id });
+  }
+  if (audience === 'birthday') {
+    const userIds = await resolveBirthdayUserIds(countryCode);
+    return distributeInboxAndPush({ userIds, title, message, audience, campaignId: id });
+  }
+  const rpcAudience = audience === 'all' ? 'everyone' : audience;
+  const { data, error } = await supabase.rpc('admin_distribute_notifications', {
+    p_title: title,
+    p_message: message,
+    p_audience: rpcAudience,
+    p_country_code: countryCode,
+    p_campaign_id: id,
+  });
+  if (error) throw new Error(error.message);
+  const userIds = Array.isArray(data)
+    ? data.map((uid) => String(uid)).filter((uid) => /^[0-9a-f-]{36}$/i.test(uid))
+    : [];
+  void pushOsAfterInbox(userIds, title, message, { audience: rpcAudience, campaignId: id });
+  return userIds.length;
+}
+
+/** Met à jour une campagne non envoyée (brouillon ou planifiée). Envoi immédiat si sendNow. */
+export async function updatePushCampaign(
+  id: string,
+  input: {
+    title: string;
+    message: string;
+    audience: NotificationAudience;
+    countryCode: string;
+    targetPhone?: string | null;
+    favoriteEventCategories?: string[];
+    favoriteSpotCategories?: string[];
+    favoriteToolCategories?: string[];
+    scheduledAt?: string | null;
+    sendNow: boolean;
+  },
+): Promise<{ ok: boolean; recipientCount?: number; error?: string }> {
+  const title = input.title.trim();
+  const message = input.message.trim();
+  if (!title || !message) return { ok: false, error: 'Titre et message requis.' };
+  if (input.audience === 'individual' && !input.targetPhone?.trim()) {
+    return { ok: false, error: 'Téléphone requis pour un envoi individuel.' };
+  }
+  if (
+    input.audience === 'favorites' &&
+    !input.favoriteEventCategories?.length &&
+    !input.favoriteSpotCategories?.length &&
+    !input.favoriteToolCategories?.length
+  ) {
+    return { ok: false, error: 'Sélectionnez au moins une catégorie favori.' };
+  }
+
+  const { data: existing, error: fetchErr } = await supabase
+    .from('admin_push_campaigns')
+    .select('id, status, created_at, created_by')
+    .eq('id', id)
+    .maybeSingle();
+  if (fetchErr) return { ok: false, error: fetchErr.message };
+  if (!existing || !isPushCampaignEditable(String(existing.status))) {
+    return { ok: false, error: 'Campagne introuvable ou déjà envoyée.' };
+  }
+
+  const now = new Date().toISOString();
+  const favEvents = input.favoriteEventCategories ?? [];
+  const favSpots = input.favoriteSpotCategories ?? [];
+  const favTools = input.favoriteToolCategories ?? [];
+  const when = input.scheduledAt ? new Date(input.scheduledAt) : null;
+  const scheduled =
+    when && !Number.isNaN(when.getTime()) && when.getTime() > Date.now() ? when.toISOString() : null;
+
+  if (!input.sendNow) {
+    if (!scheduled) {
+      return { ok: false, error: 'Indiquez une date et une heure dans le futur.' };
+    }
+    const { error } = await supabase
+      .from('admin_push_campaigns')
+      .update(
+        campaignBaseRow({
+          id,
+          title,
+          message,
+          audience: input.audience,
+          countryCode: input.countryCode,
+          targetPhone: input.targetPhone,
+          favoriteEventCategories: favEvents,
+          favoriteSpotCategories: favSpots,
+          favoriteToolCategories: favTools,
+          scheduledAt: scheduled,
+          status: 'scheduled',
+          recipientCount: 0,
+          createdBy: existing.created_by ? String(existing.created_by) : null,
+          createdAt: String(existing.created_at ?? now),
+        }),
+      )
+      .eq('id', id)
+      .in('status', ['draft', 'scheduled']);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, recipientCount: 0 };
+  }
+
+  await supabase.from('admin_push_campaigns').upsert(
+    campaignBaseRow({
+      id,
+      title,
+      message,
+      audience: input.audience,
+      countryCode: input.countryCode,
+      targetPhone: input.targetPhone,
+      favoriteEventCategories: favEvents,
+      favoriteSpotCategories: favSpots,
+      favoriteToolCategories: favTools,
+      scheduledAt: null,
+      status: 'draft',
+      recipientCount: 0,
+      createdBy: existing.created_by ? String(existing.created_by) : null,
+      createdAt: String(existing.created_at ?? now),
+    }),
+  );
+
+  try {
+    const count = await distributePushCampaignNow({
+      id,
+      title,
+      message,
+      audience: input.audience,
+      countryCode: input.countryCode,
+      targetPhone: input.targetPhone,
+      favoriteEventCategories: favEvents,
+      favoriteSpotCategories: favSpots,
+      favoriteToolCategories: favTools,
+    });
+    const { error: upd } = await supabase
+      .from('admin_push_campaigns')
+      .update({ status: 'sent', sent_at: now, recipient_count: count, updated_at: now })
+      .eq('id', id);
+    if (upd) return { ok: false, error: upd.message };
+    return { ok: true, recipientCount: count };
+  } catch (err) {
+    await supabase.from('admin_push_campaigns').update({ status: 'failed', updated_at: now }).eq('id', id);
+    const msg = err instanceof Error ? err.message : 'Échec de diffusion';
+    return { ok: false, error: msg };
+  }
 }
 
 /** Envoi réel via RPC (même pipeline que le Control Tower mobile). */
@@ -257,6 +436,8 @@ export async function sendPushCampaign(input: {
   favoriteSpotCategories?: string[];
   favoriteToolCategories?: string[];
   scheduledAt?: string | null;
+  /** true = planification uniquement, jamais d'envoi immédiat (aligné mobile). */
+  scheduleOnly?: boolean;
   createdBy?: string | null;
 }): Promise<{ ok: boolean; recipientCount?: number; error?: string }> {
   const title = input.title.trim();
@@ -276,14 +457,40 @@ export async function sendPushCampaign(input: {
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  const scheduled =
-    input.scheduledAt && new Date(input.scheduledAt).getTime() > Date.now()
-      ? new Date(input.scheduledAt).toISOString()
-      : null;
-
   const favEvents = input.favoriteEventCategories ?? [];
   const favSpots = input.favoriteSpotCategories ?? [];
   const favTools = input.favoriteToolCategories ?? [];
+
+  const scheduleOnly = input.scheduleOnly === true;
+  const when = input.scheduledAt ? new Date(input.scheduledAt) : null;
+  const scheduled =
+    when && !Number.isNaN(when.getTime()) && when.getTime() > Date.now() ? when.toISOString() : null;
+
+  if (scheduleOnly) {
+    if (!scheduled) {
+      return { ok: false, error: 'Indiquez une date et une heure dans le futur.' };
+    }
+    const { error } = await supabase.from('admin_push_campaigns').upsert(
+      campaignBaseRow({
+        id,
+        title,
+        message,
+        audience: input.audience,
+        countryCode: input.countryCode,
+        targetPhone: input.targetPhone,
+        favoriteEventCategories: favEvents,
+        favoriteSpotCategories: favSpots,
+        favoriteToolCategories: favTools,
+        scheduledAt: scheduled,
+        status: 'scheduled',
+        recipientCount: 0,
+        createdBy: input.createdBy,
+        createdAt: now,
+      }),
+    );
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, recipientCount: 0 };
+  }
 
   if (scheduled) {
     const { error } = await supabase.from('admin_push_campaigns').upsert(
@@ -327,61 +534,17 @@ export async function sendPushCampaign(input: {
   );
 
   try {
-    let count = 0;
-
-    if (input.audience === 'individual') {
-      const phone = input.targetPhone!.trim();
-      const { data: users } = await supabase
-        .from('users')
-        .select('id')
-        .eq('country_code', input.countryCode)
-        .or(`phone_number.eq.${phone},phone_number.ilike.%${phone.slice(-9)}`)
-        .limit(20);
-      const userIds = (users ?? []).map((u) => String(u.id));
-      count = await distributeInboxAndPush({
-        userIds,
-        title,
-        message,
-        audience: input.audience,
-        campaignId: id,
-      });
-    } else if (input.audience === 'favorites') {
-      const userIds = await resolveFavoriteUserIds(favEvents, favSpots, favTools, input.countryCode);
-      count = await distributeInboxAndPush({
-        userIds,
-        title,
-        message,
-        audience: input.audience,
-        campaignId: id,
-      });
-    } else if (input.audience === 'birthday') {
-      const userIds = await resolveBirthdayUserIds(input.countryCode);
-      count = await distributeInboxAndPush({
-        userIds,
-        title,
-        message,
-        audience: input.audience,
-        campaignId: id,
-      });
-    } else {
-      const rpcAudience = input.audience === 'all' ? 'everyone' : input.audience;
-      const { data, error } = await supabase.rpc('admin_distribute_notifications', {
-        p_title: title,
-        p_message: message,
-        p_audience: rpcAudience,
-        p_country_code: input.countryCode,
-        p_campaign_id: id,
-      });
-      if (error) throw new Error(error.message);
-      const userIds = Array.isArray(data)
-        ? data.map((uid) => String(uid)).filter((uid) => /^[0-9a-f-]{36}$/i.test(uid))
-        : [];
-      count = userIds.length;
-      void pushOsAfterInbox(userIds, title, message, {
-        audience: rpcAudience,
-        campaignId: id,
-      });
-    }
+    const count = await distributePushCampaignNow({
+      id,
+      title,
+      message,
+      audience: input.audience,
+      countryCode: input.countryCode,
+      targetPhone: input.targetPhone,
+      favoriteEventCategories: favEvents,
+      favoriteSpotCategories: favSpots,
+      favoriteToolCategories: favTools,
+    });
 
     const { error: upd } = await supabase
       .from('admin_push_campaigns')

@@ -38,3 +38,5 @@ mobile/*.mobileprovision
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*

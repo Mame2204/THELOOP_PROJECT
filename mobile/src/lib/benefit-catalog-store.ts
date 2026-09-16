@@ -11,6 +11,12 @@ import { loadCachedJson, saveCachedJson } from '@/lib/remote-settings-sync';
 import { resolvePartnerUserIdForSync } from '@/lib/partner-user-resolve';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { fetchSupabasePages } from '@/lib/supabase-list';
+import { resolveContentBenefitLookupIds } from '@/lib/content-benefits-index';
+import { peekContentSnapshot } from '@/lib/content-store';
+import { isSpotLocation, isToolLocation } from '@/lib/location-kind-utils';
+import { catalogForCountry } from '@/lib/staff-benefit-utils';
+import type { CountryCode } from '@/lib/countries';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 
 export type BenefitKind = 'quantity' | 'usage_limit' | 'unlimited';
 
@@ -687,6 +693,86 @@ export function filterStandaloneTheLoopBenefits(
 export function isTheLoopLinkedBenefit(item: BenefitCatalogItem): boolean {
   return (item.offeringPartners ?? []).some((p) =>
     p.displayName.trim().toUpperCase().includes('THE LOOP'),
+  );
+}
+
+export interface PublishedContentIndex {
+  events: Set<string>;
+  spots: Set<string>;
+  tools: Set<string>;
+}
+
+function eventIsPublished(contentId: string, index: PublishedContentIndex): boolean {
+  return resolveContentBenefitLookupIds(contentId, 'event').some((id) => index.events.has(id));
+}
+
+/** Offre liée à un event / spot / outil publié (snapshot contenu local). */
+export function offeringMatchesPublishedContent(
+  offering: BenefitOfferingPartner,
+  index: PublishedContentIndex,
+): boolean {
+  const contentId = offering.contentId?.trim();
+  if (!contentId) return false;
+  const type = offering.contentType ?? null;
+  if (type === 'event') return eventIsPublished(contentId, index);
+  if (type === 'spot') return index.spots.has(contentId);
+  if (type === 'tool') return index.tools.has(contentId);
+  return (
+    eventIsPublished(contentId, index)
+    || index.spots.has(contentId)
+    || index.tools.has(contentId)
+  );
+}
+
+export async function loadPublishedContentIndexFromSnapshot(
+  countryCode?: CountryCode,
+): Promise<PublishedContentIndex> {
+  const snapshot = await peekContentSnapshot();
+  const cc = countryCode?.toUpperCase().slice(0, 2);
+  const events = new Set<string>();
+  const spots = new Set<string>();
+  const tools = new Set<string>();
+
+  for (const event of snapshot.events) {
+    if (event.contentStatus && event.contentStatus !== 'published') continue;
+    if (event.isActive === false) continue;
+    if (cc && event.countryCode && event.countryCode.toUpperCase().slice(0, 2) !== cc) continue;
+    for (const id of resolveContentBenefitLookupIds(event.id, 'event')) {
+      events.add(id);
+    }
+  }
+
+  for (const location of snapshot.locations) {
+    if (location.contentStatus && location.contentStatus !== 'published') continue;
+    if (location.isActive === false || location.hidden) continue;
+    if (cc && location.countryCode && location.countryCode.toUpperCase().slice(0, 2) !== cc) continue;
+    if (isToolLocation(location)) tools.add(location.id);
+    else if (isSpotLocation(location)) spots.add(location.id);
+  }
+
+  return { events, spots, tools };
+}
+
+export function isTeamsAssignableBenefit(
+  item: BenefitCatalogItem,
+  index: PublishedContentIndex,
+): boolean {
+  if (!item.isActive || isStandaloneTheLoopBenefit(item)) return false;
+  if (!isPartnerAssociatedBenefit(item)) return false;
+  return (item.offeringPartners ?? []).some((o) => offeringMatchesPublishedContent(o, index));
+}
+
+/** Pack TEAMS — catalogue actif lié à un contenu publié (aligné admin-web). */
+export async function listTeamsSelectableCatalogItems(
+  countryCode: CountryCode = DEFAULT_COUNTRY_CODE,
+): Promise<BenefitCatalogItem[]> {
+  const [items, index] = await Promise.all([
+    listBenefitCatalog(true),
+    loadPublishedContentIndexFromSnapshot(countryCode),
+  ]);
+  return catalogForCountry(
+    items.filter((item) => isTeamsAssignableBenefit(item, index)),
+    countryCode,
   );
 }
 

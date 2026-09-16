@@ -1,3 +1,4 @@
+import { parseInviteEmailError } from './auth-email-errors';
 import { getMemberAuthRedirectUrl } from './auth-redirect';
 import { getAccessToken, supabase } from './supabase';
 import { getApiUrl } from './api';
@@ -372,7 +373,14 @@ export async function createUserInvite(input: {
   firstName?: string;
   lastName?: string;
   createdByAdminId: string;
-}): Promise<{ ok: boolean; inviteId?: string; email?: string; mailMode?: string; error?: string }> {
+}): Promise<{
+  ok: boolean;
+  inviteId?: string;
+  email?: string;
+  mailMode?: string;
+  error?: string;
+  retryAfterSeconds?: number;
+}> {
   const email = input.email.trim().toLowerCase();
   if (!email || !email.includes('@')) return { ok: false, error: 'E-mail invalide.' };
 
@@ -467,6 +475,7 @@ export async function createUserInvite(input: {
     return {
       ok: false,
       inviteId,
+      retryAfterSeconds: mail.retryAfterSeconds,
       error:
         mail.error ??
         "Invitation enregistrée, mais l'e-mail n'a pas pu être envoyé (Edge Function admin-send-invite).",
@@ -501,7 +510,7 @@ export async function sendInviteEmail(input: {
   countryCode?: string;
   phoneNumber?: string | null;
   city?: string | null;
-}): Promise<{ ok: boolean; mode?: string; error?: string }> {
+}): Promise<{ ok: boolean; mode?: string; error?: string; retryAfterSeconds?: number }> {
   const token = await getAccessToken();
   if (!token) return { ok: false, error: 'Session expirée.' };
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '');
@@ -533,6 +542,7 @@ export async function sendInviteEmail(input: {
     const body = (await response.json().catch(() => ({}))) as {
       error?: string;
       mode?: string;
+      retry_after_seconds?: number | null;
     };
     if (!response.ok) {
       if (response.status === 404) {
@@ -542,7 +552,12 @@ export async function sendInviteEmail(input: {
             'Edge Function admin-send-invite introuvable (404). Déployez-la sur Supabase : supabase functions deploy admin-send-invite',
         };
       }
-      return { ok: false, error: body.error ?? `HTTP ${response.status}` };
+      const parsed = parseInviteEmailError(body);
+      return {
+        ok: false,
+        error: parsed.message,
+        retryAfterSeconds: parsed.retryAfterSeconds,
+      };
     }
     return { ok: true, mode: body.mode ?? 'invite' };
   } catch (err) {
@@ -603,7 +618,7 @@ export async function inviteFromWaitlist(
   entry: WaitlistEntry,
   adminId: string,
   userRole: UserRoleDb = 'member',
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; retryAfterSeconds?: number }> {
   const firstName =
     entry.firstName?.trim() ||
     entry.fullName?.trim().split(/\s+/)[0] ||
@@ -624,7 +639,9 @@ export async function inviteFromWaitlist(
       phoneNumber: entry.phone,
       city: entry.city,
     });
-    if (!resent.ok) return { ok: false, error: resent.error };
+    if (!resent.ok) {
+      return { ok: false, error: resent.error, retryAfterSeconds: resent.retryAfterSeconds };
+    }
     await supabase
       .from('waitlist')
       .update({ invited_at: new Date().toISOString(), updated_at: new Date().toISOString() })
@@ -643,7 +660,11 @@ export async function inviteFromWaitlist(
     createdByAdminId: adminId,
   });
   if (!created.ok || !created.inviteId) {
-    return { ok: false, error: created.error ?? 'Invitation impossible.' };
+    return {
+      ok: false,
+      error: created.error ?? 'Invitation impossible.',
+      retryAfterSeconds: created.retryAfterSeconds,
+    };
   }
 
   const { error } = await supabase

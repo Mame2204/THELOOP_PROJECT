@@ -13,10 +13,12 @@ import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import { useAdminCountry } from '@/context/AdminCountryContext';
 import {
   AUDIENCE_LABELS,
-  cancelScheduledNotification,
+  cancelPushCampaign,
   clearAdminNotificationHistory,
+  isPushCampaignEditable,
   listAdminNotifications,
   sendAdminNotification,
+  updateAdminNotification,
   STATUS_LABELS,
   type AdminNotification,
   type NotificationAudience,
@@ -62,6 +64,7 @@ export function AdminNotificationsScreen({ navigation }: Props) {
   const [eventCategoryOptions, setEventCategoryOptions] = useState<Array<{ id: string; label: string; emoji?: string }>>([]);
   const [spotCategoryOptions, setSpotCategoryOptions] = useState<Array<{ id: string; label: string; emoji?: string }>>([]);
   const [toolCategoryOptions, setToolCategoryOptions] = useState<Array<{ id: string; label: string; emoji?: string }>>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setHistory(await listAdminNotifications(countryCode));
@@ -114,6 +117,33 @@ export function AdminNotificationsScreen({ navigation }: Props) {
     );
   }
 
+  function resetForm() {
+    setEditingId(null);
+    setTitle('');
+    setMessage('');
+    setAudience('all');
+    setTargetPhone('');
+    setSendNow(true);
+    setScheduledAt('');
+    setFavoriteEventCategories([]);
+    setFavoriteSpotCategories([]);
+    setFavoriteToolCategories([]);
+  }
+
+  function startEdit(item: AdminNotification) {
+    setEditingId(item.id);
+    setTitle(item.title);
+    setMessage(item.message);
+    setAudience(item.audience);
+    setTargetPhone(item.targetPhone ?? '');
+    setFavoriteEventCategories(item.favoriteEventCategories);
+    setFavoriteSpotCategories(item.favoriteSpotCategories);
+    setFavoriteToolCategories(item.favoriteToolCategories);
+    const isScheduled = item.status === 'scheduled' && Boolean(item.scheduledAt);
+    setSendNow(!isScheduled);
+    setScheduledAt(isScheduled && item.scheduledAt ? item.scheduledAt : '');
+  }
+
   async function handleSend() {
     if (!title.trim() || !message.trim()) {
       Alert.alert('Champs requis', 'Titre et message obligatoires.');
@@ -136,10 +166,18 @@ export function AdminNotificationsScreen({ navigation }: Props) {
       Alert.alert('Planification', 'Indiquez la date et l\'heure d\'envoi.');
       return;
     }
+    if (!sendNow) {
+      const when = new Date(scheduledAt);
+      if (Number.isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+        Alert.alert('Planification', 'La date et l\'heure doivent être dans le futur.');
+        return;
+      }
+    }
 
     setSending(true);
+    const wasEditing = Boolean(editingId);
     try {
-      await sendAdminNotification({
+      const payload = {
         title,
         message,
         audience,
@@ -149,19 +187,56 @@ export function AdminNotificationsScreen({ navigation }: Props) {
         favoriteToolCategories: audience === 'favorites' ? favoriteToolCategories : [],
         scheduledAt: sendNow ? null : new Date(scheduledAt).toISOString(),
         countryCode,
-      });
-      setTitle('');
-      setMessage('');
-      setTargetPhone('');
-      setFavoriteEventCategories([]);
-      setFavoriteSpotCategories([]);
-      setFavoriteToolCategories([]);
-      setScheduledAt('');
+        sendNow,
+      };
+
+      if (editingId) {
+        const res = await updateAdminNotification(editingId, payload);
+        if (!res.ok) {
+          Alert.alert('Modification', res.error ?? 'Échec');
+          return;
+        }
+      } else {
+        const { sendNow: _sendNow, ...createPayload } = payload;
+        void _sendNow;
+        await sendAdminNotification(createPayload);
+      }
+
+      resetForm();
       await load();
-      Alert.alert(sendNow ? 'Envoyé' : 'Planifié', sendNow ? 'Notification diffusée.' : 'Envoi programmé.');
+      Alert.alert(
+        wasEditing ? 'Campagne modifiée' : sendNow ? 'Envoyé' : 'Planifié',
+        wasEditing
+          ? sendNow
+            ? 'Campagne mise à jour et diffusée.'
+            : 'Campagne replanifiée.'
+          : sendNow
+            ? 'Notification diffusée.'
+            : 'Envoi programmé.',
+      );
     } finally {
       setSending(false);
     }
+  }
+
+  function handleCancelCampaign(id: string) {
+    Alert.alert('Annuler la campagne', 'Confirmer l\'annulation de cette campagne ?', [
+      { text: 'Non', style: 'cancel' },
+      {
+        text: 'Annuler la campagne',
+        style: 'destructive',
+        onPress: () => {
+          void cancelPushCampaign(id).then((ok) => {
+            if (!ok) {
+              Alert.alert('Erreur', 'Annulation impossible (campagnes déjà envoyées).');
+              return;
+            }
+            if (editingId === id) resetForm();
+            void load();
+          });
+        },
+      },
+    ]);
   }
 
   if (!allowed && !isLoading) {
@@ -171,11 +246,21 @@ export function AdminNotificationsScreen({ navigation }: Props) {
   return (
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
       <AdminPageHeader
-        title="Notifications automatiques"
-        subtitle="Push immédiat ou planifié — rôles, anniversaires, favoris multi-catégories"
+        title={editingId ? 'Modifier la campagne' : 'Notifications automatiques'}
+        subtitle={
+          editingId
+            ? 'Campagne non envoyée — enregistrer ou replanifier'
+            : 'Push immédiat ou planifié — rôles, anniversaires, favoris multi-catégories'
+        }
         shell={shell}
         onBack={() => navigation.goBack()}
       />
+
+      {editingId ? (
+        <Pressable style={[styles.clearBtn, { borderColor: shell.filterInactiveBorder, marginBottom: 8 }]} onPress={resetForm}>
+          <Text style={{ color: shell.pageTitle, fontWeight: '700', fontSize: 11 }}>Annuler la modification</Text>
+        </Pressable>
+      ) : null}
 
       <AdminCountryBar shell={shell} compact />
 
@@ -290,7 +375,17 @@ export function AdminNotificationsScreen({ navigation }: Props) {
       ) : null}
 
       <Pressable style={[styles.sendBtn, { backgroundColor: ADMIN_THEME.accent }]} onPress={() => void handleSend()} disabled={sending}>
-        <Text style={styles.sendText}>{sending ? 'Envoi…' : 'Envoyer la notification'}</Text>
+        <Text style={styles.sendText}>
+          {sending
+            ? 'Enregistrement…'
+            : editingId
+              ? sendNow
+                ? 'Enregistrer et envoyer'
+                : 'Enregistrer la planification'
+              : sendNow
+                ? 'Envoyer la notification'
+                : 'Planifier la notification'}
+        </Text>
       </Pressable>
 
       <Text style={[styles.section, { color: shell.pageKicker }]}>Historique & planifiés</Text>
@@ -341,10 +436,15 @@ export function AdminNotificationsScreen({ navigation }: Props) {
               {item.sentAt ? `Envoyé ${formatDateFr(item.sentAt)}` : item.scheduledAt ? `Prévu ${formatDateFr(item.scheduledAt)}` : '—'}
             </Text>
             <CollapsibleMessage message={item.message} color={shell.pageTitle} accentColor={ADMIN_THEME.accent} />
-            {item.status === 'scheduled' ? (
-              <Pressable onPress={() => void cancelScheduledNotification(item.id).then(load)}>
-                <Text style={{ color: '#ef4444', marginTop: 8, fontWeight: '700', fontSize: 11 }}>Annuler</Text>
-              </Pressable>
+            {isPushCampaignEditable(item.status) ? (
+              <View style={styles.historyActions}>
+                <Pressable onPress={() => startEdit(item)}>
+                  <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 11 }}>Modifier</Text>
+                </Pressable>
+                <Pressable onPress={() => handleCancelCampaign(item.id)}>
+                  <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 11 }}>Annuler</Text>
+                </Pressable>
+              </View>
             ) : null}
           </View>
         ))
@@ -375,5 +475,6 @@ const styles = StyleSheet.create({
   historyTitle: { fontSize: 14, fontWeight: '700' },
   historyMeta: { marginTop: 4, fontSize: 11 },
   historyBody: { marginTop: 6, fontSize: 13 },
+  historyActions: { flexDirection: 'row', gap: 16, marginTop: 10 },
   denied: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 });

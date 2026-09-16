@@ -31,8 +31,6 @@
   </main>
   <script>
     (function () {
-      var supabaseUrl = 'https://eeyhtulpixvftvhppinz.supabase.co';
-      var anon = 'sb_publishable_l78zClzs1ldqOElbaLVT0w__KrKrlZv';
       var title = document.getElementById('title');
       var message = document.getElementById('message');
       var openApp = document.getElementById('openApp');
@@ -45,12 +43,8 @@
         return { paramString: paramString, params: new URLSearchParams(paramString) };
       }
 
-      function authError(body) {
-        return body.error_description || body.msg || body.message || body.error || 'Erreur';
-      }
-
-      function openTheLoopApp(paramString) {
-        var deepLink = 'theloop://auth/callback#' + paramString;
+      function openTheLoopApp(queryString) {
+        var deepLink = 'theloop://auth/callback?' + queryString;
         openApp.href = deepLink;
         try { window.location.replace(deepLink); } catch (e) { /* ignore */ }
         setTimeout(function () {
@@ -58,19 +52,6 @@
           message.textContent = 'Le mot de passe se choisit dans l\'application. Si rien ne s\'ouvre, touchez le bouton.';
           openApp.style.display = 'inline-block';
         }, 1200);
-      }
-
-      function verifyTokenHash(tokenHash, type) {
-        return fetch(supabaseUrl + '/auth/v1/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', apikey: anon },
-          body: JSON.stringify({ type: type, token_hash: tokenHash }),
-        }).then(function (res) {
-          return res.json().then(function (body) {
-            if (!res.ok) throw new Error(authError(body));
-            return body;
-          });
-        });
       }
 
       var parsed = readParams();
@@ -89,20 +70,11 @@
       }
 
       if (tokenHash) {
-        verifyTokenHash(tokenHash, kind === 'recovery' ? 'recovery' : 'invite')
-          .then(function (session) {
-            if (!session.access_token || !session.refresh_token) {
-              throw new Error('Session invalide.');
-            }
-            var ps = 'type=' + kind
-              + '&access_token=' + encodeURIComponent(session.access_token)
-              + '&refresh_token=' + encodeURIComponent(session.refresh_token);
-            openTheLoopApp(ps);
-          })
-          .catch(function (err) {
-            title.textContent = 'Lien expiré';
-            message.textContent = err.message || 'Demandez un nouvel e-mail à votre administrateur.';
-          });
+        var appParams = new URLSearchParams({
+          token_hash: tokenHash,
+          type: kind === 'recovery' ? 'recovery' : 'invite',
+        });
+        openTheLoopApp(appParams.toString());
         return;
       }
 

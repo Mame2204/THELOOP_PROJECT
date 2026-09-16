@@ -63,7 +63,10 @@ export function PartnerApplyScreen({ navigation }: Props) {
     });
     setLoading(false);
     if (!result.ok) {
-      Alert.alert('Erreur', result.error ?? 'Envoi impossible');
+      Alert.alert(
+        result.duplicate ? 'Demande déjà enregistrée' : 'Erreur',
+        result.error ?? 'Envoi impossible',
+      );
       return;
     }
     Alert.alert(

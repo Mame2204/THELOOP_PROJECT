@@ -97,15 +97,7 @@ export function PartnersLogoStrip({
   }
 
   if (!Array.isArray(partners) || partners.length === 0) {
-    return (
-      <View style={[styles.shell, { backgroundColor: surface, borderColor: border }]}>
-        <Text style={[styles.kicker, { color: accent }]}>Partenaires</Text>
-        <Text style={[styles.title, { color: text }]}>Nos partenaires</Text>
-        <Text style={[styles.empty, { color: muted }]}>
-          Les logos partenaires apparaîtront ici.
-        </Text>
-      </View>
-    );
+    return null;
   }
 
   return (
@@ -168,9 +160,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
     overflow: 'hidden',
-  },
-  empty: {
-    fontSize: 12,
-    lineHeight: 17,
   },
 });

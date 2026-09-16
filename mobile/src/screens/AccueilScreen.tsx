@@ -190,7 +190,10 @@ export function AccueilScreen({ navigation }: Props) {
   useEffect(
     () =>
       subscribeHomeRefresh((reason) => {
-        const force = reason === 'accueil-blocks' || reason.startsWith('admin-accueil');
+        const force =
+          reason === 'accueil-blocks'
+          || reason === 'sections'
+          || reason.startsWith('admin-accueil');
         void reloadHome(force);
       }),
     [reloadHome],

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GuineaLocationPicker } from '@/components/GuineaLocationPicker';
@@ -7,6 +7,7 @@ import { CountrySelectField } from '@/components/CountrySelectField';
 import { DateTimeField } from '@/components/DateTimeField';
 import { InternationalPhoneField } from '@/components/InternationalPhoneField';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
+import { LegalPreviewModal } from '@/components/LegalPreviewModal';
 import { LoopLogo } from '@/components/LoopLogo';
 import { PasswordInput } from '@/components/PasswordInput';
 import { useAuthContext } from '@/context/AuthContext';
@@ -1078,27 +1079,14 @@ export function AuthScreen({ navigation, route }: Props) {
         </Pressable>
       ) : null}
 
-      <Modal
+      <LegalPreviewModal
         visible={legalPreviewKey != null}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setLegalPreviewKey(null)}
-      >
-        <View style={styles.legalModalBackdrop}>
-          <View style={[styles.legalModalCard, { backgroundColor: shell.filterInactiveBg, borderColor: shell.filterInactiveBorder }]}>
-            <Text style={[styles.legalModalTitle, { color: shell.pageTitle }]}>{legalPreviewTitle}</Text>
-            <KeyboardAwareFormScroll style={{ maxHeight: 360 }}>
-              <Text style={[styles.legalModalBody, { color: shell.pageKicker }]}>{legalPreviewBody}</Text>
-            </KeyboardAwareFormScroll>
-            <Pressable
-              style={[styles.btn, { backgroundColor: shell.filterActiveBg, marginTop: 12 }]}
-              onPress={() => setLegalPreviewKey(null)}
-            >
-              <Text style={[styles.btnText, { color: shell.filterActiveText }]}>Fermer</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        title={legalPreviewTitle}
+        body={legalPreviewBody}
+        onClose={() => setLegalPreviewKey(null)}
+        accentBg={shell.filterActiveBg}
+        accentText={shell.filterActiveText}
+      />
     </KeyboardAwareFormScroll>
   );
 }
@@ -1187,18 +1175,5 @@ const styles = StyleSheet.create({
   },
   cguText: { flex: 1, fontSize: 12, lineHeight: 18 },
   legalLink: { fontWeight: '700', textDecorationLine: 'underline' },
-  legalModalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  legalModalCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-  },
-  legalModalTitle: { fontSize: 16, fontWeight: '800', marginBottom: 12 },
-  legalModalBody: { fontSize: 12, lineHeight: 18 },
   honeypot: { height: 0, overflow: 'hidden', opacity: 0 },
 });

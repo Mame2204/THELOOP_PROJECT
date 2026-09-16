@@ -1,48 +1,37 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { OpeningHoursPresetBuilder } from '../components/OpeningHoursPresetBuilder';
+import type { HoursMode } from '../lib/opening-hours';
+import {
+  createEmptyPreset,
+  defaultOpeningHoursSettings,
+  getOpeningHoursSettings,
+  saveOpeningHoursSettings,
+  type OpeningHoursSettings,
+} from '../lib/opening-hours-settings-store';
 
-interface HoursSettings {
-  defaultOpenTime: string;
-  defaultCloseTime: string;
-  defaultSunOpenTime: string;
-  defaultSunCloseTime: string;
-  presets: Array<{ id: string; label: string }>;
-}
+const MODE_ORDER: HoursMode[] = ['always_open', 'by_appointment', 'weekly'];
 
-const DEFAULTS: HoursSettings = {
-  defaultOpenTime: '12:00',
-  defaultCloseTime: '23:00',
-  defaultSunOpenTime: '12:00',
-  defaultSunCloseTime: '20:00',
-  presets: [
-    { id: 'tue_sun', label: 'Mar–Dim' },
-    { id: 'sat_only', label: 'Samedi seul' },
-    { id: 'tue_sat_sun_split', label: 'Mar–Sam + Dim' },
-  ],
+const MODE_LABELS: Record<HoursMode, string> = {
+  always_open: 'Toujours ouvert',
+  by_appointment: 'Sur RDV',
+  weekly: 'Plages horaires',
 };
 
-const SETTINGS_KEY = 'opening_hours_config';
-
 export function OpeningHoursPage() {
-  const [settings, setSettings] = useState<HoursSettings>(DEFAULTS);
+  const [settings, setSettings] = useState<OpeningHoursSettings>(defaultOpeningHoursSettings());
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', SETTINGS_KEY)
-      .maybeSingle();
-    if (data?.value && typeof data.value === 'object') {
-      const v = data.value as Partial<HoursSettings>;
-      setSettings({
-        defaultOpenTime: v.defaultOpenTime ?? DEFAULTS.defaultOpenTime,
-        defaultCloseTime: v.defaultCloseTime ?? DEFAULTS.defaultCloseTime,
-        defaultSunOpenTime: v.defaultSunOpenTime ?? DEFAULTS.defaultSunOpenTime,
-        defaultSunCloseTime: v.defaultSunCloseTime ?? DEFAULTS.defaultSunCloseTime,
-        presets: Array.isArray(v.presets) && v.presets.length ? v.presets : DEFAULTS.presets,
-      });
+    setLoading(true);
+    setMsg(null);
+    try {
+      setSettings(await getOpeningHoursSettings());
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Impossible de charger les horaires.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -50,22 +39,45 @@ export function OpeningHoursPage() {
     void load();
   }, [load]);
 
-  async function save() {
+  function updateMode(mode: HoursMode, patch: Partial<OpeningHoursSettings['modes'][HoursMode]>) {
+    setSettings((prev) => ({
+      ...prev,
+      modes: { ...prev.modes, [mode]: { ...prev.modes[mode], ...patch } },
+    }));
+  }
+
+  function updatePreset(id: string, patch: Partial<OpeningHoursSettings['presets'][number]>) {
+    setSettings((prev) => ({
+      ...prev,
+      presets: prev.presets.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    }));
+  }
+
+  function addPreset() {
+    setSettings((prev) => ({
+      ...prev,
+      presets: [...prev.presets, createEmptyPreset(prev)],
+    }));
+  }
+
+  function removePreset(id: string) {
+    setSettings((prev) => ({
+      ...prev,
+      presets: prev.presets.filter((p) => p.id !== id),
+    }));
+  }
+
+  async function handleSave() {
     setBusy(true);
-    const { data } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', SETTINGS_KEY)
-      .maybeSingle();
-    const prev =
-      data?.value && typeof data.value === 'object' ? (data.value as Record<string, unknown>) : {};
-    const { error } = await supabase.from('app_settings').upsert({
-      key: SETTINGS_KEY,
-      value: { ...prev, ...settings, updatedAt: new Date().toISOString() },
-      updated_at: new Date().toISOString(),
-    });
-    setBusy(false);
-    setMsg(error ? error.message : 'Horaires enregistrés.');
+    setMsg(null);
+    try {
+      await saveOpeningHoursSettings(settings);
+      setMsg('Modes et raccourcis enregistrés — disponibles dans le formulaire spot (partenaire et admin).');
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Impossible d\'enregistrer.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -74,56 +86,113 @@ export function OpeningHoursPage() {
         <div>
           <p className="brand-kicker">Paramètres</p>
           <h2>Horaires spots</h2>
-          <p className="meta">Heures par défaut et raccourcis pour les fiches spots.</p>
+          <p className="meta">
+            Créez les modes et raccourcis affichés dans le champ Horaires du formulaire spot.
+          </p>
         </div>
       </header>
       {msg ? <p className="muted">{msg}</p> : null}
 
-      <div className="card" style={{ maxWidth: 520 }}>
-        <div className="field">
-          <label>Ouverture (défaut)</label>
-          <input
-            type="time"
-            value={settings.defaultOpenTime}
-            onChange={(e) => setSettings((s) => ({ ...s, defaultOpenTime: e.target.value }))}
-          />
+      {loading ? (
+        <p className="muted">Chargement…</p>
+      ) : (
+        <div className="card-stack" style={{ maxWidth: 720 }}>
+          <div>
+            <h3>Modes d&apos;ouverture</h3>
+            <p className="meta">
+              Ces boutons apparaissent en haut du champ Horaires (ex. Toujours ouvert, Sur RDV, Plages horaires).
+            </p>
+            {MODE_ORDER.map((mode) => (
+              <div key={mode} className="card hours-mode-card">
+                <div className="row-between">
+                  <strong>{MODE_LABELS[mode]}</strong>
+                  <label className="hours-toggle">
+                    <input
+                      type="checkbox"
+                      checked={settings.modes[mode].enabled}
+                      onChange={(e) => updateMode(mode, { enabled: e.target.checked })}
+                    />
+                    {settings.modes[mode].enabled ? 'Activé' : 'Désactivé'}
+                  </label>
+                </div>
+                <div className="field">
+                  <label>Texte enregistré / affiché</label>
+                  <input
+                    value={settings.modes[mode].label}
+                    onChange={(e) => updateMode(mode, { label: e.target.value })}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <h3>Raccourcis horaires</h3>
+            <p className="meta">
+              Chaque raccourci devient un bouton dans le formulaire spot. Le partenaire clique dessus pour appliquer
+              jours et heures.
+            </p>
+            {settings.presets.map((preset) => (
+              <OpeningHoursPresetBuilder
+                key={preset.id}
+                preset={preset}
+                settings={settings}
+                canDelete={settings.presets.length > 1}
+                onChange={(patch) => updatePreset(preset.id, patch)}
+                onDelete={() => removePreset(preset.id)}
+              />
+            ))}
+            <button type="button" className="btn ghost hours-add-preset" onClick={addPreset}>
+              + Ajouter un raccourci
+            </button>
+          </div>
+
+          <div className="card">
+            <h3>Heures par défaut</h3>
+            <p className="meta">Utilisées pour les nouveaux raccourcis et l&apos;édition manuelle dans le formulaire.</p>
+            <div className="hours-time-row">
+              <div className="field">
+                <label>Ouverture</label>
+                <input
+                  value={settings.defaultOpenTime}
+                  onChange={(e) => setSettings((p) => ({ ...p, defaultOpenTime: e.target.value }))}
+                  placeholder="12:00"
+                />
+              </div>
+              <div className="field">
+                <label>Fermeture</label>
+                <input
+                  value={settings.defaultCloseTime}
+                  onChange={(e) => setSettings((p) => ({ ...p, defaultCloseTime: e.target.value }))}
+                  placeholder="23:00"
+                />
+              </div>
+            </div>
+            <div className="hours-time-row">
+              <div className="field">
+                <label>Ouverture dimanche (legacy)</label>
+                <input
+                  value={settings.defaultSunOpenTime}
+                  onChange={(e) => setSettings((p) => ({ ...p, defaultSunOpenTime: e.target.value }))}
+                  placeholder="12:00"
+                />
+              </div>
+              <div className="field">
+                <label>Fermeture dimanche (legacy)</label>
+                <input
+                  value={settings.defaultSunCloseTime}
+                  onChange={(e) => setSettings((p) => ({ ...p, defaultSunCloseTime: e.target.value }))}
+                  placeholder="20:00"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button type="button" className="btn" disabled={busy} onClick={() => void handleSave()}>
+            {busy ? 'Enregistrement…' : 'Enregistrer les paramètres'}
+          </button>
         </div>
-        <div className="field">
-          <label>Fermeture (défaut)</label>
-          <input
-            type="time"
-            value={settings.defaultCloseTime}
-            onChange={(e) => setSettings((s) => ({ ...s, defaultCloseTime: e.target.value }))}
-          />
-        </div>
-        <div className="field">
-          <label>Ouverture dimanche</label>
-          <input
-            type="time"
-            value={settings.defaultSunOpenTime}
-            onChange={(e) => setSettings((s) => ({ ...s, defaultSunOpenTime: e.target.value }))}
-          />
-        </div>
-        <div className="field">
-          <label>Fermeture dimanche</label>
-          <input
-            type="time"
-            value={settings.defaultSunCloseTime}
-            onChange={(e) => setSettings((s) => ({ ...s, defaultSunCloseTime: e.target.value }))}
-          />
-        </div>
-        <h3>Raccourcis</h3>
-        <ul className="meta" style={{ lineHeight: 1.7 }}>
-          {settings.presets.map((p) => (
-            <li key={p.id}>
-              <strong>{p.label}</strong> <span className="meta">({p.id})</span>
-            </li>
-          ))}
-        </ul>
-        <button type="button" className="btn" disabled={busy} onClick={() => void save()}>
-          Enregistrer
-        </button>
-      </div>
+      )}
     </section>
   );
 }

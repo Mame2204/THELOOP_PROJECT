@@ -7,8 +7,10 @@ import {
   AUDIENCE_LABELS,
   campaignStatusLabel,
   cancelPushCampaign,
+  isPushCampaignEditable,
   listPushCampaigns,
   sendPushCampaign,
+  updatePushCampaign,
   type NotificationAudience,
   type PushCampaign,
 } from '../lib/notifications';
@@ -25,6 +27,14 @@ const AUDIENCES: NotificationAudience[] = [
   'birthday',
   'individual',
 ];
+
+function toDatetimeLocalValue(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 function favoriteSummary(c: PushCampaign): string | null {
   const parts: string[] = [];
@@ -53,6 +63,7 @@ export function NotificationsPage() {
   const [eventCats, setEventCats] = useState<CategoryRow[]>([]);
   const [spotCats, setSpotCats] = useState<CategoryRow[]>([]);
   const [toolCats, setToolCats] = useState<CategoryRow[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -84,6 +95,35 @@ export function NotificationsPage() {
     setter(list.includes(slug) ? list.filter((s) => s !== slug) : [...list, slug]);
   }
 
+  function resetForm() {
+    setEditingId(null);
+    setTitle('');
+    setMessage('');
+    setAudience('all');
+    setTargetPhone('');
+    setSendNow(true);
+    setScheduledAt('');
+    setFavoriteEventCategories([]);
+    setFavoriteSpotCategories([]);
+    setFavoriteToolCategories([]);
+  }
+
+  function startEdit(campaign: PushCampaign) {
+    setEditingId(campaign.id);
+    setTitle(campaign.title);
+    setMessage(campaign.message);
+    setAudience(campaign.audience as NotificationAudience);
+    setTargetPhone(campaign.targetPhone ?? '');
+    setFavoriteEventCategories(campaign.favoriteEventCategories);
+    setFavoriteSpotCategories(campaign.favoriteSpotCategories);
+    setFavoriteToolCategories(campaign.favoriteToolCategories);
+    const isScheduled = campaign.status === 'scheduled' && Boolean(campaign.scheduledAt);
+    setSendNow(!isScheduled);
+    setScheduledAt(isScheduled ? toDatetimeLocalValue(campaign.scheduledAt) : '');
+    setMsg(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function handleSend() {
     if (!title.trim() || !message.trim()) {
       setMsg('Titre et message obligatoires.');
@@ -106,43 +146,69 @@ export function NotificationsPage() {
       setMsg('Indiquez la date et l\'heure d\'envoi.');
       return;
     }
+    if (!sendNow) {
+      const when = new Date(scheduledAt);
+      if (Number.isNaN(when.getTime())) {
+        setMsg('Date ou heure invalide.');
+        return;
+      }
+      if (when.getTime() <= Date.now()) {
+        setMsg('La date et l\'heure doivent être dans le futur.');
+        return;
+      }
+    }
 
     setBusy(true);
     setMsg(null);
-    const res = await sendPushCampaign({
-      title,
-      message,
-      audience,
-      countryCode,
-      targetPhone: audience === 'individual' ? targetPhone : null,
-      favoriteEventCategories: audience === 'favorites' ? favoriteEventCategories : [],
-      favoriteSpotCategories: audience === 'favorites' ? favoriteSpotCategories : [],
-      favoriteToolCategories: audience === 'favorites' ? favoriteToolCategories : [],
-      scheduledAt: sendNow ? null : new Date(scheduledAt).toISOString(),
-      createdBy: profile?.id ?? null,
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setMsg(res.error ?? 'Échec');
-      return;
+    const wasEditing = Boolean(editingId);
+    try {
+      const payload = {
+        title,
+        message,
+        audience,
+        countryCode,
+        targetPhone: audience === 'individual' ? targetPhone : null,
+        favoriteEventCategories: audience === 'favorites' ? favoriteEventCategories : [],
+        favoriteSpotCategories: audience === 'favorites' ? favoriteSpotCategories : [],
+        favoriteToolCategories: audience === 'favorites' ? favoriteToolCategories : [],
+        scheduledAt: sendNow ? null : new Date(scheduledAt).toISOString(),
+        sendNow,
+      };
+
+      const res = editingId
+        ? await updatePushCampaign(editingId, payload)
+        : await sendPushCampaign({
+            ...payload,
+            scheduleOnly: !sendNow,
+            createdBy: profile?.id ?? null,
+          });
+
+      if (!res.ok) {
+        setMsg(res.error ?? 'Échec');
+        return;
+      }
+      resetForm();
+      setMsg(
+        wasEditing
+          ? sendNow
+            ? `Campagne modifiée et envoyée — ${res.recipientCount ?? 0} destinataire(s).`
+            : 'Campagne modifiée et replanifiée.'
+          : sendNow
+            ? `Envoyé — ${res.recipientCount ?? 0} destinataire(s).`
+            : 'Campagne planifiée.',
+      );
+      void load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Erreur inattendue.');
+    } finally {
+      setBusy(false);
     }
-    setTitle('');
-    setMessage('');
-    setTargetPhone('');
-    setScheduledAt('');
-    setFavoriteEventCategories([]);
-    setFavoriteSpotCategories([]);
-    setFavoriteToolCategories([]);
-    setMsg(
-      sendNow
-        ? `Envoyé — ${res.recipientCount ?? 0} destinataire(s).`
-        : 'Campagne planifiée.',
-    );
-    void load();
   }
 
   async function handleCancel(id: string) {
+    if (!window.confirm('Annuler cette campagne ?')) return;
     setMsg(null);
+    if (editingId === id) resetForm();
     const res = await cancelPushCampaign(id);
     if (!res.ok) {
       setMsg(res.error ?? 'Annulation impossible.');
@@ -196,7 +262,15 @@ export function NotificationsPage() {
 
       <div className="split-pane">
         <div className="card">
-          <h3>Envoyer</h3>
+          <h3>{editingId ? 'Modifier la campagne' : 'Envoyer'}</h3>
+          {editingId ? (
+            <p className="meta" style={{ marginBottom: 12 }}>
+              Modification d&apos;une campagne non envoyée.{' '}
+              <button type="button" className="btn ghost small" onClick={resetForm}>
+                Annuler la modification
+              </button>
+            </p>
+          ) : null}
 
           <div className="field">
             <label>Destinataires</label>
@@ -294,7 +368,15 @@ export function NotificationsPage() {
           ) : null}
 
           <button type="button" className="btn" disabled={busy} onClick={() => void handleSend()}>
-            {busy ? 'Envoi…' : sendNow ? 'Envoyer maintenant' : 'Planifier'}
+            {busy
+              ? 'Enregistrement…'
+              : editingId
+                ? sendNow
+                  ? 'Enregistrer et envoyer'
+                  : 'Enregistrer la planification'
+                : sendNow
+                  ? 'Envoyer maintenant'
+                  : 'Planifier'}
           </button>
         </div>
 
@@ -336,14 +418,23 @@ export function NotificationsPage() {
                       {r.sentAt ? <div>Envoyée {formatWhen(r.sentAt)}</div> : null}
                     </td>
                     <td>
-                      {r.status === 'scheduled' ? (
-                        <button
-                          type="button"
-                          className="btn ghost small danger"
-                          onClick={() => void handleCancel(r.id)}
-                        >
-                          Annuler
-                        </button>
+                      {isPushCampaignEditable(r.status) ? (
+                        <div className="edit-actions" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+                          <button
+                            type="button"
+                            className="btn ghost small"
+                            onClick={() => startEdit(r)}
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            className="btn ghost small danger"
+                            onClick={() => void handleCancel(r.id)}
+                          >
+                            Annuler
+                          </button>
+                        </div>
                       ) : null}
                     </td>
                   </tr>

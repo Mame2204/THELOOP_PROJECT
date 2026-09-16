@@ -7,6 +7,7 @@ export interface BenefitOfferingPartner {
   displayName: string;
   contentId?: string | null;
   contentType?: 'event' | 'spot' | 'tool' | null;
+  contentTitle?: string | null;
 }
 
 export interface BenefitCatalogRow {
@@ -19,6 +20,9 @@ export interface BenefitCatalogRow {
   partnerNames: string[];
   offeringPartners: BenefitOfferingPartner[];
   benefitKind: string;
+  defaultValidityDays: number;
+  validityStartsOnActivation: boolean;
+  benefitPurpose: string;
   updatedAt: string | null;
 }
 
@@ -35,9 +39,14 @@ export interface PartnerOfferRow {
   partnerName: string;
   catalogId: string;
   catalogTitle: string;
+  catalogDescription: string;
   status: OfferStatus;
   countryCode: string;
   adminNote: string | null;
+  partnerResponseNote: string | null;
+  contentId: string | null;
+  contentType: 'event' | 'spot' | 'tool' | null;
+  contentTitle: string | null;
   createdAt: string;
   respondedAt: string | null;
 }
@@ -61,6 +70,56 @@ export interface CatalogUsageStat {
   unusedAssigned: number;
   isActive: boolean;
 }
+
+export type RoleEntitlementKind = 'member' | 'prime' | 'partner' | 'admin';
+
+export interface RoleBenefitEntitlementEntry {
+  catalogId: string;
+  partnerId?: string;
+  partnerDisplayName?: string;
+}
+
+export interface RoleBenefitEntitlementsConfig {
+  member: RoleBenefitEntitlementEntry[];
+  prime: RoleBenefitEntitlementEntry[];
+  partner: RoleBenefitEntitlementEntry[];
+  admin: RoleBenefitEntitlementEntry[];
+  updatedAt: string;
+  updatedBy?: string | null;
+}
+
+export interface RoleAssociationRow {
+  role: RoleEntitlementKind;
+  label: string;
+  catalogId: string;
+  title: string;
+  partnerLabel: string;
+}
+
+export type GrantRoleTarget = 'member' | 'prime' | 'member_prime' | 'tous';
+
+export const GRANT_ROLE_TARGETS: { id: GrantRoleTarget; label: string; roles: RoleEntitlementKind[] }[] = [
+  { id: 'member', label: 'MEMBRE', roles: ['member'] },
+  { id: 'prime', label: 'PRIME', roles: ['prime'] },
+  { id: 'member_prime', label: 'MEMBRE + PRIME', roles: ['member', 'prime'] },
+  { id: 'tous', label: 'TOUS', roles: ['member', 'prime', 'partner'] },
+];
+
+const ROLE_LABELS: Record<RoleEntitlementKind, string> = {
+  member: 'Membres',
+  prime: 'Prime',
+  partner: 'Partenaires',
+  admin: 'Admin',
+};
+
+const EMPTY_ENTITLEMENTS: RoleBenefitEntitlementsConfig = {
+  member: [],
+  prime: [],
+  partner: [],
+  admin: [],
+  updatedAt: new Date(0).toISOString(),
+  updatedBy: null,
+};
 
 export interface BenefitKpis {
   granted: number;
@@ -117,8 +176,8 @@ export function isStandaloneTheLoopBenefit(item: Pick<BenefitCatalogRow, 'offeri
   if (partners.length === 0) return false;
   return partners.every(
     (p) =>
-      p.partnerId === EXTERNAL_PARTNER_ID
-      && p.displayName.trim().toUpperCase() === 'THE LOOP'
+      (p.partnerId === EXTERNAL_PARTNER_ID || p.partnerId === 'loop')
+      && p.displayName.trim().toUpperCase().includes('THE LOOP')
       && !p.contentId,
   );
 }
@@ -272,7 +331,7 @@ export async function listBenefitCatalog(
   const { data, error } = await supabase
     .from('benefit_catalog')
     .select(
-      'id, local_id, title, description, is_active, offering_partners, partner_name, benefit_kind, country_code, updated_at',
+      'id, local_id, title, description, is_active, offering_partners, partner_name, benefit_kind, country_code, default_validity_days, validity_starts_on_activation, benefit_purpose, updated_at',
     )
     .order('updated_at', { ascending: false })
     .limit(200);
@@ -293,6 +352,9 @@ export async function listBenefitCatalog(
         partnerNames: partners.length ? partners : parsePartners(row.offering_partners),
         offeringPartners,
         benefitKind: String(row.benefit_kind ?? 'unlimited'),
+        defaultValidityDays: Number(row.default_validity_days ?? 30) || 30,
+        validityStartsOnActivation: row.validity_starts_on_activation !== false,
+        benefitPurpose: String(row.benefit_purpose ?? 'standard'),
         updatedAt: row.updated_at ? String(row.updated_at) : null,
       };
     })
@@ -331,7 +393,7 @@ export async function listPartnerOffers(
     let q = supabase
       .from('partner_benefit_offers')
       .select(
-        'local_id, partner_user_id, partner_name, catalog_local_id, catalog_title, status, country_code, admin_note, created_at, responded_at',
+        'local_id, partner_user_id, partner_name, catalog_local_id, catalog_title, catalog_description, status, country_code, admin_note, partner_response_note, content_id, content_type, content_title, created_at, responded_at',
       )
       .order('created_at', { ascending: false })
       .limit(150);
@@ -339,18 +401,30 @@ export async function listPartnerOffers(
     const plain = await q;
     if (plain.error) return { items: [], error: error.message };
     return {
-      items: (plain.data ?? []).map((r) => ({
-        id: String(r.local_id),
-        partnerUserId: String(r.partner_user_id ?? ''),
-        partnerName: String(r.partner_name ?? 'Partenaire'),
-        catalogId: String(r.catalog_local_id ?? ''),
-        catalogTitle: String(r.catalog_title ?? ''),
-        status: String(r.status ?? 'pending') as OfferStatus,
-        countryCode: String(r.country_code ?? 'GN'),
-        adminNote: r.admin_note ? String(r.admin_note) : null,
-        createdAt: String(r.created_at ?? ''),
-        respondedAt: r.responded_at ? String(r.responded_at) : null,
-      })),
+      items: (plain.data ?? []).map((row) => {
+        const r = row as Record<string, unknown>;
+        const contentType = r.content_type;
+        return {
+          id: String(r.local_id ?? ''),
+          partnerUserId: String(r.partner_user_id ?? ''),
+          partnerName: String(r.partner_name ?? 'Partenaire'),
+          catalogId: String(r.catalog_local_id ?? ''),
+          catalogTitle: String(r.catalog_title ?? ''),
+          catalogDescription: String(r.catalog_description ?? ''),
+          status: String(r.status ?? 'pending') as OfferStatus,
+          countryCode: String(r.country_code ?? 'GN'),
+          adminNote: r.admin_note ? String(r.admin_note) : null,
+          partnerResponseNote: r.partner_response_note ? String(r.partner_response_note) : null,
+          contentId: r.content_id ? String(r.content_id) : null,
+          contentType:
+            contentType === 'event' || contentType === 'spot' || contentType === 'tool'
+              ? contentType
+              : null,
+          contentTitle: r.content_title ? String(r.content_title) : null,
+          createdAt: String(r.created_at ?? ''),
+          respondedAt: r.responded_at ? String(r.responded_at) : null,
+        };
+      }),
     };
   }
 
@@ -361,9 +435,22 @@ export async function listPartnerOffers(
     partnerName: String(r.partner_name ?? r.partnerName ?? 'Partenaire'),
     catalogId: String(r.catalog_local_id ?? r.catalogId ?? ''),
     catalogTitle: String(r.catalog_title ?? r.catalogTitle ?? ''),
+    catalogDescription: String(r.catalog_description ?? r.catalogDescription ?? ''),
     status: String(r.status ?? 'pending') as OfferStatus,
     countryCode: String(r.country_code ?? r.countryCode ?? 'GN'),
     adminNote: r.admin_note || r.adminNote ? String(r.admin_note ?? r.adminNote) : null,
+    partnerResponseNote:
+      r.partner_response_note || r.partnerResponseNote
+        ? String(r.partner_response_note ?? r.partnerResponseNote)
+        : null,
+    contentId: r.content_id || r.contentId ? String(r.content_id ?? r.contentId) : null,
+    contentType:
+      r.content_type === 'event' || r.content_type === 'spot' || r.content_type === 'tool'
+        ? r.content_type
+        : r.contentType === 'event' || r.contentType === 'spot' || r.contentType === 'tool'
+          ? r.contentType
+          : null,
+    contentTitle: r.content_title || r.contentTitle ? String(r.content_title ?? r.contentTitle) : null,
     createdAt: String(r.created_at ?? r.createdAt ?? ''),
     respondedAt: r.responded_at || r.respondedAt ? String(r.responded_at ?? r.respondedAt) : null,
   }));
@@ -609,7 +696,7 @@ export async function createBenefitCatalogItem(input: {
     is_active: true,
     country_code: input.countryCode,
     offering_partners: input.partnerName
-      ? [{ displayName: input.partnerName, partnerId: 'loop' }]
+      ? [{ displayName: input.partnerName, partnerId: EXTERNAL_PARTNER_ID }]
       : [],
     benefit_kind: 'unlimited',
     updated_at: now,
@@ -618,5 +705,332 @@ export async function createBenefitCatalogItem(input: {
   const { error } = await supabase.from('benefit_catalog').insert(row);
   if (error) return { ok: false, error: error.message };
   return { ok: true, localId };
+}
+
+export function listStandaloneBenefits(items: BenefitCatalogRow[]): BenefitCatalogRow[] {
+  return items.filter((item) => item.isActive && isStandaloneTheLoopBenefit(item));
+}
+
+export function listValidationOffers(items: PartnerOfferRow[]): PartnerOfferRow[] {
+  return items.filter((o) => o.status === 'pending' || o.status === 'declined');
+}
+
+export function listAssociatedCatalog(items: BenefitCatalogRow[]): BenefitCatalogRow[] {
+  return items.filter((item) => isPartnerAssociatedBenefit(item));
+}
+
+function catalogToRpcRow(item: {
+  localId: string;
+  title: string;
+  description: string;
+  offeringPartners: BenefitOfferingPartner[];
+  defaultValidityDays: number;
+  validityStartsOnActivation: boolean;
+  benefitKind: string;
+  isActive: boolean;
+  countryCode: string | null;
+  benefitPurpose?: string;
+}): Record<string, unknown> {
+  return {
+    local_id: item.localId,
+    title: item.title,
+    description: item.description,
+    partner_name: item.offeringPartners[0]?.displayName ?? null,
+    default_validity_days: item.defaultValidityDays,
+    validity_starts_on_activation: item.validityStartsOnActivation,
+    is_active: item.isActive,
+    offering_partners: item.offeringPartners,
+    benefit_kind: item.benefitKind,
+    country_code: item.countryCode,
+    benefit_purpose: item.benefitPurpose ?? 'standard',
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export async function upsertBenefitCatalogRpc(
+  item: Parameters<typeof catalogToRpcRow>[0],
+): Promise<{ ok: boolean; error?: string }> {
+  const row = catalogToRpcRow(item);
+  const { error } = await supabase.rpc('admin_upsert_benefit_catalog', { p_row: row });
+  if (!error) return { ok: true };
+  const fallback = await supabase.from('benefit_catalog').upsert(row, { onConflict: 'local_id' });
+  if (fallback.error) return { ok: false, error: fallback.error.message };
+  return { ok: true };
+}
+
+export async function createCatalogAssociation(input: {
+  template: BenefitCatalogRow;
+  offeringPartners: BenefitOfferingPartner[];
+  countryCode: string;
+}): Promise<{ ok: boolean; localId?: string; error?: string }> {
+  const localId = crypto.randomUUID();
+  const upsert = await upsertBenefitCatalogRpc({
+    localId,
+    title: input.template.title,
+    description: input.template.description,
+    offeringPartners: input.offeringPartners,
+    defaultValidityDays: input.template.defaultValidityDays,
+    validityStartsOnActivation: input.template.validityStartsOnActivation,
+    benefitKind: input.template.benefitKind,
+    isActive: false,
+    countryCode: input.countryCode,
+    benefitPurpose: input.template.benefitPurpose,
+  });
+  if (!upsert.ok) return { ok: false, error: upsert.error };
+  return { ok: true, localId };
+}
+
+export async function proposeCatalogBenefitsToPartners(input: {
+  catalogLocalId: string;
+  catalogTitle: string;
+  catalogDescription: string;
+  countryCode: string;
+  defaultValidityDays: number;
+  benefitKind: string;
+  partners: BenefitOfferingPartner[];
+  onlyTheLoop: boolean;
+}): Promise<{ ok: boolean; error?: string }> {
+  const now = new Date().toISOString();
+  let anyAccepted = input.onlyTheLoop;
+
+  for (const partner of input.partners) {
+    const status: OfferStatus = input.onlyTheLoop ? 'accepted' : 'pending';
+    const offerId = crypto.randomUUID();
+    const row = {
+      local_id: offerId,
+      partner_user_id: partner.partnerId,
+      partner_name: partner.displayName,
+      catalog_local_id: input.catalogLocalId,
+      catalog_title: input.catalogTitle,
+      catalog_description: input.catalogDescription,
+      country_code: input.countryCode,
+      city: null,
+      status,
+      admin_note: input.onlyTheLoop ? 'Affectation THE LOOP (web admin)' : null,
+      partner_response_note: null,
+      content_id: partner.contentId ?? null,
+      content_type: partner.contentType ?? null,
+      content_title: partner.contentTitle ?? null,
+      default_validity_days: input.defaultValidityDays,
+      benefit_kind: input.benefitKind,
+      created_at: now,
+      responded_at: status === 'accepted' ? now : null,
+      validation_deadline_at: now,
+    };
+    const { error } = await supabase.rpc('admin_upsert_partner_benefit_offer', { p_row: row });
+    if (error) {
+      const ins = await supabase.from('partner_benefit_offers').upsert(row, { onConflict: 'local_id' });
+      if (ins.error) return { ok: false, error: ins.error.message };
+    }
+    if (status === 'accepted') anyAccepted = true;
+  }
+
+  await upsertBenefitCatalogRpc({
+    localId: input.catalogLocalId,
+    title: input.catalogTitle,
+    description: input.catalogDescription,
+    offeringPartners: input.partners,
+    defaultValidityDays: input.defaultValidityDays,
+    validityStartsOnActivation: true,
+    benefitKind: input.benefitKind,
+    isActive: anyAccepted,
+    countryCode: input.countryCode,
+  });
+
+  return { ok: true };
+}
+
+export async function catalogHasPendingOffers(catalogLocalId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('partner_benefit_offers')
+    .select('status')
+    .eq('catalog_local_id', catalogLocalId)
+    .eq('status', 'pending')
+    .limit(1);
+  return (data?.length ?? 0) > 0;
+}
+
+export async function updateBenefitCatalogItem(
+  localId: string,
+  patch: Partial<Pick<BenefitCatalogRow, 'title' | 'description' | 'isActive' | 'offeringPartners'>>,
+  current: BenefitCatalogRow,
+): Promise<{ ok: boolean; error?: string }> {
+  if (patch.isActive === true && (await catalogHasPendingOffers(localId))) {
+    return { ok: false, error: 'Validation partenaire en attente — activation impossible.' };
+  }
+  const next = {
+    localId,
+    title: patch.title ?? current.title,
+    description: patch.description ?? current.description,
+    offeringPartners: patch.offeringPartners ?? current.offeringPartners,
+    defaultValidityDays: current.defaultValidityDays,
+    validityStartsOnActivation: current.validityStartsOnActivation,
+    benefitKind: current.benefitKind,
+    isActive: patch.isActive ?? current.isActive,
+    countryCode: current.countryCode,
+    benefitPurpose: current.benefitPurpose,
+  };
+  return upsertBenefitCatalogRpc(next);
+}
+
+export async function deleteBenefitCatalogItem(localId: string): Promise<{ ok: boolean; error?: string }> {
+  const { data, error } = await supabase.rpc('admin_delete_benefit_catalog_by_local_id', {
+    p_local_id: localId,
+  });
+  if (!error && data === true) return { ok: true };
+  const del = await supabase.from('benefit_catalog').delete().eq('local_id', localId);
+  if (del.error) return { ok: false, error: del.error.message };
+  return { ok: true };
+}
+
+function entitlementsRemoteKey(countryCode: string): string {
+  return `role_benefit_entitlements_${countryCode.toUpperCase().slice(0, 2)}`;
+}
+
+export async function getRoleBenefitEntitlements(
+  countryCode: string,
+): Promise<RoleBenefitEntitlementsConfig> {
+  const { data } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', entitlementsRemoteKey(countryCode))
+    .maybeSingle();
+  if (!data?.value || typeof data.value !== 'object') return { ...EMPTY_ENTITLEMENTS };
+  const raw = data.value as RoleBenefitEntitlementsConfig;
+  return {
+    member: Array.isArray(raw.member) ? raw.member : [],
+    prime: Array.isArray(raw.prime) ? raw.prime : [],
+    partner: Array.isArray(raw.partner) ? raw.partner : [],
+    admin: Array.isArray(raw.admin) ? raw.admin : [],
+    updatedAt: raw.updatedAt ?? new Date(0).toISOString(),
+    updatedBy: raw.updatedBy ?? null,
+  };
+}
+
+export async function saveRoleBenefitEntitlements(
+  countryCode: string,
+  config: Omit<RoleBenefitEntitlementsConfig, 'updatedAt' | 'updatedBy'>,
+  updatedBy?: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const next: RoleBenefitEntitlementsConfig = {
+    ...config,
+    updatedAt: new Date().toISOString(),
+    updatedBy: updatedBy ?? null,
+  };
+  const { error } = await supabase.from('app_settings').upsert({
+    key: entitlementsRemoteKey(countryCode),
+    value: next,
+    updated_at: next.updatedAt,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export function buildRoleAssociations(
+  config: RoleBenefitEntitlementsConfig,
+  catalog: BenefitCatalogRow[],
+): RoleAssociationRow[] {
+  const rows: RoleAssociationRow[] = [];
+  for (const role of ['member', 'prime', 'partner'] as RoleEntitlementKind[]) {
+    for (const entry of config[role] ?? []) {
+      const cat = catalog.find((c) => c.localId === entry.catalogId || c.id === entry.catalogId);
+      rows.push({
+        role,
+        label: ROLE_LABELS[role],
+        catalogId: entry.catalogId,
+        title: cat?.title ?? entry.catalogId,
+        partnerLabel: entry.partnerDisplayName?.trim() || '—',
+      });
+    }
+  }
+  return rows;
+}
+
+export function listGrantableCatalog(items: BenefitCatalogRow[]): BenefitCatalogRow[] {
+  return items.filter((item) => item.isActive && isPartnerAssociatedBenefit(item));
+}
+
+export async function getIndividualUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
+  let q = supabase
+    .from('prime_benefit_grants')
+    .select('catalog_local_id, status, role_entitlement')
+    .is('role_entitlement', null)
+    .limit(5000);
+  if (countryCode) q = q.eq('grant_country_code', countryCode);
+  const { data: grants } = await q;
+  const { items: catalog } = await listBenefitCatalog(countryCode);
+
+  return catalog
+    .map((c) => {
+      const related = (grants ?? []).filter((g) => String(g.catalog_local_id) === c.localId);
+      const used = related.filter((g) => g.status === 'used').length;
+      const unusedAssigned = related.filter(
+        (g) => g.status === 'active' || g.status === 'pending_validation',
+      ).length;
+      if (related.length === 0) return null;
+      return {
+        catalogId: c.localId,
+        title: c.title,
+        granted: related.length,
+        used,
+        unusedAssigned,
+        isActive: c.isActive,
+      };
+    })
+    .filter((s): s is CatalogUsageStat => s !== null)
+    .sort((a, b) => b.used - a.used || b.granted - a.granted);
+}
+
+export async function grantRoleBenefitEntitlements(input: {
+  countryCode: string;
+  catalogIds: string[];
+  entries: RoleBenefitEntitlementEntry[];
+  target: GrantRoleTarget;
+  adminId?: string | null;
+}): Promise<{ ok: boolean; error?: string }> {
+  const targetDef = GRANT_ROLE_TARGETS.find((t) => t.id === input.target);
+  if (!targetDef) return { ok: false, error: 'Cible invalide.' };
+
+  const current = await getRoleBenefitEntitlements(input.countryCode);
+  const catalogIds = new Set(input.catalogIds);
+
+  const applyForRole = (
+    existing: RoleBenefitEntitlementEntry[],
+    include: boolean,
+  ): RoleBenefitEntitlementEntry[] => {
+    const without = existing.filter((e) => !catalogIds.has(e.catalogId));
+    if (!include) return without;
+    const map = new Map(without.map((e) => [e.catalogId, e]));
+    for (const e of input.entries) map.set(e.catalogId, e);
+    return [...map.values()];
+  };
+
+  const roles = new Set(targetDef.roles);
+  const next = {
+    member: applyForRole(current.member, roles.has('member')),
+    prime: applyForRole(current.prime, roles.has('prime')),
+    partner: applyForRole(current.partner, roles.has('partner')),
+    admin: current.admin,
+  };
+
+  return saveRoleBenefitEntitlements(input.countryCode, next, input.adminId);
+}
+
+export async function removeRoleAssociation(input: {
+  countryCode: string;
+  role: RoleEntitlementKind;
+  catalogId: string;
+  adminId?: string | null;
+}): Promise<{ ok: boolean; error?: string }> {
+  const current = await getRoleBenefitEntitlements(input.countryCode);
+  const next = {
+    ...current,
+    [input.role]: (current[input.role] ?? []).filter((e) => e.catalogId !== input.catalogId),
+  };
+  return saveRoleBenefitEntitlements(input.countryCode, next, input.adminId);
+}
+
+export async function resendPartnerBenefitOffer(offer: PartnerOfferRow): Promise<{ ok: boolean; error?: string }> {
+  return setOfferStatus(offer, 'pending');
 }
 

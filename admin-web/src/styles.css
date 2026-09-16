@@ -415,6 +415,48 @@ a { color: var(--accent); }
   flex-direction: column;
   gap: 12px;
 }
+.hours-mode-card,
+.hours-preset-card {
+  margin-bottom: 10px;
+}
+.hours-preset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.hours-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.hours-slot-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 10px 0;
+  background: var(--panel);
+}
+.hours-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .hours-time-row { grid-template-columns: 1fr; }
+}
+.hours-add-slot,
+.hours-add-preset {
+  width: 100%;
+  border-style: dashed;
+  margin-bottom: 8px;
+}
+.hours-preview {
+  font-style: italic;
+  margin-top: 4px;
+}
 .row-between {
   display: flex;
   justify-content: space-between;

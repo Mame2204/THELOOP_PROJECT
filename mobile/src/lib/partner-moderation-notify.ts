@@ -42,18 +42,6 @@ export async function notifyAdminWithdrawalRequest(params: {
   const title = 'Demande de retrait partenaire';
   const message = `${params.partnerName} demande le retrait de « ${params.title} » (${kindLabel}). Consultez Modération → Demandes de retrait.`;
 
-  if (isSupabaseConfigured() && supabase) {
-    const country = params.countryCode?.trim().toUpperCase().slice(0, 2) || null;
-    const { error } = await supabase.rpc('admin_distribute_notifications', {
-      p_title: title,
-      p_message: message,
-      p_audience: 'admin',
-      p_country_code: country,
-      p_campaign_id: null,
-    });
-    if (!error) return;
-  }
-
   await notifyAdminUsers({ title, message, countryCode: params.countryCode ?? undefined });
 }
 

@@ -13,7 +13,7 @@
 |------|-------------|----------------|----------------|
 | **Membre** | Compte **gratuit** | `member` | Inscription ou compte test membre |
 | **Prime** | Abonné **Loop Prime** (PASS actif) | `prime` | Compte avec PASS actif ou octroi admin |
-| **Partenaire** | Pro THE LOOP | `partner` | Compte pro (e-mail) **ou** jeton SPOT |
+| **Partenaire** | Pro THE LOOP | `partner` | Invitation admin (rôle Partenaire) **ou** e-mail pro + MDP |
 | **Admin** | Control Tower | `admin` / `super_admin` | Compte admin · app + admin-web |
 
 ### Non connecté ≠ un rôle
@@ -48,23 +48,23 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## 0 — Avant de commencer
 
 ### Environnement
-- [ ] **📱** Build **36** installé (TestFlight)
-- [ ] **🤖** Build **36** installé (Play internal)
-- [ ] **💻** Admin-web accessible
-- [ ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
+- [ x ] **📱** Build **36** installé (TestFlight)
+- [ x ] **🤖** Build **36** installé (Play internal)
+- [ x ] **💻** Admin-web accessible
+- [ x ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
 
 ### Migrations Supabase appliquées
-- [ ] `20260916_admin_push_campaign_failed_status.sql` (statut `failed`)
-- [ ] `20260916_support_email_contact_theloop_app.sql` (e-mail `contact@theloop-app.com` dans FAQ / légal / pages)
+- [ x ] `20260916_admin_push_campaign_failed_status.sql` (statut `failed`)
+- [ x ] `20260916_support_email_contact_theloop_app.sql` (e-mail `contact@theloop-app.com` dans FAQ / légal / pages)
 
 ### Comptes test prêts
-- [ ] Membre (`member`)
-- [ ] Prime (`prime` + PASS actif)
-- [ ] Partenaire (e-mail pro **ou** jeton `SPOT-DEMO-2026`)
-- [ ] Admin (`admin` ou `super_admin`)
+- [ x ] Membre (`member`)
+- [ x ] Prime (`prime` + PASS actif)
+- [ x ] Partenaire (compte pro invité · rôle `partner` · e-mail + MDP)
+- [ x ] Admin (`admin` ou `super_admin`)
 
 ### Base propre
-- [ ] `payment_intents` nettoyés (plus d’alertes « Paiement bloqué — PASS non activé » en cron)
+- [ x ] `payment_intents` nettoyés (plus d’alertes « Paiement bloqué — PASS non activé » en cron)
 
 ---
 
@@ -73,42 +73,45 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 *Pas un rôle — état avant connexion.*
 
 ### Écran bloqué sur Auth
-- [ ] **📱** App ouverte déconnecté → écran **Connexion** (pas Accueil)
-- [ ] **🤖** Idem
-- [ ] **📱** Pas de bottom nav · pas d’onglets catalogue
-- [ ] **🤖** Idem
-- [ ] **📱** Impossible d’atteindre Agenda, Spots, Outils, Favoris, fiches détail
-- [ ] **🤖** Idem
+- [ x ] **📱** App ouverte déconnecté → écran **Connexion** (pas Accueil)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Pas de bottom nav · pas d’onglets catalogue
+- [ x ] **🤖** Idem
+- [ x ] **📱** Impossible d’atteindre Agenda, Spots, Outils, Favoris, fiches détail
+- [ x ] **🤖** Idem
 
 ### Parcours autorisés (stack Auth)
-- [ ] **📱** Connexion e-mail + mot de passe
-- [ ] **🤖** Idem
-- [ ] **📱** Inscription (si gate inscription **ON**)
-- [ ] **🤖** Idem
-- [ ] **📱** Gate inscription **OFF** → pas d’onglet Inscription (invite-only)
-- [ ] **🤖** Idem
-- [ ] **📱** « Mot de passe oublié ? »
-- [ ] **🤖** Idem
-- [ ] **📱** « Activer un compte invité par l’équipe »
-- [ ] **🤖** Idem
-- [ ] **📱** Lien **Pro ? Rejoindre THE LOOP →** (demande partenariat)
-- [ ] **🤖** Idem
-- [ ] **📱** CGU / Politique de confidentialité (modales légales)
-- [ ] **🤖** Idem
+- [ x ] **📱** Connexion e-mail + mot de passe
+- [ x ] **🤖** Idem
+- [ x ] **📱** Inscription (si gate inscription **ON**)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Gate inscription **OFF** → pas d’onglet Inscription (invite-only)
+- [ x ] **🤖** Idem
+- [ x ] **📱** « Mot de passe oublié ? »
+- [ x ] **🤖** Idem
+- [ r ] **📱** « Activer un compte invité par l’équipe »
+- [ r ] **🤖** Idem
+- [ r ] **📱** Lien **Pro ? Rejoindre THE LOOP →** (demande partenariat)
+- [ r ] **📱** Même e-mail + demande **en cours** (`pending` / `to_contact` / `in_discussion`) → alerte **Demande déjà enregistrée** (pas « duplicate » brut Postgres)
+- [ r ] **📱** Nouvelle demande autorisée si statut admin **rejeté** ou **approuvé**
+- [ r ] **📱** Après envoi : **tous** les appareils admin (iOS + Android) reçoivent la notif inbox + push OS (pas seulement l’appareil du test)
+- [ r ] **🤖** Idem
+- [ r ] **📱** CGU / Politique de confidentialité (modales légales)
+- [ r ] **🤖** Idem
 
 ### Validation privilège (double tap logo)
-- [ ] **📱** **Double tap** logo THE LOOP → écran **Code établissement**
-- [ ] **🤖** Idem
-- [ ] **📱** Code partenaire `CODE-XXXXX` → scan / validation privilège membre
-- [ ] **🤖** Idem
-- [ ] **📱** Retour Auth possible
-- [ ] **🤖** Idem
+- [ x ] **📱** **Double tap** logo THE LOOP → écran **Code établissement**
+- [ x ] **🤖** Idem
+- [ x ] **📱** Code partenaire `CODE-XXXXX` → scan / validation privilège membre
+- [ x ] **🤖** Idem
+- [ x ] **📱** Retour Auth possible
+- [ x ] **🤖** Idem
 
 ### Ce qui doit rester bloqué
-- [ ] **📱** Aucun contenu catalogue (événement, spot, outil, parcours, singulier)
-- [ ] **🤖** Idem
-- [ ] **📱** Pas de favoris · pas de recherche catalogue
-- [ ] **🤖** Idem
+- [ x ] **📱** Aucun contenu catalogue (événement, spot, outil, parcours, singulier)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Pas de favoris · pas de recherche catalogue
+- [ x ] **🤖** Idem
 
 ---
 
@@ -117,36 +120,38 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 *Compte `member` connecté — pas Prime.*
 
 ### Navigation & thème
-- [ ] **📱** Bottom nav : **Accueil · Agenda · Spots · Outils · Favoris · Profil** (selon sections admin actives)
-- [ ] **🤖** Idem
-- [ ] **📱** Thème **teal clair** (membre gratuit)
-- [ ] **🤖** Idem
-- [ ] **📱** Pas de badge Prime sur Profil
-- [ ] **🤖** Idem
+- [ x ] **📱** Bottom nav : **Accueil · Agenda · Spots · Outils · Favoris · Profil** (selon sections admin actives)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Thème **teal clair** (membre gratuit)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Pas de badge Prime sur Profil
+- [ x ] **🤖** Idem
 
 ### Catalogue & favoris
-- [ ] **📱** Accueil : hero, sondage, blocs éditoriaux (selon config admin)
-- [ ] **🤖** Idem
-- [ ] **📱** Agenda / Spots / Outils : liste + fiche détail
-- [ ] **🤖** Idem
-- [ ] **📱** Contenu `visibility: prime` **non visible**
-- [ ] **🤖** Idem
-- [ ] **📱** Ajouter / retirer favori · relancer app → persiste
-- [ ] **🤖** Idem
+- [ x ] **📱** Accueil : hero, sondage, blocs éditoriaux (selon config admin)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Agenda / Spots / Outils : liste + fiche détail
+- [ x ] **🤖** Idem
+- [ x ] **📱** Contenu `visibility: prime` **non visible**
+- [ x ] **🤖** Idem
+- [ x ] **📱** Ajouter / retirer favori · relancer app → persiste
+- [ x ] **🤖** Idem
 
-### Profil & upgrade
-- [ ] **📱** Profil : QR membre · parrainage · paramètres
-- [ ] **🤖** Idem
-- [ ] **📱** Carte « Découvrir Prime » visible (si gate achat PASS ON)
-- [ ] **🤖** Idem
-- [ ] **📱** Pas d’accès aux privilèges Prime octroyés
-- [ ] **🤖** Idem
+### Profil & upgrade (gate achat PASS **ON**)
+- [ x ] **📱** Profil : QR membre · parrainage · paramètres
+- [ x ] **🤖** Idem
+- [ r ] **📱** **Membre jamais Prime** → carte **« Passez à l’expérience premium »** (Découvrir Prime) · **pas** de bouton **Mon PASS**
+- [ r ] **🤖** Idem
+- [ r ] **📱** **Membre ex-Prime** (PASS expiré / historique en base ou local) → **Mon PASS** visible · **pas** de carte Découvrir Prime
+- [ r ] **🤖** Idem
+- [ x ] **📱** Pas d’accès aux privilèges Prime octroyés (tant que rôle `member`)
+- [ x ] **🤖** Idem
 
 ### Notifications
-- [ ] **📱** Boîte notifications · lire · marquer lu
-- [ ] **🤖** Idem
-- [ ] **📱** Push OS si campagne admin ciblée « Membres »
-- [ ] **🤖** Idem
+- [ x ] **📱** Boîte notifications · lire · marquer lu
+- [ x ] **🤖** Idem
+- [ x ] **📱** Push OS si campagne admin ciblée « Membres »
+- [ x ] **🤖** Idem
 
 ---
 
@@ -155,55 +160,55 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 *Compte `prime` + PASS actif.*
 
 ### Apparence
-- [ ] **📱** Thème **indigo** Loop Prime
-- [ ] **🤖** Idem
-- [ ] **📱** Badge Prime sur onglet Profil
-- [ ] **🤖** Idem
+- [ x ] **📱** Thème **indigo** Loop Prime
+- [ x ] **🤖** Idem
+- [ x ] **📱** Badge Prime sur onglet Profil
+- [ x ] **🤖** Idem
 
 ### Navigation & contenu
-- [ ] **📱** Mêmes onglets que membre (+ accès contenu exclusif Prime)
-- [ ] **🤖** Idem
-- [ ] **📱** Profil → **Abonnement / Mon PASS** · historique PASS
-- [ ] **🤖** Idem
+- [ x ] **📱** Mêmes onglets que membre (+ accès contenu exclusif Prime)
+- [ x ] **🤖** Idem
+- [ r ] **📱** Profil → bouton **Mon PASS** (pas de carte « Découvrir Prime ») · historique PASS
+- [ r ] **🤖** Idem
 - [ ] **📱** Profil → **Mes avantages** / privilèges octroyés
 - [ ] **🤖** Idem
-- [ ] **📱** Contenu et offres réservés Prime accessibles
-- [ ] **🤖** Idem
+- [ x ] **📱** Contenu et offres réservés Prime accessibles
+- [ x ] **🤖** Idem
 
 ### Privilèges & scan
-- [ ] **📱** Scanner QR privilège partenaire → validation OK
-- [ ] **🤖** Idem
-- [ ] **📱** Utiliser un privilège octroyé → succès côté partenaire
-- [ ] **🤖** Idem
+- [ x ] **📱** Scanner QR privilège partenaire → validation OK
+- [ x ] **🤖** Idem
+- [ x ] **📱** Utiliser un privilège octroyé → succès côté partenaire
+- [ x ] **🤖** Idem
 
 ### Achat PASS Djomy (si gate PASS ON)
-- [ ] **📱** Écran Abonnement · prix GNF affiché
-- [ ] **🤖** Idem
-- [ ] **📱** Paiement Orange Money ou carte · succès
-- [ ] **🤖** Idem
-- [ ] **📱** Rôle Prime actif · notif confirmation
-- [ ] **🤖** Idem
-- [ ] **💻** Paiement visible admin-web → Paiements
-- [ ] **📱** Échec paiement → message clair · pas Prime fantôme
-- [ ] **🤖** Idem
+- [ x ] **📱** Écran Abonnement · prix GNF affiché
+- [ x ] **🤖** Idem
+- [ x ] **📱** Paiement Orange Money ou carte · succès
+- [ x ] **🤖** Idem
+- [ r ] **📱** Rôle Prime actif · notif confirmation
+- [ r ] **🤖** Idem
+- [ x ] **💻** Paiement visible admin-web → Paiements
+- [ x ] **📱** Échec paiement → message clair · pas Prime fantôme
+- [ x ] **🤖** Idem
 
 ---
 
 # D — Partenaire Pro
 
-*Compte `partner` ou session SPOT.*
+*Compte `partner` — connexion e-mail + MDP (après invitation admin).*
 
 ### Connexion
-- [ ] **📱** Connexion compte pro (e-mail + MDP) **ou** jeton SPOT valide
-- [ ] **🤖** Idem
-- [ ] **📱** Thème **vert teal** partenaire
-- [ ] **🤖** Idem
+- [ x ] **📱** Connexion compte pro (e-mail + MDP · compte invité partenaire)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Thème **vert teal** partenaire
+- [ x ] **🤖** Idem
 
 ### Navigation
-- [ ] **📱** Bottom nav inclut onglet **Pro** (+ Accueil, Agenda, Spots, Outils, Favoris, Profil selon sections)
-- [ ] **🤖** Idem
-- [ ] **📱** **Stats** accessibles depuis Espace Pro (pas dans la barre)
-- [ ] **🤖** Idem
+- [ x ] **📱** Bottom nav inclut onglet **Pro** (+ Accueil, Agenda, Spots, Outils, Favoris, Profil selon sections)
+- [ x ] **🤖** Idem
+- [ x ] **📱** **Stats** accessibles depuis Espace Pro (pas dans la barre)
+- [ x ] **🤖** Idem
 
 ### Publications
 - [ ] **📱** Soumettre événement → statut **pending**
@@ -223,14 +228,14 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ ] **📱** Notif quand admin approuve / refuse retrait
 - [ ] **🤖** Idem
 - [ ] **💻** Demande visible admin-web → Demandes
-- [ ] **📱** Favoris via onglet **Favoris**
-- [ ] **🤖** Idem
+- [ x ] **📱** Favoris via onglet **Favoris**
+- [ x ] **🤖** Idem
 
 ### Validation privilèges
-- [ ] **📱** Scan QR membre · validation code partenaire
-- [ ] **🤖** Idem
-- [ ] **📱** Code établissement `CODE-XXXXX` fonctionnel
-- [ ] **🤖** Idem
+- [ x ] **📱** Scan QR membre · validation code partenaire
+- [ x ] **🤖** Idem
+- [ x ] **📱** Code établissement `CODE-XXXXX` fonctionnel
+- [ x ] **🤖** Idem
 
 ---
 
@@ -239,12 +244,12 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 *Connecté admin dans l’app **📱/🤖**.*
 
 ### Accès & thème
-- [ ] **📱** Onglet **Administration** visible
-- [ ] **🤖** Idem
-- [ ] **📱** Thème bordeaux (super admin) ou gris bleu (admin délégué)
-- [ ] **🤖** Idem
-- [ ] **📱** Modules masqués selon permissions
-- [ ] **🤖** Idem
+- [ x ] **📱** Onglet **Administration** visible
+- [ x ] **🤖** Idem
+- [ x ] **📱** Thème bordeaux (super admin) ou gris bleu (admin délégué)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Modules masqués selon permissions
+- [ x ] **🤖** Idem
 
 ### Modération
 - [ ] **📱** Voir soumissions pending partenaire
@@ -257,38 +262,38 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ ] **🤖** Idem
 
 ### Users & équipe
-- [ ] **📱** Liste users · pagination · filtre inactifs 30j
-- [ ] **🤖** Idem
-- [ ] **📱** Changer rôle · suspendre compte
-- [ ] **🤖** Idem
-- [ ] **📱** TEAMS · activer/désactiver privilège par membre
-- [ ] **🤖** Idem
+- [ x ] **📱** Liste users · pagination · filtre inactifs 30j
+- [ x ] **🤖** Idem
+- [ x ] **📱** Changer rôle · suspendre compte
+- [ x ] **🤖** Idem
+- [ x ] **📱** TEAMS · activer/désactiver privilège par membre
+- [ x ] **🤖** Idem
 - [ ] **📱** Permissions admin délégué (super admin)
 - [ ] **🤖** Idem
 
 ### PASS & paiements
-- [ ] **📱** Gestion PASS · prix Guinée (super admin)
-- [ ] **🤖** Idem
+- [ x ] **📱** Gestion PASS · prix Guinée (super admin)
+- [ x ] **🤖** Idem
 - [ ] **📱** Paiements · refs Djomy · **Resync**
 - [ ] **🤖** Idem
 - [ ] **📱** Octroi manuel privilège
 - [ ] **🤖** Idem
 
 ### Contenu & accueil
-- [ ] **📱** Publier / archiver contenu
-- [ ] **🤖** Idem
-- [ ] **📱** Accueil : hero · sondage · parcours · singulier
-- [ ] **🤖** Idem
-- [ ] **📱** Partenariat approuvé → jeton SPOT généré
+- [ x ] **📱** Publier / archiver contenu
+- [ x ] **🤖** Idem
+- [ x ] **📱** Accueil : hero · sondage · parcours · singulier
+- [ x ] **🤖** Idem
+- [ ] **📱** Partenariat approuvé → note système · inviter le contact (Utilisateurs · rôle **Partenaire**)
 - [ ] **🤖** Idem
 - [ ] **📱** Idée utilisateur → préremplir éditeur contenu
 - [ ] **🤖** Idem
 
 ### Push (Control Tower mobile)
-- [ ] **📱** Notifications → envoi immédiat audience « Tous »
-- [ ] **🤖** Idem
-- [ ] **📱** Planifier campagne · **Annuler** une planifiée
-- [ ] **🤖** Idem
+- [ x ] **📱** Notifications → envoi immédiat audience « Tous »
+- [ x ] **🤖** Idem
+- [ x ] **📱** Planifier campagne · **Annuler** une planifiée
+- [ x ] **🤖** Idem
 - [ ] **📱** Audiences favoris · anniversaires
 - [ ] **🤖** Idem
 
@@ -299,29 +304,32 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 *Flux transverses — tous rôles.*
 
 ### Connexion / déconnexion
-- [ ] **📱** Connexion e-mail + MDP → **Accueil**
-- [ ] **🤖** Idem
-- [ ] **📱** Déconnexion → retour **Auth** (contenu inaccessible)
-- [ ] **🤖** Idem
+- [ x ] **📱** Connexion e-mail + MDP → **Accueil**
+- [ x ] **🤖** Idem
+- [ x ] **📱** Déconnexion → retour **Auth** (contenu inaccessible)
+- [ x ] **🤖** Idem
 
 ### Inscription & e-mail
-- [ ] **📱** Inscription → mail reçu → clic lien → connecté
-- [ ] **🤖** Idem
-- [ ] **🔜** Notif **Bienvenue** inbox immédiate après 1ʳᵉ connexion (build 37+)
-- [ ] **📱** Gate inscription OFF → inscription bloquée (invite-only)
-- [ ] **🤖** Idem
+- [ x ] **📱** Inscription → mail reçu → clic lien → connecté
+- [ x ] **🤖** Idem
+- [ x ] **🔜** Notif **Bienvenue** inbox immédiate après 1ʳᵉ connexion (build 37+)
+- [ x ] **📱** Gate inscription OFF → inscription bloquée (invite-only)
+- [ x ] **🤖** Idem
 
 ### Mot de passe oublié
-- [ ] **📱** « Mot de passe oublié » → mail reçu
-- [ ] **🤖** Idem
-- [ ] **📱** Clic lien → **écran nouveau MDP dans l’app**
-- [ ] **🤖** Idem
-- [ ] **📱** Connexion avec nouveau MDP OK
-- [ ] **🤖** Idem
+- [ x ] **📱** « Mot de passe oublié » → mail reçu
+- [ x ] **🤖** Idem
+- [ x ] **📱** Clic lien → **écran nouveau MDP dans l’app**
+- [ x ] **🤖** Idem
+- [ x ] **📱** Connexion avec nouveau MDP OK
+- [ x ] **🤖** Idem
 
 ### Invitations & waitlist
 - [ ] **💻** Users → **Inviter** → mail invitation reçu
+- [ ] **💻** Inviter un **partenaire** (rôle Partenaire) après validation demande partenariat § E
 - [ ] **📱** Clic lien → compte activé · bon rôle
+- [ ] **🤖** Idem
+- [ ] **📱** Partenaire invité → connexion e-mail + MDP → Espace Pro
 - [ ] **🤖** Idem
 - [ ] **💻** Users → **Waitlist** → pré-créer compte → statut `invited`
 - [ ] **📱** Admin mobile → Waitlist → pré-créer (même flux)
@@ -334,9 +342,9 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 *Tout sur **💻** `admin.theloop-app.com`.*
 
 ### Accès
-- [ ] **💻** Login admin · session stable
-- [ ] **💻** Sélecteur pays GN · données filtrées
-- [ ] **💻** Menu masque modules sans permission
+- [ x ] **💻** Login admin · session stable
+- [ x ] **💻** Sélecteur pays GN · données filtrées
+- [ r ] **💻** Menu masque modules sans permission
 
 ### Users · PASS · paiements
 - [ ] **💻** Users · liste · édition · invite · waitlist
@@ -346,28 +354,28 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ ] **💻** Demandes · modération · retraits partenaire
 
 ### Contenu
-- [ ] **💻** Contenu · liste events / spots / outils
-- [ ] **💻** Créer / modifier (ContentEditor)
-- [ ] **💻** À la une · archiver
+- [ x ] **💻** Contenu · liste events / spots / outils
+- [ x ] **💻** Créer / modifier (ContentEditor)
+- [ x ] **💻** À la une · archiver
 - [ ] **💻** Idée → ouvrir éditeur prérempli
 
 ### Accueil · Loop · étoiles
-- [ ] **💻** Accueil · sondage · parcours · singulier · logos
-- [ ] **💻** Loop hub · privilèges
-- [ ] **💻** Étoiles · spots (et outils / parcours si dispo)
-- [ ] **💻** TEAMS · toggles overrides par membre
+- [ x ] **💻** Accueil · sondage · parcours · singulier · logos
+- [ x ] **💻** Loop hub · privilèges
+- [ x ] **💻** Étoiles · spots (et outils / parcours si dispo)
+- [ x ] **💻** TEAMS · toggles overrides par membre
 
 ### Paramètres
 - [ ] **💻** Gates · pays · catégories · permissions · legal
-- [ ] **💻** Types privilège · standalone benefit
+- [ x ] **💻** Types privilège · standalone benefit
 - [ ] **💻** Automatisations · jobs · exécuter (si bouton présent)
 - [ ] **💻** Horaires · onglets · milestones · tirage
 
 ### Notifications (admin-web)
-- [ ] **💻** Envoi immédiat · audience Tous
+- [ x ] **💻** Envoi immédiat · audience Tous
 - [ ] **💻** Audiences : favoris · anniversaires · individuel
-- [ ] **💻** Planifier · annuler campagne
-- [ ] **💻** Historique · statuts `sent` / `failed` / `cancelled`
+- [ r ] **💻** Planifier · annuler campagne
+- [ x ] **💻** Historique · statuts `sent` / `failed` / `cancelled`
 
 > Détail push : voir aussi `07-Smoke-Push.md`
 
@@ -376,45 +384,45 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 # H — Push notifications
 
 ### Immédiat (sans attendre le serveur)
-- [ ] **💻** Campagne immédiate « Membres » → statut `sent`
-- [ ] **📱** Compte membre : inbox + push OS **1 fois**
-- [ ] **🤖** Idem Android
-- [ ] **📱** Compte Prime **ne reçoit pas** (si ciblage membre seul)
-- [ ] **🤖** Idem
+- [ x ] **💻** Campagne immédiate « Membres » → statut `sent`
+- [ x ] **📱** Compte membre : inbox + push OS **1 fois**
+- [ x ] **🤖** Idem Android
+- [ x ] **📱** Compte Prime **ne reçoit pas** (si ciblage membre seul)
+- [ x ] **🤖** Idem
 
 ### Planifié (**⏳** redeploy admin-web + Render)
-- [ ] **⏳💻** Planifier campagne Prime dans **+3 minutes**
-- [ ] **⏳** Attendre 5–10 min (cron serveur)
-- [ ] **⏳💻** Statut passe à `sent`
-- [ ] **⏳📱** Compte Prime reçoit inbox + push
-- [ ] **⏳🤖** Idem Android
-- [ ] **⏳💻** Annuler une campagne planifiée → `cancelled` · pas d’envoi
+- [ x ] **⏳💻** Planifier campagne Prime dans **+3 minutes**
+- [ x ] **⏳** Attendre 5–10 min (cron serveur)
+- [ x ] **⏳💻** Statut passe à `sent`
+- [ x ] **⏳📱** Compte Prime reçoit inbox + push
+- [ x ] **⏳🤖** Idem Android
+- [ x ] **⏳💻** Annuler une campagne planifiée → `cancelled` · pas d’envoi
 
 ### Pas de doublon
-- [ ] **⏳** Une campagne planifiée = **1 seule** notif (pas 2 push)
+- [ x ] **⏳** Une campagne planifiée = **1 seule** notif (pas 2 push)
 
 ### Échec (`failed`)
-- [ ] **💻** Campagne en échec → badge **Échec** dans l’historique
+- [ x ] **💻** Campagne en échec → badge **Échec** dans l’historique
 
 ---
 
 # I — Contact & support
 
-- [ ] **📱** Profil → pied de page **contact@theloop-app.com**
-- [ ] **🤖** Idem
-- [ ] **📱** Feuille contact (WhatsApp / e-mail) → `mailto:contact@theloop-app.com`
-- [ ] **🤖** Idem
-- [ ] **📱** FAQ / pages / CGU (contenu Supabase) → e-mail **contact@theloop-app.com** (après migration)
-- [ ] **🤖** Idem
+- [ r ] **📱** Profil → pied de page **contact@theloop-app.com**
+- [ r ] **🤖** Idem
+- [ r ] **📱** Feuille contact (WhatsApp / e-mail) → `mailto:contact@theloop-app.com`
+- [ r ] **🤖** Idem
+- [ r ] **📱** FAQ / pages / CGU (contenu Supabase) → e-mail **contact@theloop-app.com** (après migration)
+- [ r ] **🤖** Idem
 
 ---
 
 # J — Parrainage
 
-- [ ] **📱** Code parrain visible profil membre
-- [ ] **🤖** Idem
-- [ ] **📱** Nouveau filleul inscrit → compteur parrain +1
-- [ ] **🤖** Idem
+- [ x ] **📱** Code parrain visible profil membre
+- [ x ] **🤖** Idem
+- [ x ] **📱** Nouveau filleul inscrit → compteur parrain +1
+- [ x ] **🤖** Idem
 - [ ] **📱** 10 filleuls / an → mois Prime parrain (si seuil atteint en test)
 - [ ] **🤖** Idem
 
@@ -422,16 +430,16 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 
 # K — Régression rapide (5 min)
 
-- [ ] **📱** Cold start · pas crash au lancement
-- [ ] **🤖** Idem
-- [ ] **📱** App en arrière-plan · retour → OK
-- [ ] **🤖** Idem
-- [ ] **📱** Images contenu chargées (pas tout gris)
-- [ ] **🤖** Idem
-- [ ] **📱** Admin publie → membre voit après refresh
-- [ ] **🤖** Idem
-- [ ] **📱** Pas lag / refresh excessif en navigation normale
-- [ ] **🤖** Idem
+- [ x ] **📱** Cold start · pas crash au lancement
+- [ x ] **🤖** Idem
+- [ x ] **📱** App en arrière-plan · retour → OK
+- [ x ] **🤖** Idem
+- [ x ] **📱** Images contenu chargées (pas tout gris)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Admin publie → membre voit après refresh
+- [ x ] **🤖** Idem
+- [ x ] **📱** Pas lag / refresh excessif en navigation normale
+- [ x ] **🤖** Idem
 
 ---
 
@@ -439,13 +447,13 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 
 *Coche seulement si les **deux** OK.*
 
-- [ ] **📱🤖** Non connecté → Auth bloqué identique
-- [ ] **📱🤖** Login / logout identique
-- [ ] **📱🤖** Navigation par rôle identique
+- [ x ] **📱🤖** Non connecté → Auth bloqué identique
+- [ x ] **📱🤖** Login / logout identique
+- [ x ] **📱🤖** Navigation par rôle identique
 - [ ] **📱🤖** Push OS reçu sur les deux
 - [ ] **📱🤖** Partenaire : soumission + modération OK
 - [ ] **📱🤖** Admin : modération OK
-- [ ] **📱🤖** PASS Djomy (si testé) OK des deux côtés
+- [ x ] **📱🤖** PASS Djomy (si testé) OK des deux côtés
 
 ---
 

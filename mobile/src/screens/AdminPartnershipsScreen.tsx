@@ -67,7 +67,7 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
     if (status === 'approved' && partnership && partnership.status !== 'approved') {
       Alert.alert(
         'Valider le partenariat',
-        `Générer un jeton SPOT pour ${partnership.establishmentName} ?`,
+        `Valider ${partnership.establishmentName} ?\n\nEnsuite, inviter le contact depuis Utilisateurs (rôle Partenaire).`,
         [
           { text: 'Annuler', style: 'cancel' },
           {
@@ -80,9 +80,7 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
                 }
                 Alert.alert(
                   'Partenaire validé',
-                  res.tokenCode
-                    ? `Jeton SPOT : ${res.tokenCode}\nTransmettez-le au partenaire.`
-                    : 'Statut mis à jour.',
+                  'Invitez le contact depuis Utilisateurs (rôle Partenaire) pour activer l’Espace Pro.',
                 );
                 await load({ force: true });
               });

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { isSuperAdminUser } from '../lib/permissions';
 import { COUNTRY_OPTIONS } from '../lib/countries';
+import { formatRetryDuration } from '../lib/auth-email-errors';
 import { formatWhen } from '../lib/format';
 import {
   accountStatusLabel,
@@ -71,6 +72,7 @@ export function UsersPage() {
   const [selected, setSelected] = useState<AdminUserRow | null>(null);
   const [form, setForm] = useState(emptyForm(countryCode));
   const [formMsg, setFormMsg] = useState<string | null>(null);
+  const [inviteResendCooldown, setInviteResendCooldown] = useState(0);
 
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [wlStatus, setWlStatus] = useState<WaitlistStatus | 'all'>('pending');
@@ -127,6 +129,19 @@ export function UsersPage() {
   useEffect(() => {
     if (tab === 'waitlist') void loadWaitlist();
   }, [tab, loadWaitlist]);
+
+  useEffect(() => {
+    if (inviteResendCooldown <= 0) return;
+    const timer = window.setInterval(() => {
+      setInviteResendCooldown((value) => Math.max(0, value - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [inviteResendCooldown]);
+
+  function beginInviteResendCooldown(retryAfterSeconds?: number) {
+    const seconds = Math.max(1, retryAfterSeconds ?? 10);
+    setInviteResendCooldown((value) => Math.max(value, seconds));
+  }
 
   useEffect(() => {
     if (!selected) return;
@@ -212,9 +227,11 @@ export function UsersPage() {
     });
     setBusy(false);
     if (!res.ok) {
+      beginInviteResendCooldown(res.retryAfterSeconds);
       setInviteMsg(res.error ?? 'Invitation impossible.');
       return;
     }
+    beginInviteResendCooldown(10);
     const sentEmail = res.email ?? inviteForm.email.trim().toLowerCase();
     const mailKind =
       res.mailMode === 'recovery_resent'
@@ -624,7 +641,7 @@ export function UsersPage() {
                       <button
                         className="btn ghost small"
                         type="button"
-                        disabled={busy || !selected.email}
+                        disabled={busy || !selected.email || inviteResendCooldown > 0}
                         onClick={() => {
                           void createUserInvite({
                             email: selected.email,
@@ -636,6 +653,8 @@ export function UsersPage() {
                             lastName: selected.lastName ?? undefined,
                             createdByAdminId: profile!.id,
                           }).then((r) => {
+                            if (!r.ok) beginInviteResendCooldown(r.retryAfterSeconds);
+                            else beginInviteResendCooldown(10);
                             setFormMsg(
                               r.ok
                                 ? `Invitation renvoyée à ${selected.email}.`
@@ -644,7 +663,9 @@ export function UsersPage() {
                           });
                         }}
                       >
-                        Renvoyer l’invitation
+                        {inviteResendCooldown > 0
+                          ? `Renvoyer (${formatRetryDuration(inviteResendCooldown)})`
+                          : 'Renvoyer l’invitation'}
                       </button>
                       <button
                         className="btn ghost small"
@@ -771,17 +792,26 @@ export function UsersPage() {
                           <button
                             type="button"
                             className="btn small"
-                            disabled={busy}
+                            disabled={busy || inviteResendCooldown > 0}
                             onClick={() => {
                               setBusy(true);
                               void inviteFromWaitlist(w, profile.id, 'member').then((r) => {
                                 setBusy(false);
-                                if (!r.ok) window.alert(r.error ?? 'Erreur');
-                                else void loadWaitlist();
+                                if (!r.ok) {
+                                  beginInviteResendCooldown(r.retryAfterSeconds);
+                                  window.alert(r.error ?? 'Erreur');
+                                } else {
+                                  beginInviteResendCooldown(10);
+                                  void loadWaitlist();
+                                }
                               });
                             }}
                           >
-                            {w.status === 'invited' ? 'Renvoyer' : 'Inviter'}
+                            {inviteResendCooldown > 0
+                              ? `Renvoyer (${formatRetryDuration(inviteResendCooldown)})`
+                              : w.status === 'invited'
+                                ? 'Renvoyer'
+                                : 'Inviter'}
                           </button>
                         ) : null}
                         {w.status === 'pending' ? (

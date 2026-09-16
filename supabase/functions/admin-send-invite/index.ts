@@ -26,6 +26,54 @@ type InviteBody = {
   city?: string | null;
 };
 
+function extractSecondsFromMessage(message: string): number {
+  const patterns = [
+    /(\d+)\s*seconds?/i,
+    /every\s+(\d+)\s*seconds?/i,
+    /after\s+(\d+)\s*seconds?/i,
+    /(\d+)\s*secondes?/i,
+  ];
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match?.[1]) {
+      const value = parseInt(match[1], 10);
+      if (Number.isFinite(value) && value > 0) return value;
+    }
+  }
+  return 60;
+}
+
+function parseAuthApiError(body: string, status: number): { message: string; retryAfterSeconds?: number } {
+  try {
+    const parsed = JSON.parse(body) as {
+      msg?: string;
+      message?: string;
+      error_code?: string;
+      code?: number;
+    };
+    const raw = parsed.msg ?? parsed.message ?? body;
+    const lower = raw.toLowerCase();
+    const isRateLimit =
+      status === 429
+      || parsed.code === 429
+      || parsed.error_code === 'over_email_send_rate_limit'
+      || lower.includes('over_email_send_rate_limit')
+      || lower.includes('security purposes')
+      || lower.includes('rate limit');
+
+    if (isRateLimit) {
+      const seconds = extractSecondsFromMessage(raw);
+      return {
+        message: `Un e-mail vient d'être envoyé. Réessayez dans ${seconds} seconde${seconds > 1 ? 's' : ''}.`,
+        retryAfterSeconds: seconds,
+      };
+    }
+    return { message: raw.slice(0, 240) };
+  } catch {
+    return { message: body.slice(0, 240) };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -118,6 +166,20 @@ Deno.serve(async (req) => {
 
     if (inviteErr) {
       const msg = inviteErr.message?.toLowerCase() ?? '';
+      const inviteRateLimit = parseAuthApiError(inviteErr.message ?? '', inviteErr.status ?? 400);
+      if (inviteRateLimit.retryAfterSeconds) {
+        return new Response(
+          JSON.stringify({
+            error: inviteRateLimit.message,
+            retry_after_seconds: inviteRateLimit.retryAfterSeconds,
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        );
+      }
+
       const already =
         msg.includes('already') || msg.includes('registered') || msg.includes('exists');
       if (!already) {
@@ -139,12 +201,14 @@ Deno.serve(async (req) => {
       });
       if (!recoverRes.ok) {
         const recoverBody = await recoverRes.text();
+        const recoverErr = parseAuthApiError(recoverBody, recoverRes.status);
         return new Response(
           JSON.stringify({
-            error: `Compte déjà présent. Renvoi impossible : ${recoverBody.slice(0, 200)}`,
+            error: recoverErr.message,
+            retry_after_seconds: recoverErr.retryAfterSeconds ?? null,
           }),
           {
-            status: 400,
+            status: recoverRes.status === 429 ? 429 : 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           },
         );

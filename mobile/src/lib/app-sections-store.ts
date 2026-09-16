@@ -53,11 +53,22 @@ export const DEFAULT_SECTIONS: AppSectionsConfig = {
 const cacheByCountry = new Map<string, AppSectionsConfig>();
 const remoteRefreshByCountry = new Set<string>();
 
+function sectionsEqual(a: AppSectionsConfig, b: AppSectionsConfig): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+async function notifySectionsChanged(previous: AppSectionsConfig | undefined, next: AppSectionsConfig): Promise<void> {
+  if (previous && sectionsEqual(previous, next)) return;
+  const { emitHomeRefresh } = await import('@/lib/home-refresh');
+  emitHomeRefresh('sections');
+}
+
 async function fetchAppSectionsRemote(
   cc: string,
   cache: string,
   remote: string,
   isLegacyGn: boolean,
+  previous?: AppSectionsConfig,
 ): Promise<AppSectionsConfig | null> {
   if (!isSupabaseConfigured() || !supabase) return null;
 
@@ -70,6 +81,7 @@ async function fetchAppSectionsRemote(
     const merged = mergeSections(data.value);
     cacheByCountry.set(cc, merged);
     await AsyncStorage.setItem(cache, JSON.stringify(merged));
+    await notifySectionsChanged(previous, merged);
     return merged;
   }
   if (isLegacyGn && remote.endsWith('_GN')) {
@@ -87,6 +99,7 @@ async function fetchAppSectionsRemote(
         value: merged,
         updated_at: new Date().toISOString(),
       });
+      await notifySectionsChanged(previous, merged);
       return merged;
     }
   }
@@ -98,10 +111,11 @@ function scheduleAppSectionsRemoteRefresh(
   cache: string,
   remote: string,
   isLegacyGn: boolean,
+  previous: AppSectionsConfig,
 ): void {
   if (remoteRefreshByCountry.has(cc)) return;
   remoteRefreshByCountry.add(cc);
-  void fetchAppSectionsRemote(cc, cache, remote, isLegacyGn).finally(() => {
+  void fetchAppSectionsRemote(cc, cache, remote, isLegacyGn, previous).finally(() => {
     remoteRefreshByCountry.delete(cc);
   });
 }
@@ -171,7 +185,9 @@ export async function getAppSections(
 ): Promise<AppSectionsConfig> {
   const { cc, cache, remote, isLegacyGn } = keys(countryCode);
   if (!options?.force && cacheByCountry.has(cc)) {
-    return cacheByCountry.get(cc)!;
+    const cached = cacheByCountry.get(cc)!;
+    scheduleAppSectionsRemoteRefresh(cc, cache, remote, isLegacyGn, cached);
+    return cached;
   }
 
   let local = DEFAULT_SECTIONS;
@@ -195,11 +211,12 @@ export async function getAppSections(
   cacheByCountry.set(cc, local);
 
   if (!options?.force && hasDiskCache) {
+    scheduleAppSectionsRemoteRefresh(cc, cache, remote, isLegacyGn, local);
     return local;
   }
 
   if (isSupabaseConfigured() && supabase) {
-    const remoteMerged = await fetchAppSectionsRemote(cc, cache, remote, isLegacyGn);
+    const remoteMerged = await fetchAppSectionsRemote(cc, cache, remote, isLegacyGn, local);
     if (remoteMerged) return remoteMerged;
   }
 

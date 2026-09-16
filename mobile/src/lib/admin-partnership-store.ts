@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { resolveCountryCode } from '@/lib/admin-country';
 import { hydrateScoped, peekScoped, scopedStorageKey } from '@/lib/swr-cache';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { onboardApprovedPartnership } from '@/lib/admin-partner-token-store';
 import type { PartnershipNote, PartnershipRequest, PartnershipStatus } from '@/lib/admin-types';
 import { PARTNERSHIP_STATUS_LABELS } from '@/lib/admin-types';
 
@@ -153,16 +152,18 @@ export async function listPartnershipRequests(
 
 export async function approvePartnershipWithOnboarding(
   request: PartnershipRequest,
-): Promise<{ ok: boolean; tokenCode?: string; error?: string }> {
+): Promise<{ ok: boolean; error?: string }> {
   const statusRes = await updatePartnershipStatus(request.id, 'approved');
   if (!statusRes.ok) return statusRes;
 
-  return onboardApprovedPartnership({
-    partnershipId: request.id,
-    establishmentName: request.establishmentName,
-    managerName: request.managerName,
-    email: request.email,
-  });
+  const email = request.email.trim().toLowerCase();
+  const label = request.establishmentName.trim() || request.managerName.trim() || 'Partenaire';
+  const noteBody = email
+    ? `Partenariat validé pour « ${label} ». Prochaine étape : inviter ${email} depuis Utilisateurs (rôle Partenaire) pour activer l'Espace Pro.`
+    : `Partenariat validé pour « ${label} ». Prochaine étape : inviter le contact depuis Utilisateurs (rôle Partenaire).`;
+
+  await addPartnershipNote(request.id, noteBody, null, 'Système THE LOOP');
+  return { ok: true };
 }
 
 export async function updatePartnershipStatus(

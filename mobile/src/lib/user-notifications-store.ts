@@ -749,31 +749,66 @@ export async function appendUserNotification(
   return entry;
 }
 
+function parsePushUserIds(userIds: unknown): string[] {
+  if (!Array.isArray(userIds)) return [];
+  return userIds
+    .map((id) => String(id))
+    .filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+}
+
+/** Push OS après diffusion inbox admin (tous tokens enregistrés par compte). */
+export async function deliverPushToAdminUserIds(
+  userIds: unknown,
+  title: string,
+  message: string,
+  audience: NotificationAudience = 'admin',
+): Promise<void> {
+  const pushUserIds = parsePushUserIds(userIds);
+  if (!pushUserIds.length || !title.trim() || !message.trim()) return;
+
+  const { requestExpoPushDelivery } = await import('@/lib/push-notifications');
+  const CHUNK = 200;
+  for (let i = 0; i < pushUserIds.length; i += CHUNK) {
+    void requestExpoPushDelivery({
+      userIds: pushUserIds.slice(i, i + CHUNK),
+      title: title.trim(),
+      body: message.trim(),
+      data: { audience },
+    });
+  }
+}
+
 /** Notifie tous les comptes admin (RPC Supabase si dispo, sinon registre local). */
 export async function notifyAdminUsers(input: {
   title: string;
   message: string;
   countryCode?: string;
 }): Promise<void> {
+  const title = input.title.trim();
+  const message = input.message.trim();
+
   if (isSupabaseConfigured() && supabase) {
     const country = input.countryCode?.trim().toUpperCase().slice(0, 2) || null;
-    const { error } = await supabase.rpc('admin_distribute_notifications', {
-      p_title: input.title.trim(),
-      p_message: input.message.trim(),
+    const { data, error } = await supabase.rpc('admin_distribute_notifications', {
+      p_title: title,
+      p_message: message,
       p_audience: 'admin',
       p_country_code: country,
       p_campaign_id: null,
     });
-    if (!error) return;
+    if (!error) {
+      await deliverPushToAdminUserIds(data, title, message, 'admin');
+      return;
+    }
   }
 
-  const users = await listRegistryUsers();
+  const users = await listRegistryUsers(true);
   const adminIds = new Set<string>(['admin-demo']);
   for (const u of users) {
     if (u.role === 'ADMIN' || u.userRole === 'admin' || u.userRole === 'super_admin') adminIds.add(u.id);
   }
   for (const id of adminIds) {
-    await appendUserNotification(id, { title: input.title, message: input.message, audience: 'admin' });
+    await appendUserNotification(id, { title, message, audience: 'admin' });
   }
 }
 
@@ -1234,22 +1269,8 @@ export async function distributeNotification(input: {
       p_campaign_id: campaignId,
     });
     if (!error && Array.isArray(data)) {
-      const pushUserIds = data
-        .map((id) => String(id))
-        .filter((id) => /^[0-9a-f-]{36}$/i.test(id));
-      if (pushUserIds.length && title && message) {
-        const { requestExpoPushDelivery } = await import('@/lib/push-notifications');
-        const CHUNK = 200;
-        for (let i = 0; i < pushUserIds.length; i += CHUNK) {
-          void requestExpoPushDelivery({
-            userIds: pushUserIds.slice(i, i + CHUNK),
-            title,
-            body: message,
-            data: { audience: input.audience, ...(campaignId ? { campaignId } : {}) },
-          });
-        }
-      }
-      return pushUserIds.length;
+      await deliverPushToAdminUserIds(data, title, message, input.audience);
+      return parsePushUserIds(data).length;
     }
     if (error) {
       console.warn(

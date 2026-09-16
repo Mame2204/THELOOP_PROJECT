@@ -285,7 +285,7 @@ export async function sendAdminInviteEmail(input: {
   countryCode?: string;
   phoneNumber?: string | null;
   city?: string | null;
-}): Promise<{ ok: boolean; error?: string }> {
+}): Promise<{ ok: boolean; error?: string; retryAfterSeconds?: number }> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: true };
   }
@@ -321,7 +321,11 @@ export async function sendAdminInviteEmail(input: {
         city: input.city,
       }),
     });
-    const body = (await response.json().catch(() => ({}))) as { error?: string; ok?: boolean };
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      ok?: boolean;
+      retry_after_seconds?: number | null;
+    };
     if (!response.ok) {
       if (response.status === 404) {
         return {
@@ -330,7 +334,29 @@ export async function sendAdminInviteEmail(input: {
             'Edge Function admin-send-invite introuvable (404). Déployez-la sur Supabase : supabase functions deploy admin-send-invite',
         };
       }
-      return { ok: false, error: body.error ?? `Erreur HTTP ${response.status}` };
+      const { resolveAuthEmailErrorMessage, getRetryAfterSeconds } = await import(
+        '@/lib/auth-email-errors'
+      );
+      const errPayload = {
+        message: body.error,
+        status: response.status,
+        code: body.error?.includes('over_email_send_rate_limit')
+          ? 'over_email_send_rate_limit'
+          : undefined,
+      };
+      const retryAfter =
+        typeof body.retry_after_seconds === 'number' && body.retry_after_seconds > 0
+          ? body.retry_after_seconds
+          : getRetryAfterSeconds(errPayload);
+      const message = resolveAuthEmailErrorMessage(
+        errPayload,
+        body.error ?? `Erreur HTTP ${response.status}`,
+      );
+      return {
+        ok: false,
+        error: message,
+        retryAfterSeconds: retryAfter ?? undefined,
+      };
     }
     return { ok: true };
   } catch (err) {

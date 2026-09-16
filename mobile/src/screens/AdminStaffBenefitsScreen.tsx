@@ -13,8 +13,8 @@ import { AdminModuleDenied } from '@/components/admin/AdminModuleDenied';
 import { useAdminModuleAccess, useFilteredAdminTabs } from '@/hooks/useAdminModuleAccess';
 import type { CountryCode } from '@/lib/countries';
 import {
-  isPartnerAssociatedBenefit,
   listBenefitCatalog,
+  listTeamsSelectableCatalogItems,
   syncCatalogPartnerDirectoryLinks,
   type BenefitCatalogItem,
 } from '@/lib/benefit-catalog-store';
@@ -35,7 +35,6 @@ import {
   getStaffTeamPackForCountry,
   saveStaffTeamPackForCountry,
 } from '@/lib/staff-team-pack-store';
-import { catalogForCountry } from '@/lib/staff-benefit-utils';
 import { listRegistryUsers } from '@/lib/user-registry-store';
 import type { RoleBenefitEntitlementEntry } from '@/lib/role-benefit-entitlements-store';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -85,6 +84,7 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
 
   const [tab, setTab] = useState<Tab>(isFounder ? 'founder' : 'team');
   const [allCatalog, setAllCatalog] = useState<BenefitCatalogItem[]>([]);
+  const [selectableCatalog, setSelectableCatalog] = useState<BenefitCatalogItem[]>([]);
   const [teamDraft, setTeamDraft] = useState<RoleBenefitEntitlementEntry[]>([]);
   const [search, setSearch] = useState('');
   const [founderOverrides, setFounderOverrides] = useState<StaffBenefitOverrides | null>(null);
@@ -96,34 +96,26 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
 
   const teamCatalogIds = useMemo(() => new Set(teamDraft.map((e) => e.catalogId)), [teamDraft]);
 
-  const teamSelectableCatalog = useMemo(
-    () => allCatalog.filter((item) => item.isActive && isPartnerAssociatedBenefit(item)),
-    [allCatalog],
-  );
-
-  const countryCatalog = useMemo(
-    () => catalogForCountry(teamSelectableCatalog, countryCode),
-    [teamSelectableCatalog, countryCode],
-  );
-
   const filteredCatalog = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return countryCatalog;
-    return countryCatalog.filter(
+    if (!q) return selectableCatalog;
+    return selectableCatalog.filter(
       (item) =>
         item.title.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q) ||
         item.offeringPartners.some((p) => p.displayName.toLowerCase().includes(q)),
     );
-  }, [countryCatalog, search]);
+  }, [selectableCatalog, search]);
 
   const load = useCallback(async () => {
     await syncCatalogPartnerDirectoryLinks(countryCode);
-    const [items, pack] = await Promise.all([
+    const [items, selectable, pack] = await Promise.all([
       listBenefitCatalog(true),
+      listTeamsSelectableCatalogItems(countryCode),
       getStaffTeamPackForCountry(countryCode),
     ]);
     setAllCatalog(items);
+    setSelectableCatalog(selectable);
     setTeamDraft(pack);
     if (user && isSuperAdminAccount(user)) {
       const overrides = await getStaffBenefitOverrides(user.id);
@@ -212,7 +204,7 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
 
   async function handleDelegateToggle(catalogId: string, enabled: boolean) {
     if (!user || !selectedDelegateId || !delegateOverrides) return;
-    const item = countryCatalog.find((c) => c.id === catalogId);
+    const item = selectableCatalog.find((c) => c.id === catalogId);
     const previous = delegateOverrides;
     setDelegateOverrides((prev) => {
       if (!prev) return prev;
@@ -257,7 +249,7 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
   }
 
   async function handleTeamToggle(catalogId: string, enabled: boolean) {
-    const item = countryCatalog.find((c) => c.id === catalogId);
+    const item = selectableCatalog.find((c) => c.id === catalogId);
     if (!item) return;
 
     const previous = teamDraft;
