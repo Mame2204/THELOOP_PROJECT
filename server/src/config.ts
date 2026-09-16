@@ -36,11 +36,31 @@ function isDjomyProductionHost(baseUrl: string): boolean {
 }
 
 const isDjomyProduction = isDjomyProductionHost(djomyBaseUrl);
-const djomyPartnerApiKey = optional('DJOMY_PARTNER_API_KEY', '');
 
-if (isDjomyProduction && !djomyPartnerApiKey) {
+/** Domaine marchand whiteliste chez Djomy — header `X-PARTNER-DOMAIN`. */
+function resolveDjomyPartnerDomain(): string {
+  const explicit = optional('DJOMY_PARTNER_DOMAIN', '');
+  if (explicit) {
+    return explicit.replace(/^https?:\/\//i, '').replace(/\/+$/, '').split('/')[0] ?? explicit;
+  }
+  const returnUrl = optional('DJOMY_RETURN_URL', '');
+  if (returnUrl) {
+    try {
+      return new URL(returnUrl).host;
+    } catch {
+      // ignore
+    }
+  }
+  return '';
+}
+
+const djomyPartnerDomain = resolveDjomyPartnerDomain();
+/** @deprecated Ignoré — ancien nom avant `X-PARTNER-DOMAIN`. Conservé sur Render le temps du redeploy. */
+const legacyPartnerApiKey = optional('DJOMY_PARTNER_API_KEY', '');
+
+if (isDjomyProduction && !djomyPartnerDomain) {
   throw new Error(
-    "Variable d'environnement manquante : DJOMY_PARTNER_API_KEY (obligatoire avec l'API Djomy production)",
+    "Variable d'environnement manquante : DJOMY_PARTNER_DOMAIN (ou DJOMY_RETURN_URL pour dériver le domaine)",
   );
 }
 
@@ -97,7 +117,8 @@ export const config = {
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   djomyBaseUrl,
   isDjomyProduction,
-  djomyPartnerApiKey,
+  djomyPartnerDomain,
+  legacyPartnerApiKey,
   djomyClientId: required('DJOMY_CLIENT_ID'),
   djomyClientSecret: required('DJOMY_CLIENT_SECRET'),
   djomyReturnUrl: required('DJOMY_RETURN_URL'),

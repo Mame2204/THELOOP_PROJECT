@@ -31,7 +31,7 @@ services:
         sync: false
       - key: DJOMY_CLIENT_SECRET
         sync: false
-      - key: DJOMY_PARTNER_API_KEY
-        sync: false
+      - key: DJOMY_PARTNER_DOMAIN
+        value: api.theloop-app.com
       - key: CRON_SECRET
         sync: false

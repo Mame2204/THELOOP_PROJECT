@@ -4,23 +4,39 @@ import { createHmac } from 'node:crypto';
 const base = process.env.DJOMY_BASE_URL?.replace(/\/$/, '') || 'https://sandbox-api.djomy.africa';
 const clientId = process.env.DJOMY_CLIENT_ID;
 const clientSecret = process.env.DJOMY_CLIENT_SECRET;
-const partnerApiKey = process.env.DJOMY_PARTNER_API_KEY?.trim() ?? '';
+function resolvePartnerDomain() {
+  const explicit = process.env.DJOMY_PARTNER_DOMAIN?.trim();
+  if (explicit) {
+    return explicit.replace(/^https?:\/\//i, '').replace(/\/+$/, '').split('/')[0];
+  }
+  const returnUrl = process.env.DJOMY_RETURN_URL?.trim();
+  if (returnUrl) {
+    try {
+      return new URL(returnUrl).host;
+    } catch {
+      return '';
+    }
+  }
+  return '';
+}
+
+const partnerDomain = resolvePartnerDomain();
 
 function hmac(message, secret) {
   return createHmac('sha256', secret).update(message, 'utf8').digest('hex');
 }
 
 function authHeaders(extra = {}) {
-  return {
+  const headers = {
     'X-API-KEY': `${clientId}:${hmac(clientId, clientSecret)}`,
     ...extra,
   };
+  if (partnerDomain) headers['X-PARTNER-DOMAIN'] = partnerDomain;
+  return headers;
 }
 
 function signedHeaders(extra = {}) {
-  const headers = authHeaders(extra);
-  if (partnerApiKey) headers['X-PARTNER-API'] = partnerApiKey;
-  return headers;
+  return authHeaders(extra);
 }
 
 async function auth() {
@@ -28,8 +44,20 @@ async function auth() {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
   });
-  const body = await res.json();
-  console.log('AUTH status', res.status, JSON.stringify(body, null, 2));
+  const raw = await res.text();
+  console.log('AUTH status', res.status);
+  if (!res.ok) {
+    console.log(raw.startsWith('{') ? raw : raw.slice(0, 200));
+    return null;
+  }
+  let body;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    console.log('Réponse non JSON:', raw.slice(0, 200));
+    return null;
+  }
+  console.log(JSON.stringify(body, null, 2));
   if (!body.success) return null;
   return body.data.accessToken;
 }

@@ -37,7 +37,7 @@ copy server\.env.example server\.env
 |----------|-------------|
 | `DJOMY_CLIENT_ID` / `DJOMY_CLIENT_SECRET` | Credentials dashboard Djomy |
 | `DJOMY_BASE_URL` | `https://sandbox-api.djomy.africa` ou `https://api.djomy.africa` |
-| `DJOMY_PARTNER_API_KEY` | Header `X-PARTNER-API` — **obligatoire en prod** |
+| `DJOMY_PARTNER_DOMAIN` | Header `X-PARTNER-DOMAIN` — domaine whiteliste (ex. `api.theloop-app.com`) ; dérivé de `DJOMY_RETURN_URL` si absent |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Fulfillment PASS |
 | `DJOMY_RETURN_URL` / `DJOMY_CANCEL_URL` | Retour après paiement |
 | `PASS_PRICE_*_GNF` | Fallback tarifs prod si `app_settings` vide |

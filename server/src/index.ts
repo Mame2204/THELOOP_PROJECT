@@ -73,9 +73,11 @@ app.get('/health', async (_req, res) => {
     sandboxMode: config.paymentSandboxAmounts,
     djomyHost: new URL(config.djomyBaseUrl).host,
     djomyProduction: config.isDjomyProduction,
-    partnerApiConfigured: Boolean(config.djomyPartnerApiKey),
+    partnerDomainConfigured: Boolean(config.djomyPartnerDomain),
+    partnerDomain: config.djomyPartnerDomain || null,
     djomyAuthOk: djomyAuth.ok,
     djomyAuthStatus: djomyAuth.httpStatus ?? null,
+    djomySandboxKeysOnProd: djomyAuth.sandboxKeysOnProd ?? false,
     djomyAuthHint: djomyAuth.ok ? null : djomyAuth.hint ?? null,
     cronConfigured: Boolean(config.cronSecret),
     internalPushCron: config.internalPushCronEnabled,
@@ -101,7 +103,12 @@ app.listen(config.port, '0.0.0.0', () => {
   console.log(`[payment-server] Écoute sur 0.0.0.0:${config.port} (${config.nodeEnv})`);
   console.log(`[payment-server] Djomy base: ${config.djomyBaseUrl}`);
   if (config.isDjomyProduction) {
-    console.log('[payment-server] Djomy production — X-PARTNER-API activé');
+    console.log(`[payment-server] Djomy production — X-PARTNER-DOMAIN=${config.djomyPartnerDomain}`);
+    if (config.legacyPartnerApiKey) {
+      console.warn(
+        '[payment-server] DJOMY_PARTNER_API_KEY est obsolète (ignorée). Utilisez DJOMY_PARTNER_DOMAIN uniquement.',
+      );
+    }
   }
   console.log(`[payment-server] CORS: ${config.corsOrigins.join(', ') || '(vide)'}`);
   if (config.paymentSandboxAmounts) {
