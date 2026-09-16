@@ -7,6 +7,8 @@ import {
   AUDIENCE_LABELS,
   campaignStatusLabel,
   cancelPushCampaign,
+  deletePushCampaign,
+  isPushCampaignDeletable,
   isPushCampaignEditable,
   listPushCampaigns,
   sendPushCampaign,
@@ -218,6 +220,19 @@ export function NotificationsPage() {
     void load();
   }
 
+  async function handleDelete(id: string) {
+    if (!window.confirm('Supprimer définitivement cette campagne ?')) return;
+    setMsg(null);
+    if (editingId === id) resetForm();
+    const res = await deletePushCampaign(id);
+    if (!res.ok) {
+      setMsg(res.error ?? 'Suppression impossible.');
+      return;
+    }
+    setMsg('Campagne supprimée.');
+    void load();
+  }
+
   function renderCategoryChips(
     items: CategoryRow[],
     selected: string[],
@@ -418,22 +433,35 @@ export function NotificationsPage() {
                       {r.sentAt ? <div>Envoyée {formatWhen(r.sentAt)}</div> : null}
                     </td>
                     <td>
-                      {isPushCampaignEditable(r.status) ? (
+                      {isPushCampaignEditable(r.status) || isPushCampaignDeletable(r.status) ? (
                         <div className="edit-actions" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-                          <button
-                            type="button"
-                            className="btn ghost small"
-                            onClick={() => startEdit(r)}
-                          >
-                            Modifier
-                          </button>
-                          <button
-                            type="button"
-                            className="btn ghost small danger"
-                            onClick={() => void handleCancel(r.id)}
-                          >
-                            Annuler
-                          </button>
+                          {isPushCampaignEditable(r.status) ? (
+                            <>
+                              <button
+                                type="button"
+                                className="btn ghost small"
+                                onClick={() => startEdit(r)}
+                              >
+                                Modifier
+                              </button>
+                              <button
+                                type="button"
+                                className="btn ghost small danger"
+                                onClick={() => void handleCancel(r.id)}
+                              >
+                                Annuler
+                              </button>
+                            </>
+                          ) : null}
+                          {isPushCampaignDeletable(r.status) ? (
+                            <button
+                              type="button"
+                              className="btn ghost small danger"
+                              onClick={() => void handleDelete(r.id)}
+                            >
+                              Supprimer
+                            </button>
+                          ) : null}
                         </div>
                       ) : null}
                     </td>

@@ -49,6 +49,11 @@ export function isPushCampaignEditable(status: string): boolean {
   return status === 'draft' || status === 'scheduled';
 }
 
+/** Campagne supprimable tant qu’elle n’a pas été envoyée. */
+export function isPushCampaignDeletable(status: string): boolean {
+  return status !== 'sent';
+}
+
 export interface PushCampaign {
   id: string;
   title: string;
@@ -244,6 +249,19 @@ export async function cancelPushCampaign(id: string): Promise<{ ok: boolean; err
     .update({ status: 'cancelled', updated_at: now })
     .eq('id', id)
     .in('status', ['draft', 'scheduled'])
+    .select('id')
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: 'Campagne introuvable ou déjà envoyée.' };
+  return { ok: true };
+}
+
+export async function deletePushCampaign(id: string): Promise<{ ok: boolean; error?: string }> {
+  const { data, error } = await supabase
+    .from('admin_push_campaigns')
+    .delete()
+    .eq('id', id)
+    .neq('status', 'sent')
     .select('id')
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
