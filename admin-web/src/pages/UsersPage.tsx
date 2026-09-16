@@ -200,7 +200,14 @@ export function UsersPage() {
       setInviteMsg(res.error ?? 'Invitation impossible.');
       return;
     }
-    setInviteMsg('Invitation envoyée.');
+    const sentEmail = res.email ?? inviteForm.email.trim().toLowerCase();
+    const mailKind =
+      res.mailMode === 'recovery_resent'
+        ? 'E-mail de réinitialisation envoyé'
+        : 'E-mail d\'invitation envoyé';
+    setInviteMsg(
+      `${mailKind} à ${sentEmail}. Vérifiez aussi les spams / Promotions (expéditeur Supabase).`,
+    );
     setInviteForm({
       email: '',
       firstName: '',
