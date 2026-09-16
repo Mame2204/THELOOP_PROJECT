@@ -1,5 +1,29 @@
 import { supabase } from './supabase';
 
+export const ACCUEIL_PAGE_SIZE = 20;
+
+export interface AccueilListResult<T> {
+  items: T[];
+  total: number;
+  error?: string;
+}
+
+function slugify(input: string): string {
+  const base = input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+  return base || `item-${Date.now()}`;
+}
+
+function paginateRange(page: number, pageSize: number): { from: number; to: number } {
+  const from = Math.max(0, page) * pageSize;
+  return { from, to: from + pageSize - 1 };
+}
+
 export interface AccueilBlocksConfig {
   hero: boolean;
   poll: boolean;
@@ -283,25 +307,41 @@ export async function deleteWalk(id: string): Promise<{ ok: boolean; error?: str
   return { ok: true };
 }
 
-export async function listAccueilCorners(countryCode: string): Promise<AccueilCornerRow[]> {
-  const { data, error } = await supabase
+const CORNER_LIST_SELECT =
+  'id, title, person_name, impact_description, is_active, period_start, period_end';
+
+export async function listAccueilCorners(
+  countryCode: string,
+  options?: { page?: number; pageSize?: number; withTotal?: boolean },
+): Promise<AccueilListResult<AccueilCornerRow>> {
+  const page = Math.max(0, options?.page ?? 0);
+  const pageSize = Math.min(50, Math.max(1, options?.pageSize ?? ACCUEIL_PAGE_SIZE));
+  const withTotal = options?.withTotal === true;
+  const { from, to } = paginateRange(page, pageSize);
+
+  const { data, error, count } = await supabase
     .from('creator_corner_features')
-    .select('id, title, subject_name, is_active, period_start, period_end')
+    .select(CORNER_LIST_SELECT, withTotal ? { count: 'exact' } : undefined)
     .eq('country_code', countryCode)
     .order('period_start', { ascending: false })
-    .limit(50);
+    .range(from, to);
+
   if (error) {
     console.warn('[accueil] corner', error.message);
-    return [];
+    return { items: [], total: 0, error: error.message };
   }
-  return (data ?? []).map((r) => ({
-    id: String(r.id),
-    title: String(r.title ?? ''),
-    subjectName: String(r.subject_name ?? ''),
-    isActive: Boolean(r.is_active),
-    periodStart: r.period_start ? String(r.period_start) : null,
-    periodEnd: r.period_end ? String(r.period_end) : null,
-  }));
+
+  return {
+    items: (data ?? []).map((r) => ({
+      id: String(r.id),
+      title: String(r.title ?? ''),
+      subjectName: String(r.person_name ?? ''),
+      isActive: Boolean(r.is_active),
+      periodStart: r.period_start ? String(r.period_start) : null,
+      periodEnd: r.period_end ? String(r.period_end) : null,
+    })),
+    total: withTotal && count != null ? count : (data ?? []).length,
+  };
 }
 
 export async function setCornerActive(
@@ -322,25 +362,41 @@ export async function deleteCorner(id: string): Promise<{ ok: boolean; error?: s
   return { ok: true };
 }
 
-export async function listAccueilChroniques(countryCode: string): Promise<AccueilChroniqueRow[]> {
-  const { data, error } = await supabase
+const CHRONIQUE_LIST_SELECT =
+  'id, title, hook, period_label, is_active, period_start, period_end';
+
+export async function listAccueilChroniques(
+  countryCode: string,
+  options?: { page?: number; pageSize?: number; withTotal?: boolean },
+): Promise<AccueilListResult<AccueilChroniqueRow>> {
+  const page = Math.max(0, options?.page ?? 0);
+  const pageSize = Math.min(50, Math.max(1, options?.pageSize ?? ACCUEIL_PAGE_SIZE));
+  const withTotal = options?.withTotal === true;
+  const { from, to } = paginateRange(page, pageSize);
+
+  const { data, error, count } = await supabase
     .from('chronique_features')
-    .select('id, title, volume_label, is_active, period_start, period_end')
+    .select(CHRONIQUE_LIST_SELECT, withTotal ? { count: 'exact' } : undefined)
     .eq('country_code', countryCode)
     .order('period_start', { ascending: false })
-    .limit(50);
+    .range(from, to);
+
   if (error) {
     console.warn('[accueil] chronique', error.message);
-    return [];
+    return { items: [], total: 0, error: error.message };
   }
-  return (data ?? []).map((r) => ({
-    id: String(r.id),
-    title: String(r.title ?? ''),
-    volumeLabel: r.volume_label ? String(r.volume_label) : null,
-    isActive: Boolean(r.is_active),
-    periodStart: r.period_start ? String(r.period_start) : null,
-    periodEnd: r.period_end ? String(r.period_end) : null,
-  }));
+
+  return {
+    items: (data ?? []).map((r) => ({
+      id: String(r.id),
+      title: String(r.title ?? ''),
+      volumeLabel: r.period_label ? String(r.period_label) : null,
+      isActive: Boolean(r.is_active),
+      periodStart: r.period_start ? String(r.period_start) : null,
+      periodEnd: r.period_end ? String(r.period_end) : null,
+    })),
+    total: withTotal && count != null ? count : (data ?? []).length,
+  };
 }
 
 export async function setChroniqueActive(
@@ -434,13 +490,20 @@ export async function createCornerSimple(
   if (!input.subjectName.trim() || !input.title.trim() || !input.impactDescription.trim()) {
     return { ok: false, error: 'Sujet, titre et impact requis.' };
   }
+  const subjectName = input.subjectName.trim();
+  const title = input.title.trim();
+  const impactDescription = input.impactDescription.trim();
+  const slug = slugify(`${subjectName}-${title}`);
   const now = new Date().toISOString();
   const { error } = await supabase.from('creator_corner_features').insert({
-    id: crypto.randomUUID(),
+    slug,
+    person_name: subjectName,
+    hook: impactDescription.slice(0, 180),
+    title,
+    cta_label: 'Découvrir',
+    impact_description: impactDescription,
+    useful_links: [],
     country_code: countryCode,
-    subject_name: input.subjectName.trim(),
-    title: input.title.trim(),
-    impact_description: input.impactDescription.trim(),
     is_active: false,
     created_at: now,
     updated_at: now,
@@ -456,13 +519,20 @@ export async function createChroniqueSimple(
   if (!input.title.trim() || !input.body.trim()) {
     return { ok: false, error: 'Titre et texte requis.' };
   }
+  const title = input.title.trim();
+  const body = input.body.trim();
+  const volumeLabel = input.volumeLabel?.trim() || null;
+  const slug = slugify(`${title}-${volumeLabel ?? 'fragment'}`);
   const now = new Date().toISOString();
   const { error } = await supabase.from('chronique_features').insert({
-    id: crypto.randomUUID(),
+    slug,
+    person_name: title,
+    hook: body,
+    title,
+    cta_label: 'Découvrir',
+    period_label: volumeLabel,
+    useful_links: [],
     country_code: countryCode,
-    title: input.title.trim(),
-    body: input.body.trim(),
-    volume_label: input.volumeLabel?.trim() || null,
     is_active: false,
     created_at: now,
     updated_at: now,

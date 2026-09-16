@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ListPager } from '../components/ListPager';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
@@ -87,8 +88,6 @@ export function ContenuPage() {
   useEffect(() => {
     setPage(0);
   }, [countryCode, typeTab, statusFilter]);
-
-  const pages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
 
   async function applyStatus(item: CatalogContentItem, status: ContentStatus) {
     setBusy(true);
@@ -332,33 +331,13 @@ export function ContenuPage() {
         ) : null}
       </div>
 
-      {total > CATALOG_PAGE_SIZE ? (
-        <div className="pager">
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={page <= 0}
-            onClick={() => setPage((x) => x - 1)}
-          >
-            Précédent
-          </button>
-          <span className="muted">
-            Page {page + 1}/{pages} · {total} {KIND_LABELS[typeTab].toLowerCase()}s
-          </span>
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={page + 1 >= pages}
-            onClick={() => setPage((x) => x + 1)}
-          >
-            Suivant
-          </button>
-        </div>
-      ) : total > 0 ? (
-        <p className="muted" style={{ marginTop: 12 }}>
-          {total} résultat{total > 1 ? 's' : ''}
-        </p>
-      ) : null}
+      <ListPager
+        page={page}
+        total={total}
+        pageSize={CATALOG_PAGE_SIZE}
+        onPageChange={setPage}
+        label={`${KIND_LABELS[typeTab].toLowerCase()}s`}
+      />
     </section>
   );
 }

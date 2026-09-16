@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { ListPager } from '../components/ListPager';
 import { useAuth } from '../context/AuthContext';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { isSuperAdminUser } from '../lib/permissions';
@@ -131,7 +132,6 @@ export function UsersPage() {
     setFormMsg(null);
   }, [selected, countryCode]);
 
-  const pages = Math.max(1, Math.ceil(total / PAGE));
   const editingSelf = selected?.id === profile?.id;
 
   const activityOf = useMemo(
@@ -615,29 +615,7 @@ export function UsersPage() {
             )}
           </div>
 
-          {total > PAGE ? (
-            <div className="pager">
-              <button
-                type="button"
-                className="btn ghost"
-                disabled={page <= 0}
-                onClick={() => setPage((x) => x - 1)}
-              >
-                Précédent
-              </button>
-              <span className="muted">
-                Page {page + 1}/{pages} · {total}
-              </span>
-              <button
-                type="button"
-                className="btn ghost"
-                disabled={page + 1 >= pages}
-                onClick={() => setPage((x) => x + 1)}
-              >
-                Suivant
-              </button>
-            </div>
-          ) : null}
+          <ListPager page={page} total={total} pageSize={PAGE} onPageChange={setPage} label="utilisateurs" />
         </>
       ) : null}
 

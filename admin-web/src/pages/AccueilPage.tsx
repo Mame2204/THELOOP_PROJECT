@@ -3,8 +3,10 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
+import { ListPager } from '../components/ListPager';
 import {
   ACCUEIL_BLOCK_LABELS,
+  ACCUEIL_PAGE_SIZE,
   clearWalkFeaturedWeek,
   deleteChronique,
   deleteCorner,
@@ -95,12 +97,19 @@ export function AccueilPage() {
       : defaultTab;
 
   function setTab(next: Tab) {
+    setCornerPage(0);
+    setChroniquePage(0);
     setParams((prev) => {
       const p = new URLSearchParams(prev);
       p.set('tab', next);
       return p;
     });
   }
+
+  useEffect(() => {
+    setCornerPage(0);
+    setChroniquePage(0);
+  }, [countryCode]);
 
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -113,7 +122,11 @@ export function AccueilPage() {
   const [polls, setPolls] = useState<AccueilPollRow[]>([]);
   const [walks, setWalks] = useState<AccueilWalkRow[]>([]);
   const [corners, setCorners] = useState<AccueilCornerRow[]>([]);
+  const [cornerPage, setCornerPage] = useState(0);
+  const [cornerTotal, setCornerTotal] = useState(0);
   const [chroniques, setChroniques] = useState<AccueilChroniqueRow[]>([]);
+  const [chroniquePage, setChroniquePage] = useState(0);
+  const [chroniqueTotal, setChroniqueTotal] = useState(0);
   const [logos, setLogos] = useState<AccueilLogoRow[]>([]);
 
   const [newWalkTitle, setNewWalkTitle] = useState('');
@@ -147,12 +160,26 @@ export function AccueilPage() {
   }, [countryCode]);
 
   const loadCorners = useCallback(async () => {
-    setCorners(await listAccueilCorners(countryCode));
-  }, [countryCode]);
+    const res = await listAccueilCorners(countryCode, {
+      page: cornerPage,
+      pageSize: ACCUEIL_PAGE_SIZE,
+      withTotal: true,
+    });
+    setCorners(res.items);
+    setCornerTotal(res.total);
+    if (res.error) setMsg(res.error);
+  }, [countryCode, cornerPage]);
 
   const loadChroniques = useCallback(async () => {
-    setChroniques(await listAccueilChroniques(countryCode));
-  }, [countryCode]);
+    const res = await listAccueilChroniques(countryCode, {
+      page: chroniquePage,
+      pageSize: ACCUEIL_PAGE_SIZE,
+      withTotal: true,
+    });
+    setChroniques(res.items);
+    setChroniqueTotal(res.total);
+    if (res.error) setMsg(res.error);
+  }, [countryCode, chroniquePage]);
 
   const loadLogos = useCallback(async () => {
     setLogos(await listAccueilLogos(countryCode));
@@ -742,6 +769,13 @@ export function AccueilPage() {
             </p>
           ) : null}
         </div>
+        <ListPager
+          page={cornerPage}
+          total={cornerTotal}
+          pageSize={ACCUEIL_PAGE_SIZE}
+          onPageChange={setCornerPage}
+          label="singuliers"
+        />
         </>
       ) : null}
 
@@ -826,6 +860,13 @@ export function AccueilPage() {
             </p>
           ) : null}
         </div>
+        <ListPager
+          page={chroniquePage}
+          total={chroniqueTotal}
+          pageSize={ACCUEIL_PAGE_SIZE}
+          onPageChange={setChroniquePage}
+          label="fragments"
+        />
         </>
       ) : null}
 

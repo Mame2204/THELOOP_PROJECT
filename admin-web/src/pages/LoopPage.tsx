@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ListPager } from '../components/ListPager';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
@@ -111,8 +112,6 @@ export function LoopPage() {
       typeTab === 'event' ? canEvents : typeTab === 'spot' ? canSpots : canTools;
     if (!allowed) setTypeTab(defaultKind);
   }, [typeTab, canEvents, canSpots, canTools, defaultKind]);
-
-  const pages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
 
   const featuredItems = useMemo(
     () => items.filter((i) => i.isFeatured && i.contentStatus === 'published'),
@@ -240,29 +239,13 @@ export function LoopPage() {
             ))}
           </div>
           <ContentTable items={items} busy={busy} onStatus={applyStatus} />
-          {total > CATALOG_PAGE_SIZE ? (
-            <div className="pager">
-              <button
-                type="button"
-                className="btn ghost"
-                disabled={page <= 0}
-                onClick={() => setPage((x) => x - 1)}
-              >
-                Précédent
-              </button>
-              <span className="muted">
-                Page {page + 1}/{pages} · {total}
-              </span>
-              <button
-                type="button"
-                className="btn ghost"
-                disabled={page + 1 >= pages}
-                onClick={() => setPage((x) => x + 1)}
-              >
-                Suivant
-              </button>
-            </div>
-          ) : null}
+          <ListPager
+            page={page}
+            total={total}
+            pageSize={CATALOG_PAGE_SIZE}
+            onPageChange={setPage}
+            label="contenus équipe"
+          />
         </>
       ) : null}
 

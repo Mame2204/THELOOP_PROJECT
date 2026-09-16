@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ListPager } from '../components/ListPager';
 import {
   downloadPaymentCsv,
   fetchPaymentAnalytics,
@@ -60,8 +61,6 @@ export function PaymentsPage() {
   useEffect(() => {
     void loadAnalytics();
   }, [loadAnalytics]);
-
-  const pages = Math.max(1, Math.ceil(total / PAGE));
 
   async function handleExport() {
     setExportBusy(true);
@@ -401,29 +400,7 @@ export function PaymentsPage() {
         ) : null}
       </div>
 
-      {total > PAGE ? (
-        <div className="pager">
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={page <= 0}
-            onClick={() => setPage((x) => x - 1)}
-          >
-            Précédent
-          </button>
-          <span className="muted">
-            Page {page + 1}/{pages}
-          </span>
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={page + 1 >= pages}
-            onClick={() => setPage((x) => x + 1)}
-          >
-            Suivant
-          </button>
-        </div>
-      ) : null}
+      <ListPager page={page} total={total} pageSize={PAGE} onPageChange={setPage} label="paiements" />
     </section>
   );
 }
