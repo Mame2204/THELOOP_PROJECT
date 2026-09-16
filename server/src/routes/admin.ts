@@ -8,6 +8,8 @@ import {
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
 import { deliverPushToUserIds } from '../services/push-delivery.js';
+import { computePaymentAnalytics } from '../services/payment-analytics.js';
+import { buildPaymentIntentsCsv } from '../services/payment-export.js';
 
 export const adminRouter = Router();
 
@@ -273,6 +275,56 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
         };
       }),
     });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * GET /api/admin/payment-intents/analytics?country=&days=30
+ * KPI revenus PASS + analytics période / moyen de paiement.
+ */
+adminRouter.get('/admin/payment-intents/analytics', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
+      .trim()
+      .toUpperCase()
+      .slice(0, 2);
+    const daysRaw = Number(req.query.days ?? 30);
+    const analytics = await computePaymentAnalytics(getSupabaseAdmin(), {
+      countryCode: countryCode || undefined,
+      days: daysRaw,
+    });
+    res.json(analytics);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * GET /api/admin/payment-intents/export.csv?country=&status=&fulfillment=&days=90
+ */
+adminRouter.get('/admin/payment-intents/export.csv', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
+      .trim()
+      .toUpperCase()
+      .slice(0, 2);
+    const status = String(req.query.status ?? '').trim();
+    const fulfillment = String(req.query.fulfillment ?? '').trim();
+    const daysRaw = Number(req.query.days ?? 90);
+    const csv = await buildPaymentIntentsCsv(getSupabaseAdmin(), {
+      countryCode: countryCode || undefined,
+      status: status || undefined,
+      fulfillment: fulfillment || undefined,
+      days: daysRaw,
+    });
+    const stamp = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="loop-paiements-${stamp}.csv"`);
+    res.send(`\uFEFF${csv}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erreur serveur.';
     res.status(500).json({ error: message });

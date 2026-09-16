@@ -40,6 +40,35 @@ export interface AdminPaymentSummary {
   paidVolumeGnf: number;
 }
 
+export interface PaymentBreakdownRow {
+  key: string;
+  count: number;
+  volumeGnf: number;
+}
+
+export interface AdminPaymentAnalytics {
+  periodDays: number;
+  from: string;
+  to: string;
+  revenue: {
+    paidCount: number;
+    totalVolumeGnf: number;
+    averageTicketGnf: number;
+  };
+  byBillingPeriod: PaymentBreakdownRow[];
+  byPaymentMethod: PaymentBreakdownRow[];
+  funnel: {
+    created: number;
+    redirected: number;
+    paid: number;
+    fulfilled: number;
+    fulfillmentFailed: number;
+    paymentFailed: number;
+  };
+  dailyVolume: Array<{ date: string; count: number; volumeGnf: number }>;
+  stuckPending: number;
+}
+
 async function authHeaders(): Promise<HeadersInit> {
   if (!supabase) throw new Error('Supabase non configuré.');
   const { data } = await supabase.auth.getSession();
@@ -99,6 +128,60 @@ export async function listAdminPaymentIntents(options?: {
     };
   } catch {
     return { intents: [], error: 'Impossible de joindre le serveur de paiement.' };
+  }
+}
+
+export async function fetchAdminPaymentAnalytics(options?: {
+  countryCode?: string;
+  days?: number;
+}): Promise<{ analytics?: AdminPaymentAnalytics; error?: string }> {
+  if (!isAdminBackendConfigured()) {
+    return { error: 'Backend non configuré.' };
+  }
+  const params = new URLSearchParams();
+  if (options?.countryCode) params.set('country', options.countryCode);
+  if (options?.days) params.set('days', String(options.days));
+  const qs = params.toString();
+  try {
+    const response = await fetch(
+      `${BACKEND_API_URL}/api/admin/payment-intents/analytics${qs ? `?${qs}` : ''}`,
+      { method: 'GET', headers: await authHeaders() },
+    );
+    const body = (await response.json()) as AdminPaymentAnalytics & { error?: string };
+    if (!response.ok) {
+      return { error: body.error ?? 'Analytics indisponibles.' };
+    }
+    return { analytics: body };
+  } catch {
+    return { error: 'Impossible de joindre le serveur de paiement.' };
+  }
+}
+
+export async function fetchAdminPaymentCsv(options?: {
+  countryCode?: string;
+  fulfillment?: string;
+  days?: number;
+}): Promise<{ csv?: string; error?: string }> {
+  if (!isAdminBackendConfigured()) {
+    return { error: 'Backend non configuré.' };
+  }
+  const params = new URLSearchParams();
+  if (options?.countryCode) params.set('country', options.countryCode);
+  if (options?.fulfillment) params.set('fulfillment', options.fulfillment);
+  if (options?.days) params.set('days', String(options.days ?? 90));
+  try {
+    const response = await fetch(
+      `${BACKEND_API_URL}/api/admin/payment-intents/export.csv?${params.toString()}`,
+      { method: 'GET', headers: await authHeaders() },
+    );
+    if (!response.ok) {
+      const body = (await response.json()) as { error?: string };
+      return { error: body.error ?? 'Export impossible.' };
+    }
+    const csv = await response.text();
+    return { csv };
+  } catch {
+    return { error: 'Impossible de joindre le serveur.' };
   }
 }
 

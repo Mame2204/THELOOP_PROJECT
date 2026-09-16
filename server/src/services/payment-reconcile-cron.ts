@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
 import type { PaymentIntentRow } from '../lib/supabase-admin.js';
 import { reconcilePaymentIntent } from './reconcile-payment-intent.js';
+import { notifyAdminsPaymentAlert } from './payment-admin-alerts.js';
 
 export interface PaymentReconcileCronResult {
   scanned: number;
@@ -37,6 +38,7 @@ export async function runStuckPaymentReconciliation(
     if (!tx || tx.startsWith('sandbox-force-')) continue;
 
     result.scanned += 1;
+    await notifyAdminsPaymentAlert(supabase, { kind: 'stuck_pending', intent: row });
     try {
       const before = row.fulfillment_status;
       const after = await reconcilePaymentIntent(row);

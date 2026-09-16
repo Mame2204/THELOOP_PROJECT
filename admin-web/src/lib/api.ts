@@ -23,6 +23,35 @@ export interface PaymentSummary {
   paidVolumeGnf: number;
 }
 
+export interface PaymentBreakdownRow {
+  key: string;
+  count: number;
+  volumeGnf: number;
+}
+
+export interface PaymentAnalytics {
+  periodDays: number;
+  from: string;
+  to: string;
+  revenue: {
+    paidCount: number;
+    totalVolumeGnf: number;
+    averageTicketGnf: number;
+  };
+  byBillingPeriod: PaymentBreakdownRow[];
+  byPaymentMethod: PaymentBreakdownRow[];
+  funnel: {
+    created: number;
+    redirected: number;
+    paid: number;
+    fulfilled: number;
+    fulfillmentFailed: number;
+    paymentFailed: number;
+  };
+  dailyVolume: Array<{ date: string; count: number; volumeGnf: number }>;
+  stuckPending: number;
+}
+
 export interface PaymentIntent {
   id: string;
   userId: string;
@@ -74,6 +103,60 @@ export async function fetchPaymentIntents(options?: {
     return { intents: body.intents ?? [], summary: body.summary, total: body.total };
   } catch {
     return { intents: [], error: 'API injoignable — vérifiez api.theloop-app.com.' };
+  }
+}
+
+export async function fetchPaymentAnalytics(options?: {
+  countryCode?: string;
+  days?: number;
+}): Promise<{ analytics?: PaymentAnalytics; error?: string }> {
+  if (!API_URL) return { error: 'VITE_API_URL manquant.' };
+  const params = new URLSearchParams();
+  if (options?.countryCode) params.set('country', options.countryCode);
+  if (options?.days) params.set('days', String(options.days));
+  const qs = params.toString();
+  try {
+    const res = await fetch(`${API_URL}/api/admin/payment-intents/analytics${qs ? `?${qs}` : ''}`, {
+      headers: await authHeaders(),
+    });
+    const body = (await res.json()) as PaymentAnalytics & { error?: string };
+    if (!res.ok) return { error: body.error ?? 'Analytics indisponibles.' };
+    return { analytics: body };
+  } catch {
+    return { error: 'API injoignable.' };
+  }
+}
+
+export async function downloadPaymentCsv(options?: {
+  countryCode?: string;
+  status?: string;
+  fulfillment?: string;
+  days?: number;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!API_URL) return { ok: false, error: 'VITE_API_URL manquant.' };
+  const params = new URLSearchParams();
+  if (options?.countryCode) params.set('country', options.countryCode);
+  if (options?.status) params.set('status', options.status);
+  if (options?.fulfillment) params.set('fulfillment', options.fulfillment);
+  if (options?.days) params.set('days', String(options.days ?? 90));
+  try {
+    const res = await fetch(`${API_URL}/api/admin/payment-intents/export.csv?${params.toString()}`, {
+      headers: await authHeaders(),
+    });
+    if (!res.ok) {
+      const body = (await res.json()) as { error?: string };
+      return { ok: false, error: body.error ?? 'Export impossible.' };
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `loop-paiements-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'API injoignable.' };
   }
 }
 

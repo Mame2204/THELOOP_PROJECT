@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { AdminModuleDenied } from '@/components/admin/AdminModuleDenied';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
@@ -8,8 +8,11 @@ import { useAdminModuleAccess } from '@/hooks/useAdminModuleAccess';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { useAdminCountry } from '@/context/AdminCountryContext';
 import {
+  fetchAdminPaymentAnalytics,
+  fetchAdminPaymentCsv,
   listAdminPaymentIntents,
   reconcileAdminPaymentIntent,
+  type AdminPaymentAnalytics,
   type AdminPaymentIntent,
   type AdminPaymentSummary,
 } from '@/lib/admin-payments-store';
@@ -70,6 +73,13 @@ function matchesFilter(intent: AdminPaymentIntent, filter: StatusFilter): boolea
 }
 
 const PAGE_SIZE = 30;
+const ANALYTICS_DAYS = [7, 30, 90] as const;
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  orange_money: 'Orange Money',
+  mtn_momo: 'MTN MoMo',
+  card: 'Carte bancaire',
+};
 
 export function AdminPaymentsScreen({ navigation }: Props) {
   const { allowed, isLoading, permissionLabel } = useAdminModuleAccess('pass_payments');
@@ -77,6 +87,10 @@ export function AdminPaymentsScreen({ navigation }: Props) {
   const { shell } = useMemberTheme();
   const [intents, setIntents] = useState<AdminPaymentIntent[]>([]);
   const [summary, setSummary] = useState<AdminPaymentSummary | null>(null);
+  const [analytics, setAnalytics] = useState<AdminPaymentAnalytics | null>(null);
+  const [analyticsDays, setAnalyticsDays] = useState<(typeof ANALYTICS_DAYS)[number]>(30);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+  const [exportBusy, setExportBusy] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<StatusFilter>('all');
@@ -103,9 +117,19 @@ export function AdminPaymentsScreen({ navigation }: Props) {
     );
   }, [filter, page, countryCode]);
 
+  const loadAnalytics = useCallback(async () => {
+    const res = await fetchAdminPaymentAnalytics({ countryCode, days: analyticsDays });
+    setAnalyticsError(res.error ?? null);
+    setAnalytics(res.analytics ?? null);
+  }, [countryCode, analyticsDays]);
+
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadAnalytics();
+  }, [loadAnalytics]);
 
   useEffect(() => {
     setPage(0);
@@ -113,9 +137,30 @@ export function AdminPaymentsScreen({ navigation }: Props) {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), loadAnalytics()]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, loadAnalytics]);
+
+  async function handleExportCsv() {
+    setExportBusy(true);
+    try {
+      const res = await fetchAdminPaymentCsv({
+        countryCode,
+        days: analyticsDays,
+        fulfillment: filter === 'incidents' ? 'failed' : undefined,
+      });
+      if (res.error || !res.csv) {
+        Alert.alert('Export', res.error ?? 'Export impossible.');
+        return;
+      }
+      await Share.share({
+        message: res.csv,
+        title: `loop-paiements-${new Date().toISOString().slice(0, 10)}.csv`,
+      });
+    } finally {
+      setExportBusy(false);
+    }
+  }
 
   if (!allowed && !isLoading) {
     return (
@@ -191,6 +236,83 @@ export function AdminPaymentsScreen({ navigation }: Props) {
           </View>
         </View>
       ) : null}
+
+      <View style={[adminCardStyle(shell), styles.analyticsCard]}>
+        <View style={styles.analyticsHeader}>
+          <Text style={[styles.analyticsTitle, { color: shell.pageTitle }]}>Revenus PASS</Text>
+          <Pressable
+            style={[styles.exportBtn, { borderColor: ADMIN_THEME.accent, opacity: exportBusy ? 0.6 : 1 }]}
+            disabled={exportBusy}
+            onPress={() => void handleExportCsv()}
+          >
+            <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 11 }}>
+              {exportBusy ? 'Export…' : 'CSV'}
+            </Text>
+          </Pressable>
+        </View>
+
+        <AdminTabMenu
+          tabs={ANALYTICS_DAYS.map((d) => ({ id: String(d), label: `${d} j` }))}
+          active={String(analyticsDays)}
+          onChange={(id) => setAnalyticsDays(Number(id) as (typeof ANALYTICS_DAYS)[number])}
+          shell={shell}
+          accent={ADMIN_THEME.accent}
+        />
+
+        {analyticsError ? (
+          <Text style={[styles.error, { color: '#ef4444' }]}>{analyticsError}</Text>
+        ) : null}
+
+        {analytics ? (
+          <>
+            {analytics.stuckPending > 0 ? (
+              <Text style={[styles.stuckAlert, { color: '#c2410c' }]}>
+                {analytics.stuckPending} paiement(s) bloqué(s) (&gt; 5 min sans PASS) — alerte admin envoyée.
+              </Text>
+            ) : null}
+            <View style={styles.kpiRow}>
+              <View style={styles.kpiItem}>
+                <Text style={[styles.kpiValue, { color: '#16a34a' }]}>{analytics.revenue.paidCount}</Text>
+                <Text style={[styles.kpiLabel, { color: shell.pageKicker }]}>Payés</Text>
+              </View>
+              <View style={styles.kpiItem}>
+                <Text style={[styles.kpiValue, { color: shell.pageTitle }]}>
+                  {analytics.revenue.totalVolumeGnf.toLocaleString('fr-FR')}
+                </Text>
+                <Text style={[styles.kpiLabel, { color: shell.pageKicker }]}>GNF</Text>
+              </View>
+              <View style={styles.kpiItem}>
+                <Text style={[styles.kpiValue, { color: shell.pageTitle }]}>
+                  {analytics.revenue.averageTicketGnf.toLocaleString('fr-FR')}
+                </Text>
+                <Text style={[styles.kpiLabel, { color: shell.pageKicker }]}>Moyenne</Text>
+              </View>
+              <View style={styles.kpiItem}>
+                <Text style={[styles.kpiValue, { color: '#2563eb' }]}>{analytics.funnel.fulfilled}</Text>
+                <Text style={[styles.kpiLabel, { color: shell.pageKicker }]}>Activés</Text>
+              </View>
+            </View>
+
+            {analytics.byBillingPeriod.slice(0, 4).map((row) => (
+              <Text key={row.key} style={[styles.breakdownLine, { color: shell.pageKicker }]}>
+                {PERIOD_LABELS[row.key] ?? row.key} · {row.count} · {row.volumeGnf.toLocaleString('fr-FR')} GNF
+              </Text>
+            ))}
+
+            {analytics.byPaymentMethod.slice(0, 3).map((row) => (
+              <Text key={row.key} style={[styles.breakdownLine, { color: shell.pageKicker }]}>
+                {PAYMENT_METHOD_LABELS[row.key] ?? row.key} · {row.count} ·{' '}
+                {row.volumeGnf.toLocaleString('fr-FR')} GNF
+              </Text>
+            ))}
+
+            <Text style={[styles.funnelLine, { color: shell.pageKicker }]}>
+              Entonnoir : créés {analytics.funnel.created} · portail {analytics.funnel.redirected} · payés{' '}
+              {analytics.funnel.paid} · incidents {analytics.funnel.fulfillmentFailed}
+            </Text>
+          </>
+        ) : null}
+      </View>
 
       <Text style={[styles.hint, { color: shell.pageKicker }]}>
         Suivi applicatif THE LOOP. Dashboard Djomy = source bancaire.
@@ -344,6 +466,13 @@ const styles = StyleSheet.create({
   kpiItem: { width: '25%', alignItems: 'center', paddingVertical: 4 },
   kpiValue: { fontSize: 13, fontWeight: '800' },
   kpiLabel: { fontSize: 9, fontWeight: '600', marginTop: 2, textTransform: 'uppercase' },
+  analyticsCard: { gap: 8 },
+  analyticsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  analyticsTitle: { fontSize: 14, fontWeight: '800' },
+  exportBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  stuckAlert: { fontSize: 12, lineHeight: 17, fontWeight: '600' },
+  breakdownLine: { fontSize: 11, lineHeight: 16 },
+  funnelLine: { fontSize: 11, lineHeight: 16, marginTop: 4 },
   hint: { fontSize: 12, lineHeight: 17, marginBottom: 4 },
   error: { fontSize: 13, marginVertical: 8 },
   empty: { textAlign: 'center', marginTop: 24, fontSize: 13 },

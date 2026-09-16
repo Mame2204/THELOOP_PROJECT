@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { computePassExpiry, passLabel, type BillingPeriod } from '../config.js';
 import { resolveChargedPassPrice, resolveMaxPendingPasses } from '../lib/pass-commerce-settings.js';
 import { getSupabaseAdmin, type PaymentIntentRow } from '../lib/supabase-admin.js';
+import { notifyAdminsPaymentAlert } from './payment-admin-alerts.js';
 
 function isBillingPeriod(value: string): value is BillingPeriod {
   return value === 'monthly' || value === 'quarterly' || value === 'annual' || value === 'lifetime';
@@ -97,10 +98,16 @@ export async function buildFulfillmentPlan(
   };
 }
 
-export async function markFulfillmentFailed(intentId: string, reason: string): Promise<void> {
+export async function markFulfillmentFailed(
+  intent: Pick<
+    PaymentIntentRow,
+    'id' | 'merchant_reference' | 'amount_gnf' | 'billing_period' | 'user_id'
+  >,
+  reason: string,
+): Promise<void> {
   const supabase = getSupabaseAdmin();
   const now = new Date().toISOString();
-  console.error('[fulfillment] Échec intent', intentId, reason);
+  console.error('[fulfillment] Échec intent', intent.id, reason);
   await supabase
     .from('payment_intents')
     .update({
@@ -110,8 +117,10 @@ export async function markFulfillmentFailed(intentId: string, reason: string): P
       last_webhook_event: 'fulfillment_failed',
       last_webhook_at: now,
     })
-    .eq('id', intentId)
+    .eq('id', intent.id)
     .in('fulfillment_status', ['pending', 'failed']);
+
+  await notifyAdminsPaymentAlert(supabase, { kind: 'fulfillment_failed', intent });
 }
 
 export async function fulfillPaymentIntent(
@@ -155,7 +164,7 @@ export async function fulfillPaymentIntent(
   });
 
   if (rpcError) {
-    await markFulfillmentFailed(intent.id, `Fulfillment RPC : ${rpcError.message}`);
+    await markFulfillmentFailed(intent, `Fulfillment RPC : ${rpcError.message}`);
     throw new Error(`Fulfillment RPC : ${rpcError.message}`);
   }
 

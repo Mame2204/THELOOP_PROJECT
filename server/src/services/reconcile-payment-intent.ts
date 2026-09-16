@@ -104,7 +104,7 @@ export async function reconcilePaymentIntent(intent: PaymentIntentRow): Promise<
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       if (intent.fulfillment_status === 'pending') {
-        await markFulfillmentFailed(intent.id, message);
+        await markFulfillmentFailed(intent, message);
       }
       throw err;
     }
