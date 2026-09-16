@@ -27,11 +27,12 @@ import { ContentEditorPage } from './pages/ContentEditorPage';
 
 function HomeRedirect() {
   const { can, canDemandes } = usePermissions();
-  if (can('pass_payments') || can('pass_management')) return <Navigate to="/payments" replace />;
-  if (can('users')) return <Navigate to="/users" replace />;
+  if (can('insights')) return <Navigate to="/insights" replace />;
+  if (can('featured')) return <Navigate to="/accueil" replace />;
   if (canDemandes) return <Navigate to="/demandes" replace />;
   if (can('content')) return <Navigate to="/contenu" replace />;
-  if (can('insights')) return <Navigate to="/insights" replace />;
+  if (can('users')) return <Navigate to="/users" replace />;
+  if (can('pass_payments') || can('pass_management')) return <Navigate to="/payments" replace />;
   return <Navigate to="/users" replace />;
 }
 
