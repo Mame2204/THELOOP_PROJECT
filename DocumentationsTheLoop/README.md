@@ -31,6 +31,7 @@ Il répond notamment aux questions suivantes :
 | 5 | [05-Cache-Local-Telephone-AsyncStorage.md](./05-Cache-Local-Telephone-AsyncStorage.md) | [Word/05-Cache-Local-Telephone-AsyncStorage.docx](./Word/05-Cache-Local-Telephone-AsyncStorage.docx) |
 | 6 | [06-Roles-Permissions-Navigation.md](./06-Roles-Permissions-Navigation.md) | [Word/06-Roles-Permissions-Navigation.docx](./Word/06-Roles-Permissions-Navigation.docx) |
 | 7 | [07-Smoke-Push.md](./07-Smoke-Push.md) | — |
+| 8 | [08-Smoke-Global.md](./08-Smoke-Global.md) | — |
 
 **Document unique Word (tout en un) :** [Word/THE_LOOP_Documentation_Complete.docx](./Word/THE_LOOP_Documentation_Complete.docx)
 
