@@ -1,4 +1,5 @@
 import { verifyPayment } from '../lib/djomy.js';
+import { mapDjomyGatewayMethodToApp } from '../lib/djomy-fees.js';
 import { getSupabaseAdmin, type PaymentIntentRow } from '../lib/supabase-admin.js';
 import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
 import { fulfillPaymentIntent, markFulfillmentFailed } from './fulfill-pass-payment.js';
@@ -58,6 +59,7 @@ async function stampDjomyCheck(
   fields: {
     djomy_status?: string;
     djomy_provider_reference?: string | null;
+    payment_method?: string;
     status?: string;
   },
 ): Promise<void> {
@@ -92,9 +94,11 @@ export async function reconcilePaymentIntent(intent: PaymentIntentRow): Promise<
   const djomyStatus = String(verified.status ?? '');
   const providerRef = verified.providerReference?.trim() || null;
 
+  const resolvedMethod = mapDjomyGatewayMethodToApp(verified.paymentMethod);
   await stampDjomyCheck(intent.id, {
     djomy_status: djomyStatus || undefined,
     djomy_provider_reference: providerRef,
+    ...(resolvedMethod && intent.payment_method === 'all' ? { payment_method: resolvedMethod } : {}),
   });
 
   if (isPaidStatus(djomyStatus)) {

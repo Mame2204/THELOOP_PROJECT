@@ -160,6 +160,111 @@ export async function downloadPaymentCsv(options?: {
   }
 }
 
+export interface BankPayoutLineRecord {
+  id: string;
+  paymentMethod: string;
+  wiredAmountGnf: number;
+  periodStart: string | null;
+  periodEnd: string | null;
+  notes: string | null;
+}
+
+export interface BankPayoutRecord {
+  id: string;
+  payoutDate: string;
+  bankReference: string | null;
+  notes: string | null;
+  createdAt: string;
+  createdBy: string | null;
+  totalWiredGnf: number;
+  lines: BankPayoutLineRecord[];
+}
+
+export interface PayoutReconciliationRow {
+  paymentMethod: string;
+  paidCount: number;
+  grossVolumeGnf: number;
+  estimatedFeeGnf: number;
+  estimatedNetGnf: number;
+  wiredRecordedGnf: number;
+  deltaGnf: number;
+}
+
+export interface PayoutReconciliationSummary {
+  periodDays: number;
+  from: string;
+  to: string;
+  totals: {
+    grossVolumeGnf: number;
+    estimatedFeeGnf: number;
+    estimatedNetGnf: number;
+    wiredRecordedGnf: number;
+    deltaGnf: number;
+  };
+  byPaymentMethod: PayoutReconciliationRow[];
+}
+
+export async function fetchBankPayouts(): Promise<{ payouts?: BankPayoutRecord[]; error?: string }> {
+  if (!API_URL) return { error: 'VITE_API_URL manquant.' };
+  try {
+    const res = await fetch(`${API_URL}/api/admin/payment-payouts`, { headers: await authHeaders() });
+    const body = (await res.json()) as { payouts?: BankPayoutRecord[]; error?: string };
+    if (!res.ok) return { error: body.error ?? 'Versements indisponibles.' };
+    return { payouts: body.payouts ?? [] };
+  } catch {
+    return { error: 'API injoignable.' };
+  }
+}
+
+export async function fetchBankPayoutReconciliation(options?: {
+  countryCode?: string;
+  days?: number;
+}): Promise<{ summary?: PayoutReconciliationSummary; error?: string }> {
+  if (!API_URL) return { error: 'VITE_API_URL manquant.' };
+  const params = new URLSearchParams();
+  if (options?.countryCode) params.set('country', options.countryCode);
+  if (options?.days) params.set('days', String(options.days));
+  const qs = params.toString();
+  try {
+    const res = await fetch(
+      `${API_URL}/api/admin/payment-payouts/reconciliation${qs ? `?${qs}` : ''}`,
+      { headers: await authHeaders() },
+    );
+    const body = (await res.json()) as PayoutReconciliationSummary & { error?: string };
+    if (!res.ok) return { error: body.error ?? 'Réconciliation indisponible.' };
+    return { summary: body };
+  } catch {
+    return { error: 'API injoignable.' };
+  }
+}
+
+export async function createBankPayout(input: {
+  payoutDate: string;
+  bankReference?: string | null;
+  notes?: string | null;
+  lines: Array<{
+    paymentMethod: string;
+    wiredAmountGnf: number;
+    periodStart?: string | null;
+    periodEnd?: string | null;
+    notes?: string | null;
+  }>;
+}): Promise<{ ok: boolean; payout?: BankPayoutRecord; error?: string }> {
+  if (!API_URL) return { ok: false, error: 'VITE_API_URL manquant.' };
+  try {
+    const res = await fetch(`${API_URL}/api/admin/payment-payouts`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify(input),
+    });
+    const body = (await res.json()) as { payout?: BankPayoutRecord; error?: string };
+    if (!res.ok) return { ok: false, error: body.error ?? 'Enregistrement impossible.' };
+    return { ok: true, payout: body.payout };
+  } catch {
+    return { ok: false, error: 'API injoignable.' };
+  }
+}
+
 export async function reconcilePayment(id: string): Promise<{ ok: boolean; error?: string }> {
   try {
     const res = await fetch(`${API_URL}/api/admin/payment-intents/${id}/reconcile`, {

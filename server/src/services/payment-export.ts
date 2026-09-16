@@ -1,6 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { estimateDjomyPayInFee } from '../lib/djomy-fees.js';
 import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
 import type { PaymentIntentRow } from '../lib/supabase-admin.js';
+
+const CSV_FEE_COLUMNS = [
+  'djomy_fee_rate_label',
+  'djomy_fee_gnf_est',
+  'djomy_net_gnf_est',
+] as const;
 
 function csvEscape(value: unknown): string {
   const raw = value == null ? '' : String(value);
@@ -66,6 +73,7 @@ export async function buildPaymentIntentsCsv(
         'last_checked_at',
         'last_webhook_event',
         'last_webhook_at',
+        ...CSV_FEE_COLUMNS,
       ]);
     }
   }
@@ -129,10 +137,13 @@ export async function buildPaymentIntentsCsv(
     'last_checked_at',
     'last_webhook_event',
     'last_webhook_at',
+    ...CSV_FEE_COLUMNS,
   ]);
 
   const lines = rows.map((row) => {
     const user = usersById.get(row.user_id);
+    const paidAmount = row.djomy_paid_amount ?? row.amount_gnf;
+    const fee = estimateDjomyPayInFee(paidAmount, row.payment_method);
     return csvRow([
       row.id,
       user?.email,
@@ -156,6 +167,9 @@ export async function buildPaymentIntentsCsv(
       row.last_checked_at,
       row.last_webhook_event,
       row.last_webhook_at,
+      fee.rateLabel,
+      fee.feeGnf ?? (fee.feeRangeGnf ? `${fee.feeRangeGnf[0]}-${fee.feeRangeGnf[1]}` : ''),
+      fee.netGnf ?? '',
     ]);
   });
 

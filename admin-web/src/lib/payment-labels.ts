@@ -6,8 +6,12 @@ const BILLING_PERIOD_LABELS: Record<string, string> = {
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  all: 'Portail Djomy (choix client)',
   orange_money: 'Orange Money',
   mtn_momo: 'MTN MoMo',
+  paycard: 'PayCard',
+  soutra_money: 'Soutra Money',
+  kulu: 'Kulu',
   card: 'Carte bancaire',
 };
 

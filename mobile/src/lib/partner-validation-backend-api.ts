@@ -89,3 +89,23 @@ export async function applyPartnerBenefitValidationViaBackend(
   const body = (await response.json()) as { applied?: number };
   return typeof body.applied === 'number' ? body.applied : 0;
 }
+
+/** Push OS membre après validation RPC (inbox déjà créée côté Supabase). */
+export async function notifyPartnerBenefitOutcomeViaBackend(
+  partnerCode: string,
+  items: Array<{ redemptionLocalId: string; action: 'validated' | 'cancelled' }>,
+): Promise<void> {
+  if (!isLoopBackendConfigured() || !items.length) return;
+
+  try {
+    await fetch(`${getLoopBackendApiUrl()}/api/partner/benefit-notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ partnerCode, items }),
+    });
+  } catch {
+    if (__DEV__) {
+      console.warn('[PartnerValidation] benefit-notify unreachable —', getLoopBackendApiUrl());
+    }
+  }
+}

@@ -11,7 +11,10 @@ import {
 } from '../lib/api';
 import { formatWhen, statusBadge } from '../lib/format';
 import { billingPeriodLabel, paymentMethodLabel } from '../lib/payment-labels';
+import { canReconcilePaymentIntent, reconcileDisabledReason } from '../lib/payment-reconcile';
 import { useAdminCountry } from '../context/AdminCountryContext';
+import { DjomyFeeBreakdown, formatPaymentFeeSummary } from '../components/DjomyFeeBreakdown';
+import { PaymentPayoutPanel } from '../components/PaymentPayoutPanel';
 
 const PAGE = 20;
 const PERIOD_OPTIONS = [7, 30, 90] as const;
@@ -99,6 +102,10 @@ export function PaymentsPage() {
           </button>
         </div>
       </header>
+
+      <DjomyFeeBreakdown amountGnf={1_000_000} />
+
+      <PaymentPayoutPanel countryCode={countryCode} analyticsDays={analyticsDays} />
 
       {summary ? (
         <div className="kpi-row">
@@ -295,6 +302,9 @@ export function PaymentsPage() {
               <th>Références (revendication)</th>
               <th>Période</th>
               <th>Montant</th>
+              <th>Moyen</th>
+              <th>Frais Djomy (est.)</th>
+              <th>Net (est.)</th>
               <th>Statut</th>
               <th>Créé</th>
               <th></th>
@@ -364,7 +374,19 @@ export function PaymentsPage() {
                   ) : null}
                 </td>
                 <td>{billingPeriodLabel(p.billingPeriod)}</td>
-                <td>{p.amountGnf.toLocaleString('fr-FR')} GNF</td>
+                <td>
+                  {(p.djomyPaidAmount ?? p.amountGnf).toLocaleString('fr-FR')} GNF
+                  {p.djomyPaidAmount != null && p.djomyPaidAmount !== p.amountGnf ? (
+                    <div className="meta">Intent : {p.amountGnf.toLocaleString('fr-FR')} GNF</div>
+                  ) : null}
+                </td>
+                <td>{paymentMethodLabel(p.paymentMethod ?? 'all')}</td>
+                <td>
+                  {formatPaymentFeeSummary(p.djomyPaidAmount ?? p.amountGnf, p.paymentMethod).feeLabel}
+                </td>
+                <td>
+                  {formatPaymentFeeSummary(p.djomyPaidAmount ?? p.amountGnf, p.paymentMethod).netLabel}
+                </td>
                 <td>
                   <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
                   <div className="meta">
@@ -373,21 +395,29 @@ export function PaymentsPage() {
                 </td>
                 <td>{formatWhen(p.createdAt)}</td>
                 <td>
-                  <button
-                    type="button"
-                    className="btn small ghost"
-                    onClick={() => {
-                      void reconcilePayment(p.id).then((r) => {
-                        if (!r.ok) window.alert(r.error ?? 'Erreur');
-                        else void load();
-                      });
-                    }}
-                  >
-                    Resync Djomy
-                  </button>
-                  <div className="meta" style={{ marginTop: 4, maxWidth: 120 }}>
-                    Si payé côté Djomy mais PASS non activé
-                  </div>
+                  {canReconcilePaymentIntent(p) ? (
+                    <>
+                      <button
+                        type="button"
+                        className="btn small ghost"
+                        onClick={() => {
+                          void reconcilePayment(p.id).then((r) => {
+                            if (!r.ok) window.alert(r.error ?? 'Erreur');
+                            else void load();
+                          });
+                        }}
+                      >
+                        Resync Djomy
+                      </button>
+                      <div className="meta" style={{ marginTop: 4, maxWidth: 120 }}>
+                        Payé côté Djomy mais PASS non activé
+                      </div>
+                    </>
+                  ) : (
+                    <div className="meta" style={{ maxWidth: 140 }}>
+                      {reconcileDisabledReason(p) ?? '—'}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}

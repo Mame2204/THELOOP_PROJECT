@@ -125,8 +125,40 @@ Test local : `cd server && node scripts/test-djomy.mjs` (doit afficher `AUTH sta
 4. Vérifier `payment_intents` (status paid + fulfilled) + rôle Prime  
 5. Remettre **Achat PASS = OFF** si le lancement public n’est pas encore ouvert  
 
+## Grille tarifaire Pay In (collecte PASS)
+
+Document Djomy **juin 2026** — reflété dans `server/src/lib/djomy-fees.ts` et affiché dans l’app (écran paiement PASS), l’admin mobile et l’admin web.
+
+| Moyen de paiement | Commission Pay In |
+|-------------------|-------------------|
+| Orange Money | **1,50 %** |
+| PayCard | **1,50 %** |
+| MTN MoMo | **1,50 %** |
+| Kulu | **1,50 %** |
+| Soutra Money | **1,50 %** |
+| Carte Visa / Mastercard | **1,80 %** |
+| Wave | Bientôt disponible |
+| KS Wallet | Bientôt disponible |
+
+**Conditions commerciales :**
+
+- Aucun frais d’activation, d’abonnement ni d’intégration API.
+- Frais facturés **uniquement** sur les transactions réussies (Pay In).
+- Versement marchand : **J+2 ouvré max.**, virement bancaire gratuit.
+
+Les montants **net marchand** affichés dans l’admin et les exports CSV sont **estimatifs** (basés sur le montant payé et le moyen connu après réconciliation Djomy ; sinon fourchette 1,5 % – 1,8 %).
+
+## Versements bancaires (Retrait Pay In)
+
+Djomy verse le net collecté par **virement bancaire** (J+2). Dans l’admin **Paiements Djomy** :
+
+1. Section **Versements bancaires** — saisir la date, la référence virement et le **montant viré** par moyen de paiement (OM, carte, etc.).
+2. Tableau **Réconciliation** — compare encaissé brut, frais estimés, net estimé vs montant viré saisi (écart).
+
+Migration Supabase : `20260916_djomy_bank_payouts.sql` (tables `djomy_bank_payouts` + `djomy_bank_payout_lines`).
+
 ## Ne pas oublier
 
-- Les tarifs facturés viennent du serveur / `app_settings`, pas du client.  
+- Les tarifs **PASS** facturés aux membres viennent du serveur / `app_settings`, pas du client.  
 - Orange Money **sandbox** échoue toujours ; en **prod** OM doit fonctionner.  
 - Pas de rebuild mobile obligatoire si seule l’URL API / les secrets serveur changent.

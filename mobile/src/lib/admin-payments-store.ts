@@ -7,6 +7,27 @@ const BACKEND_API_URL = (
   ''
 ).replace(/\/$/, '');
 
+/** Resync Djomy utile seulement si une transaction existe et le PASS n’est pas déjà activé. */
+export function canReconcilePaymentIntent(intent: Pick<
+  AdminPaymentIntent,
+  'djomyTransactionId' | 'fulfillmentStatus'
+>): boolean {
+  const tx = intent.djomyTransactionId?.trim() ?? '';
+  if (!tx || tx.startsWith('sandbox-force-')) return false;
+  if (intent.fulfillmentStatus === 'fulfilled') return false;
+  return intent.fulfillmentStatus === 'pending' || intent.fulfillmentStatus === 'failed';
+}
+
+export function reconcileDisabledReason(intent: Pick<
+  AdminPaymentIntent,
+  'djomyTransactionId' | 'fulfillmentStatus'
+>): string | null {
+  if (canReconcilePaymentIntent(intent)) return null;
+  if (intent.fulfillmentStatus === 'fulfilled') return 'PASS déjà activé';
+  if (!intent.djomyTransactionId?.trim()) return 'Pas encore de transaction Djomy';
+  return 'Resync non nécessaire';
+}
+
 export interface AdminPaymentIntent {
   id: string;
   userId: string;

@@ -38,6 +38,7 @@ import {
   synchronizeSubscriptionHistory,
 } from '@/lib/subscription-history';
 import { isPassPurchaseUiEnabled } from '@/lib/pass-purchase-ui';
+import { DjomyFeeBreakdown } from '@/components/DjomyFeeBreakdown';
 import { subscribePaymentReturn } from '@/lib/payment-return-events';
 import { useAppGates } from '@/context/AppGatesContext';
 import type { RootStackParamList } from '@/navigation/types';
@@ -522,6 +523,15 @@ export function PassPaymentScreen({ navigation, route }: Props) {
               : 'PASS sans échéance'}
         </Text>
       </View>
+
+      {amountGnf != null && isDjomyPaymentConfigured() ? (
+        <DjomyFeeBreakdown
+          amountGnf={chargedAmountGnf ?? amountGnf}
+          paymentMethod="all"
+          shell={shell}
+          accentColor={accent.accent}
+        />
+      ) : null}
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
         Vous serez redirigé vers le portail sécurisé {PASS_PAYMENT_PROVIDER_LABEL} pour choisir votre mode de paiement

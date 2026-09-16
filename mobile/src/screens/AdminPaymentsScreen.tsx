@@ -11,12 +11,16 @@ import {
   fetchAdminPaymentAnalytics,
   fetchAdminPaymentCsv,
   listAdminPaymentIntents,
+  canReconcilePaymentIntent,
+  reconcileDisabledReason,
   reconcileAdminPaymentIntent,
   type AdminPaymentAnalytics,
   type AdminPaymentIntent,
   type AdminPaymentSummary,
 } from '@/lib/admin-payments-store';
 import { formatDateFr } from '@/lib/date-utils';
+import { DjomyFeeBreakdown } from '@/components/DjomyFeeBreakdown';
+import { estimateDjomyPayInFee, formatGnf } from '@/lib/djomy-fees';
 import { primePlanLabel, type PrimeBillingPeriod } from '@/lib/prime-plans';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -207,6 +211,8 @@ export function AdminPaymentsScreen({ navigation }: Props) {
         shell={shell}
         onBack={() => navigation.goBack()}
       />
+
+      <DjomyFeeBreakdown amountGnf={1_000_000} shell={shell} accentColor={ADMIN_THEME.accent} />
 
       {summary ? (
         <View style={[styles.kpiRow, { borderColor: shell.filterInactiveBorder }]}>
@@ -399,6 +405,21 @@ export function AdminPaymentsScreen({ navigation }: Props) {
                     ? `${intent.djomyPaidAmount.toLocaleString('fr-FR')} GNF`
                     : '—'}
                 </Text>
+                {(() => {
+                  const paid = intent.djomyPaidAmount ?? intent.amountGnf;
+                  const fee = estimateDjomyPayInFee(paid, intent.paymentMethod);
+                  return (
+                    <Text style={[styles.detailLine, { color: shell.pageKicker }]}>
+                      Commission Djomy ({fee.rateLabel}) :{' '}
+                      {fee.feeGnf != null
+                        ? formatGnf(fee.feeGnf)
+                        : fee.feeRangeGnf
+                          ? `${formatGnf(fee.feeRangeGnf[0])} – ${formatGnf(fee.feeRangeGnf[1])}`
+                          : '—'}
+                      {fee.netGnf != null ? ` · Net estimé : ${formatGnf(fee.netGnf)}` : ''}
+                    </Text>
+                  );
+                })()}
                 <Text style={[styles.detailLine, { color: shell.pageKicker }]}>
                   Dernier verify : {formatDateTimeFr(intent.lastCheckedAt)}
                 </Text>
@@ -407,15 +428,21 @@ export function AdminPaymentsScreen({ navigation }: Props) {
                   {formatDateTimeFr(intent.lastWebhookAt)}
                 </Text>
 
-                <Pressable
-                  style={[styles.resyncBtn, { borderColor: ADMIN_THEME.accent, opacity: busyId === intent.id ? 0.6 : 1 }]}
-                  disabled={busyId === intent.id}
-                  onPress={() => void handleReconcile(intent)}
-                >
-                  <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 12 }}>
-                    {busyId === intent.id ? 'Resync…' : 'Resynchroniser avec Djomy'}
+                {canReconcilePaymentIntent(intent) ? (
+                  <Pressable
+                    style={[styles.resyncBtn, { borderColor: ADMIN_THEME.accent, opacity: busyId === intent.id ? 0.6 : 1 }]}
+                    disabled={busyId === intent.id}
+                    onPress={() => void handleReconcile(intent)}
+                  >
+                    <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 12 }}>
+                      {busyId === intent.id ? 'Resync…' : 'Resynchroniser avec Djomy'}
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Text style={[styles.tapHint, { color: shell.pageKicker, marginTop: 8 }]}>
+                    {reconcileDisabledReason(intent) ?? 'Resync non nécessaire'}
                   </Text>
-                </Pressable>
+                )}
               </View>
             ) : (
               <Text style={[styles.tapHint, { color: shell.pageKicker }]}>Toucher pour le détail</Text>

@@ -10,6 +10,12 @@ import {
 import { deliverPushToUserIds } from '../services/push-delivery.js';
 import { computePaymentAnalytics } from '../services/payment-analytics.js';
 import { buildPaymentIntentsCsv } from '../services/payment-export.js';
+import {
+  computePayoutReconciliation,
+  createBankPayout,
+  listBankPayouts,
+  type PayoutLineInput,
+} from '../services/payment-payout-reconcile.js';
 
 export const adminRouter = Router();
 
@@ -364,6 +370,20 @@ adminRouter.post(
       }
 
       const intent = data as unknown as PaymentIntentRow;
+      const tx = intent.djomy_transaction_id?.trim() ?? '';
+      if (!tx || tx.startsWith('sandbox-force-')) {
+        res.status(409).json({ error: 'Aucune transaction Djomy à resynchroniser.' });
+        return;
+      }
+      if (intent.fulfillment_status === 'fulfilled') {
+        res.status(409).json({ error: 'PASS déjà activé — resync inutile.' });
+        return;
+      }
+      if (intent.fulfillment_status !== 'pending' && intent.fulfillment_status !== 'failed') {
+        res.status(409).json({ error: 'Resync non applicable pour cet intent.' });
+        return;
+      }
+
       const updated = await reconcilePaymentIntent(intent);
       const refreshed =
         (await loadPaymentIntentForUser(updated.id, updated.user_id)) ?? updated;
@@ -386,6 +406,91 @@ adminRouter.post(
     }
   },
 );
+
+/**
+ * GET /api/admin/payment-payouts/reconciliation?country=&days=90
+ * Compare net estimé (Pay In) vs montants virés saisis par moyen de paiement.
+ */
+adminRouter.get(
+  '/admin/payment-payouts/reconciliation',
+  requireSupabaseAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
+        .trim()
+        .toUpperCase()
+        .slice(0, 2);
+      const daysRaw = Number(req.query.days ?? 90);
+      const summary = await computePayoutReconciliation(getSupabaseAdmin(), {
+        countryCode: countryCode || undefined,
+        days: daysRaw,
+      });
+      res.json(summary);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur serveur.';
+      res.status(500).json({ error: message });
+    }
+  },
+);
+
+/**
+ * GET /api/admin/payment-payouts?limit=50
+ */
+adminRouter.get('/admin/payment-payouts', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const limitRaw = Number(req.query.limit ?? 50);
+    const payouts = await listBankPayouts(getSupabaseAdmin(), { limit: limitRaw });
+    res.json({ payouts });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * POST /api/admin/payment-payouts
+ * Body: { payoutDate, bankReference?, notes?, lines: [{ paymentMethod, wiredAmountGnf, periodStart?, periodEnd?, notes? }] }
+ */
+adminRouter.post('/admin/payment-payouts', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const payoutDate = String(req.body?.payoutDate ?? '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(payoutDate)) {
+      res.status(400).json({ error: 'Date de virement invalide (AAAA-MM-JJ).' });
+      return;
+    }
+
+    const linesRaw = Array.isArray(req.body?.lines) ? req.body.lines : [];
+    const lines: PayoutLineInput[] = linesRaw
+      .map((line: Record<string, unknown>) => ({
+        paymentMethod: String(line?.paymentMethod ?? 'all').trim(),
+        wiredAmountGnf: Number(line?.wiredAmountGnf ?? 0),
+        periodStart: line?.periodStart ? String(line.periodStart).trim() : null,
+        periodEnd: line?.periodEnd ? String(line.periodEnd).trim() : null,
+        notes: line?.notes ? String(line.notes).trim() : null,
+      }))
+      .filter((line: PayoutLineInput) => line.wiredAmountGnf > 0);
+
+    if (!lines.length) {
+      res.status(400).json({ error: 'Au moins un montant viré est requis.' });
+      return;
+    }
+
+    const authUserId = req.authUser?.id ?? null;
+    const payout = await createBankPayout(getSupabaseAdmin(), {
+      payoutDate,
+      bankReference: req.body?.bankReference ? String(req.body.bankReference) : null,
+      notes: req.body?.notes ? String(req.body.notes) : null,
+      createdBy: authUserId,
+      lines,
+    });
+
+    res.status(201).json({ payout });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
 
 /**
  * POST /api/admin/users-activity

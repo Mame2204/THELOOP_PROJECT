@@ -18,7 +18,7 @@ import {
 } from '@/lib/prime-benefits-store';
 import { establishmentTypeLabel } from '@/lib/partner-establishments';
 import { scannedMemberRoleLabel } from '@/lib/member-qr-scan';
-import { sendPartnerBenefitValidatedNotification, sendPartnerBenefitCancelledNotification } from '@/lib/user-notifications-store';
+import { notifyPartnerBenefitOutcomeViaBackend } from '@/lib/partner-validation-backend-api';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PartnerBenefitConfirm'>;
@@ -268,19 +268,10 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
         await Promise.all(items.map((item) => revertBenefitToActive(item.benefit.id)));
       }
 
-      void Promise.all(
-        items.map((item) =>
-          sendPartnerBenefitCancelledNotification({
-            memberUserId,
-            benefitTitle: item.benefit.title,
-            partnerName,
-            displayContext:
-              item.benefit.contentTitle?.trim() ??
-              establishmentTitle?.trim() ??
-              partnerName,
-          }),
-        ),
-      ).catch(() => undefined);
+      void notifyPartnerBenefitOutcomeViaBackend(
+        partnerCode,
+        items.map((item) => ({ redemptionLocalId: item.redemption.id, action: 'cancelled' as const })),
+      );
 
       Alert.alert(
         'Annulé',
@@ -340,19 +331,10 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
 
       void validateRedemptions(pickedIds).catch(() => undefined);
 
-      void Promise.all(
-        picked.map((item) =>
-          sendPartnerBenefitValidatedNotification({
-            memberUserId,
-            benefitTitle: item.benefit.title,
-            partnerName,
-            displayContext:
-              item.benefit.contentTitle?.trim() ??
-              establishmentTitle?.trim() ??
-              partnerName,
-          }),
-        ),
-      ).catch(() => undefined);
+      void notifyPartnerBenefitOutcomeViaBackend(
+        partnerCode,
+        picked.map((item) => ({ redemptionLocalId: item.redemption.id, action: 'validated' as const })),
+      );
 
       const skipped = items.filter((i) => !selected.has(i.redemption.id));
       if (skipped.length) {
@@ -368,19 +350,10 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
             memberUserId,
           })),
         ).catch(() => undefined);
-        void Promise.all(
-          skipped.map((item) =>
-            sendPartnerBenefitCancelledNotification({
-              memberUserId,
-              benefitTitle: item.benefit.title,
-              partnerName,
-              displayContext:
-                item.benefit.contentTitle?.trim() ??
-                establishmentTitle?.trim() ??
-                partnerName,
-            }),
-          ),
-        ).catch(() => undefined);
+        void notifyPartnerBenefitOutcomeViaBackend(
+          partnerCode,
+          skipped.map((item) => ({ redemptionLocalId: item.redemption.id, action: 'cancelled' as const })),
+        );
       }
 
       Alert.alert(
