@@ -228,7 +228,7 @@ export async function createAdminUserInvite(input: {
     const { data, error } = await supabase
       .from('admin_user_invites')
       .insert({
-        phone_number: invite.phoneNumber === 'non_renseigne' ? null : invite.phoneNumber,
+        phone_number: invite.phoneNumber,
         country_code: countryCode,
         email: invite.email,
         user_role: input.userRole,
@@ -239,7 +239,10 @@ export async function createAdminUserInvite(input: {
       .select('id, created_at, otp_sent_at')
       .single();
 
-    if (!error && data) {
+    if (error) {
+      throw new Error(error.message);
+    }
+    if (data) {
       invite.id = data.id;
       invite.createdAt = data.created_at;
       invite.otpSentAt = data.otp_sent_at;
@@ -320,6 +323,13 @@ export async function sendAdminInviteEmail(input: {
     });
     const body = (await response.json().catch(() => ({}))) as { error?: string; ok?: boolean };
     if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          ok: false,
+          error:
+            'Edge Function admin-send-invite introuvable (404). Déployez-la sur Supabase : supabase functions deploy admin-send-invite',
+        };
+      }
       return { ok: false, error: body.error ?? `Erreur HTTP ${response.status}` };
     }
     return { ok: true };

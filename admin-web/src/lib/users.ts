@@ -323,10 +323,11 @@ export async function createUserInvite(input: {
   const email = input.email.trim().toLowerCase();
   if (!email || !email.includes('@')) return { ok: false, error: 'E-mail invalide.' };
 
+  const phone = input.phone?.trim() || '';
   const { data, error } = await supabase
     .from('admin_user_invites')
     .insert({
-      phone_number: input.phone?.trim() || null,
+      phone_number: phone || 'non_renseigne',
       country_code: input.countryCode,
       email,
       user_role: input.userRole,
@@ -418,7 +419,16 @@ export async function sendInviteEmail(input: {
       }),
     });
     const body = (await response.json().catch(() => ({}))) as { error?: string };
-    if (!response.ok) return { ok: false, error: body.error ?? `HTTP ${response.status}` };
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          ok: false,
+          error:
+            'Edge Function admin-send-invite introuvable (404). Déployez-la sur Supabase : supabase functions deploy admin-send-invite',
+        };
+      }
+      return { ok: false, error: body.error ?? `HTTP ${response.status}` };
+    }
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Envoi impossible.' };
