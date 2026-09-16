@@ -1,3 +1,4 @@
+import { getMemberAuthRedirectUrl } from './auth-redirect';
 import { getAccessToken, supabase } from './supabase';
 import { getApiUrl } from './api';
 
@@ -303,8 +304,7 @@ export async function syncUserEmail(
 }
 
 export async function sendPasswordReset(email: string): Promise<{ ok: boolean; error?: string }> {
-  const redirectTo =
-    (import.meta.env.VITE_AUTH_REDIRECT_URL as string | undefined) ?? 'theloop://auth/callback';
+  const redirectTo = getMemberAuthRedirectUrl();
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
@@ -395,8 +395,7 @@ export async function sendInviteEmail(input: {
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
   if (!supabaseUrl || !anon) return { ok: false, error: 'Supabase non configuré.' };
 
-  const redirectTo =
-    (import.meta.env.VITE_AUTH_REDIRECT_URL as string | undefined) ?? 'theloop://auth/callback';
+  const redirectTo = getMemberAuthRedirectUrl();
 
   try {
     const response = await fetch(`${supabaseUrl}/functions/v1/admin-send-invite`, {

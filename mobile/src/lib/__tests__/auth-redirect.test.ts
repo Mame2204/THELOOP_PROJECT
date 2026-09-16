@@ -67,6 +67,15 @@ describe('auth-redirect', () => {
     expect(() => mod.getAuthEmailRedirectUrl()).toThrow(/Metro/);
   });
 
+  it('utilise la page HTTPS auth-callback pour les invites membres', () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://eeyhtulpixvftvhppinz.supabase.co';
+    jest.resetModules();
+    const mod = require('@/lib/auth-redirect') as typeof import('@/lib/auth-redirect');
+    expect(mod.getAuthMemberFacingRedirectUrl()).toBe(
+      'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback',
+    );
+  });
+
   it('fallback LAN via EXPO_PUBLIC_DEV_AUTH_REDIRECT_URL en Expo Go', () => {
     jest.doMock('expo-constants', () => ({
       __esModule: true,

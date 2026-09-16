@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     const redirectTo =
       (body.redirectTo ?? '').trim() ||
       Deno.env.get('AUTH_REDIRECT_URL') ||
-      'theloop://auth/callback';
+      `${supabaseUrl.replace(/\/$/, '')}/functions/v1/auth-callback`;
 
     const metadata: Record<string, unknown> = {
       pending_welcome: true,

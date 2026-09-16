@@ -3,6 +3,12 @@ import * as Linking from 'expo-linking';
 
 export const THELOOP_AUTH_CALLBACK = 'theloop://auth/callback';
 
+function getSupabaseHttpsAuthCallbackUrl(): string | null {
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
+  if (!supabaseUrl || supabaseUrl.includes('your-project')) return null;
+  return `${supabaseUrl}/functions/v1/auth-callback`;
+}
+
 /** Expo Go ou client store (environnement de test sans build natif). */
 export function isExpoGoTestEnvironment(): boolean {
   return (
@@ -76,6 +82,8 @@ export function getAuthEmailRedirectUrl(): string {
 export function getAuthMemberFacingRedirectUrl(): string {
   const httpsOverride = process.env.EXPO_PUBLIC_AUTH_CALLBACK_HTTPS_URL?.trim();
   if (httpsOverride) return httpsOverride;
+  const derivedHttps = getSupabaseHttpsAuthCallbackUrl();
+  if (derivedHttps) return derivedHttps;
   const prodOverride = process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL?.trim();
   if (prodOverride) return prodOverride;
   return THELOOP_AUTH_CALLBACK;
@@ -126,6 +134,8 @@ export function getSupabaseRedirectUrlChecklist(): string[] {
   if (devLan) urls.add(devLan);
   const https = process.env.EXPO_PUBLIC_AUTH_CALLBACK_HTTPS_URL?.trim();
   if (https) urls.add(https);
+  const derivedHttps = getSupabaseHttpsAuthCallbackUrl();
+  if (derivedHttps) urls.add(derivedHttps);
   return [...urls];
 }
 
