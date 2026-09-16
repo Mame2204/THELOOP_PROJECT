@@ -4,6 +4,7 @@ import { AdminLayout } from './layout/AdminLayout';
 import { RequirePermission } from './layout/RequirePermission';
 import { LoginPage } from './pages/LoginPage';
 import { PaymentsPage } from './pages/PaymentsPage';
+import { ComptaPage } from './pages/ComptaPage';
 import { UsersPage } from './pages/UsersPage';
 import { PassPage } from './pages/PassPage';
 import { DemandesPage } from './pages/DemandesPage';
@@ -47,6 +48,14 @@ export function App() {
           element={
             <RequirePermission permission="pass_payments">
               <PaymentsPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="compta"
+          element={
+            <RequirePermission permission="pass_payments">
+              <ComptaPage />
             </RequirePermission>
           }
         />

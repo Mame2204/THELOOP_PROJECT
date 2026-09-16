@@ -678,6 +678,14 @@ export function RootNavigator() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="AdminCompta"
+            getComponent={requireScreen(
+              () => require('@/screens/AdminComptaScreen').AdminComptaScreen,
+              'AdminCompta',
+            )}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="AdminSpotStars"
             getComponent={requireScreen(
               () => require('@/screens/AdminSpotStarsScreen').AdminSpotStarsScreen,

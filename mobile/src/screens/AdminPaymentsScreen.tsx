@@ -19,8 +19,7 @@ import {
   type AdminPaymentSummary,
 } from '@/lib/admin-payments-store';
 import { formatDateFr } from '@/lib/date-utils';
-import { DjomyFeeBreakdown } from '@/components/DjomyFeeBreakdown';
-import { estimateDjomyPayInFee, formatGnf } from '@/lib/djomy-fees';
+import { formatGnf } from '@/lib/djomy-fees';
 import { primePlanLabel, type PrimeBillingPeriod } from '@/lib/prime-plans';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -207,12 +206,19 @@ export function AdminPaymentsScreen({ navigation }: Props) {
     >
       <AdminPageHeader
         title="Paiements PASS"
-        subtitle={`${filtered.length} affichée${filtered.length > 1 ? 's' : ''} · Djomy + activation`}
+        subtitle={`${filtered.length} affichée${filtered.length > 1 ? 's' : ''} · frais Djomy par moyen`}
         shell={shell}
         onBack={() => navigation.goBack()}
       />
 
-      <DjomyFeeBreakdown amountGnf={1_000_000} shell={shell} accentColor={ADMIN_THEME.accent} />
+      <Pressable
+        style={[styles.comptaLink, { borderColor: ADMIN_THEME.accent }]}
+        onPress={() => navigation.navigate('AdminCompta')}
+      >
+        <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 13 }}>
+          Compta · virements & reste à percevoir →
+        </Text>
+      </Pressable>
 
       {summary ? (
         <View style={[styles.kpiRow, { borderColor: shell.filterInactiveBorder }]}>
@@ -369,7 +375,11 @@ export function AdminPaymentsScreen({ navigation }: Props) {
               </View>
             </View>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>
-              {period} · {intent.amountGnf.toLocaleString('fr-FR')} GNF · {formatDateTimeFr(intent.createdAt)}
+              {period} · {(intent.djomyPaidAmount ?? intent.amountGnf).toLocaleString('fr-FR')} GNF
+              {intent.feeGnf != null ? ` · frais ${formatGnf(intent.feeGnf)}` : ''}
+              {intent.netGnf != null ? ` · net ${formatGnf(intent.netGnf)}` : ''}
+              {' · '}
+              {formatDateTimeFr(intent.createdAt)}
             </Text>
             <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
               {intent.userEmail ?? intent.userId}
@@ -405,21 +415,11 @@ export function AdminPaymentsScreen({ navigation }: Props) {
                     ? `${intent.djomyPaidAmount.toLocaleString('fr-FR')} GNF`
                     : '—'}
                 </Text>
-                {(() => {
-                  const paid = intent.djomyPaidAmount ?? intent.amountGnf;
-                  const fee = estimateDjomyPayInFee(paid, intent.paymentMethod);
-                  return (
-                    <Text style={[styles.detailLine, { color: shell.pageKicker }]}>
-                      Commission Djomy ({fee.rateLabel}) :{' '}
-                      {fee.feeGnf != null
-                        ? formatGnf(fee.feeGnf)
-                        : fee.feeRangeGnf
-                          ? `${formatGnf(fee.feeRangeGnf[0])} – ${formatGnf(fee.feeRangeGnf[1])}`
-                          : '—'}
-                      {fee.netGnf != null ? ` · Net estimé : ${formatGnf(fee.netGnf)}` : ''}
-                    </Text>
-                  );
-                })()}
+                <Text style={[styles.detailLine, { color: shell.pageKicker }]}>
+                  Commission Djomy ({intent.feeRateLabel ?? '—'}) :{' '}
+                  {intent.feeGnf != null ? formatGnf(intent.feeGnf) : '—'}
+                  {intent.netGnf != null ? ` · Net : ${formatGnf(intent.netGnf)}` : ''}
+                </Text>
                 <Text style={[styles.detailLine, { color: shell.pageKicker }]}>
                   Dernier verify : {formatDateTimeFr(intent.lastCheckedAt)}
                 </Text>
@@ -481,6 +481,14 @@ export function AdminPaymentsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 40, gap: 10 },
+  comptaLink: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   kpiRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

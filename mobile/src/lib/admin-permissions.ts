@@ -131,7 +131,7 @@ export const ADMIN_PERMISSION_CATALOG: AdminPermissionDef[] = [
   { id: 'pass_catalog', group: 'pass', parentId: 'pass_management', label: 'Catalogue & octroi', description: 'Gestion des PASS membres' },
   { id: 'pass_messages', group: 'pass', parentId: 'pass_management', label: 'Modèles notification', description: 'Messages à l\'activation PASS' },
   { id: 'pass_prices', group: 'pass', parentId: 'pass_management', label: 'Prix PASS', description: 'Tarifs standards GNF' },
-  { id: 'pass_payments', group: 'pass', parentId: 'pass_management', label: 'Paiements Djomy', description: 'Suivi des transactions et activation PASS', route: 'AdminPayments' },
+  { id: 'pass_payments', group: 'pass', parentId: 'pass_management', label: 'Paiements Djomy', description: 'Suivi des transactions, compta et activation PASS', route: 'AdminPayments' },
 ];
 
 export type AdminPermissionId = (typeof ADMIN_PERMISSION_CATALOG)[number]['id'];

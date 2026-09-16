@@ -11,11 +11,12 @@ import { deliverPushToUserIds } from '../services/push-delivery.js';
 import { computePaymentAnalytics } from '../services/payment-analytics.js';
 import { buildPaymentIntentsCsv } from '../services/payment-export.js';
 import {
-  computePayoutReconciliation,
-  createBankPayout,
-  listBankPayouts,
-  type PayoutLineInput,
-} from '../services/payment-payout-reconcile.js';
+  computeAccountingBalance,
+  computeAccountingPeriodSummary,
+  createAccountingSettlement,
+  enrichPaymentWithFees,
+  listAccountingSettlements,
+} from '../services/payment-accounting.js';
 
 export const adminRouter = Router();
 
@@ -254,6 +255,7 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
       offset,
       intents: intents.map((intent) => {
         const user = usersById.get(intent.user_id);
+        const fees = enrichPaymentWithFees(intent);
         return {
           id: intent.id,
           userId: intent.user_id,
@@ -270,6 +272,11 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
           fulfillmentStatus: intent.fulfillment_status,
           passGrantStatus: intent.pass_grant_status,
           djomyPaidAmount: intent.djomy_paid_amount,
+          grossGnf: fees.grossGnf,
+          feeRatePercent: fees.feeRatePercent,
+          feeRateLabel: fees.feeRateLabel,
+          feeGnf: fees.feeGnf,
+          netGnf: fees.netGnf,
           djomyStatus: intent.djomy_status ?? null,
           djomyProviderReference: intent.djomy_provider_reference ?? null,
           lastCheckedAt: intent.last_checked_at ?? null,
@@ -408,40 +415,19 @@ adminRouter.post(
 );
 
 /**
- * GET /api/admin/payment-payouts/reconciliation?country=&days=90
- * Compare net estimé (Pay In) vs montants virés saisis par moyen de paiement.
+ * GET /api/admin/payment-accounting/balance?country=
+ * Solde global : net attendu vs total viré → reste à percevoir.
  */
-adminRouter.get(
-  '/admin/payment-payouts/reconciliation',
-  requireSupabaseAuth,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
-        .trim()
-        .toUpperCase()
-        .slice(0, 2);
-      const daysRaw = Number(req.query.days ?? 90);
-      const summary = await computePayoutReconciliation(getSupabaseAdmin(), {
-        countryCode: countryCode || undefined,
-        days: daysRaw,
-      });
-      res.json(summary);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur serveur.';
-      res.status(500).json({ error: message });
-    }
-  },
-);
-
-/**
- * GET /api/admin/payment-payouts?limit=50
- */
-adminRouter.get('/admin/payment-payouts', requireSupabaseAuth, requireAdmin, async (req, res) => {
+adminRouter.get('/admin/payment-accounting/balance', requireSupabaseAuth, requireAdmin, async (req, res) => {
   try {
-    const limitRaw = Number(req.query.limit ?? 50);
-    const payouts = await listBankPayouts(getSupabaseAdmin(), { limit: limitRaw });
-    res.json({ payouts });
+    const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
+      .trim()
+      .toUpperCase()
+      .slice(0, 2);
+    const balance = await computeAccountingBalance(getSupabaseAdmin(), {
+      countryCode: countryCode || undefined,
+    });
+    res.json(balance);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erreur serveur.';
     res.status(500).json({ error: message });
@@ -449,43 +435,82 @@ adminRouter.get('/admin/payment-payouts', requireSupabaseAuth, requireAdmin, asy
 });
 
 /**
- * POST /api/admin/payment-payouts
- * Body: { payoutDate, bankReference?, notes?, lines: [{ paymentMethod, wiredAmountGnf, periodStart?, periodEnd?, notes? }] }
+ * GET /api/admin/payment-accounting/period?from=&to=&country=
  */
-adminRouter.post('/admin/payment-payouts', requireSupabaseAuth, requireAdmin, async (req, res) => {
+adminRouter.get('/admin/payment-accounting/period', requireSupabaseAuth, requireAdmin, async (req, res) => {
   try {
+    const periodStart = String(req.query.from ?? req.query.periodStart ?? '').trim();
+    const periodEnd = String(req.query.to ?? req.query.periodEnd ?? '').trim();
+    const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
+      .trim()
+      .toUpperCase()
+      .slice(0, 2);
+    if (!periodStart || !periodEnd) {
+      res.status(400).json({ error: 'Période requise (from, to).' });
+      return;
+    }
+    const summary = await computeAccountingPeriodSummary(
+      getSupabaseAdmin(),
+      periodStart,
+      periodEnd,
+      { countryCode: countryCode || undefined },
+    );
+    res.json(summary);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * GET /api/admin/payment-accounting/settlements?limit=50
+ */
+adminRouter.get('/admin/payment-accounting/settlements', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const limitRaw = Number(req.query.limit ?? 50);
+    const settlements = await listAccountingSettlements(getSupabaseAdmin(), { limit: limitRaw });
+    res.json({ settlements });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur serveur.';
+    res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * POST /api/admin/payment-accounting/settlements
+ * Body: { periodStart, periodEnd, wiredAmountGnf, payoutDate, bankReference?, notes? }
+ */
+adminRouter.post('/admin/payment-accounting/settlements', requireSupabaseAuth, requireAdmin, async (req, res) => {
+  try {
+    const periodStart = String(req.body?.periodStart ?? '').trim();
+    const periodEnd = String(req.body?.periodEnd ?? '').trim();
     const payoutDate = String(req.body?.payoutDate ?? '').trim();
+    const wiredAmountGnf = Number(req.body?.wiredAmountGnf ?? 0);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(periodStart) || !/^\d{4}-\d{2}-\d{2}$/.test(periodEnd)) {
+      res.status(400).json({ error: 'Période invalide (AAAA-MM-JJ).' });
+      return;
+    }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(payoutDate)) {
       res.status(400).json({ error: 'Date de virement invalide (AAAA-MM-JJ).' });
       return;
     }
-
-    const linesRaw = Array.isArray(req.body?.lines) ? req.body.lines : [];
-    const lines: PayoutLineInput[] = linesRaw
-      .map((line: Record<string, unknown>) => ({
-        paymentMethod: String(line?.paymentMethod ?? 'all').trim(),
-        wiredAmountGnf: Number(line?.wiredAmountGnf ?? 0),
-        periodStart: line?.periodStart ? String(line.periodStart).trim() : null,
-        periodEnd: line?.periodEnd ? String(line.periodEnd).trim() : null,
-        notes: line?.notes ? String(line.notes).trim() : null,
-      }))
-      .filter((line: PayoutLineInput) => line.wiredAmountGnf > 0);
-
-    if (!lines.length) {
-      res.status(400).json({ error: 'Au moins un montant viré est requis.' });
+    if (!Number.isFinite(wiredAmountGnf) || wiredAmountGnf <= 0) {
+      res.status(400).json({ error: 'Montant viré requis.' });
       return;
     }
 
-    const authUserId = req.authUser?.id ?? null;
-    const payout = await createBankPayout(getSupabaseAdmin(), {
+    const settlement = await createAccountingSettlement(getSupabaseAdmin(), {
+      periodStart,
+      periodEnd,
+      wiredAmountGnf,
       payoutDate,
       bankReference: req.body?.bankReference ? String(req.body.bankReference) : null,
       notes: req.body?.notes ? String(req.body.notes) : null,
-      createdBy: authUserId,
-      lines,
+      createdBy: req.authUser?.id ?? null,
     });
 
-    res.status(201).json({ payout });
+    res.status(201).json({ settlement });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erreur serveur.';
     res.status(500).json({ error: message });

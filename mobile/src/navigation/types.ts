@@ -73,6 +73,7 @@ export type RootStackParamList = {
   AdminOpeningHours: undefined;
   AdminPassManagement: { section?: 'prices' | 'messages' } | undefined;
   AdminPayments: undefined;
+  AdminCompta: undefined;
   AdminSuperSettings: undefined;
   AdminStandaloneBenefit: undefined;
   MyBenefits: undefined;
@@ -116,6 +117,7 @@ export type AdminPanelParamList = {
   AdminModeration: { tab?: 'all' | 'events' | 'spots' | 'tools'; embedded?: boolean };
   AdminPassManagement: { section?: 'prices' | 'messages' } | undefined;
   AdminPayments: undefined;
+  AdminCompta: undefined;
   AdminSuperSettings: undefined;
 };
 

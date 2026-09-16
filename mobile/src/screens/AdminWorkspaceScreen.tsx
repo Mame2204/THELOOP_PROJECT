@@ -88,6 +88,10 @@ const AdminPaymentsScreen = lazyScreen(
   () => require('@/screens/AdminPaymentsScreen').AdminPaymentsScreen,
   'AdminPayments',
 );
+const AdminComptaScreen = lazyScreen(
+  () => require('@/screens/AdminComptaScreen').AdminComptaScreen,
+  'AdminCompta',
+);
 const AdminSuperSettingsScreen = lazyScreen(
   () => require('@/screens/AdminSuperSettingsScreen').AdminSuperSettingsScreen,
   'AdminSuperSettings',
@@ -111,6 +115,7 @@ const ROUTE_TO_KEY: Partial<Record<keyof AdminPanelParamList, AdminSidebarKey>> 
   AdminModeration: 'demandes',
   AdminPassManagement: 'pass',
   AdminPayments: 'pass',
+  AdminCompta: 'compta',
   AdminSuperSettings: 'settings',
 };
 
@@ -133,6 +138,7 @@ const KEY_TO_NAV: Record<AdminSidebarKey, SidebarNav> = {
   draw: { kind: 'route', route: 'AdminBenefitDraw' },
   moderation: { kind: 'route', route: 'AdminDemandes' },
   pass: { kind: 'route', route: 'AdminPassManagement' },
+  compta: { kind: 'route', route: 'AdminCompta' },
   settings: { kind: 'route', route: 'AdminSuperSettings' },
 };
 
@@ -203,6 +209,7 @@ export function AdminWorkspaceScreen() {
       { key: 'staff', icon: '🛡️', label: 'TEAMS', permission: 'staff_benefits' },
       { key: 'draw', icon: '🎲', label: 'Tirage', permission: 'benefit_draw' },
       { key: 'pass', icon: '🎫', label: 'PASS', permission: 'pass_management' },
+      { key: 'compta', icon: '📒', label: 'Compta', permission: 'pass_payments' },
       { key: 'settings', icon: '⚙️', label: 'Param.', permission: 'manage_admins' },
     ];
 
@@ -291,6 +298,7 @@ export function AdminWorkspaceScreen() {
       <Panel.Screen name="AdminModeration" component={AdminModerationScreen} />
       <Panel.Screen name="AdminPassManagement" component={AdminPassManagementScreen} />
       <Panel.Screen name="AdminPayments" component={AdminPaymentsScreen} />
+      <Panel.Screen name="AdminCompta" component={AdminComptaScreen} />
       <Panel.Screen name="AdminSuperSettings" component={AdminSuperSettingsScreen} />
     </Panel.Navigator>
   );

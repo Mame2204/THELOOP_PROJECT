@@ -13,8 +13,7 @@ import { formatWhen, statusBadge } from '../lib/format';
 import { billingPeriodLabel, paymentMethodLabel } from '../lib/payment-labels';
 import { canReconcilePaymentIntent, reconcileDisabledReason } from '../lib/payment-reconcile';
 import { useAdminCountry } from '../context/AdminCountryContext';
-import { DjomyFeeBreakdown, formatPaymentFeeSummary } from '../components/DjomyFeeBreakdown';
-import { PaymentPayoutPanel } from '../components/PaymentPayoutPanel';
+import { Link } from 'react-router-dom';
 
 const PAGE = 20;
 const PERIOD_OPTIONS = [7, 30, 90] as const;
@@ -83,12 +82,14 @@ export function PaymentsPage() {
           <p className="brand-kicker">PASS</p>
           <h2>Paiements Djomy</h2>
           <p className="meta">
-            Intents filtrés pour {countryLabel} (via pays du membre).{' '}
-            <strong>Resync</strong> = re-vérifier chez Djomy un paiement bloqué (payé mais PASS pas
-            encore activé) et forcer l’octroi si le statut Djomy est SUCCESS.
+            Intents filtrés pour {countryLabel}. Frais Djomy appliqués par moyen de paiement.{' '}
+            <Link to="/compta">Compta →</Link> pour les virements et le reste à percevoir.
           </p>
         </div>
         <div className="edit-actions">
+          <Link to="/compta" className="btn small ghost">
+            Compta
+          </Link>
           <button type="button" className="btn small ghost" onClick={() => void load()}>
             Actualiser
           </button>
@@ -102,10 +103,6 @@ export function PaymentsPage() {
           </button>
         </div>
       </header>
-
-      <DjomyFeeBreakdown amountGnf={1_000_000} />
-
-      <PaymentPayoutPanel countryCode={countryCode} analyticsDays={analyticsDays} />
 
       {summary ? (
         <div className="kpi-row">
@@ -303,8 +300,9 @@ export function PaymentsPage() {
               <th>Période</th>
               <th>Montant</th>
               <th>Moyen</th>
-              <th>Frais Djomy (est.)</th>
-              <th>Net (est.)</th>
+              <th>Commission</th>
+              <th>Frais</th>
+              <th>Net</th>
               <th>Statut</th>
               <th>Créé</th>
               <th></th>
@@ -381,12 +379,9 @@ export function PaymentsPage() {
                   ) : null}
                 </td>
                 <td>{paymentMethodLabel(p.paymentMethod ?? 'all')}</td>
-                <td>
-                  {formatPaymentFeeSummary(p.djomyPaidAmount ?? p.amountGnf, p.paymentMethod).feeLabel}
-                </td>
-                <td>
-                  {formatPaymentFeeSummary(p.djomyPaidAmount ?? p.amountGnf, p.paymentMethod).netLabel}
-                </td>
+                <td>{p.feeRateLabel ?? '—'}</td>
+                <td>{p.feeGnf != null ? `${p.feeGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
+                <td>{p.netGnf != null ? `${p.netGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
                 <td>
                   <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
                   <div className="meta">

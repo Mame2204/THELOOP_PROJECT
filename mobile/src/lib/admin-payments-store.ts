@@ -51,6 +51,11 @@ export interface AdminPaymentIntent {
   paidAt: string | null;
   createdAt: string;
   updatedAt: string;
+  grossGnf?: number;
+  feeRatePercent?: number | null;
+  feeRateLabel?: string | null;
+  feeGnf?: number;
+  netGnf?: number;
 }
 
 export interface AdminPaymentSummary {
@@ -241,6 +246,130 @@ export async function reconcileAdminPaymentIntent(
 }
 
 /** Activité Auth uniquement pour les IDs de la page courante (max 50). */
+export interface AccountingMethodRow {
+  paymentMethod: string;
+  paidCount: number;
+  grossGnf: number;
+  feeGnf: number;
+  netGnf: number;
+}
+
+export interface AccountingPeriodSummary {
+  periodStart: string;
+  periodEnd: string;
+  paidCount: number;
+  grossGnf: number;
+  feeGnf: number;
+  netGnf: number;
+  wiredInPeriodGnf: number;
+  remainingInPeriodGnf: number;
+  byPaymentMethod: AccountingMethodRow[];
+}
+
+export interface AccountingBalance {
+  grossGnf: number;
+  feeGnf: number;
+  netExpectedGnf: number;
+  wiredTotalGnf: number;
+  remainingOwedGnf: number;
+  paidCount: number;
+}
+
+export interface AccountingSettlement {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  wiredAmountGnf: number;
+  payoutDate: string;
+  bankReference: string | null;
+  notes: string | null;
+  createdAt: string;
+  expectedNetGnf: number;
+  periodDeltaGnf: number;
+}
+
+export async function fetchAccountingBalance(options?: {
+  countryCode?: string;
+}): Promise<{ balance?: AccountingBalance; error?: string }> {
+  if (!isAdminBackendConfigured()) return { error: 'Backend non configuré.' };
+  const params = new URLSearchParams();
+  if (options?.countryCode) params.set('country', options.countryCode);
+  const qs = params.toString();
+  try {
+    const response = await fetch(
+      `${BACKEND_API_URL}/api/admin/payment-accounting/balance${qs ? `?${qs}` : ''}`,
+      { method: 'GET', headers: await authHeaders() },
+    );
+    const body = (await response.json()) as AccountingBalance & { error?: string };
+    if (!response.ok) return { error: body.error ?? 'Solde compta indisponible.' };
+    return { balance: body };
+  } catch {
+    return { error: 'Impossible de joindre le serveur.' };
+  }
+}
+
+export async function fetchAccountingPeriod(options: {
+  periodStart: string;
+  periodEnd: string;
+  countryCode?: string;
+}): Promise<{ summary?: AccountingPeriodSummary; error?: string }> {
+  if (!isAdminBackendConfigured()) return { error: 'Backend non configuré.' };
+  const params = new URLSearchParams({ from: options.periodStart, to: options.periodEnd });
+  if (options.countryCode) params.set('country', options.countryCode);
+  try {
+    const response = await fetch(
+      `${BACKEND_API_URL}/api/admin/payment-accounting/period?${params.toString()}`,
+      { method: 'GET', headers: await authHeaders() },
+    );
+    const body = (await response.json()) as AccountingPeriodSummary & { error?: string };
+    if (!response.ok) return { error: body.error ?? 'Période compta indisponible.' };
+    return { summary: body };
+  } catch {
+    return { error: 'Impossible de joindre le serveur.' };
+  }
+}
+
+export async function fetchAccountingSettlements(): Promise<{
+  settlements?: AccountingSettlement[];
+  error?: string;
+}> {
+  if (!isAdminBackendConfigured()) return { error: 'Backend non configuré.' };
+  try {
+    const response = await fetch(`${BACKEND_API_URL}/api/admin/payment-accounting/settlements`, {
+      method: 'GET',
+      headers: await authHeaders(),
+    });
+    const body = (await response.json()) as { settlements?: AccountingSettlement[]; error?: string };
+    if (!response.ok) return { error: body.error ?? 'Historique indisponible.' };
+    return { settlements: body.settlements ?? [] };
+  } catch {
+    return { error: 'Impossible de joindre le serveur.' };
+  }
+}
+
+export async function createAccountingSettlement(input: {
+  periodStart: string;
+  periodEnd: string;
+  wiredAmountGnf: number;
+  payoutDate: string;
+  bankReference?: string | null;
+  notes?: string | null;
+}): Promise<{ ok: boolean; settlement?: AccountingSettlement; error?: string }> {
+  if (!isAdminBackendConfigured()) return { ok: false, error: 'Backend non configuré.' };
+  try {
+    const response = await fetch(`${BACKEND_API_URL}/api/admin/payment-accounting/settlements`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify(input),
+    });
+    const body = (await response.json()) as { settlement?: AccountingSettlement; error?: string };
+    if (!response.ok) return { ok: false, error: body.error ?? 'Enregistrement impossible.' };
+    return { ok: true, settlement: body.settlement };
+  } catch {
+    return { ok: false, error: 'Impossible de joindre le serveur.' };
+  }
+}
+
 export async function fetchUsersAuthActivity(userIds: string[]): Promise<{
   activity: Record<string, { lastSignInAt: string | null; email: string | null }>;
   error?: string;

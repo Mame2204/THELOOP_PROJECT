@@ -584,14 +584,24 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
       <AdminCountryBar shell={shell} compact />
 
       {!pricesOnly && !messagesOnly ? (
-        <Pressable
-          style={[styles.paymentsLink, { borderColor: ADMIN_THEME.accent }]}
-          onPress={() => navigation.navigate('AdminPayments')}
-        >
-          <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 13 }}>
-            Suivre les paiements Djomy / PASS →
-          </Text>
-        </Pressable>
+        <>
+          <Pressable
+            style={[styles.paymentsLink, { borderColor: ADMIN_THEME.accent }]}
+            onPress={() => navigation.navigate('AdminPayments')}
+          >
+            <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 13 }}>
+              Suivre les paiements Djomy / PASS →
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.paymentsLink, { borderColor: ADMIN_THEME.accent }]}
+            onPress={() => navigation.navigate('AdminCompta')}
+          >
+            <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 13 }}>
+              Compta · virements & reste à percevoir →
+            </Text>
+          </Pressable>
+        </>
       ) : null}
 
       {pricesOnly ? (

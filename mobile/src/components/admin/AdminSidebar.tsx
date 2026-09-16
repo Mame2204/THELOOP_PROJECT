@@ -17,6 +17,7 @@ export type AdminSidebarKey =
   | 'draw'
   | 'moderation'
   | 'pass'
+  | 'compta'
   | 'settings';
 
 export interface AdminSidebarItem {

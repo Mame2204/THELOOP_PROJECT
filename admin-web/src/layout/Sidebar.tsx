@@ -32,8 +32,9 @@ export const ADMIN_NAV: NavItem[] = [
     label: 'PASS',
     icon: '🎫',
     permission: 'pass_management',
-    alsoActive: ['/payments'],
+    alsoActive: ['/payments', '/compta'],
   },
+  { to: '/compta', label: 'Compta', icon: '📒', permission: 'pass_payments' },
   {
     to: '/parametres',
     label: 'Param.',
