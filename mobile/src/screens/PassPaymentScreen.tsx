@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { FormSelectChip } from '@/components/FormSelectChip';
 import { FormTextInput } from '@/components/FormTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { useAuthContext } from '@/context/AuthContext';
@@ -36,18 +35,14 @@ import {
 import {
   getActiveSubscription,
   getPendingSubscriptions,
-  PASS_PAYMENT_LABELS,
-  PASS_PAYMENT_METHODS_ORDER,
   synchronizeSubscriptionHistory,
-  type PassPaymentMethod,
 } from '@/lib/subscription-history';
 import { isPassPurchaseUiEnabled } from '@/lib/pass-purchase-ui';
+import { subscribePaymentReturn } from '@/lib/payment-return-events';
 import { useAppGates } from '@/context/AppGatesContext';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PassPayment'>;
-
-const PAYMENT_METHODS = PASS_PAYMENT_METHODS_ORDER;
 
 export function PassPaymentScreen({ navigation, route }: Props) {
   const { period } = route.params;
@@ -59,7 +54,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const priceCurrency = passPriceCurrency(priceCountry);
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);
-  const [paymentMethod, setPaymentMethod] = useState<PassPaymentMethod>('all');
   const [payerPhone, setPayerPhone] = useState(
     user?.phoneNumber?.replace(/\D/g, '').slice(-9) || '',
   );
@@ -74,6 +68,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [lastSandboxIntentId, setLastSandboxIntentId] = useState<string | null>(null);
   /** null = health pas encore reçu — pas d’UX sandbox tant qu’on ne sait pas. */
   const [serverSandboxMode, setServerSandboxMode] = useState<boolean | null>(null);
+  const pendingIntentIdRef = useRef<string | null>(null);
+  const finishAfterFulfillmentRef = useRef<(() => Promise<void>) | null>(null);
+  const fulfillmentHandledRef = useRef(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -132,10 +129,15 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const willQueue = hasActivePass && Boolean(activeExpiry);
   const isSandboxMode = serverSandboxMode === true;
   const showSandboxTools = isDjomyPaymentConfigured() && isSandboxMode;
-  const prefillSandboxPayer = showSandboxTools;
+  useEffect(() => {
+    if (!showSandboxTools) return;
+    const hint = sandboxPayerHint('all');
+    if (hint.local) setPayerPhone(hint.local);
+  }, [showSandboxTools]);
 
-  async function finishAfterFulfillment() {
-    if (!user?.id) return;
+  const finishAfterFulfillment = useCallback(async () => {
+    if (!user?.id || fulfillmentHandledRef.current) return;
+    fulfillmentHandledRef.current = true;
     const outcome = await syncPassAfterDjomyPayment(user.id, user.firstName);
     if (outcome.activated) {
       await refreshUserSession();
@@ -167,7 +169,40 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         [{ text: 'OK', onPress: () => navigation.replace('Abonnement') }],
       );
     }
-  }
+  }, [navigation, period, planName, refreshUserSession, user?.firstName, user?.id]);
+
+  useEffect(() => {
+    finishAfterFulfillmentRef.current = finishAfterFulfillment;
+  }, [finishAfterFulfillment]);
+
+  useEffect(() => {
+    if (step !== 'processing') return;
+
+    const dismissBrowser = () => {
+      void WebBrowser.dismissBrowser().catch(() => undefined);
+    };
+
+    const onReturn = () => {
+      dismissBrowser();
+      void (async () => {
+        const intentId = pendingIntentIdRef.current;
+        if (!intentId || !user?.id) return;
+        if (await tryLateFulfillmentCheck(intentId)) {
+          await finishAfterFulfillmentRef.current?.();
+        }
+      })();
+    };
+
+    const paymentSub = subscribePaymentReturn(onReturn);
+    const appStateSub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') onReturn();
+    });
+
+    return () => {
+      paymentSub();
+      appStateSub.remove();
+    };
+  }, [step, user?.id]);
 
   function offerSandboxForce(reason: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -260,22 +295,15 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     if (!passPurchaseEnabled) return;
     if (!user?.id || amountGnf == null) return;
 
-    if (isSandboxMode && paymentMethod === 'orange_money') {
-      Alert.alert(
-        'Orange Money indisponible en sandbox',
-        'Djomy confirme que tous les paiements OM échouent en sandbox. Choisissez PayCard, Soutra Money ou Carte avec leurs comptes de test.',
-      );
-      return;
-    }
-
     setLoading(true);
     setStep('processing');
+    fulfillmentHandledRef.current = false;
     try {
       const payment = await processPassPayment({
         userId: user.id,
         period,
         amountGnf,
-        method: paymentMethod,
+        method: 'all',
         payerPhone,
       });
 
@@ -293,15 +321,18 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           setServerSandboxMode(true);
         }
         setLastSandboxIntentId(payment.paymentIntentId);
+        pendingIntentIdRef.current = payment.paymentIntentId;
 
         // Polling dès l’ouverture du portail (webhook / reconcile pendant Soutra).
         const waitPromise = waitForDjomyFulfillment(payment.paymentIntentId);
-        // Évite « Unhandled promise rejection » si le poll échoue pendant que le navigateur est ouvert.
-        void waitPromise.catch(() => undefined);
+        void waitPromise
+          .then(() => WebBrowser.dismissBrowser())
+          .catch(() => undefined);
 
         await WebBrowser.openBrowserAsync(payment.paymentUrl, {
           presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
         });
+        pendingIntentIdRef.current = null;
 
         try {
           await waitPromise;
@@ -356,7 +387,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         return;
       }
 
-      const outcome = await purchasePrimePass(period, paymentMethod, priceCountry);
+      const outcome = await purchasePrimePass(period, 'all', priceCountry);
       setStep('done');
 
       if (outcome.activated) {
@@ -397,7 +428,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         userId: user.id,
         period,
         amountGnf,
-        method: paymentMethod,
+        method: 'all',
         payerPhone,
       });
 
@@ -448,11 +479,11 @@ export function PassPaymentScreen({ navigation, route }: Props) {
 
   const djomyReady = isDjomyPaymentConfigured();
   const showSandboxBanner = !djomyReady || isSandboxMode;
-  const sandboxHint = sandboxPayerHint(paymentMethod);
+  const sandboxHint = sandboxPayerHint('all');
   const payerPlaceholder = isSandboxMode ? `Ex. ${sandboxHint.display}` : 'Ex. 620 00 00 01';
   const payerHint = isSandboxMode
-    ? sandboxHint.tip
-    : 'Numéro ou compte payeur — identique sur le portail Djomy (Orange Money, Soutra, PayCard…).';
+    ? `${sandboxHint.tip} Choisissez le mode de paiement sur le portail Djomy (Orange Money indisponible en sandbox).`
+    : 'Numéro ou compte payeur — même identifiant sur le portail Djomy. Le mode de paiement se choisit sur Djomy.';
 
   return (
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
@@ -492,28 +523,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         </Text>
       </View>
 
-      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Mode de paiement</Text>
-      <View style={styles.payRow}>
-        {PAYMENT_METHODS.map((method) => (
-          <FormSelectChip
-            key={method}
-            label={PASS_PAYMENT_LABELS[method]}
-            selected={paymentMethod === method}
-            onPress={() => {
-              setPaymentMethod(method);
-              if (prefillSandboxPayer) {
-                const hint = sandboxPayerHint(method);
-                setPayerPhone(hint.local);
-              }
-            }}
-            shell={shell}
-          />
-        ))}
-      </View>
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
-        {paymentMethod === 'all'
-          ? 'Vous serez redirigé vers le portail Djomy pour choisir parmi tous les modes activés sur votre compte marchand.'
-          : `Préférence : ${PASS_PAYMENT_LABELS[paymentMethod]} — finalisation sur le portail sécurisé ${PASS_PAYMENT_PROVIDER_LABEL}.`}
+        Vous serez redirigé vers le portail sécurisé {PASS_PAYMENT_PROVIDER_LABEL} pour choisir votre mode de paiement
+        (Orange Money, Soutra, PayCard, carte…).
       </Text>
 
       <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Identifiant payeur</Text>

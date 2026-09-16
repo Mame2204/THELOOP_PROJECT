@@ -3,6 +3,7 @@ import { computePassExpiry, passLabel, type BillingPeriod } from '../config.js';
 import { resolveChargedPassPrice, resolveMaxPendingPasses } from '../lib/pass-commerce-settings.js';
 import { getSupabaseAdmin, type PaymentIntentRow } from '../lib/supabase-admin.js';
 import { notifyAdminsPaymentAlert } from './payment-admin-alerts.js';
+import { notifyUserPassPaymentFulfilled } from './pass-payment-notify.js';
 
 function isBillingPeriod(value: string): value is BillingPeriod {
   return value === 'monthly' || value === 'quarterly' || value === 'annual' || value === 'lifetime';
@@ -184,6 +185,18 @@ export async function fulfillPaymentIntent(
 
   if (updateError) {
     throw new Error(`Mise à jour intent : ${updateError.message}`);
+  }
+
+  try {
+    await notifyUserPassPaymentFulfilled(
+      intent.user_id,
+      intent.billing_period,
+      plan.passStatus,
+      plan.expiresAt,
+      plan.scheduledStartAt,
+    );
+  } catch (notifyErr) {
+    console.warn('[fulfillment] notification PASS', notifyErr);
   }
 
   return { passGrantStatus: plan.passStatus };

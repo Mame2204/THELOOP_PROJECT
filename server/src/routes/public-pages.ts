@@ -148,16 +148,34 @@ function paymentPage(variant: PageVariant): string {
       ${isSuccess ? 'Confirmé' : 'Non débité'}
     </div>
     <p class="hint">${hint}</p>
-    <a class="btn" href="theloop://">Ouvrir THE LOOP</a>
+    <a class="btn" id="openApp" href="theloop://payment/complete?status=${variant}" style="display:none">Ouvrir THE LOOP</a>
     <a class="btn-secondary" href="https://www.theloop-app.com/">www.theloop-app.com</a>
   </main>
   <script>
     (function () {
-      try {
-        setTimeout(function () {
-          window.location.href = 'theloop://';
-        }, 800);
-      } catch (e) { /* ignore */ }
+      var openApp = document.getElementById('openApp');
+      var deepLink = 'theloop://payment/complete?status=${variant}';
+      var androidIntent =
+        'intent://payment/complete?status=${variant}#Intent;scheme=theloop;package=gn.theloop.app;end';
+
+      function openTheLoopApp() {
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        try {
+          if (isAndroid) {
+            window.location.href = androidIntent;
+            setTimeout(function () {
+              window.location.replace(deepLink);
+            }, 600);
+          } else {
+            window.location.replace(deepLink);
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      openTheLoopApp();
+      setTimeout(function () {
+        if (openApp) openApp.style.display = 'inline-block';
+      }, 1200);
     })();
   </script>
 </body>

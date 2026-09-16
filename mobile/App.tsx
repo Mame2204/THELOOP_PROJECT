@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Appearance, Platform, View } from 'react-native';
+import { Appearance, Linking, Platform, View } from 'react-native';
+import { emitPaymentReturn, isPaymentReturnUrl } from '@/lib/payment-return-events';
 import { CategoryLabelsProvider } from '@/context/CategoryLabelsContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/context/AuthContext';
@@ -24,6 +25,18 @@ export default function App() {
     if (Platform.OS === 'ios') {
       Appearance.setColorScheme('light');
     }
+  }, []);
+
+  useEffect(() => {
+    const handlePaymentReturn = (url: string | null) => {
+      if (!isPaymentReturnUrl(url)) return;
+      emitPaymentReturn();
+    };
+    void Linking.getInitialURL().then(handlePaymentReturn);
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handlePaymentReturn(url);
+    });
+    return () => subscription.remove();
   }, []);
 
   return (
