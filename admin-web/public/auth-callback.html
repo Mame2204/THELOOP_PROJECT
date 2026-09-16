@@ -1,16 +1,10 @@
-/**
- * Page HTTPS — invite / reset mot de passe (navigateur e-mail).
- * URL : https://<project>.supabase.co/functions/v1/auth-callback
- *
- * Le template e-mail Supabase doit pointer ici avec token_hash :
- *   …/auth-callback?token_hash={{ .TokenHash }}&type=invite
- */
-const HTML = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>THE LOOP — Compte</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>THE LOOP — Activation compte</title>
   <style>
     :root { color-scheme: light; --bg:#f4fcfd; --text:#0a0a0a; --muted:#636e72; --gold:#c9a84c; }
     * { box-sizing: border-box; }
@@ -48,8 +42,8 @@ const HTML = `<!DOCTYPE html>
   </main>
   <script>
     (function () {
-      var supabaseUrl = window.__SUPABASE_URL__;
-      var anon = window.__SUPABASE_ANON__;
+      var supabaseUrl = 'https://eeyhtulpixvftvhppinz.supabase.co';
+      var anon = 'sb_publishable_l78zClzs1ldqOElbaLVT0w__KrKrlZv';
       var title = document.getElementById('title');
       var message = document.getElementById('message');
       var pwdForm = document.getElementById('pwdForm');
@@ -77,7 +71,7 @@ const HTML = `<!DOCTYPE html>
 
       function markInviteActivated(accessToken) {
         return fetch(supabaseUrl + '/auth/v1/user', {
-          headers: { 'Authorization': 'Bearer ' + accessToken, 'apikey': anon }
+          headers: { Authorization: 'Bearer ' + accessToken, apikey: anon },
         }).then(function (res) { return res.json(); }).then(function (user) {
           var meta = user.user_metadata || {};
           var inviteId = meta.admin_invite_id;
@@ -87,10 +81,10 @@ const HTML = `<!DOCTYPE html>
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + accessToken,
-              'apikey': anon
+              Authorization: 'Bearer ' + accessToken,
+              apikey: anon,
             },
-            body: JSON.stringify({ p_invite_id: inviteId, p_email: email })
+            body: JSON.stringify({ p_invite_id: inviteId, p_email: email }),
           });
         }).catch(function () { /* non bloquant */ });
       }
@@ -113,10 +107,10 @@ const HTML = `<!DOCTYPE html>
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + accessToken,
-              'apikey': anon
+              Authorization: 'Bearer ' + accessToken,
+              apikey: anon,
             },
-            body: JSON.stringify({ password: pwd })
+            body: JSON.stringify({ password: pwd }),
           }).then(function (res) {
             if (!res.ok) return res.json().then(function (j) { throw new Error(authError(j)); });
             return markInviteActivated(accessToken);
@@ -138,8 +132,8 @@ const HTML = `<!DOCTYPE html>
       function verifyTokenHash(tokenHash, type) {
         return fetch(supabaseUrl + '/auth/v1/verify', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': anon },
-          body: JSON.stringify({ type: type, token_hash: tokenHash })
+          headers: { 'Content-Type': 'application/json', apikey: anon },
+          body: JSON.stringify({ type: type, token_hash: tokenHash }),
         }).then(function (res) {
           return res.json().then(function (body) {
             if (!res.ok) throw new Error(authError(body));
@@ -151,8 +145,8 @@ const HTML = `<!DOCTYPE html>
       function exchangeCode(code) {
         return fetch(supabaseUrl + '/auth/v1/token?grant_type=pkce', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': anon },
-          body: JSON.stringify({ auth_code: code })
+          headers: { 'Content-Type': 'application/json', apikey: anon },
+          body: JSON.stringify({ auth_code: code }),
         }).then(function (res) {
           return res.json().then(function (body) {
             if (!res.ok) throw new Error(authError(body));
@@ -173,7 +167,7 @@ const HTML = `<!DOCTYPE html>
       var error = params.get('error_description') || params.get('error');
       if (error) {
         title.textContent = 'Lien invalide';
-        message.textContent = decodeURIComponent(String(error).replace(/\\+/g, ' '));
+        message.textContent = decodeURIComponent(String(error).replace(/\+/g, ' '));
         return;
       }
 
@@ -183,11 +177,16 @@ const HTML = `<!DOCTYPE html>
             var at = session.access_token;
             var rt = session.refresh_token;
             if (!at || !rt) throw new Error('Session invalide après validation.');
-            showPasswordForm(at, rt, kind, 'type=' + kind + '&access_token=' + encodeURIComponent(at) + '&refresh_token=' + encodeURIComponent(rt));
+            showPasswordForm(
+              at,
+              rt,
+              kind,
+              'type=' + kind + '&access_token=' + encodeURIComponent(at) + '&refresh_token=' + encodeURIComponent(rt),
+            );
           })
           .catch(function (err) {
             title.textContent = 'Lien invalide ou expiré';
-            message.textContent = err.message || 'Demandez un nouvel e-mail depuis l\\'administrateur THE LOOP.';
+            message.textContent = err.message || 'Demandez un nouvel e-mail depuis l\'administrateur THE LOOP.';
           });
         return;
       }
@@ -199,14 +198,14 @@ const HTML = `<!DOCTYPE html>
           })
           .catch(function (err) {
             title.textContent = 'Lien incomplet';
-            message.textContent = err.message || 'Ouvrez le lien depuis le même appareil ou demandez un nouvel e-mail.';
+            message.textContent = err.message || 'Demandez un nouvel e-mail d\'invitation.';
           });
         return;
       }
 
       if (!paramString) {
         title.textContent = 'Lien incomplet';
-        message.textContent = 'Ce lien ne fonctionne pas. Demandez un nouvel e-mail d\\'invitation.';
+        message.textContent = 'Demandez un nouvel e-mail d\'invitation à votre administrateur THE LOOP.';
         return;
       }
 
@@ -216,37 +215,10 @@ const HTML = `<!DOCTYPE html>
       }
 
       title.textContent = 'E-mail confirmé';
-      message.textContent = 'Ouvrez l\\'application THE LOOP pour continuer.';
+      message.textContent = 'Ouvrez l\'application THE LOOP pour continuer.';
       openApp.href = 'theloop://auth/callback#' + paramString;
       openApp.style.display = 'block';
     })();
   </script>
 </body>
-</html>`;
-
-Deno.serve((req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      },
-    });
-  }
-
-  const anon = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-  const url = Deno.env.get('SUPABASE_URL') ?? '';
-  const html = HTML
-    .replace('window.__SUPABASE_ANON__', JSON.stringify(anon))
-    .replace('window.__SUPABASE_URL__', JSON.stringify(url));
-
-  return new Response(html, {
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Disposition': 'inline; filename="auth-callback.html"',
-      'Cache-Control': 'no-store',
-      'Access-Control-Allow-Origin': '*',
-      'X-Content-Type-Options': 'nosniff',
-    },
-  });
-});
+</html>

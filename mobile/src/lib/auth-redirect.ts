@@ -3,10 +3,10 @@ import * as Linking from 'expo-linking';
 
 export const THELOOP_AUTH_CALLBACK = 'theloop://auth/callback';
 
+const DEFAULT_MEMBER_AUTH_CALLBACK_URL = 'https://admin.theloop-app.com/auth-callback.html';
+
 function getSupabaseHttpsAuthCallbackUrl(): string | null {
-  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
-  if (!supabaseUrl || supabaseUrl.includes('your-project')) return null;
-  return `${supabaseUrl}/functions/v1/auth-callback`;
+  return DEFAULT_MEMBER_AUTH_CALLBACK_URL;
 }
 
 /** Expo Go ou client store (environnement de test sans build natif). */
