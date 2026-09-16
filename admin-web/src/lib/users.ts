@@ -358,6 +358,23 @@ export async function createUserInvite(input: {
         "Invitation enregistrée, mais l'e-mail n'a pas pu être envoyé (Edge Function admin-send-invite).",
     };
   }
+
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (existingUser?.id) {
+    await supabase.from('user_notifications').insert({
+      user_id: existingUser.id,
+      title: 'Invitation THE LOOP',
+      message:
+        'Vous avez été invité(e) sur THE LOOP. Ouvrez le lien reçu par e-mail pour activer votre accès.',
+      audience: 'individual',
+      sent_at: new Date().toISOString(),
+    });
+  }
+
   return { ok: true, inviteId: data.id };
 }
 

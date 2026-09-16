@@ -212,6 +212,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [passwordRecoveryPending, setPasswordRecoveryPending] = useState(false);
   const passwordRecoveryPendingRef = useRef(false);
+  const syncAuthUserProfileRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
+  const fulfillPendingWelcomeRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
 
   const beginPasswordRecovery = useCallback(() => {
     passwordRecoveryPendingRef.current = true;
@@ -581,6 +583,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (__DEV__) console.log('[Auth] recovery/invite — saisie nouveau mot de passe');
             return;
           }
+          await syncAuthUserProfileRef.current(data.session.user);
           await fulfillPendingWelcomeRef.current(data.session.user);
           if (__DEV__) console.log('[Auth] connecté via lien e-mail');
           void import('@/lib/home-refresh').then((m) => m.emitHomeRefresh('auth-session'));
@@ -904,8 +907,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-  const fulfillPendingWelcomeRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
   const welcomeDoneIdsRef = useRef(new Set<string>());
+
+  const syncAuthUserProfile = useCallback(async (authUser: AuthUserLike): Promise<void> => {
+    if (!supabase) return;
+    const md = authUser.user_metadata ?? {};
+    const { error } = await supabase.rpc('ensure_user_profile', {
+      p_first_name: typeof md.first_name === 'string' ? md.first_name : 'Membre',
+      p_last_name: typeof md.last_name === 'string' ? md.last_name : 'THE LOOP',
+      p_phone: typeof md.phone_number === 'string' ? md.phone_number : null,
+      p_user_role: typeof md.user_role === 'string' ? md.user_role : 'member',
+      p_qr_token: typeof md.qr_code_token === 'string' ? md.qr_code_token : null,
+    });
+    if (error) console.warn('[Auth] ensure_user_profile:', error.message);
+  }, []);
+  syncAuthUserProfileRef.current = syncAuthUserProfile;
+
+  const loadUserAfterAuth = useCallback(
+    async (authUser: AuthUserLike, attempts = 4): Promise<Awaited<ReturnType<typeof loadUser>>> => {
+      for (let i = 0; i < attempts; i += 1) {
+        await syncAuthUserProfile(authUser);
+        const current = await loadUser(authUser.id, authUser);
+        if (current) return current;
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
+      return null;
+    },
+    [loadUser, syncAuthUserProfile],
+  );
 
   const fulfillPendingWelcome = useCallback(async (authUser: AuthUserLike) => {
     if (!supabase) return;
@@ -913,7 +942,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (welcomeDoneIdsRef.current.has(authUser.id)) return;
     welcomeDoneIdsRef.current.add(authUser.id);
 
-    const current = await loadUser(authUser.id, authUser);
+    const current = await loadUserAfterAuth(authUser);
     if (!current) {
       welcomeDoneIdsRef.current.delete(authUser.id);
       return;
@@ -946,7 +975,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.updateUser({
       data: { pending_welcome: null, referral_code: null },
     });
-  }, [loadUser]);
+  }, [loadUserAfterAuth]);
 
   fulfillPendingWelcomeRef.current = fulfillPendingWelcome;
 

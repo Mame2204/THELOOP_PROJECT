@@ -37,8 +37,7 @@ export async function sendExpoPushToTokens(
   let sent = 0;
   let failed = 0;
 
-  for (let i = 0; i < messages.length; i += 100) {
-    const chunk = messages.slice(i, i + 100);
+  async function postChunk(chunk: ExpoMessage[], attempt: number): Promise<void> {
     const res = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: {
@@ -50,8 +49,12 @@ export async function sendExpoPushToTokens(
     });
 
     if (!res.ok) {
+      if (attempt < 2 && res.status >= 500) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        return postChunk(chunk, attempt + 1);
+      }
       failed += chunk.length;
-      continue;
+      return;
     }
 
     const json = (await res.json()) as { data?: ExpoTicket[] };
@@ -59,6 +62,11 @@ export async function sendExpoPushToTokens(
       if (ticket.status === 'ok') sent += 1;
       else failed += 1;
     }
+  }
+
+  for (let i = 0; i < messages.length; i += 100) {
+    const chunk = messages.slice(i, i + 100);
+    await postChunk(chunk, 1);
   }
 
   return { sent, failed };

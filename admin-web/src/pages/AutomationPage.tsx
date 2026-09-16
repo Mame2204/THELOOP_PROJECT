@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { formatWhen } from '../lib/format';
+import { runAutomationJobNow } from '../lib/automation-runner';
 import { supabase } from '../lib/supabase';
 
 interface JobRow {
@@ -63,6 +64,19 @@ export function AutomationPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function runNow(id: string) {
+    setBusy(true);
+    setMsg(null);
+    const res = await runAutomationJobNow(id, countryCode);
+    setBusy(false);
+    if (!res.ok) {
+      setMsg(res.error ?? 'Exécution impossible.');
+      return;
+    }
+    setMsg(res.summary ?? `Exécuté — ${res.count ?? 0} action(s).`);
+    void load();
+  }
 
   async function setStatus(id: string, status: string) {
     setMsg(null);
@@ -205,6 +219,14 @@ export function AutomationPage() {
                   </td>
                   <td>
                     <div className="toolbar" style={{ margin: 0 }}>
+                      <button
+                        type="button"
+                        className="btn small"
+                        disabled={busy}
+                        onClick={() => void runNow(r.id)}
+                      >
+                        Exécuter
+                      </button>
                       {r.status !== 'active' ? (
                         <button
                           type="button"

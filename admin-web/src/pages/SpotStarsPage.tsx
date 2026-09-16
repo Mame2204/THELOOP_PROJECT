@@ -9,6 +9,13 @@ interface StarSettings {
   ratingWeight: number;
 }
 
+interface StarRow {
+  id: string;
+  name: string;
+  stars: number;
+  clicks: number;
+}
+
 const DEFAULTS: StarSettings = {
   id: null,
   clickWeight: 1,
@@ -16,16 +23,23 @@ const DEFAULTS: StarSettings = {
   ratingWeight: 10,
 };
 
+type Tab = 'spot' | 'tool' | 'walk';
+
+const TAB_LABELS: Record<Tab, string> = {
+  spot: 'Spots',
+  tool: 'Outils',
+  walk: 'Parcours',
+};
+
 export function SpotStarsPage() {
   const { countryCode, countryLabel } = useAdminCountry();
+  const [tab, setTab] = useState<Tab>('spot');
   const [settings, setSettings] = useState<StarSettings>(DEFAULTS);
-  const [top, setTop] = useState<
-    Array<{ id: string; name: string; stars: number; clicks: number }>
-  >([]);
+  const [top, setTop] = useState<StarRow[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
+  const loadSettings = useCallback(async () => {
     const { data: row } = await supabase
       .from('spot_star_settings')
       .select('id, click_weight, favorite_weight, rating_weight, country_code')
@@ -38,39 +52,80 @@ export function SpotStarsPage() {
         favoriteWeight: Number(row.favorite_weight ?? 5),
         ratingWeight: Number(row.rating_weight ?? 10),
       });
-    } else {
-      const { data: global } = await supabase
-        .from('spot_star_settings')
-        .select('id, click_weight, favorite_weight, rating_weight')
-        .is('country_code', null)
-        .maybeSingle();
-      if (global) {
-        setSettings({
-          id: String(global.id),
-          clickWeight: Number(global.click_weight ?? 1),
-          favoriteWeight: Number(global.favorite_weight ?? 5),
-          ratingWeight: Number(global.rating_weight ?? 10),
-        });
-      } else {
-        setSettings(DEFAULTS);
-      }
+      return;
     }
+    const { data: global } = await supabase
+      .from('spot_star_settings')
+      .select('id, click_weight, favorite_weight, rating_weight')
+      .is('country_code', null)
+      .maybeSingle();
+    if (global) {
+      setSettings({
+        id: String(global.id),
+        clickWeight: Number(global.click_weight ?? 1),
+        favoriteWeight: Number(global.favorite_weight ?? 5),
+        ratingWeight: Number(global.rating_weight ?? 10),
+      });
+    } else {
+      setSettings(DEFAULTS);
+    }
+  }, [countryCode]);
 
-    const { data: spots } = await supabase
-      .from('establishments')
-      .select('id, name, star_count, click_count, country_code')
+  const loadTop = useCallback(async () => {
+    if (tab === 'spot') {
+      const { data: spots } = await supabase
+        .from('establishments')
+        .select('id, name, star_count, click_count, country_code')
+        .eq('country_code', countryCode)
+        .order('star_count', { ascending: false })
+        .limit(30);
+      setTop(
+        (spots ?? []).map((s) => ({
+          id: String(s.id),
+          name: String(s.name ?? ''),
+          stars: Number(s.star_count ?? 0),
+          clicks: Number(s.click_count ?? 0),
+        })),
+      );
+      return;
+    }
+    if (tab === 'tool') {
+      const { data: tools } = await supabase
+        .from('tools')
+        .select('id, name, star_count, click_count, country_code')
+        .eq('country_code', countryCode)
+        .order('star_count', { ascending: false })
+        .limit(30);
+      setTop(
+        (tools ?? []).map((t) => ({
+          id: String(t.id),
+          name: String(t.name ?? ''),
+          stars: Number(t.star_count ?? 0),
+          clicks: Number(t.click_count ?? 0),
+        })),
+      );
+      return;
+    }
+    const { data: walks } = await supabase
+      .from('loop_walks')
+      .select('id, title, star_count, click_count, country_code')
       .eq('country_code', countryCode)
       .order('star_count', { ascending: false })
       .limit(30);
     setTop(
-      (spots ?? []).map((s) => ({
-        id: String(s.id),
-        name: String(s.name ?? ''),
-        stars: Number(s.star_count ?? 0),
-        clicks: Number(s.click_count ?? 0),
+      (walks ?? []).map((w) => ({
+        id: String(w.id),
+        name: String(w.title ?? ''),
+        stars: Number(w.star_count ?? 0),
+        clicks: Number(w.click_count ?? 0),
       })),
     );
-  }, [countryCode]);
+  }, [countryCode, tab]);
+
+  const load = useCallback(async () => {
+    await loadSettings();
+    await loadTop();
+  }, [loadSettings, loadTop]);
 
   useEffect(() => {
     void load();
@@ -97,17 +152,18 @@ export function SpotStarsPage() {
     if (!error) void load();
   }
 
-  async function setStars(spotId: string, stars: number) {
+  async function setStars(id: string, stars: number) {
+    const table = tab === 'spot' ? 'establishments' : tab === 'tool' ? 'tools' : 'loop_walks';
     const { error } = await supabase
-      .from('establishments')
+      .from(table)
       .update({
         star_count: Math.max(0, Math.min(5, stars)),
         stars_source: 'admin',
         updated_at: new Date().toISOString(),
       })
-      .eq('id', spotId);
+      .eq('id', id);
     setMsg(error ? error.message : 'Étoiles mises à jour.');
-    if (!error) void load();
+    if (!error) void loadTop();
   }
 
   return (
@@ -115,15 +171,28 @@ export function SpotStarsPage() {
       <header className="page-header">
         <div>
           <p className="brand-kicker">Paramètres</p>
-          <h2>Étoiles spots</h2>
-          <p className="meta">Poids d’engagement et top spots — {countryLabel}.</p>
+          <h2>Étoiles contenu</h2>
+          <p className="meta">Spots, outils et parcours — {countryLabel}.</p>
         </div>
       </header>
       {msg ? <p className="muted">{msg}</p> : null}
 
+      <div className="chip-row" style={{ marginBottom: 16 }}>
+        {(Object.keys(TAB_LABELS) as Tab[]).map((key) => (
+          <button
+            key={key}
+            type="button"
+            className={`target-chip${tab === key ? ' active' : ''}`}
+            onClick={() => setTab(key)}
+          >
+            {TAB_LABELS[key]}
+          </button>
+        ))}
+      </div>
+
       <div className="split-pane">
         <div className="card">
-          <h3>Poids</h3>
+          <h3>Poids (spots auto)</h3>
           <div className="field">
             <label>Clics</label>
             <input
@@ -163,24 +232,24 @@ export function SpotStarsPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Spot</th>
+                <th>{TAB_LABELS[tab]}</th>
                 <th>Étoiles</th>
                 <th>Clics</th>
                 <th>Forcer</th>
               </tr>
             </thead>
             <tbody>
-              {top.map((s) => (
-                <tr key={s.id}>
+              {top.map((row) => (
+                <tr key={row.id}>
                   <td>
-                    <strong>{s.name}</strong>
+                    <strong>{row.name}</strong>
                   </td>
-                  <td>{s.stars}</td>
-                  <td>{s.clicks}</td>
+                  <td>{row.stars}</td>
+                  <td>{row.clicks}</td>
                   <td>
                     <select
-                      value={s.stars}
-                      onChange={(e) => void setStars(s.id, Number(e.target.value))}
+                      value={row.stars}
+                      onChange={(e) => void setStars(row.id, Number(e.target.value))}
                     >
                       {[0, 1, 2, 3, 4, 5].map((n) => (
                         <option key={n} value={n}>
@@ -195,7 +264,7 @@ export function SpotStarsPage() {
           </table>
           {top.length === 0 ? (
             <p className="muted" style={{ padding: 16 }}>
-              Aucun spot.
+              Aucun contenu.
             </p>
           ) : null}
         </div>
