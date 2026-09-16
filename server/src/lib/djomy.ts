@@ -71,26 +71,113 @@ function apiKeyHeader(): string {
   return `${config.djomyClientId}:${signature}`;
 }
 
-/** Headers communs Djomy (auth, gateway, verify). X-PARTNER-API requis en production. */
-function djomyRequestHeaders(extra?: Record<string, string>): Record<string, string> {
-  const headers: Record<string, string> = {
+/** POST /v1/auth — spec Djomy : X-API-KEY uniquement (pas X-PARTNER-API). */
+function djomyAuthHeaders(extra?: Record<string, string>): Record<string, string> {
+  return {
     'X-API-KEY': apiKeyHeader(),
     ...extra,
   };
+}
+
+/** Paiements / statut — X-API-KEY + Bearer ; X-PARTNER-API en production. */
+function djomySignedHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers = djomyAuthHeaders(extra);
   if (config.djomyPartnerApiKey) {
     headers['X-PARTNER-API'] = config.djomyPartnerApiKey;
   }
   return headers;
 }
 
+async function readDjomyErrorBody(response: Response): Promise<string> {
+  try {
+    const text = await response.text();
+    if (!text.trim()) return '';
+    try {
+      const parsed = JSON.parse(text) as DjomyResponse<unknown>;
+      return parsed.error?.message ?? parsed.message ?? text;
+    } catch {
+      return text;
+    }
+  } catch {
+    return '';
+  }
+}
+
+function isCloudflareOrHtmlBlock(detail?: string): boolean {
+  const t = detail?.toLowerCase() ?? '';
+  return t.includes('<html') || t.includes('cloudflare') || t.includes('403 forbidden');
+}
+
+export function formatDjomyAuthError(status: number, detail?: string): string {
+  const trimmed = detail?.trim();
+  if (status === 403 && isCloudflareOrHtmlBlock(trimmed)) {
+    if (config.isDjomyProduction) {
+      return [
+        'Djomy production refuse la connexion (403).',
+        'Cause la plus fréquente : clés SANDBOX sur Render alors que DJOMY_BASE_URL = api.djomy.africa.',
+        'Pour tester : DJOMY_BASE_URL=https://sandbox-api.djomy.africa, PAYMENT_SANDBOX_AMOUNTS=1, PARTNER_API_KEY vide, clés sandbox — puis redeploy Render.',
+        'Pour la prod réelle : clés production dashboard Djomy + DJOMY_PARTNER_API_KEY.',
+      ].join(' ');
+    }
+    return 'Djomy sandbox inaccessible (403). Vérifiez DJOMY_CLIENT_ID et DJOMY_CLIENT_SECRET sur le serveur.';
+  }
+  if (status === 403) {
+    return [
+      'Authentification Djomy refusée (HTTP 403).',
+      'Vérifiez DJOMY_CLIENT_ID, DJOMY_CLIENT_SECRET et DJOMY_BASE_URL (sandbox vs production).',
+      config.isDjomyProduction && !config.djomyPartnerApiKey
+        ? 'En production, DJOMY_PARTNER_API_KEY est obligatoire.'
+        : null,
+      trimmed ? `Détail Djomy : ${trimmed.slice(0, 180)}` : null,
+    ]
+      .filter(Boolean)
+      .join(' ');
+  }
+  if (status === 401) {
+    return `Identifiants Djomy invalides (HTTP 401)${trimmed ? ` — ${trimmed}` : ''}.`;
+  }
+  return `Djomy auth HTTP ${status}${trimmed ? ` — ${trimmed}` : ''}`;
+}
+
+export type DjomyAuthProbe = {
+  ok: boolean;
+  httpStatus?: number;
+  hint?: string;
+};
+
+/** Test léger auth Djomy — utilisé par /health (diagnostic Render). */
+export async function probeDjomyAuth(): Promise<DjomyAuthProbe> {
+  try {
+    const response = await fetch(`${config.djomyBaseUrl}/v1/auth`, {
+      method: 'POST',
+      headers: djomyAuthHeaders({ 'Content-Type': 'application/json' }),
+    });
+    if (response.ok) {
+      return { ok: true, httpStatus: response.status };
+    }
+    const detail = await readDjomyErrorBody(response);
+    return {
+      ok: false,
+      httpStatus: response.status,
+      hint: formatDjomyAuthError(response.status, detail),
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      hint: err instanceof Error ? err.message : 'Djomy injoignable',
+    };
+  }
+}
+
 async function getAccessToken(): Promise<string> {
   const response = await fetch(`${config.djomyBaseUrl}/v1/auth`, {
     method: 'POST',
-    headers: djomyRequestHeaders({ 'Content-Type': 'application/json' }),
+    headers: djomyAuthHeaders({ 'Content-Type': 'application/json' }),
   });
 
   if (!response.ok) {
-    throw new Error(`Djomy auth HTTP ${response.status}`);
+    const detail = await readDjomyErrorBody(response);
+    throw new Error(formatDjomyAuthError(response.status, detail));
   }
 
   const result = (await response.json()) as DjomyResponse<{ accessToken: string }>;
@@ -106,7 +193,7 @@ export async function createPaymentGateway(
   const accessToken = await getAccessToken();
   const response = await fetch(`${config.djomyBaseUrl}/v1/payments/gateway`, {
     method: 'POST',
-    headers: djomyRequestHeaders({
+    headers: djomySignedHeaders({
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     }),
@@ -136,7 +223,7 @@ export async function verifyPayment(transactionId: string): Promise<VerifiedPaym
   const accessToken = await getAccessToken();
   const response = await fetch(`${config.djomyBaseUrl}/v1/payments/${transactionId}/status`, {
     method: 'GET',
-    headers: djomyRequestHeaders({ Authorization: `Bearer ${accessToken}` }),
+    headers: djomySignedHeaders({ Authorization: `Bearer ${accessToken}` }),
   });
 
   const result = (await response.json()) as DjomyResponse<VerifiedPaymentData>;

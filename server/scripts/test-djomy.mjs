@@ -10,11 +10,15 @@ function hmac(message, secret) {
   return createHmac('sha256', secret).update(message, 'utf8').digest('hex');
 }
 
-function djomyHeaders(extra = {}) {
-  const headers = {
+function authHeaders(extra = {}) {
+  return {
     'X-API-KEY': `${clientId}:${hmac(clientId, clientSecret)}`,
     ...extra,
   };
+}
+
+function signedHeaders(extra = {}) {
+  const headers = authHeaders(extra);
   if (partnerApiKey) headers['X-PARTNER-API'] = partnerApiKey;
   return headers;
 }
@@ -22,7 +26,7 @@ function djomyHeaders(extra = {}) {
 async function auth() {
   const res = await fetch(`${base}/v1/auth`, {
     method: 'POST',
-    headers: djomyHeaders({ 'Content-Type': 'application/json' }),
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
   });
   const body = await res.json();
   console.log('AUTH status', res.status, JSON.stringify(body, null, 2));
@@ -43,7 +47,7 @@ async function gateway(token, payerNumber) {
   };
   const res = await fetch(`${base}/v1/payments/gateway`, {
     method: 'POST',
-    headers: djomyHeaders({
+    headers: signedHeaders({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     }),

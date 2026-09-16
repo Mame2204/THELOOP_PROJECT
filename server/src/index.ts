@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { config } from './config.js';
+import { probeDjomyAuth, type DjomyAuthProbe } from './lib/djomy.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { adminRouter } from './routes/admin.js';
 import { partnerValidationRouter } from './routes/partner-validation.js';
@@ -50,15 +51,32 @@ app.use('/api/webhook/djomy', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '1mb' }));
 
-app.get('/health', (_req, res) => {
+let djomyProbeCache: { at: number; value: DjomyAuthProbe } | null = null;
+const DJOMY_PROBE_TTL_MS = 60_000;
+
+async function getDjomyProbeCached(): Promise<DjomyAuthProbe> {
+  const now = Date.now();
+  if (djomyProbeCache && now - djomyProbeCache.at < DJOMY_PROBE_TTL_MS) {
+    return djomyProbeCache.value;
+  }
+  const value = await probeDjomyAuth();
+  djomyProbeCache = { at: now, value };
+  return value;
+}
+
+app.get('/health', async (_req, res) => {
+  const djomyAuth = await getDjomyProbeCached();
   res.json({
-    ok: true,
+    ok: djomyAuth.ok,
     service: 'the-loop-payment-server',
     env: config.nodeEnv,
     sandboxMode: config.paymentSandboxAmounts,
     djomyHost: new URL(config.djomyBaseUrl).host,
     djomyProduction: config.isDjomyProduction,
     partnerApiConfigured: Boolean(config.djomyPartnerApiKey),
+    djomyAuthOk: djomyAuth.ok,
+    djomyAuthStatus: djomyAuth.httpStatus ?? null,
+    djomyAuthHint: djomyAuth.ok ? null : djomyAuth.hint ?? null,
     cronConfigured: Boolean(config.cronSecret),
     internalPushCron: config.internalPushCronEnabled,
     pushCronIntervalMinutes: config.pushCronIntervalMinutes,
