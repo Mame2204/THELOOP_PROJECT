@@ -55,6 +55,23 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
 
   const kind = resolveLinkKind(params);
 
+  const tokenHash = params.token_hash;
+  if (tokenHash) {
+    const otpType = kind === 'recovery' ? 'recovery' : 'invite';
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: otpType,
+    });
+    if (error) {
+      console.warn('[Auth] verifyOtp token_hash:', error.message);
+      return { ok: false };
+    }
+    if (__DEV__ && data.session) {
+      console.log('[Auth] verifyOtp OK —', data.session.user.email ?? data.session.user.id, kind);
+    }
+    return data.session ? { ok: true, kind } : { ok: false };
+  }
+
   const code = params.code;
   if (code) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);

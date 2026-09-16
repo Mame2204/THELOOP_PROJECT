@@ -1,3 +1,4 @@
+/** Pont HTTPS → deep link theloop:// (mot de passe dans l'app mobile). */
 const DEFAULT_AUTH_CALLBACK_URL = 'https://admin.theloop-app.com/auth-callback.html';
 
 /** URL de redirection Supabase pour e-mails membres (invite, reset). */

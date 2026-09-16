@@ -50,9 +50,9 @@ const body = {
 <html lang="fr"><body style="font-family:system-ui,sans-serif;color:#0a0a0a;">
 <h2 style="color:#c9a84c;">THE LOOP</h2>
 <p>Vous avez été invité(e) à rejoindre THE LOOP.</p>
-<p>Cliquez ci-dessous pour choisir votre mot de passe et activer votre compte :</p>
-<p><a href="${inviteLink}" style="display:inline-block;padding:14px 22px;background:#0a0a0a;color:#fff;text-decoration:none;border-radius:12px;font-weight:700;">Accepter l'invitation</a></p>
-<p style="color:#636e72;font-size:13px;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br/>${inviteLink.replace('{{ .TokenHash }}', '[token]')}</p>
+<p>Sur votre téléphone, touchez le bouton ci-dessous — l'application s'ouvrira pour choisir votre mot de passe :</p>
+<p><a href="${inviteLink}" style="display:inline-block;padding:14px 22px;background:#0a0a0a;color:#fff;text-decoration:none;border-radius:12px;font-weight:700;">Ouvrir THE LOOP</a></p>
+<p style="color:#636e72;font-size:13px;">Le mot de passe se définit dans l'app, pas sur le web.</p>
 </body></html>`,
   mailer_subjects_recovery: 'Réinitialisation mot de passe — THE LOOP',
   mailer_templates_recovery_content: `<!DOCTYPE html>

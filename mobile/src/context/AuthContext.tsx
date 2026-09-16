@@ -57,7 +57,12 @@ import {
 } from '@/lib/email-auth';
 import { completeAuthSessionFromUrl, describeAuthUrlParams } from '@/lib/auth-deep-link';
 import { emitAuthFlowEvent } from '@/lib/auth-flow-events';
-import { getAuthEmailRedirectUrl, assertAuthRedirectReadyForSignUp, logAuthRedirectConfig } from '@/lib/auth-redirect';
+import {
+  getAuthEmailRedirectUrl,
+  getAuthMemberFacingRedirectUrl,
+  assertAuthRedirectReadyForSignUp,
+  logAuthRedirectConfig,
+} from '@/lib/auth-redirect';
 import { AuthEmailRateLimitError, parseAuthEmailRateLimit } from '@/lib/auth-email-errors';
 import {
   checkSignupEmailAvailability,
@@ -1596,7 +1601,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const { error } = await supabase.auth.resetPasswordForEmail(check.email, {
-      redirectTo: getAuthEmailRedirectUrl(),
+      redirectTo: getAuthMemberFacingRedirectUrl(),
     });
     if (error) {
       const rateLimit = parseAuthEmailRateLimit(error);
@@ -1717,6 +1722,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Invalide tout applySession en vol (évite de réinjecter l'ancien user après logout).
     applyGenerationRef.current += 1;
     endPasswordRecovery();
+    const { invalidateAppSectionsCache } = await import('@/lib/app-sections-store');
+    invalidateAppSectionsCache();
+    const { invalidateEnabledContentCountriesCache } = await import('@/lib/content-countries-store');
+    invalidateEnabledContentCountriesCache();
     await clearPartnerSpotSession();
     try {
       const { unregisterPushTokenForDevice } = await import('@/lib/push-notifications');
