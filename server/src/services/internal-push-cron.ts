@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '../lib/supabase-admin.js';
 import { config } from '../config.js';
 import { runScheduledPushCampaigns } from './cron-runner.js';
+import { runStuckPaymentReconciliation } from './payment-reconcile-cron.js';
 
 let started = false;
 
@@ -13,9 +14,16 @@ export function startInternalPushCron(): void {
 
   const tick = async (): Promise<void> => {
     try {
-      const result = await runScheduledPushCampaigns(getSupabaseAdmin());
-      if (result.pushCampaignsSent > 0 || result.errors.length > 0) {
-        console.log('[push-cron]', JSON.stringify(result));
+      const supabase = getSupabaseAdmin();
+      const push = await runScheduledPushCampaigns(supabase);
+      const payments = await runStuckPaymentReconciliation(supabase);
+      if (
+        push.pushCampaignsSent > 0 ||
+        push.errors.length > 0 ||
+        payments.reconciled > 0 ||
+        payments.errors.length > 0
+      ) {
+        console.log('[cron]', JSON.stringify({ push, payments }));
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

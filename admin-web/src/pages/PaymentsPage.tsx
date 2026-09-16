@@ -10,6 +10,8 @@ import { useAdminCountry } from '../context/AdminCountryContext';
 
 const PAGE = 20;
 
+type PayFilter = 'all' | 'incidents';
+
 export function PaymentsPage() {
   const { countryCode, countryLabel } = useAdminCountry();
   const [payments, setPayments] = useState<PaymentIntent[]>([]);
@@ -17,22 +19,24 @@ export function PaymentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [filter, setFilter] = useState<PayFilter>('all');
 
   const load = useCallback(async () => {
     const res = await fetchPaymentIntents({
       limit: PAGE,
       offset: page * PAGE,
       countryCode,
+      fulfillment: filter === 'incidents' ? 'failed' : undefined,
     });
     setError(res.error ?? null);
     setPayments(res.intents);
     setSummary(res.summary ?? null);
     setTotal(res.total ?? res.intents.length);
-  }, [page, countryCode]);
+  }, [page, countryCode, filter]);
 
   useEffect(() => {
     setPage(0);
-  }, [countryCode]);
+  }, [countryCode, filter]);
 
   useEffect(() => {
     void load();
@@ -75,8 +79,31 @@ export function PaymentsPage() {
             <strong>{summary.paidVolumeGnf.toLocaleString('fr-FR')}</strong>
             <span>GNF</span>
           </div>
+          {summary.fulfillmentFailed != null && summary.fulfillmentFailed > 0 ? (
+            <div className="kpi">
+              <strong>{summary.fulfillmentFailed}</strong>
+              <span>Incidents PASS</span>
+            </div>
+          ) : null}
         </div>
       ) : null}
+
+      <div className="tabs" style={{ marginBottom: 12 }}>
+        <button
+          type="button"
+          className={`tab ${filter === 'all' ? 'active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          Tous
+        </button>
+        <button
+          type="button"
+          className={`tab ${filter === 'incidents' ? 'active' : ''}`}
+          onClick={() => setFilter('incidents')}
+        >
+          Incidents fulfillment
+        </button>
+      </div>
 
       {error ? <p className="error">{error}</p> : null}
 

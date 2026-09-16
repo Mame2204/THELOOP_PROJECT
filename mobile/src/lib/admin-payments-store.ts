@@ -36,6 +36,7 @@ export interface AdminPaymentSummary {
   paid: number;
   failed: number;
   pending: number;
+  fulfillmentFailed?: number;
   paidVolumeGnf: number;
 }
 
@@ -53,6 +54,7 @@ async function authHeaders(): Promise<HeadersInit> {
 export async function listAdminPaymentIntents(options?: {
   status?: string;
   fulfillment?: string;
+  countryCode?: string;
   limit?: number;
   offset?: number;
 }): Promise<{
@@ -71,6 +73,7 @@ export async function listAdminPaymentIntents(options?: {
   const params = new URLSearchParams();
   if (options?.status) params.set('status', options.status);
   if (options?.fulfillment) params.set('fulfillment', options.fulfillment);
+  if (options?.countryCode) params.set('country', options.countryCode);
   if (options?.limit) params.set('limit', String(options.limit));
   if (options?.offset != null) params.set('offset', String(options.offset));
   const qs = params.toString();

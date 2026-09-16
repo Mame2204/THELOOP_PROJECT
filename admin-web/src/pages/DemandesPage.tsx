@@ -21,6 +21,12 @@ import {
   type StagingQueueItem,
 } from '../lib/moderation';
 import {
+  approveWithdrawalRequest,
+  listWithdrawalRequests,
+  rejectWithdrawalRequest,
+  type WithdrawalQueueItem,
+} from '../lib/partner-withdrawal';
+import {
   SUGGESTION_STATUS_LABELS,
   SUGGESTION_TYPE_LABELS,
   listCommunitySuggestions,
@@ -86,6 +92,8 @@ export function DemandesPage() {
   const [selected, setSelected] = useState<StagingQueueItem | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [modError, setModError] = useState<string | null>(null);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalQueueItem[]>([]);
+  const [withdrawalError, setWithdrawalError] = useState<string | null>(null);
 
   const [ideas, setIdeas] = useState<CommunitySuggestion[]>([]);
   const [ideaStatus, setIdeaStatus] = useState<SuggestionStatus | 'all'>('pending');
@@ -101,9 +109,15 @@ export function DemandesPage() {
 
   const loadModeration = useCallback(async () => {
     setModError(null);
-    const res = await listPendingStaging(countryCode);
-    if (res.error) setModError(res.error);
-    setQueue(res.items);
+    setWithdrawalError(null);
+    const [stagingRes, withdrawalRes] = await Promise.all([
+      listPendingStaging(countryCode),
+      listWithdrawalRequests(countryCode),
+    ]);
+    if (stagingRes.error) setModError(stagingRes.error);
+    if (withdrawalRes.error) setWithdrawalError(withdrawalRes.error);
+    setQueue(stagingRes.items);
+    setWithdrawals(withdrawalRes.items);
   }, [countryCode]);
 
   const loadIdeas = useCallback(async () => {
@@ -198,6 +212,34 @@ export function DemandesPage() {
     }
     setMsg('Contenu publié.');
     setSelected(null);
+    void loadModeration();
+  }
+
+  async function handleApproveWithdrawal(item: WithdrawalQueueItem) {
+    if (!window.confirm(`Confirmer le retrait de « ${item.title} » ? Le contenu sera supprimé du catalogue.`)) {
+      return;
+    }
+    setBusy(true);
+    const res = await approveWithdrawalRequest(item);
+    setBusy(false);
+    if (!res.ok) {
+      setMsg(res.error ?? 'Retrait impossible');
+      return;
+    }
+    setMsg('Contenu retiré du catalogue.');
+    void loadModeration();
+  }
+
+  async function handleRejectWithdrawal(item: WithdrawalQueueItem) {
+    if (!window.confirm(`Refuser la demande de retrait pour « ${item.title} » ?`)) return;
+    setBusy(true);
+    const res = await rejectWithdrawalRequest(item);
+    setBusy(false);
+    if (!res.ok) {
+      setMsg(res.error ?? 'Refus impossible');
+      return;
+    }
+    setMsg('Demande de retrait refusée.');
     void loadModeration();
   }
 
@@ -368,6 +410,57 @@ export function DemandesPage() {
       {tab === 'moderation' && canModeration ? (
         <>
           {modError ? <p className="error-text">{modError}</p> : null}
+          {withdrawalError ? <p className="error-text">{withdrawalError}</p> : null}
+
+          {withdrawals.length > 0 ? (
+            <div className="card-stack" style={{ marginBottom: 16 }}>
+              <h3 style={{ margin: '0 0 8px' }}>Demandes de retrait ({withdrawals.length})</h3>
+              {withdrawals.map((item) => (
+                <article
+                  key={`w-${item.kind}-${item.localId}`}
+                  className="card"
+                  style={{ borderColor: '#fdba74', background: '#fff7ed' }}
+                >
+                  <div className="row-between">
+                    <div>
+                      <span className="badge warn">
+                        {item.kind === 'event'
+                          ? 'Événement'
+                          : item.kind === 'tool'
+                            ? 'Outil'
+                            : 'Spot'}{' '}
+                        · retrait
+                      </span>
+                      <strong style={{ display: 'block', marginTop: 6 }}>{item.title}</strong>
+                      <div className="meta">
+                        {item.partnerName} · {item.subtitle} · {formatWhen(item.updatedAt)}
+                      </div>
+                    </div>
+                    <div className="edit-actions">
+                      <button
+                        type="button"
+                        className="btn small"
+                        disabled={busy || !item.catalogId}
+                        title={item.catalogId ? undefined : 'Aucune fiche publiée liée'}
+                        onClick={() => void handleApproveWithdrawal(item)}
+                      >
+                        Approuver retrait
+                      </button>
+                      <button
+                        type="button"
+                        className="btn small ghost"
+                        disabled={busy}
+                        onClick={() => void handleRejectWithdrawal(item)}
+                      >
+                        Refuser
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+
           <div className="tabs" style={{ marginBottom: 12 }}>
             <button
               type="button"

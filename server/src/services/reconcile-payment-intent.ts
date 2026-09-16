@@ -1,7 +1,7 @@
 import { verifyPayment } from '../lib/djomy.js';
 import { getSupabaseAdmin, type PaymentIntentRow } from '../lib/supabase-admin.js';
 import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
-import { fulfillPaymentIntent } from './fulfill-pass-payment.js';
+import { fulfillPaymentIntent, markFulfillmentFailed } from './fulfill-pass-payment.js';
 
 function isPaidStatus(status: string | undefined): boolean {
   const normalized = String(status ?? '').toUpperCase();
@@ -99,7 +99,15 @@ export async function reconcilePaymentIntent(intent: PaymentIntentRow): Promise<
 
   if (isPaidStatus(djomyStatus)) {
     const paidAmount = Number(verified.paidAmount ?? verified.receivedAmount ?? intent.amount_gnf);
-    await fulfillPaymentIntent(intent, transactionId, paidAmount);
+    try {
+      await fulfillPaymentIntent(intent, transactionId, paidAmount);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (intent.fulfillment_status === 'pending') {
+        await markFulfillmentFailed(intent.id, message);
+      }
+      throw err;
+    }
     const refreshed = await loadPaymentIntentForUser(intent.id, intent.user_id);
     return refreshed ?? intent;
   }

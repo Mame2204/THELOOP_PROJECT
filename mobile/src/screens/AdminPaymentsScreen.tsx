@@ -6,6 +6,7 @@ import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin
 import { AdminTabMenu } from '@/components/admin/AdminTabMenu';
 import { useAdminModuleAccess } from '@/hooks/useAdminModuleAccess';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
+import { useAdminCountry } from '@/context/AdminCountryContext';
 import {
   listAdminPaymentIntents,
   reconcileAdminPaymentIntent,
@@ -19,7 +20,7 @@ import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminPayments'>;
 
-type StatusFilter = 'all' | 'paid' | 'pending' | 'failed';
+type StatusFilter = 'all' | 'paid' | 'pending' | 'failed' | 'incidents';
 
 const PERIOD_LABELS: Record<string, string> = {
   monthly: 'Mensuel',
@@ -62,6 +63,7 @@ function statusTone(status: string): { bg: string; color: string; label: string 
 
 function matchesFilter(intent: AdminPaymentIntent, filter: StatusFilter): boolean {
   if (filter === 'all') return true;
+  if (filter === 'incidents') return intent.fulfillmentStatus === 'failed';
   if (filter === 'paid') return intent.status === 'paid' || intent.fulfillmentStatus === 'fulfilled';
   if (filter === 'failed') return intent.status === 'failed' || intent.status === 'cancelled';
   return intent.status !== 'paid' && intent.fulfillmentStatus !== 'fulfilled' && intent.status !== 'failed' && intent.status !== 'cancelled';
@@ -71,6 +73,7 @@ const PAGE_SIZE = 30;
 
 export function AdminPaymentsScreen({ navigation }: Props) {
   const { allowed, isLoading, permissionLabel } = useAdminModuleAccess('pass_payments');
+  const { countryCode } = useAdminCountry();
   const { shell } = useMemberTheme();
   const [intents, setIntents] = useState<AdminPaymentIntent[]>([]);
   const [summary, setSummary] = useState<AdminPaymentSummary | null>(null);
@@ -86,7 +89,9 @@ export function AdminPaymentsScreen({ navigation }: Props) {
     const res = await listAdminPaymentIntents({
       limit: filter === 'all' || filter === 'paid' ? PAGE_SIZE : 80,
       offset: filter === 'all' || filter === 'paid' ? page * PAGE_SIZE : 0,
+      countryCode,
       ...(filter === 'paid' ? { status: 'paid' } : {}),
+      ...(filter === 'incidents' ? { fulfillment: 'failed' } : {}),
     });
     setLoadError(res.error ?? null);
     setSummary(res.summary ?? null);
@@ -96,7 +101,7 @@ export function AdminPaymentsScreen({ navigation }: Props) {
         ? res.intents
         : res.intents.filter((i) => matchesFilter(i, filter)),
     );
-  }, [filter, page]);
+  }, [filter, page, countryCode]);
 
   useEffect(() => {
     void load();
@@ -104,7 +109,7 @@ export function AdminPaymentsScreen({ navigation }: Props) {
 
   useEffect(() => {
     setPage(0);
-  }, [filter]);
+  }, [filter, countryCode]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -172,6 +177,12 @@ export function AdminPaymentsScreen({ navigation }: Props) {
             <Text style={[styles.kpiValue, { color: '#dc2626' }]}>{summary.failed}</Text>
             <Text style={[styles.kpiLabel, { color: shell.pageKicker }]}>Échoués</Text>
           </View>
+          {summary.fulfillmentFailed != null && summary.fulfillmentFailed > 0 ? (
+            <View style={styles.kpiItem}>
+              <Text style={[styles.kpiValue, { color: '#c2410c' }]}>{summary.fulfillmentFailed}</Text>
+              <Text style={[styles.kpiLabel, { color: shell.pageKicker }]}>Incidents PASS</Text>
+            </View>
+          ) : null}
           <View style={styles.kpiItem}>
             <Text style={[styles.kpiValue, { color: shell.pageTitle }]}>
               {summary.paidVolumeGnf.toLocaleString('fr-FR')}
@@ -191,6 +202,7 @@ export function AdminPaymentsScreen({ navigation }: Props) {
           { id: 'pending', label: 'En cours' },
           { id: 'paid', label: 'Payés' },
           { id: 'failed', label: 'Échoués' },
+          { id: 'incidents', label: 'Incidents' },
         ]}
         active={filter}
         onChange={setFilter}

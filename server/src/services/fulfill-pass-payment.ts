@@ -97,6 +97,23 @@ export async function buildFulfillmentPlan(
   };
 }
 
+export async function markFulfillmentFailed(intentId: string, reason: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const now = new Date().toISOString();
+  console.error('[fulfillment] Échec intent', intentId, reason);
+  await supabase
+    .from('payment_intents')
+    .update({
+      fulfillment_status: 'failed',
+      status: 'paid',
+      updated_at: now,
+      last_webhook_event: 'fulfillment_failed',
+      last_webhook_at: now,
+    })
+    .eq('id', intentId)
+    .in('fulfillment_status', ['pending', 'failed']);
+}
+
 export async function fulfillPaymentIntent(
   intent: PaymentIntentRow,
   transactionId: string,
@@ -138,6 +155,7 @@ export async function fulfillPaymentIntent(
   });
 
   if (rpcError) {
+    await markFulfillmentFailed(intent.id, `Fulfillment RPC : ${rpcError.message}`);
     throw new Error(`Fulfillment RPC : ${rpcError.message}`);
   }
 

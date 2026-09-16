@@ -148,7 +148,7 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
       countryUserIds = (countryUsers ?? []).map((u) => String(u.id));
       if (countryUserIds.length === 0) {
         res.json({
-          summary: { paid: 0, failed: 0, pending: 0, paidVolumeGnf: 0 },
+          summary: { paid: 0, failed: 0, pending: 0, fulfillmentFailed: 0, paidVolumeGnf: 0 },
           total: 0,
           limit,
           offset,
@@ -170,6 +170,10 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
       .from('payment_intents')
       .select('id', { count: 'exact', head: true })
       .in('status', ['created', 'redirected']);
+    let fulfillmentFailedQ = supabase
+      .from('payment_intents')
+      .select('id', { count: 'exact', head: true })
+      .eq('fulfillment_status', 'failed');
     let volumeQ = supabase
       .from('payment_intents')
       .select('djomy_paid_amount, amount_gnf')
@@ -184,16 +188,13 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
       paidQ = paidQ.in('user_id', countryUserIds);
       failedQ = failedQ.in('user_id', countryUserIds);
       pendingQ = pendingQ.in('user_id', countryUserIds);
+      fulfillmentFailedQ = fulfillmentFailedQ.in('user_id', countryUserIds);
       volumeQ = volumeQ.in('user_id', countryUserIds);
       listQ = listQ.in('user_id', countryUserIds);
     }
 
-    const [paidCountRes, failedCountRes, pendingCountRes, volumeRes] = await Promise.all([
-      paidQ,
-      failedQ,
-      pendingQ,
-      volumeQ,
-    ]);
+    const [paidCountRes, failedCountRes, pendingCountRes, fulfillmentFailedRes, volumeRes] =
+      await Promise.all([paidQ, failedQ, pendingQ, fulfillmentFailedQ, volumeQ]);
 
     const paidVolumeGnf = (volumeRes.data ?? []).reduce((sum, row) => {
       const n = Number(row.djomy_paid_amount ?? row.amount_gnf ?? 0);
@@ -237,6 +238,7 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
         paid: paidCountRes.count ?? 0,
         failed: failedCountRes.count ?? 0,
         pending: pendingCountRes.count ?? 0,
+        fulfillmentFailed: fulfillmentFailedRes.count ?? 0,
         paidVolumeGnf,
       },
       total: count ?? intents.length,
