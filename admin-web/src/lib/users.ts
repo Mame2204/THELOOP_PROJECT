@@ -89,6 +89,22 @@ export function rolesEditableBy(adminRole: string): UserRoleDb[] {
   return ['member', 'prime', 'partner'];
 }
 
+export function accountStatusLabel(status: string | null | undefined): string {
+  switch (status) {
+    case 'invited':
+      return 'Invitation en attente';
+    case 'suspended':
+      return 'Suspendu';
+    case 'archived':
+      return 'Archivé';
+    case 'deleted':
+      return 'Supprimé';
+    case 'active':
+    default:
+      return 'Actif';
+  }
+}
+
 export function roleLabel(role: string): string {
   switch (role) {
     case 'member':
@@ -114,6 +130,8 @@ export async function listAdminUsers(options: {
   filterCountry?: boolean;
   role?: string | null;
   activeOnly?: boolean | null;
+  /** invited | active (hors invited/deleted) | suspended | archived */
+  accountStatus?: 'invited' | 'active' | 'suspended' | 'archived' | null;
   /** Sans activité app (last_seen_at) depuis N jours — filtre SQL, pas seulement la page courante. */
   inactiveDays?: number | null;
 }): Promise<{ users: AdminUserRow[]; total: number; error?: string }> {
@@ -128,6 +146,17 @@ export async function listAdminUsers(options: {
     query = query.or(`country_code.eq.${options.countryCode},country_code.is.null`);
   }
   if (options.role) query = query.eq('user_role', options.role);
+  if (options.accountStatus === 'invited') {
+    query = query.eq('account_status', 'invited');
+  } else if (options.accountStatus === 'active') {
+    query = query.eq('account_status', 'active');
+  } else if (options.accountStatus === 'suspended') {
+    query = query.eq('account_status', 'suspended');
+  } else if (options.accountStatus === 'archived') {
+    query = query.eq('account_status', 'archived');
+  } else {
+    query = query.neq('account_status', 'deleted');
+  }
   if (options.activeOnly === true) query = query.eq('is_active', true);
   if (options.activeOnly === false) query = query.eq('is_active', false);
   if (options.inactiveDays && options.inactiveDays > 0) {
@@ -269,9 +298,33 @@ export async function deleteUserIfOrphan(
     if (/LINKED_CONTENT/i.test(error.message)) {
       return { ok: false, orphan: false, error: 'Contenu lié — archivez plutôt.' };
     }
+    if (/NOT_PENDING_INVITE/i.test(error.message)) {
+      return { ok: false, error: 'Compte actif — utilisez Archiver ou Suspendre.' };
+    }
+    if (/FORBIDDEN_ADMIN/i.test(error.message)) {
+      return { ok: false, error: 'Impossible de supprimer un administrateur.' };
+    }
     return { ok: false, error: error.message };
   }
   return { ok: Boolean(data), orphan: Boolean(data) };
+}
+
+export async function cancelPendingInvite(
+  userId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { data, error } = await supabase.rpc('admin_cancel_pending_invite', {
+    p_user_id: userId,
+  });
+  if (error) {
+    if (/LINKED_CONTENT/i.test(error.message)) {
+      return { ok: false, error: 'Contenu lié — impossible d’annuler.' };
+    }
+    if (/NOT_PENDING_INVITE/i.test(error.message)) {
+      return { ok: false, error: 'Ce compte n’est pas une invitation en attente.' };
+    }
+    return { ok: false, error: error.message };
+  }
+  return { ok: Boolean(data) };
 }
 
 export async function syncUserEmail(
@@ -324,25 +377,85 @@ export async function createUserInvite(input: {
   if (!email || !email.includes('@')) return { ok: false, error: 'E-mail invalide.' };
 
   const phone = input.phone?.trim() || '';
-  const { data, error } = await supabase
-    .from('admin_user_invites')
-    .insert({
-      phone_number: phone || 'non_renseigne',
-      country_code: input.countryCode,
-      email,
-      user_role: input.userRole,
-      first_name: input.firstName?.trim() || null,
-      last_name: input.lastName?.trim() || null,
-      created_by: input.createdByAdminId,
-    })
-    .select('id')
-    .single();
 
-  if (error || !data) return { ok: false, error: error?.message ?? 'Invitation impossible.' };
+  const { data: existingProfile } = await supabase
+    .from('users')
+    .select('id, account_status')
+    .ilike('email', email)
+    .maybeSingle();
+
+  if (
+    existingProfile?.account_status &&
+    !['invited', 'deleted'].includes(existingProfile.account_status)
+  ) {
+    return {
+      ok: false,
+      error: 'Compte déjà actif pour cet e-mail. Utilisez « Reset MDP » depuis la fiche utilisateur.',
+    };
+  }
+
+  const { data: pendingInvite } = await supabase
+    .from('admin_user_invites')
+    .select('id')
+    .ilike('email', email)
+    .is('activated_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let inviteId: string;
+
+  if (pendingInvite?.id) {
+    const { error: updateErr } = await supabase
+      .from('admin_user_invites')
+      .update({
+        phone_number: phone || 'non_renseigne',
+        country_code: input.countryCode,
+        user_role: input.userRole,
+        first_name: input.firstName?.trim() || null,
+        last_name: input.lastName?.trim() || null,
+        created_by: input.createdByAdminId,
+      })
+      .eq('id', pendingInvite.id);
+    if (updateErr) return { ok: false, error: updateErr.message };
+    inviteId = pendingInvite.id;
+  } else {
+    const { data, error } = await supabase
+      .from('admin_user_invites')
+      .insert({
+        phone_number: phone || 'non_renseigne',
+        country_code: input.countryCode,
+        email,
+        user_role: input.userRole,
+        first_name: input.firstName?.trim() || null,
+        last_name: input.lastName?.trim() || null,
+        created_by: input.createdByAdminId,
+      })
+      .select('id')
+      .single();
+
+    if (error || !data) return { ok: false, error: error?.message ?? 'Invitation impossible.' };
+    inviteId = data.id;
+  }
+
+  if (existingProfile?.account_status === 'invited') {
+    await supabase
+      .from('users')
+      .update({
+        user_role: input.userRole,
+        first_name: input.firstName?.trim() || null,
+        last_name: input.lastName?.trim() || null,
+        country_code: input.countryCode,
+        city: input.city?.trim() || null,
+        phone_number: phone || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existingProfile.id);
+  }
 
   const mail = await sendInviteEmail({
     email,
-    inviteId: data.id,
+    inviteId,
     firstName: input.firstName,
     lastName: input.lastName,
     userRole: input.userRole,
@@ -353,7 +466,7 @@ export async function createUserInvite(input: {
   if (!mail.ok) {
     return {
       ok: false,
-      inviteId: data.id,
+      inviteId,
       error:
         mail.error ??
         "Invitation enregistrée, mais l'e-mail n'a pas pu être envoyé (Edge Function admin-send-invite).",
@@ -376,7 +489,7 @@ export async function createUserInvite(input: {
     });
   }
 
-  return { ok: true, inviteId: data.id, email, mailMode: mail.mode };
+  return { ok: true, inviteId, email, mailMode: mail.mode };
 }
 
 export async function sendInviteEmail(input: {

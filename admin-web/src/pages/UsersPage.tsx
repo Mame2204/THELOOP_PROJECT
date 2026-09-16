@@ -6,7 +6,9 @@ import { isSuperAdminUser } from '../lib/permissions';
 import { COUNTRY_OPTIONS } from '../lib/countries';
 import { formatWhen } from '../lib/format';
 import {
+  accountStatusLabel,
   archiveUser,
+  cancelPendingInvite,
   createUserInvite,
   deleteUserIfOrphan,
   inviteFromWaitlist,
@@ -59,6 +61,9 @@ export function UsersPage() {
   const [filterCountry, setFilterCountry] = useState(true);
   const [roleFilter, setRoleFilter] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [accountStatusFilter, setAccountStatusFilter] = useState<
+    'all' | 'active' | 'invited' | 'suspended' | 'archived'
+  >('all');
   const [inactiveDays, setInactiveDays] = useState<0 | 7 | 30 | 90>(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,12 +96,22 @@ export function UsersPage() {
       filterCountry,
       role: roleFilter || null,
       activeOnly: activeFilter === 'all' ? null : activeFilter === 'active',
+      accountStatus: accountStatusFilter === 'all' ? null : accountStatusFilter,
       inactiveDays: inactiveDays || null,
     });
     if (res.error) setError(res.error);
     setUsers(res.users);
     setTotal(res.total);
-  }, [activeFilter, countryCode, filterCountry, inactiveDays, page, roleFilter, searchApplied]);
+  }, [
+    accountStatusFilter,
+    activeFilter,
+    countryCode,
+    filterCountry,
+    inactiveDays,
+    page,
+    roleFilter,
+    searchApplied,
+  ]);
 
   const loadWaitlist = useCallback(async () => {
     setWlError(null);
@@ -287,15 +302,28 @@ export function UsersPage() {
               ))}
             </select>
             <select
+              value={accountStatusFilter}
+              onChange={(e) => {
+                setPage(0);
+                setAccountStatusFilter(e.target.value as typeof accountStatusFilter);
+              }}
+            >
+              <option value="all">Tous comptes</option>
+              <option value="active">Comptes actifs</option>
+              <option value="invited">Invitations en attente</option>
+              <option value="suspended">Suspendus</option>
+              <option value="archived">Archivés</option>
+            </select>
+            <select
               value={activeFilter}
               onChange={(e) => {
                 setPage(0);
                 setActiveFilter(e.target.value as typeof activeFilter);
               }}
             >
-              <option value="all">Tous statuts</option>
-              <option value="active">Actifs</option>
-              <option value="suspended">Suspendus</option>
+              <option value="all">Connexion : tous</option>
+              <option value="active">Connexion : actifs</option>
+              <option value="suspended">Connexion : off</option>
             </select>
             <select
               value={inactiveDays}
@@ -331,6 +359,7 @@ export function UsersPage() {
                   <tr>
                     <th>Nom</th>
                     <th>Rôle</th>
+                    <th>Statut</th>
                     <th>Pays</th>
                     <th>Dernière connexion</th>
                     <th>Dernière activité</th>
@@ -356,7 +385,19 @@ export function UsersPage() {
                       <td>
                         <span className={`badge ${u.isActive ? 'ok' : 'err'}`}>
                           {roleLabel(u.userRole)}
-                          {u.isActive ? '' : ' · off'}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            u.accountStatus === 'invited'
+                              ? 'warn'
+                              : u.accountStatus === 'active' && u.isActive
+                                ? 'ok'
+                                : 'err'
+                          }`}
+                        >
+                          {accountStatusLabel(u.accountStatus)}
                         </span>
                       </td>
                       <td>{u.countryCode ?? '—'}</td>
@@ -391,6 +432,11 @@ export function UsersPage() {
             {selected ? (
               <form className="edit-panel card" onSubmit={(e) => void handleSave(e)}>
                 <h3>Édition</h3>
+                {selected.accountStatus === 'invited' ? (
+                  <p className="muted" style={{ marginBottom: 12 }}>
+                    Invitation en attente — le membre n’a pas encore activé son compte (mot de passe).
+                  </p>
+                ) : null}
                 <div className="card" style={{ marginBottom: 14, background: 'var(--bg)' }}>
                   <p className="brand-kicker" style={{ marginBottom: 8 }}>
                     Connexion
@@ -573,6 +619,58 @@ export function UsersPage() {
                   >
                     Reset MDP
                   </button>
+                  {selected.accountStatus === 'invited' ? (
+                    <>
+                      <button
+                        className="btn ghost small"
+                        type="button"
+                        disabled={busy || !selected.email}
+                        onClick={() => {
+                          void createUserInvite({
+                            email: selected.email,
+                            phone: selected.phoneNumber ?? undefined,
+                            countryCode: selected.countryCode ?? countryCode,
+                            city: selected.city ?? undefined,
+                            userRole: selected.userRole,
+                            firstName: selected.firstName ?? undefined,
+                            lastName: selected.lastName ?? undefined,
+                            createdByAdminId: profile!.id,
+                          }).then((r) => {
+                            setFormMsg(
+                              r.ok
+                                ? `Invitation renvoyée à ${selected.email}.`
+                                : r.error ?? 'Renvoi impossible.',
+                            );
+                          });
+                        }}
+                      >
+                        Renvoyer l’invitation
+                      </button>
+                      <button
+                        className="btn ghost small"
+                        type="button"
+                        disabled={busy || editingSelf}
+                        onClick={() => {
+                          if (
+                            !window.confirm(
+                              'Annuler cette invitation et supprimer le compte provisoire ?',
+                            )
+                          ) {
+                            return;
+                          }
+                          void cancelPendingInvite(selected.id).then((r) => {
+                            if (!r.ok) setFormMsg(r.error ?? 'Erreur');
+                            else {
+                              setSelected(null);
+                              void loadUsers();
+                            }
+                          });
+                        }}
+                      >
+                        Annuler l’invitation
+                      </button>
+                    </>
+                  ) : null}
                   {isSuper ? (
                     <>
                       <button
