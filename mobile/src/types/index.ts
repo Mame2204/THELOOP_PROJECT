@@ -1,9 +1,9 @@
 // ─── Rôles & permissions ────────────────────────────────────────────────────
-// Visiteur → USER_ANONYMOUS | Membre → USER_FREE | Loop Prime → USER_PRIME
+// Sans compte → USER_ANONYMOUS | Membre → USER_FREE | Loop Prime → USER_PRIME
 // Partenaire → PARTNER (événements, spots, outils) | Admin → ADMIN
 
 export type UserRole =
-  | 'USER_ANONYMOUS'  // Visiteur (sans compte)
+  | 'USER_ANONYMOUS'  // Non connecté (écran Auth — pas d'accès contenu)
   | 'USER_FREE'       // Membre (compte gratuit)
   | 'USER_PRIME'      // Abonnement Loop Prime
   | 'PARTNER'         // Partenaire (événements, spots, outils)
@@ -265,7 +265,7 @@ export interface NavItem {
   path: string;
   icon: string;
   roles: UserRole[];
-  /** Si true, les visiteurs anonymes déclenchent la connexion au lieu de naviguer. */
+  /** Si true, les utilisateurs non connectés déclenchent la connexion au lieu de naviguer. */
   authGate?: boolean;
 }
 

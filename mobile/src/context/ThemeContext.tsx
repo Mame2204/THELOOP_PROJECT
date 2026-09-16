@@ -64,7 +64,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const themeId = useMemo((): ThemeId => {
     void rolesReady;
-    // Visiteur sans compte : toujours thème VISITOR (jamais theme_id distant)
+    // Non connecté : thème Auth VISITOR (jamais theme_id distant)
     if (role === 'USER_ANONYMOUS' || !user || user.id === 'anonymous') {
       return 'VISITOR';
     }

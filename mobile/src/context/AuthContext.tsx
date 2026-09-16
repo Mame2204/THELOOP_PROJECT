@@ -511,7 +511,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           await authClient.auth.signOut();
         } catch {
-          /* session corrompue — on continue en visiteur */
+          /* session corrompue — on continue sans compte (écran Auth) */
         }
         setUser(ANONYMOUS_USER);
         setIsLoading(false);

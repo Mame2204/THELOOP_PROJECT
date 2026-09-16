@@ -30,7 +30,7 @@ interface PageHeaderProps {
   showSearchToggle?: boolean;
   searchOpen?: boolean;
   onSearchToggle?: () => void;
-  /** Force l'ouverture validation via logo (défaut : visiteur non connecté uniquement). */
+  /** Force l'ouverture validation via logo (défaut : sans compte uniquement). */
   logoOpensPartnerValidation?: boolean;
 }
 

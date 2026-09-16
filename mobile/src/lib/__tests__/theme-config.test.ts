@@ -9,7 +9,7 @@ describe('theme-config', () => {
     expect(resolveThemeId('ADMIN')).toBe('ADMIN');
   });
 
-  it('Visiteur = turquoise partenaire éclairci', () => {
+  it('Auth sans compte (VISITOR) = teal clair', () => {
     const visitor = getTheme('VISITOR');
     expect(visitor.colors.accent).toBe('#12A8BC');
     expect(visitor.colors.ctaBg).toBe('#0D7A8C');
@@ -19,7 +19,7 @@ describe('theme-config', () => {
     expect(visitor.elevation.card.shadowOpacity).toBeGreaterThan(0);
   });
 
-  it('Membre = visiteur plus foncé (turquoise)', () => {
+  it('Membre = teal plus foncé (turquoise)', () => {
     const member = getTheme('FREE_MEMBER');
     expect(member.colors.background).toBe('#E0F2F5');
     expect(member.colors.accent).toBe('#0D7A8C');
@@ -36,7 +36,7 @@ describe('theme-config', () => {
     expect(prime.radius.card).toBe(14);
   });
 
-  it('Partenaire = ancienne charte visiteur teal', () => {
+  it('Partenaire = vert teal', () => {
     const partner = getTheme('PARTNER');
     expect(partner.colors.background).toBe('#F0FDF9');
     expect(partner.colors.accent).toBe('#20C997');

@@ -20,13 +20,13 @@ export const LOOP_GOLD = '#D4AF37';
  * Logo non concerné (LoopLogo reste autonome).
  */
 export const BRAND = {
-  /** Ancien partenaire — version plus claire pour visiteurs */
+  /** Thème Auth (sans compte) — teal clair */
   VISITOR: { accent: '#12A8BC', accentDeep: '#0D7A8C', bg: '#F4FCFD', text: '#1A1A1A' },
-  /** Visiteur plus foncé — identité membre gratuit */
+  /** Membre gratuit — teal plus foncé */
   FREE_MEMBER: { accent: '#0D7A8C', accentDeep: '#065A66', bg: '#E0F2F5', text: '#1A1A1A' },
-  /** Ancien membre — identité indigo pour Loop Prime */
+  /** Loop Prime — indigo */
   PRIME_MEMBER: { accent: '#1A237E', accentDeep: '#0D1457', bg: '#EEF1FA', text: '#1A1A1A' },
-  /** Ancien visiteur — teal découverte pour partenaires */
+  /** Partenaire — vert teal */
   PARTNER: { accent: '#20C997', accentDeep: '#0D9488', bg: '#F0FDF9', text: '#1A1A1A' },
   ADMIN: { accent: '#8E1631', accentDeep: '#6B0F24', bg: '#ECEEF2', text: '#2D3436' },
   /** Admins délégués — distinct du bordeaux fondateur. */

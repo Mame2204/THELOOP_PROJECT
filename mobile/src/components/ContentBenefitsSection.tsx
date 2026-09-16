@@ -363,7 +363,7 @@ export function ContentBenefitsSection({
 
   function openLine(line: ContentBenefitLine) {
     if (!line.unlocked) {
-      // Visiteur sans compte : même invitation « Rejoins le club » que le bonhomme.
+      // Non connecté : même invitation « Rejoins le club » que le bonhomme.
       if (!loggedIn) {
         openSignupSheet(navigation);
         return;

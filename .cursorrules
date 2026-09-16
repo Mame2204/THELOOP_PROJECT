@@ -66,10 +66,12 @@
 
 ## 2. LOGIQUE DES 5 RÔLES & ACCÈS EXCLUSIFS
 
+> **App mobile (`mobile/`) — modèle actuel :** sans compte (`USER_ANONYMOUS`) = écran **Auth** uniquement (pas d’Accueil / Agenda / Spots). Les règles détaillées ci-dessous décrivent surtout la **PWA legacy** (`src/`).
+
 ### Définition des rôles (`src/types/index.ts`)
 | Rôle (`UserRole`) | Label | Hiérarchie |
 |-------------------|-------|------------|
-| `USER_ANONYMOUS` | Visiteur | 0 |
+| `USER_ANONYMOUS` | Sans compte | 0 |
 | `USER_FREE` | Membre gratuit | 1 |
 | `USER_PRIME` | Loop Prime | 2 |
 | `PARTNER` | Partenaire Pro | 2 |
@@ -84,8 +86,9 @@ canViewPrimeContent(role)              // USER_PRIME strict (visibility: 'prime'
 isAuthenticated(role)                   // !== USER_ANONYMOUS
 ```
 
-### USER_ANONYMOUS (Visiteur)
-- Flux publics uniquement : Agenda `/`, Guide `/guide`, fiches détail.
+### USER_ANONYMOUS (Sans compte — PWA legacy)
+- **Mobile :** pile Auth uniquement — pas de contenu public sans connexion.
+- **PWA legacy :** flux publics Agenda `/`, Guide `/guide`, fiches détail.
 - **Thème Clair** (`theme-visitor`, fond `#FAFAFA`).
 - Pas de favoris (modal auth si tentative).
 - Pas de filtre pill « LoopX » / « Loop Prime ».
@@ -105,7 +108,7 @@ isAuthenticated(role)                   // !== USER_ANONYMOUS
 - Login jeton : `/partenaires` (format `SPOT-XXXX-YYYY`).
 - Workflow publication : workspace → `enqueueStaging*` → admin modère → `approveStaging*` → `published*`.
 - Statuts staging : `pending` (modifier/supprimer), `rejected` (voir motif/resoumettre), `approved` (demande rétraction admin).
-- **Thème visuel dédié « Gris Platinium »** : gris métallique très clair et épuré, pour différencier des visiteurs basiques. Appliquer via classes/thème CSS dédié sur les routes partenaire (`/espace-partenaire`, `/espace-partenaire/stats`).
+- **Thème visuel dédié « Gris Platinium »** : gris métallique très clair et épuré, pour différencier des membres basiques. Appliquer via classes/thème CSS dédié sur les routes partenaire (`/espace-partenaire`, `/espace-partenaire/stats`).
 
 ### USER_PRIME (Loop Prime)
 - Accès exclusif au contenu `visibility: 'prime'` (événements LoopX, lieux exclusifs).
@@ -126,7 +129,7 @@ isAuthenticated(role)                   // !== USER_ANONYMOUS
 
 | Rôle | Bottom nav (max 4 items pour BL/Partenaire) |
 |------|---------------------------------------------|
-| Visiteur | Agenda · Guide |
+| Sans compte (PWA) | Agenda · Guide |
 | USER_FREE | Agenda · Guide · **Favoris** |
 | USER_PRIME | Agenda · Guide · Répertoire · Abonnement |
 | PARTNER | Agenda · Guide · Espace Pro · Statistiques |

@@ -1,7 +1,7 @@
 /** Coordonnées publiques THE LOOP — affichées dans l’app (contact / profil). */
 export const SUPPORT_WEBSITE_URL = 'https://www.theloop-app.com/';
 export const SUPPORT_WEBSITE_DISPLAY = 'www.theloop-app.com';
-export const SUPPORT_EMAIL = 'theloop.contact@gmail.com';
+export const SUPPORT_EMAIL = 'contact@theloop-app.com';
 export const SUPPORT_EMAIL_URL = `mailto:${SUPPORT_EMAIL}`;
 
 /** Numéro service clientèle THE LOOP (Guinée). */

@@ -19,7 +19,7 @@ L’application mobile de référence est dans `mobile/` (Expo). Une PWA web exi
 
 | Persona | Rôle technique | Accès principal |
 |---------|----------------|-----------------|
-| Visiteur | `USER_ANONYMOUS` | Accueil, Agenda, Spots, Outils (lecture publique) |
+| Sans compte | `USER_ANONYMOUS` | Écran Auth uniquement (connexion, inscription, partenariat, validation privilège) |
 | Membre gratuit | `USER_FREE` | + Favoris, QR membre, parrainage, notifications |
 | Loop Prime | `USER_PRIME` | + contenu exclusif Prime, avantages, achat/gestion PASS |
 | Partenaire Pro | `PARTNER` | Espace pro (contenu, avantages, validation, stats) |
@@ -33,13 +33,13 @@ Valeurs : `member`, `prime`, `partner`, `admin`, `super_admin` (+ legacy `tool_p
 
 ## 3. Parcours utilisateur par persona
 
-### 3.1 Visiteur
+### 3.1 Sans compte (non connecté)
 
-1. Ouvre l’app → **Accueil** (hero, sondage, walks, corner créateur, logos partenaires — blocs activables admin).
-2. Consulte **Agenda**, **Spots**, **Outils** sans compte.
-3. Tente favori ou action membre → modal **Auth** (inscription / connexion).
+1. Ouvre l’app → écran **Auth** (connexion / inscription si gate activé).
+2. Parcours autorisés sans compte : mot de passe oublié, activation invité, **demande partenariat**, connexion partenaire SPOT, double tap logo → validation privilège partenaire.
+3. **Aucun accès** aux onglets Accueil, Agenda, Spots, Outils, Favoris tant que l’utilisateur n’est pas connecté.
 
-**Restrictions :** pas de contenu `visibility: prime`, pas de filtre LoopX / Loop Prime.
+> La PWA legacy (`src/`) permettait encore la lecture publique sans compte — **ce n’est plus le modèle mobile.**
 
 ### 3.2 Membre gratuit
 

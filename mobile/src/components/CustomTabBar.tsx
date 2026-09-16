@@ -11,15 +11,16 @@ import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { DEFAULT_SECTIONS, getAppSections, type AppSectionsConfig } from '@/lib/app-sections-store';
 import { canViewPrimeContent, isAuthenticated, type UserRole } from '@/types';
 
+/** Onglets réservés aux comptes connectés — sans compte = écran Auth uniquement (RootNavigator). */
 const ALL_TABS = [
-  { name: 'Accueil', icon: '🏠', roles: ['USER_ANONYMOUS', 'USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
-  { name: 'Agenda', icon: '📅', sectionKey: 'agenda' as const, roles: ['USER_ANONYMOUS', 'USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
-  { name: 'Spots', icon: '🏛️', sectionKey: 'spots' as const, roles: ['USER_ANONYMOUS', 'USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
-  { name: 'Outils', icon: '🛠️', sectionKey: 'outils' as const, roles: ['USER_ANONYMOUS', 'USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
+  { name: 'Accueil', icon: '🏠', roles: ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
+  { name: 'Agenda', icon: '📅', sectionKey: 'agenda' as const, roles: ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
+  { name: 'Spots', icon: '🏛️', sectionKey: 'spots' as const, roles: ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
+  { name: 'Outils', icon: '🛠️', sectionKey: 'outils' as const, roles: ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
   { name: 'Favoris', icon: '❤️', roles: ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
   { name: 'PartnerPro', label: 'Pro', icon: '🏢', roles: ['PARTNER'] as UserRole[] },
   { name: 'AdminTower', label: 'Administration', icon: '⚙️', roles: ['ADMIN'] as UserRole[] },
-  { name: 'Profil', icon: '👤', roles: ['USER_ANONYMOUS', 'USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
+  { name: 'Profil', icon: '👤', roles: ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'] as UserRole[] },
 ] as const;
 
 /** Onglets accessibles hors barre (navigation depuis Pro, etc.) */

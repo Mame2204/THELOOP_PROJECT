@@ -57,7 +57,7 @@ export interface QrScanResult {
 }
 
 const SCANNED_MEMBER_ROLE_LABELS: Record<UserRole, string> = {
-  USER_ANONYMOUS: 'Visiteur',
+  USER_ANONYMOUS: 'Sans compte',
   USER_FREE: 'Membre',
   USER_PRIME: 'Loop Prime',
   PARTNER: 'Partenaire',

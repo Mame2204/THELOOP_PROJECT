@@ -4,7 +4,7 @@
 
 | UserRole | Label FR | Hiérarchie | DB `user_role` |
 |----------|----------|------------|----------------|
-| `USER_ANONYMOUS` | Visiteur | 0 | (non connecté) |
+| `USER_ANONYMOUS` | Sans compte | 0 | (non connecté — écran Auth) |
 | `USER_FREE` | Membre gratuit | 1 | `member` |
 | `USER_PRIME` | Loop Prime | 2 | `prime` |
 | `PARTNER` | Partenaire Pro | 2 | `partner`, `tool_partner` |
@@ -71,14 +71,16 @@ isAuthenticated(role)                   // !== USER_ANONYMOUS
 
 | Onglet | Rôles | Condition extra |
 |--------|-------|-----------------|
-| Accueil | Tous | — |
-| Agenda | Tous | `app_sections.agenda.tabVisible` |
-| Spots | Tous | `app_sections.spots.tabVisible` |
-| Outils | Tous | `app_sections.outils.tabVisible` |
+| Accueil | FREE, PRIME, PARTNER, ADMIN | — |
+| Agenda | FREE, PRIME, PARTNER, ADMIN | `app_sections.agenda.tabVisible` |
+| Spots | FREE, PRIME, PARTNER, ADMIN | `app_sections.spots.tabVisible` |
+| Outils | FREE, PRIME, PARTNER, ADMIN | `app_sections.outils.tabVisible` |
 | Favoris | FREE, PRIME, PARTNER, ADMIN | — |
 | Pro | PARTNER | `app_sections.partnerPro.spaceVisible` |
 | Admin | ADMIN | — |
-| Profil | Tous | Auth gate si anonyme |
+| Profil | FREE, PRIME, PARTNER, ADMIN | — |
+
+> **Sans compte :** pas d’onglets — pile **Auth** uniquement (`RootNavigator`, `!appUnlocked`).
 
 **Stats partenaire :** écran `PartnerStatsScreen` — **pas** dans la barre, accès depuis Espace Pro.
 
@@ -101,7 +103,7 @@ isAuthenticated(role)                   // !== USER_ANONYMOUS
 
 | ThemeId | Public | Couleur accent |
 |---------|--------|----------------|
-| `VISITOR` | Visiteur | Teal `#12A8BC` |
+| `VISITOR` | Auth (sans compte) | Teal `#12A8BC` |
 | `FREE_MEMBER` | Membre | Teal foncé `#0D7A8C` |
 | `PRIME_MEMBER` | Prime | Indigo `#1A237E` |
 | `PARTNER` | Partenaire | Vert `#20C997` |
@@ -149,7 +151,7 @@ Chargé au boot via `bootstrapPlatformRoles()` → cache `loop_platform_roles_v1
 
 | Rôle | Contenu `visibility: public` | Contenu `visibility: prime` |
 |------|------------------------------|-----------------------------|
-| Visiteur | ✓ | ✗ |
+| Sans compte | ✗ (pas d’accès app) | ✗ |
 | Membre free | ✓ | ✗ |
 | Prime | ✓ | ✓ |
 | Partenaire | ✓ | ✓ (modération) |

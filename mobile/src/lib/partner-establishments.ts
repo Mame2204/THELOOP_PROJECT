@@ -15,7 +15,7 @@ export interface PartnerEstablishment {
 }
 
 export interface ListPartnerEstablishmentsOptions {
-  /** Scan QR visiteur / partenaire : offres actives uniquement, pas de sync catalogue lourde. */
+  /** Scan QR membre / partenaire : offres actives uniquement, pas de sync catalogue lourde. */
   lightweight?: boolean;
   /** Admin — lieux de validité avantage : requêtes Supabase directes, sans sync lourde. */
   adminPicker?: boolean;
