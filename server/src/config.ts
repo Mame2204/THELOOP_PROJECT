@@ -37,30 +37,25 @@ function isDjomyProductionHost(baseUrl: string): boolean {
 
 const isDjomyProduction = isDjomyProductionHost(djomyBaseUrl);
 
-/** Domaine marchand whiteliste chez Djomy — header `X-PARTNER-DOMAIN`. */
-function resolveDjomyPartnerDomain(): string {
-  const explicit = optional('DJOMY_PARTNER_DOMAIN', '');
-  if (explicit) {
-    return explicit.replace(/^https?:\/\//i, '').replace(/\/+$/, '').split('/')[0] ?? explicit;
-  }
-  const returnUrl = optional('DJOMY_RETURN_URL', '');
-  if (returnUrl) {
-    try {
-      return new URL(returnUrl).host;
-    } catch {
-      // ignore
-    }
-  }
+/**
+ * Code partenaire Djomy (hash côté marchand) — header `X-PARTNER-DOMAIN`.
+ * Nom du header = « domain » ; valeur = le code fourni par Djomy (pas l’URL api.theloop-app.com).
+ */
+function resolveDjomyPartnerCode(): string {
+  const fromApiKey = optional('DJOMY_PARTNER_API_KEY', '');
+  if (fromApiKey) return fromApiKey;
+  const fromCode = optional('DJOMY_PARTNER_CODE', '');
+  if (fromCode) return fromCode;
+  const legacyDomain = optional('DJOMY_PARTNER_DOMAIN', '');
+  if (legacyDomain && !legacyDomain.includes('.')) return legacyDomain;
   return '';
 }
 
-const djomyPartnerDomain = resolveDjomyPartnerDomain();
-/** @deprecated Ignoré — ancien nom avant `X-PARTNER-DOMAIN`. Conservé sur Render le temps du redeploy. */
-const legacyPartnerApiKey = optional('DJOMY_PARTNER_API_KEY', '');
+const djomyPartnerCode = resolveDjomyPartnerCode();
 
-if (isDjomyProduction && !djomyPartnerDomain) {
+if (isDjomyProduction && !djomyPartnerCode) {
   throw new Error(
-    "Variable d'environnement manquante : DJOMY_PARTNER_DOMAIN (ou DJOMY_RETURN_URL pour dériver le domaine)",
+    "Variable d'environnement manquante : DJOMY_PARTNER_API_KEY (code header X-PARTNER-DOMAIN)",
   );
 }
 
@@ -117,8 +112,7 @@ export const config = {
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   djomyBaseUrl,
   isDjomyProduction,
-  djomyPartnerDomain,
-  legacyPartnerApiKey,
+  djomyPartnerCode,
   djomyClientId: required('DJOMY_CLIENT_ID'),
   djomyClientSecret: required('DJOMY_CLIENT_SECRET'),
   djomyReturnUrl: required('DJOMY_RETURN_URL'),

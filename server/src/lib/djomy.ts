@@ -72,13 +72,13 @@ function apiKeyHeader(): string {
 }
 
 function withPartnerDomainHeader(headers: Record<string, string>): Record<string, string> {
-  if (config.djomyPartnerDomain) {
-    headers['X-PARTNER-DOMAIN'] = config.djomyPartnerDomain;
+  if (config.djomyPartnerCode) {
+    headers['X-PARTNER-DOMAIN'] = config.djomyPartnerCode;
   }
   return headers;
 }
 
-/** Auth + paiements — X-API-KEY ; X-PARTNER-DOMAIN en production (domaine whiteliste). */
+/** Auth + paiements — X-API-KEY + X-PARTNER-DOMAIN (code marchand Djomy) sur toutes les requêtes. */
 function djomyAuthHeaders(extra?: Record<string, string>): Record<string, string> {
   return withPartnerDomainHeader({
     'X-API-KEY': apiKeyHeader(),
@@ -129,8 +129,8 @@ export function formatDjomyAuthError(status: number, detail?: string): string {
     return [
       'Authentification Djomy refusée (HTTP 403).',
       'Vérifiez DJOMY_CLIENT_ID, DJOMY_CLIENT_SECRET et DJOMY_BASE_URL (sandbox vs production).',
-      config.isDjomyProduction && !config.djomyPartnerDomain
-        ? 'En production, DJOMY_PARTNER_DOMAIN est obligatoire (ex. api.theloop-app.com).'
+      config.isDjomyProduction && !config.djomyPartnerCode
+        ? 'En production, DJOMY_PARTNER_API_KEY est obligatoire (header X-PARTNER-DOMAIN).'
         : null,
       trimmed ? `Détail Djomy : ${trimmed.slice(0, 180)}` : null,
     ]
@@ -181,7 +181,7 @@ export async function probeDjomyAuth(): Promise<DjomyAuthProbe> {
         sandboxKeysOnProd = true;
         hint = [
           'Les clés configurées authentifient le sandbox Djomy mais pas la production (403 HTML sur api.djomy.africa).',
-          'Demandez à Djomy : credentials PRODUCTION + whitelist domaine (X-PARTNER-DOMAIN) + activation API marchand prod.',
+          'Demandez à Djomy : credentials PRODUCTION + code X-PARTNER-DOMAIN + activation API marchand prod.',
           'Webhook à valider : https://api.theloop-app.com/api/webhook/djomy',
         ].join(' ');
       }

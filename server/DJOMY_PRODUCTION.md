@@ -14,13 +14,14 @@
 | Variable | Sandbox | Production |
 |----------|---------|------------|
 | `DJOMY_BASE_URL` | `https://sandbox-api.djomy.africa` | `https://api.djomy.africa` |
-| `DJOMY_PARTNER_DOMAIN` | *(vide)* | domaine whiteliste → header `X-PARTNER-DOMAIN` (ex. `api.theloop-app.com`) |
+| `DJOMY_PARTNER_API_KEY` | *(vide)* | code marchand (hash Djomy) → header **`X-PARTNER-DOMAIN`** sur toutes les requêtes |
 | `DJOMY_CLIENT_ID` / `SECRET` | clés sandbox | clés **production** (dashboard marchand) |
 | `PAYMENT_SANDBOX_AMOUNTS` | `1` | `0` |
 | Webhook dashboard | sandbox URL | `https://api.theloop-app.com/api/webhook/djomy` |
 | Return / Cancel | déjà `api.theloop-app.com/payment/*` | inchangé |
 
-Le serveur envoie `X-PARTNER-DOMAIN` sur **auth**, **create payment** et **verify status**. Valeur = domaine whiteliste chez Djomy (ex. `api.theloop-app.com`). Dérivé de `DJOMY_RETURN_URL` si `DJOMY_PARTNER_DOMAIN` absent. Obligatoire en prod si `DJOMY_BASE_URL` = `api.djomy.africa`.
+Le serveur envoie le header **`X-PARTNER-DOMAIN`** (nom corrigé par Djomy — **pas** `X-PARTNER-API`) sur **auth**, **create payment** et **verify status**.  
+**Valeur** = le **code** fourni par Djomy (`DJOMY_PARTNER_API_KEY`), pas l’URL `api.theloop-app.com`. Djomy hache ce code côté marchand. Obligatoire en prod si `DJOMY_BASE_URL` = `api.djomy.africa`.
 
 ## Demande whitelist firewall / domaine (support Djomy)
 
@@ -72,15 +73,15 @@ Nous vérifions via `https://api.theloop-app.com/health` → `djomyAuthOk: true`
 
 ---
 
-## Migration Render — `DJOMY_PARTNER_API_KEY` → `DJOMY_PARTNER_DOMAIN`
+## Header Djomy — clarification support
 
-| Situation | Action |
-|-----------|--------|
-| **Ancien deploy** sur Render | Exigeait `DJOMY_PARTNER_API_KEY` → crash si absente. Garder les **deux** variables le temps du redeploy est OK. |
-| **Nouveau deploy** (code actuel) | Seul **`DJOMY_PARTNER_DOMAIN=api.theloop-app.com`** est utilisé (header `X-PARTNER-DOMAIN`). `DJOMY_PARTNER_API_KEY` est **ignorée**. |
-| Après redeploy réussi | Vous pouvez **supprimer** `DJOMY_PARTNER_API_KEY` de Render. |
+| Élément | Valeur correcte |
+|---------|-----------------|
+| **Nom du header** | `X-PARTNER-DOMAIN` (pas `X-PARTNER-API`) |
+| **Valeur du header** | Code hex fourni par Djomy → env `DJOMY_PARTNER_API_KEY` |
+| **Portée** | **Toutes** les requêtes (`/v1/auth`, gateway, status) |
 
-Vérifier le deploy : `/health` doit afficher `partnerDomainConfigured` et `partnerDomain` (plus `partnerApiConfigured`).
+Vérifier le deploy : `/health` → `partnerCodeConfigured: true`, `partnerHeader: "X-PARTNER-DOMAIN"`.
 
 ---
 
@@ -111,7 +112,7 @@ DJOMY_BASE_URL=https://sandbox-api.djomy.africa
 PAYMENT_SANDBOX_AMOUNTS=1
 DJOMY_CLIENT_ID=<clés sandbox dashboard Djomy>
 DJOMY_CLIENT_SECRET=<clés sandbox dashboard Djomy>
-DJOMY_PARTNER_DOMAIN=   ← laisser vide en sandbox (ou omis)
+DJOMY_PARTNER_API_KEY=   ← laisser vide en sandbox
 ```
 
 Test local : `cd server && node scripts/test-djomy.mjs` (doit afficher `AUTH status 200`).

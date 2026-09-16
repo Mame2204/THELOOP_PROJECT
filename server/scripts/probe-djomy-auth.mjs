@@ -8,23 +8,17 @@ const clientId = process.env.DJOMY_CLIENT_ID?.trim() ?? '';
 
 const clientSecret = process.env.DJOMY_CLIENT_SECRET?.trim() ?? '';
 
-function resolvePartnerDomain() {
-  const explicit = process.env.DJOMY_PARTNER_DOMAIN?.trim();
-  if (explicit) {
-    return explicit.replace(/^https?:\/\//i, '').replace(/\/+$/, '').split('/')[0];
-  }
-  const returnUrl = process.env.DJOMY_RETURN_URL?.trim();
-  if (returnUrl) {
-    try {
-      return new URL(returnUrl).host;
-    } catch {
-      return '';
-    }
-  }
+function resolvePartnerCode() {
+  const fromApiKey = process.env.DJOMY_PARTNER_API_KEY?.trim();
+  if (fromApiKey) return fromApiKey;
+  const fromCode = process.env.DJOMY_PARTNER_CODE?.trim();
+  if (fromCode) return fromCode;
+  const legacy = process.env.DJOMY_PARTNER_DOMAIN?.trim();
+  if (legacy && !legacy.includes('.')) return legacy;
   return '';
 }
 
-const partnerDomain = resolvePartnerDomain();
+const partnerCode = resolvePartnerCode();
 
 const configuredBase = process.env.DJOMY_BASE_URL?.replace(/\/$/, '') ?? 'https://sandbox-api.djomy.africa';
 
@@ -84,7 +78,7 @@ async function probeAuth(baseUrl) {
     Accept: 'application/json',
     'User-Agent': 'THE-LOOP-probe/1.0',
   };
-  if (partnerDomain) headers['X-PARTNER-DOMAIN'] = partnerDomain;
+  if (partnerCode) headers['X-PARTNER-DOMAIN'] = partnerCode;
 
 
 
@@ -168,7 +162,7 @@ console.log('clientId:', maskId(clientId));
 
 console.log('secret length:', clientSecret.length, clientSecret.includes('\n') ? '(contient un saut de ligne!)' : '');
 
-console.log('partner domain:', partnerDomain || '(non configuré)');
+console.log('X-PARTNER-DOMAIN code configured:', Boolean(partnerCode), partnerCode ? `(len ${partnerCode.length})` : '');
 
 console.log('env DJOMY_BASE_URL:', configuredBase);
 
@@ -224,7 +218,7 @@ if (prod.status === 403 && !prod.isJson && sandbox.status === 200) {
 
       '  1. Fournir les credentials PRODUCTION (dashboard marchand prod, pas sandbox).',
 
-      '  2. Whitelister le domaine (header X-PARTNER-DOMAIN, ex. api.theloop-app.com).',
+      '  2. Fournir le code header X-PARTNER-DOMAIN (DJOMY_PARTNER_API_KEY).',
 
       '  3. Activer l’API marchand sur api.djomy.africa pour ce Client ID.',
 
@@ -242,7 +236,7 @@ if (prod.status === 403 && !prod.isJson && sandbox.status === 200) {
 
       '  DJOMY_CLIENT_SECRET=<prod>',
 
-      '  DJOMY_PARTNER_DOMAIN=api.theloop-app.com',
+      '  DJOMY_PARTNER_API_KEY=<code fourni par Djomy>',
 
     ].join('\n'),
 

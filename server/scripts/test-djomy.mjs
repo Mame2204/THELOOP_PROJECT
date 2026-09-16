@@ -4,23 +4,17 @@ import { createHmac } from 'node:crypto';
 const base = process.env.DJOMY_BASE_URL?.replace(/\/$/, '') || 'https://sandbox-api.djomy.africa';
 const clientId = process.env.DJOMY_CLIENT_ID;
 const clientSecret = process.env.DJOMY_CLIENT_SECRET;
-function resolvePartnerDomain() {
-  const explicit = process.env.DJOMY_PARTNER_DOMAIN?.trim();
-  if (explicit) {
-    return explicit.replace(/^https?:\/\//i, '').replace(/\/+$/, '').split('/')[0];
-  }
-  const returnUrl = process.env.DJOMY_RETURN_URL?.trim();
-  if (returnUrl) {
-    try {
-      return new URL(returnUrl).host;
-    } catch {
-      return '';
-    }
-  }
+function resolvePartnerCode() {
+  const fromApiKey = process.env.DJOMY_PARTNER_API_KEY?.trim();
+  if (fromApiKey) return fromApiKey;
+  const fromCode = process.env.DJOMY_PARTNER_CODE?.trim();
+  if (fromCode) return fromCode;
+  const legacy = process.env.DJOMY_PARTNER_DOMAIN?.trim();
+  if (legacy && !legacy.includes('.')) return legacy;
   return '';
 }
 
-const partnerDomain = resolvePartnerDomain();
+const partnerCode = resolvePartnerCode();
 
 function hmac(message, secret) {
   return createHmac('sha256', secret).update(message, 'utf8').digest('hex');
@@ -31,7 +25,7 @@ function authHeaders(extra = {}) {
     'X-API-KEY': `${clientId}:${hmac(clientId, clientSecret)}`,
     ...extra,
   };
-  if (partnerDomain) headers['X-PARTNER-DOMAIN'] = partnerDomain;
+  if (partnerCode) headers['X-PARTNER-DOMAIN'] = partnerCode;
   return headers;
 }
 
