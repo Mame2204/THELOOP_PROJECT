@@ -1,6 +1,9 @@
 /**
- * Page HTTPS — confirmation e-mail / reset mot de passe sans app obligatoire.
+ * Page HTTPS — invite / reset mot de passe (navigateur e-mail).
  * URL : https://<project>.supabase.co/functions/v1/auth-callback
+ *
+ * Le template e-mail Supabase doit pointer ici avec token_hash :
+ *   …/auth-callback?token_hash={{ .TokenHash }}&type=invite
  */
 const HTML = `<!DOCTYPE html>
 <html lang="fr">
@@ -31,7 +34,7 @@ const HTML = `<!DOCTYPE html>
   <main>
     <p class="kicker">THE LOOP</p>
     <h1 id="title">Chargement…</h1>
-    <p id="message"></p>
+    <p id="message">Validation du lien…</p>
     <form id="pwdForm" class="form">
       <label for="pwd">Nouveau mot de passe (8+ caractères)</label>
       <input id="pwd" type="password" minlength="8" autocomplete="new-password" required />
@@ -45,21 +48,22 @@ const HTML = `<!DOCTYPE html>
   </main>
   <script>
     (function () {
+      var supabaseUrl = window.__SUPABASE_URL__;
+      var anon = window.__SUPABASE_ANON__;
       var title = document.getElementById('title');
       var message = document.getElementById('message');
       var pwdForm = document.getElementById('pwdForm');
       var openApp = document.getElementById('openApp');
       var errEl = document.getElementById('err');
       var okEl = document.getElementById('ok');
-      var hash = window.location.hash || '';
-      var search = window.location.search || '';
-      var paramString = hash.indexOf('#') === 0 ? hash.slice(1)
-        : (search.indexOf('?') === 0 ? search.slice(1) : '');
-      var params = new URLSearchParams(paramString);
-      var kind = (params.get('type') || '').toLowerCase();
-      var accessToken = params.get('access_token');
-      var refreshToken = params.get('refresh_token');
-      var deepLink = paramString ? 'theloop://auth/callback#' + paramString : 'theloop://auth/callback';
+
+      function readParams() {
+        var hash = window.location.hash || '';
+        var search = window.location.search || '';
+        var paramString = hash.indexOf('#') === 0 ? hash.slice(1)
+          : (search.indexOf('?') === 0 ? search.slice(1) : '');
+        return { paramString: paramString, params: new URLSearchParams(paramString) };
+      }
 
       function showErr(msg) {
         errEl.textContent = msg;
@@ -67,11 +71,104 @@ const HTML = `<!DOCTYPE html>
         okEl.style.display = 'none';
       }
 
-      if (!paramString) {
-        title.textContent = 'Lien incomplet';
-        message.textContent = 'Rouvrez le message reçu par e-mail.';
-        return;
+      function authError(body) {
+        return body.error_description || body.msg || body.message || body.error || 'Erreur';
       }
+
+      function markInviteActivated(accessToken) {
+        return fetch(supabaseUrl + '/auth/v1/user', {
+          headers: { 'Authorization': 'Bearer ' + accessToken, 'apikey': anon }
+        }).then(function (res) { return res.json(); }).then(function (user) {
+          var meta = user.user_metadata || {};
+          var inviteId = meta.admin_invite_id;
+          var email = user.email;
+          if (!inviteId || !email) return;
+          return fetch(supabaseUrl + '/rest/v1/rpc/mark_admin_user_invite_activated', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + accessToken,
+              'apikey': anon
+            },
+            body: JSON.stringify({ p_invite_id: inviteId, p_email: email })
+          });
+        }).catch(function () { /* non bloquant */ });
+      }
+
+      function showPasswordForm(accessToken, refreshToken, kind, paramString) {
+        var deepLink = paramString ? 'theloop://auth/callback#' + paramString : 'theloop://auth/callback';
+        openApp.href = deepLink;
+        openApp.style.display = 'block';
+        title.textContent = 'Nouveau mot de passe';
+        message.textContent = 'Choisissez votre mot de passe pour activer votre compte THE LOOP.';
+        pwdForm.style.display = 'block';
+
+        pwdForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var pwd = document.getElementById('pwd').value;
+          var pwd2 = document.getElementById('pwd2').value;
+          if (pwd.length < 8) { showErr('Minimum 8 caractères.'); return; }
+          if (pwd !== pwd2) { showErr('Les mots de passe ne correspondent pas.'); return; }
+          fetch(supabaseUrl + '/auth/v1/user', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + accessToken,
+              'apikey': anon
+            },
+            body: JSON.stringify({ password: pwd })
+          }).then(function (res) {
+            if (!res.ok) return res.json().then(function (j) { throw new Error(authError(j)); });
+            return markInviteActivated(accessToken);
+          }).then(function () {
+            okEl.textContent = 'Mot de passe enregistré. Ouvrez THE LOOP et connectez-vous.';
+            okEl.style.display = 'block';
+            errEl.style.display = 'none';
+            pwdForm.style.display = 'none';
+            title.textContent = 'Compte prêt';
+            message.textContent = kind === 'invite'
+              ? 'Votre invitation est activée.'
+              : 'Votre mot de passe a été mis à jour.';
+          }).catch(function (err) {
+            showErr(err.message || 'Enregistrement impossible.');
+          });
+        });
+      }
+
+      function verifyTokenHash(tokenHash, type) {
+        return fetch(supabaseUrl + '/auth/v1/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': anon },
+          body: JSON.stringify({ type: type, token_hash: tokenHash })
+        }).then(function (res) {
+          return res.json().then(function (body) {
+            if (!res.ok) throw new Error(authError(body));
+            return body;
+          });
+        });
+      }
+
+      function exchangeCode(code) {
+        return fetch(supabaseUrl + '/auth/v1/token?grant_type=pkce', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': anon },
+          body: JSON.stringify({ auth_code: code })
+        }).then(function (res) {
+          return res.json().then(function (body) {
+            if (!res.ok) throw new Error(authError(body));
+            return body;
+          });
+        });
+      }
+
+      var parsed = readParams();
+      var params = parsed.params;
+      var paramString = parsed.paramString;
+      var kind = (params.get('type') || 'invite').toLowerCase();
+      var tokenHash = params.get('token_hash');
+      var code = params.get('code');
+      var accessToken = params.get('access_token');
+      var refreshToken = params.get('refresh_token');
 
       var error = params.get('error_description') || params.get('error');
       if (error) {
@@ -80,47 +177,48 @@ const HTML = `<!DOCTYPE html>
         return;
       }
 
-      openApp.href = deepLink;
-      openApp.style.display = 'block';
-
-      if ((kind === 'recovery' || kind === 'invite') && accessToken) {
-        title.textContent = 'Nouveau mot de passe';
-        message.textContent = 'Choisissez votre mot de passe ci-dessous, ou ouvrez l\\'application.';
-        pwdForm.style.display = 'block';
-        pwdForm.addEventListener('submit', function (e) {
-          e.preventDefault();
-          var pwd = document.getElementById('pwd').value;
-          var pwd2 = document.getElementById('pwd2').value;
-          if (pwd.length < 8) { showErr('Minimum 8 caractères.'); return; }
-          if (pwd !== pwd2) { showErr('Les mots de passe ne correspondent pas.'); return; }
-          fetch(window.__SUPABASE_URL__ + '/auth/v1/user', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + accessToken,
-              'apikey': window.__SUPABASE_ANON__
-            },
-            body: JSON.stringify({ password: pwd })
-          }).then(function (res) {
-            if (!res.ok) return res.json().then(function (j) { throw new Error(j.msg || j.message || 'Erreur'); });
-            okEl.textContent = 'Mot de passe enregistré. Vous pouvez ouvrir THE LOOP.';
-            okEl.style.display = 'block';
-            errEl.style.display = 'none';
-            pwdForm.style.display = 'none';
-            title.textContent = 'Compte prêt';
-            message.textContent = 'Connectez-vous avec votre nouveau mot de passe.';
-          }).catch(function (err) {
-            showErr(err.message || 'Enregistrement impossible.');
+      if (tokenHash) {
+        verifyTokenHash(tokenHash, kind === 'recovery' ? 'recovery' : 'invite')
+          .then(function (session) {
+            var at = session.access_token;
+            var rt = session.refresh_token;
+            if (!at || !rt) throw new Error('Session invalide après validation.');
+            showPasswordForm(at, rt, kind, 'type=' + kind + '&access_token=' + encodeURIComponent(at) + '&refresh_token=' + encodeURIComponent(rt));
+          })
+          .catch(function (err) {
+            title.textContent = 'Lien invalide ou expiré';
+            message.textContent = err.message || 'Demandez un nouvel e-mail depuis l\\'administrateur THE LOOP.';
           });
-        });
         return;
       }
 
-      title.textContent = kind === 'recovery' || kind === 'invite' ? 'Lien validé' : 'E-mail confirmé';
-      message.textContent = kind === 'recovery' || kind === 'invite'
-        ? 'Ouvrez THE LOOP pour finaliser votre mot de passe.'
-        : 'Votre compte est activé. Ouvrez l\\'application.';
-      setTimeout(function () { try { window.location.href = deepLink; } catch (e) {} }, 600);
+      if (code && !accessToken) {
+        exchangeCode(code)
+          .then(function (session) {
+            showPasswordForm(session.access_token, session.refresh_token, kind, paramString);
+          })
+          .catch(function (err) {
+            title.textContent = 'Lien incomplet';
+            message.textContent = err.message || 'Ouvrez le lien depuis le même appareil ou demandez un nouvel e-mail.';
+          });
+        return;
+      }
+
+      if (!paramString) {
+        title.textContent = 'Lien incomplet';
+        message.textContent = 'Ce lien ne fonctionne pas. Demandez un nouvel e-mail d\\'invitation.';
+        return;
+      }
+
+      if ((kind === 'recovery' || kind === 'invite') && accessToken && refreshToken) {
+        showPasswordForm(accessToken, refreshToken, kind, paramString);
+        return;
+      }
+
+      title.textContent = 'E-mail confirmé';
+      message.textContent = 'Ouvrez l\\'application THE LOOP pour continuer.';
+      openApp.href = 'theloop://auth/callback#' + paramString;
+      openApp.style.display = 'block';
     })();
   </script>
 </body>
@@ -145,7 +243,7 @@ Deno.serve((req) => {
   return new Response(html, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': 'no-store',
       'Access-Control-Allow-Origin': '*',
     },
   });
