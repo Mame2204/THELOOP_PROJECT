@@ -380,11 +380,20 @@ a { color: var(--accent); }
   gap: 10px;
   margin-bottom: 12px;
 }
-.target-list {
+.target-list,
+.chip-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin: 0 0 12px;
+}
+.btn.ghost.danger {
+  border-color: rgba(239, 68, 68, 0.35);
+  color: var(--danger);
+}
+.btn.ghost.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .target-chip {
   border: 1px solid var(--border);
