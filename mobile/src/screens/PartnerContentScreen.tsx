@@ -14,7 +14,11 @@ import {
   type StagingEvent,
   type StagingSpot,
 } from '@/lib/partner-staging-store';
-import { requestPartnerContentWithdrawal, type PartnerContentKind } from '@/lib/partner-withdrawal-request';
+import {
+  cancelPartnerContentWithdrawal,
+  requestPartnerContentWithdrawal,
+  type PartnerContentKind,
+} from '@/lib/partner-withdrawal-request';
 import { PARTNER_PUBLICATION_NOTICE } from '@/lib/legal-content-store';
 import { navigateRoot } from '@/lib/navigation-utils';
 import { slugify } from '@/lib/content-mappers';
@@ -38,6 +42,13 @@ const FILTERS_ALL: { value: ContentFilter; label: string }[] = [
 
 function canPartnerEdit(status: string): boolean {
   return status === 'draft' || status === 'pending' || status === 'rejected';
+}
+
+function statusColor(status: string): string {
+  if (status === 'withdrawal_requested') return '#c2410c';
+  if (status === 'rejected') return '#f87171';
+  if (canPartnerEdit(status)) return '#fcd34d';
+  return '#34d399';
 }
 
 function withdrawalKind(type: 'event' | 'spot', isTool: boolean): PartnerContentKind {
@@ -233,7 +244,7 @@ export function PartnerContentScreen({ navigation }: Props) {
           >
             <View style={styles.row}>
               <Text style={[styles.title, { color: shell.pageTitle }]}>{title}</Text>
-              <Text style={[styles.status, { color: editable ? '#fcd34d' : '#34d399' }]}>{STATUS_LABELS[item.status]}</Text>
+              <Text style={[styles.status, { color: statusColor(item.status) }]}>{STATUS_LABELS[item.status]}</Text>
             </View>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>
               {kindLabel} · {meta} · {actionHint}
@@ -251,6 +262,39 @@ export function PartnerContentScreen({ navigation }: Props) {
               >
                 <Text style={[styles.withdrawBtnText, { color: '#b45309' }]}>Demander le retrait</Text>
               </Pressable>
+            ) : null}
+            {item.status === 'withdrawal_requested' ? (
+              <View style={styles.withdrawPendingRow}>
+                <Text style={[styles.withdrawPendingHint, { color: '#c2410c' }]}>
+                  Retrait en cours de validation par THE LOOP.
+                </Text>
+                <Pressable
+                  style={[styles.withdrawBtn, { borderColor: '#fdba74' }]}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    Alert.alert(
+                      'Annuler la demande',
+                      'Le contenu restera publié si vous annulez.',
+                      [
+                        { text: 'Non', style: 'cancel' },
+                        {
+                          text: 'Annuler la demande',
+                          onPress: () => {
+                            void cancelPartnerContentWithdrawal(withdrawalKind(type, isTool), item.id).then(
+                              (res) => {
+                                if (!res.ok) Alert.alert('Erreur', res.error ?? 'Annulation impossible.');
+                                else void run(true);
+                              },
+                            );
+                          },
+                        },
+                      ],
+                    );
+                  }}
+                >
+                  <Text style={[styles.withdrawBtnText, { color: '#c2410c' }]}>Annuler la demande</Text>
+                </Pressable>
+              </View>
             ) : null}
           </Pressable>
         );
@@ -273,6 +317,8 @@ const styles = StyleSheet.create({
   status: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
   meta: { marginTop: 4, fontSize: 11 },
   rejection: { marginTop: 6, fontSize: 11, lineHeight: 16 },
+  withdrawPendingRow: { marginTop: 10, gap: 6 },
+  withdrawPendingHint: { fontSize: 11, lineHeight: 16, fontWeight: '600' },
   withdrawBtn: {
     marginTop: 10,
     alignSelf: 'flex-start',

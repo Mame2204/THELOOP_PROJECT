@@ -1,6 +1,9 @@
 import { deleteAdminContent } from '@/lib/admin-content-delete';
 import { invalidateContentCache } from '@/lib/content-store';
-import { notifyPartnerWithdrawalDecision } from '@/lib/partner-moderation-notify';
+import {
+  notifyAdminWithdrawalRequest,
+  notifyPartnerWithdrawalDecision,
+} from '@/lib/partner-moderation-notify';
 import { resolvePartnerQueryUserId } from '@/lib/partner-catalog-ids';
 import type { StagingEvent, StagingSpot } from '@/lib/partner-staging-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
@@ -42,14 +45,57 @@ export async function requestPartnerContentWithdrawal(
     .update({ status: 'withdrawal_requested', updated_at: new Date().toISOString() })
     .eq('local_id', localId)
     .eq('status', 'approved')
-    .select('local_id')
+    .select('local_id, title, name, partner_name, country_code')
     .maybeSingle();
 
   if (error) return { ok: false, error: error.message };
   if (!data) {
     return { ok: false, error: 'Contenu introuvable ou déjà en cours de retrait.' };
   }
+
+  const title =
+    kind === 'event'
+      ? String((data as { title?: string }).title ?? 'Événement')
+      : String((data as { name?: string }).name ?? 'Contenu');
+  await notifyAdminWithdrawalRequest({
+    kind,
+    title,
+    partnerName: String((data as { partner_name?: string }).partner_name ?? 'Partenaire'),
+    countryCode: (data as { country_code?: string }).country_code ?? null,
+  }).catch(() => undefined);
+
   return { ok: true };
+}
+
+/** Partenaire : annule une demande de retrait en cours. */
+export async function cancelPartnerContentWithdrawal(
+  kind: PartnerContentKind,
+  localId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { ok: false, error: 'Connexion requise.' };
+  }
+
+  const table = remoteTable(kind);
+  const { data, error } = await supabase
+    .from(table)
+    .update({ status: 'approved', updated_at: new Date().toISOString() })
+    .eq('local_id', localId)
+    .eq('status', 'withdrawal_requested')
+    .select('local_id')
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: 'Demande introuvable ou déjà traitée.' };
+  return { ok: true };
+}
+
+export async function countWithdrawalRequests(countryCode?: string): Promise<number> {
+  const [ev, sp] = await Promise.all([
+    listWithdrawalRequestedEvents(countryCode),
+    listWithdrawalRequestedSpots(countryCode),
+  ]);
+  return ev.length + sp.length;
 }
 
 export async function listWithdrawalRequestedEvents(countryCode?: string): Promise<StagingEvent[]> {

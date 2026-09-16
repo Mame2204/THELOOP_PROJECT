@@ -239,6 +239,19 @@ a { color: var(--accent); }
   font-weight: 700;
   text-align: center;
   line-height: 1.1;
+  position: relative;
+}
+.sidebar-badge {
+  display: inline-block;
+  margin-left: 2px;
+  min-width: 14px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: #c2410c;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  vertical-align: top;
 }
 
 .admin-main {

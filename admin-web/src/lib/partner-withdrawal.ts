@@ -103,6 +103,11 @@ export async function listWithdrawalRequests(
   return { items, error: eventsRes.error?.message || spotsRes.error?.message };
 }
 
+export async function countWithdrawalRequests(countryCode?: string): Promise<number> {
+  const res = await listWithdrawalRequests(countryCode);
+  return res.items.length;
+}
+
 async function deleteCatalogRow(
   kind: StagingKind,
   catalogId: string,

@@ -82,24 +82,6 @@ export function AdminUsersPage() {
         </table>
       </div>
 
-      {store.retractionRequests.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-lg font-bold">Demandes de rétraction</h2>
-          <p className="mt-1 text-sm text-neutral-600">
-            File d’attente locale uniquement. Pour retirer réellement un contenu publié,
-            utilisez la console admin mobile (suppression catalogue).
-          </p>
-          <div className="mt-3 space-y-2">
-            {store.retractionRequests.filter((r) => r.status === 'pending').map((r) => (
-              <div key={r.id} className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
-                <p className="font-semibold">{r.contentName} · {r.contentType === 'event' ? 'Événement' : 'Adresse'}</p>
-                <p className="text-neutral-600">{r.partnerName}</p>
-                <p className="mt-1">{r.reason}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

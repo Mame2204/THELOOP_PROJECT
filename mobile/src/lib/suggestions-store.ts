@@ -240,6 +240,7 @@ export async function submitCommunitySuggestion(
   await notifyAdminUsers({
     title: 'Nouvelle suggestion',
     message: `${typeLabel} — ${headline}${contact ? ` (${contact})` : ''}`,
+    countryCode,
   });
 
   return { ok: true };

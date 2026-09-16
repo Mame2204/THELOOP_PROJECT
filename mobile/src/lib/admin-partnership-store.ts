@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { resolveCountryCode } from '@/lib/admin-country';
 import { hydrateScoped, peekScoped, scopedStorageKey } from '@/lib/swr-cache';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { onboardApprovedPartnership } from '@/lib/admin-partner-token-store';
 import type { PartnershipNote, PartnershipRequest, PartnershipStatus } from '@/lib/admin-types';
 import { PARTNERSHIP_STATUS_LABELS } from '@/lib/admin-types';
 
@@ -148,6 +149,20 @@ export async function listPartnershipRequests(
   const fresh = (await fetchPartnershipRequests(countryCode)) ?? [];
   await hydrateScoped(scope, diskKey, fresh);
   return fresh;
+}
+
+export async function approvePartnershipWithOnboarding(
+  request: PartnershipRequest,
+): Promise<{ ok: boolean; tokenCode?: string; error?: string }> {
+  const statusRes = await updatePartnershipStatus(request.id, 'approved');
+  if (!statusRes.ok) return statusRes;
+
+  return onboardApprovedPartnership({
+    partnershipId: request.id,
+    establishmentName: request.establishmentName,
+    managerName: request.managerName,
+    email: request.email,
+  });
 }
 
 export async function updatePartnershipStatus(

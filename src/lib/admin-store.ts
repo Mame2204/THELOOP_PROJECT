@@ -5,7 +5,6 @@ import type {
   AdminPartnershipApplication,
   ManagedUser,
   PlatformCategory,
-  RetractionRequest,
   StagingEventItem,
   StagingLocationItem,
 } from '@/types/admin';
@@ -42,7 +41,6 @@ export interface AdminStore {
   primeInvitations: PrimeInvitation[];
   platformCategories: PlatformCategory[];
   managedUsers: ManagedUser[];
-  retractionRequests: RetractionRequest[];
 }
 
 function defaultStore(): AdminStore {
@@ -124,7 +122,6 @@ function defaultStore(): AdminStore {
       { id: 'partner-demo', fullName: 'L\'Avenue — Direction', email: 'contact@lavenue.gn', role: 'PARTNER', status: 'active', company: 'L\'Avenue', updatedAt: now },
       { id: 'admin-demo', fullName: 'Admin THE LOOP', email: 'admin@theloop.gn', role: 'ADMIN', status: 'active', company: 'THE LOOP', updatedAt: now },
     ],
-    retractionRequests: [],
   };
 }
 
@@ -226,7 +223,6 @@ function normalizeStore(parsed: Partial<AdminStore>): AdminStore {
       ...u,
       role: u.role === 'BLACK_LOOP' as UserRole ? 'USER_PRIME' : u.role,
     })),
-    retractionRequests: Array.isArray(parsed.retractionRequests) ? parsed.retractionRequests : [],
   };
 }
 
@@ -580,35 +576,6 @@ export function deleteStagingLocation(id: string): boolean {
   store.stagingLocations = store.stagingLocations.filter((l) => l.id !== id);
   saveAdminStore(store);
   return true;
-}
-
-export function requestContentRetraction(input: {
-  partnerId: string;
-  partnerName: string;
-  contentType: 'event' | 'location';
-  stagingId: string;
-  contentName: string;
-  reason: string;
-}): RetractionRequest | null {
-  const store = loadAdminStore();
-  const list = input.contentType === 'event' ? store.stagingEvents : store.stagingLocations;
-  const item = list.find((i) => i.id === input.stagingId && i.status === 'approved');
-  if (!item) return null;
-
-  const request: RetractionRequest = {
-    id: createId('retract'),
-    partnerId: input.partnerId,
-    partnerName: input.partnerName,
-    contentType: input.contentType,
-    stagingId: input.stagingId,
-    contentName: input.contentName,
-    reason: input.reason.trim(),
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  };
-  store.retractionRequests = [request, ...store.retractionRequests];
-  saveAdminStore(store);
-  return request;
 }
 
 export function getPlatformCategories(): PlatformCategory[] {

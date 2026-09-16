@@ -22,17 +22,11 @@ function statusLabel(stagingStatus?: string) {
 
 export function PartnerEventsSection() {
 
-  const { workspace, platformCategories, getEventStaging, resubmitEvent, updatePendingEvent, removeEvent, requestRetraction } = usePartnerData();
+  const { workspace, platformCategories, getEventStaging, resubmitEvent, updatePendingEvent, removeEvent } = usePartnerData();
 
   const [showForm, setShowForm] = useState(false);
 
   const [editId, setEditId] = useState<string | null>(null);
-
-  const [retractionId, setRetractionId] = useState<string | null>(null);
-
-  const [retractionReason, setRetractionReason] = useState('');
-
-
 
   function categoryLabel(category: EventCategory) {
 
@@ -182,29 +176,11 @@ export function PartnerEventsSection() {
 
                   )}
 
-                  {isPublished && staging && (
-
-                    <button
-
-                      type="button"
-
-                      onClick={() => setRetractionId(retractionId === event.id ? null : event.id)}
-
-                      className="rounded-lg border border-amber-500 px-3 py-1.5 text-xs font-semibold text-amber-700"
-
-                    >
-
-                      Demander une rétraction
-
-                    </button>
-
-                  )}
-
                 </div>
 
                 {isPublished && staging ? (
                   <p className="mt-1 text-[11px] text-neutral-500">
-                    Enregistre une demande pour l’admin (ne retire pas encore le contenu publié).
+                    Retrait d’un contenu publié : utilisez l’application mobile THE LOOP (Espace Pro → Mes contenus).
                   </p>
                 ) : null}
 
@@ -231,54 +207,6 @@ export function PartnerEventsSection() {
                     onCancel={() => setEditId(null)}
 
                   />
-
-                )}
-
-
-
-                {retractionId === event.id && staging && (
-
-                  <form
-
-                    className="mt-3 space-y-2 border-t border-amber-200 pt-3"
-
-                    onSubmit={(e) => {
-
-                      e.preventDefault();
-
-                      requestRetraction('event', staging.id, event.title, retractionReason);
-
-                      setRetractionId(null);
-
-                      setRetractionReason('');
-
-                    }}
-
-                  >
-
-                    <textarea
-
-                      required
-
-                      value={retractionReason}
-
-                      onChange={(e) => setRetractionReason(e.target.value)}
-
-                      placeholder="Motif de la demande de rétraction…"
-
-                      className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-loop-black"
-
-                      rows={2}
-
-                    />
-
-                    <button type="submit" className="w-full rounded-xl bg-amber-500 py-2 text-xs font-bold text-white">
-
-                      Envoyer la demande à l&apos;admin
-
-                    </button>
-
-                  </form>
 
                 )}
 

@@ -13,6 +13,7 @@ import { useAdminPermissions } from '@/context/AdminPermissionsContext';
 import { useAdminCountry } from '@/context/AdminCountryContext';
 import { listPendingEvents, listPendingSpots } from '@/lib/partner-staging-store';
 import { countPartnershipsByStatus } from '@/lib/admin-partnership-store';
+import { countWithdrawalRequests } from '@/lib/partner-withdrawal-request';
 import { countPendingSuggestions } from '@/lib/suggestions-store';
 import type { AdminPermissionId } from '@/lib/admin-permissions';
 import type { AdminPanelParamList } from '@/navigation/types';
@@ -143,15 +144,17 @@ export function AdminWorkspaceScreen() {
   const [moderationCount, setModerationCount] = useState(0);
   const [partnershipPending, setPartnershipPending] = useState(0);
   const [suggestionsPending, setSuggestionsPending] = useState(0);
+  const [withdrawalsPending, setWithdrawalsPending] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [ev, sp, pCounts, sug] = await Promise.all([
+      const [ev, sp, pCounts, sug, withdrawals] = await Promise.all([
         listPendingEvents(countryCode),
         listPendingSpots(countryCode),
         countPartnershipsByStatus(countryCode),
         countPendingSuggestions(countryCode),
+        countWithdrawalRequests(countryCode),
       ]);
       if (cancelled) return;
       setModerationCount(
@@ -161,6 +164,7 @@ export function AdminWorkspaceScreen() {
       );
       setPartnershipPending(pCounts.pending + pCounts.to_contact + pCounts.in_discussion);
       setSuggestionsPending(sug);
+      setWithdrawalsPending(withdrawals);
     })();
     return () => {
       cancelled = true;
@@ -192,7 +196,7 @@ export function AdminWorkspaceScreen() {
         key: 'demandes',
         icon: '📥',
         label: 'Demandes',
-        badge: (partnershipPending + moderationCount + suggestionsPending) || undefined,
+        badge: (partnershipPending + moderationCount + suggestionsPending + withdrawalsPending) || undefined,
         permission: undefined,
       },
       { key: 'benefits', icon: '🎁', label: 'Privilèges', permission: 'prime_benefits' },

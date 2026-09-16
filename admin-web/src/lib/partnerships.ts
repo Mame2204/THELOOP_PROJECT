@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { onboardApprovedPartnership } from './partner-tokens';
 
 export type PartnershipStatus =
   | 'pending'
@@ -115,6 +116,22 @@ export async function updatePartnershipStatus(
     .eq('id', id);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/** Valide le partenariat + génère jeton SPOT + note système. */
+export async function approvePartnershipWithOnboarding(
+  request: PartnershipRequest,
+): Promise<{ ok: boolean; tokenCode?: string; error?: string }> {
+  const statusRes = await updatePartnershipStatus(request.id, 'approved');
+  if (!statusRes.ok) return statusRes;
+
+  return onboardApprovedPartnership({
+    partnershipId: request.id,
+    establishmentName: request.establishmentName,
+    managerName: request.managerName,
+    email: request.email,
+    countryCode: request.countryCode,
+  });
 }
 
 export async function addPartnershipNote(

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { updateSuggestionStatus } from '../lib/suggestions';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import {
@@ -41,6 +42,8 @@ function tabForKind(kind: CatalogKind): string {
 
 export function ContentEditorPage() {
   const { kind: kindParam, id } = useParams<{ kind: string; id?: string }>();
+  const [searchParams] = useSearchParams();
+  const suggestionId = searchParams.get('suggestion');
   const kind = parseKind(kindParam);
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -92,11 +95,30 @@ export function ContentEditorPage() {
 
   useEffect(() => {
     if (!isEdit && kind) {
-      setEventForm(emptyEventForm(countryCode));
-      setSpotForm(emptySpotForm(countryCode));
-      setToolForm(emptyToolForm(countryCode));
+      const prefillTitle = searchParams.get('title') ?? '';
+      const prefillDesc = searchParams.get('desc') ?? '';
+      const prefillPlace = searchParams.get('place') ?? '';
+      const prefillCountry = searchParams.get('country') ?? countryCode;
+
+      setEventForm({
+        ...emptyEventForm(prefillCountry),
+        title: prefillTitle,
+        description: prefillDesc,
+        venueName: prefillPlace,
+      });
+      setSpotForm({
+        ...emptySpotForm(prefillCountry),
+        name: prefillTitle || prefillPlace,
+        description: prefillDesc,
+        address: prefillPlace,
+      });
+      setToolForm({
+        ...emptyToolForm(prefillCountry),
+        name: prefillTitle,
+        description: prefillDesc,
+      });
     }
-  }, [countryCode, isEdit, kind]);
+  }, [countryCode, isEdit, kind, searchParams]);
 
   if (!kind) return <Navigate to="/contenu" replace />;
   if (!canKind) return <Navigate to="/contenu" replace />;
@@ -137,6 +159,13 @@ export function ContentEditorPage() {
     }
 
     setMsg(isEdit ? 'Modifications enregistrées.' : 'Contenu créé.');
+    if (!isEdit && suggestionId) {
+      await updateSuggestionStatus(
+        suggestionId,
+        'done',
+        `Contenu ${KIND_LABELS[kind!]} créé (${res.id ?? '—'}).`,
+      );
+    }
     if (!isEdit && res.id) {
       navigate(`/contenu/editer/${kind}/${res.id}`, { replace: true });
       return;

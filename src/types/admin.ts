@@ -118,14 +118,3 @@ export interface ManagedUser {
   updatedAt: string;
 }
 
-export interface RetractionRequest {
-  id: string;
-  partnerId: string;
-  partnerName: string;
-  contentType: 'event' | 'location';
-  stagingId: string;
-  contentName: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-}

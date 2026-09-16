@@ -84,11 +84,17 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   const typeTabs = useFilteredAdminTabs('moderation', MODERATION_TYPE_TABS);
   const pendingSpots = useMemo(() => spots.filter((s) => s.subCategory !== 'tools'), [spots]);
   const pendingTools = useMemo(() => spots.filter((s) => s.subCategory === 'tools'), [spots]);
+  const withdrawalCount = withdrawalEvents.length + withdrawalSpots.length;
+
   const visibleTabs = useMemo(
     () =>
       typeTabs.length > 1
         ? [
-            { id: 'all' as const, label: 'Tous', badge: events.length + pendingSpots.length + pendingTools.length },
+            {
+              id: 'all' as const,
+              label: 'Tous',
+              badge: events.length + pendingSpots.length + pendingTools.length + withdrawalCount,
+            },
             ...typeTabs.map((t) => ({
               ...t,
               badge: t.id === 'events' ? events.length : t.id === 'spots' ? pendingSpots.length : pendingTools.length,
@@ -98,7 +104,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
             ...t,
             badge: t.id === 'events' ? events.length : t.id === 'spots' ? pendingSpots.length : pendingTools.length,
           })),
-    [typeTabs, events.length, pendingSpots.length, pendingTools.length],
+    [typeTabs, events.length, pendingSpots.length, pendingTools.length, withdrawalCount],
   );
 
   useEffect(() => {

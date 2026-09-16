@@ -4,6 +4,7 @@ import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTex
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import {
   addPartnershipNote,
+  approvePartnershipWithOnboarding,
   listPartnershipRequests,
   PARTNERSHIP_STATUS_LABELS,
   updatePartnershipStatus,
@@ -62,6 +63,36 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
   const filtered = list.filter((p) => filter === 'all' || p.status === filter);
 
   async function changeStatus(id: string, status: PartnershipStatus) {
+    const partnership = list.find((p) => p.id === id);
+    if (status === 'approved' && partnership && partnership.status !== 'approved') {
+      Alert.alert(
+        'Valider le partenariat',
+        `Générer un jeton SPOT pour ${partnership.establishmentName} ?`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          {
+            text: 'Valider',
+            onPress: () => {
+              void approvePartnershipWithOnboarding(partnership).then(async (res) => {
+                if (!res.ok) {
+                  Alert.alert('Erreur', res.error ?? 'Validation impossible');
+                  return;
+                }
+                Alert.alert(
+                  'Partenaire validé',
+                  res.tokenCode
+                    ? `Jeton SPOT : ${res.tokenCode}\nTransmettez-le au partenaire.`
+                    : 'Statut mis à jour.',
+                );
+                await load({ force: true });
+              });
+            },
+          },
+        ],
+      );
+      return;
+    }
+
     const res = await updatePartnershipStatus(id, status);
     if (!res.ok) Alert.alert('Erreur', res.error ?? 'Mise à jour impossible');
     else await load({ force: true });

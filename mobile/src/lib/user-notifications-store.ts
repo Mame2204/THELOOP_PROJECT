@@ -749,15 +749,31 @@ export async function appendUserNotification(
   return entry;
 }
 
-/** Notifie tous les comptes admin connus (registre local + admin-demo). */
-export async function notifyAdminUsers(input: { title: string; message: string }): Promise<void> {
+/** Notifie tous les comptes admin (RPC Supabase si dispo, sinon registre local). */
+export async function notifyAdminUsers(input: {
+  title: string;
+  message: string;
+  countryCode?: string;
+}): Promise<void> {
+  if (isSupabaseConfigured() && supabase) {
+    const country = input.countryCode?.trim().toUpperCase().slice(0, 2) || null;
+    const { error } = await supabase.rpc('admin_distribute_notifications', {
+      p_title: input.title.trim(),
+      p_message: input.message.trim(),
+      p_audience: 'admin',
+      p_country_code: country,
+      p_campaign_id: null,
+    });
+    if (!error) return;
+  }
+
   const users = await listRegistryUsers();
   const adminIds = new Set<string>(['admin-demo']);
   for (const u of users) {
     if (u.role === 'ADMIN' || u.userRole === 'admin' || u.userRole === 'super_admin') adminIds.add(u.id);
   }
   for (const id of adminIds) {
-    await appendUserNotification(id, { ...input, audience: 'admin' });
+    await appendUserNotification(id, { title: input.title, message: input.message, audience: 'admin' });
   }
 }
 

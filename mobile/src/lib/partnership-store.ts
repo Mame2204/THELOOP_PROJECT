@@ -47,6 +47,7 @@ export async function submitPartnershipRequest(
   await notifyAdminUsers({
     title: 'Nouvelle demande de partenariat',
     message: `${input.companyName.trim()} — ${input.email.trim()} · ${phone}`,
+    countryCode,
   });
 
   return { ok: true };

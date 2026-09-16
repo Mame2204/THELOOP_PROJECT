@@ -32,8 +32,6 @@ import {
 
   getPlatformCategories,
 
-  requestContentRetraction,
-
   resubmitStagingEvent,
 
   resubmitStagingLocation,
@@ -83,8 +81,6 @@ interface PartnerDataContextValue {
   resubmitAddress: (addressId: string, data: Pick<PartnerAddress, 'name' | 'address' | 'city'>) => void;
 
   resubmitEvent: (eventId: string, data: Omit<PartnerEvent, 'id' | 'createdAt' | 'status' | 'stagingId'>) => void;
-
-  requestRetraction: (contentType: 'event' | 'location', stagingId: string, contentName: string, reason: string) => void;
 
   getAddressStaging: (addressId: string) => ReturnType<typeof getPartnerStagingItems>['locations'][number] | undefined;
 
@@ -552,36 +548,6 @@ export function PartnerDataProvider({ children }: { children: ReactNode }) {
 
 
 
-  const requestRetraction = useCallback(
-
-    (contentType: 'event' | 'location', stagingId: string, contentName: string, reason: string) => {
-
-      if (!partnerId || !user || !reason.trim()) return;
-
-      requestContentRetraction({
-
-        partnerId,
-
-        partnerName: user.company ?? user.fullName ?? 'Partenaire',
-
-        contentType,
-
-        stagingId,
-
-        contentName,
-
-        reason: reason.trim(),
-
-      });
-
-      refresh();
-
-    },
-
-    [partnerId, user, refresh],
-
-  );
-
 
 
   const getAddressStaging = useCallback(
@@ -642,8 +608,6 @@ export function PartnerDataProvider({ children }: { children: ReactNode }) {
 
       resubmitEvent,
 
-      requestRetraction,
-
       getAddressStaging,
 
       getEventStaging,
@@ -673,8 +637,6 @@ export function PartnerDataProvider({ children }: { children: ReactNode }) {
       resubmitAddress,
 
       resubmitEvent,
-
-      requestRetraction,
 
       getAddressStaging,
 

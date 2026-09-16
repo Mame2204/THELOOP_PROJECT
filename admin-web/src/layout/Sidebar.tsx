@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LoopLogo } from '../components/LoopLogo';
+import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
+import { loadDemandesCounts } from '../lib/demandes-counts';
 import type { AdminPermissionId } from '../lib/permissions';
 
 export interface NavItem {
@@ -42,7 +45,17 @@ export const ADMIN_NAV: NavItem[] = [
 
 export function Sidebar() {
   const { can, canDemandes } = usePermissions();
+  const { countryCode } = useAdminCountry();
   const location = useLocation();
+  const [demandesBadge, setDemandesBadge] = useState(0);
+
+  useEffect(() => {
+    if (!canDemandes) {
+      setDemandesBadge(0);
+      return;
+    }
+    void loadDemandesCounts(countryCode).then((c) => setDemandesBadge(c.total));
+  }, [canDemandes, countryCode, location.pathname]);
 
   const visible = ADMIN_NAV.filter((item) => {
     if (item.permission === 'demandes') return canDemandes;
@@ -87,7 +100,12 @@ export function Sidebar() {
               <span className="sidebar-icon" aria-hidden>
                 {item.icon}
               </span>
-              <span className="sidebar-label">{item.label}</span>
+              <span className="sidebar-label">
+                {item.label}
+                {item.permission === 'demandes' && demandesBadge > 0 ? (
+                  <span className="sidebar-badge">{demandesBadge}</span>
+                ) : null}
+              </span>
             </NavLink>
           );
         })}

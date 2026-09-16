@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
@@ -8,11 +8,13 @@ import {
   PARTNERSHIP_STATUS_LABELS,
   PARTNERSHIP_STATUSES,
   addPartnershipNote,
+  approvePartnershipWithOnboarding,
   listPartnershipRequests,
   updatePartnershipStatus,
   type PartnershipRequest,
   type PartnershipStatus,
 } from '../lib/partnerships';
+import { suggestionEditorPath } from '../lib/suggestion-content';
 import {
   approveStagingItem,
   listPendingStaging,
@@ -161,6 +163,20 @@ export function DemandesPage() {
     return permissionedQueue.filter((item) => item.kind === modFilter);
   }, [permissionedQueue, modFilter]);
 
+  const partnershipPendingCount = useMemo(
+    () =>
+      partnerships.filter((p) =>
+        ['pending', 'to_contact', 'in_discussion'].includes(p.status),
+      ).length,
+    [partnerships],
+  );
+
+  const moderationPendingCount = permissionedQueue.length + withdrawals.length;
+  const ideasPendingCount = useMemo(
+    () => ideas.filter((s) => s.status === 'pending').length,
+    [ideas],
+  );
+
   const filteredIdeas = useMemo(
     () =>
       ideas.filter(
@@ -172,6 +188,31 @@ export function DemandesPage() {
   );
 
   async function handleStatus(id: string, status: PartnershipStatus) {
+    const partnership = partnerships.find((p) => p.id === id);
+    if (status === 'approved' && partnership && partnership.status !== 'approved') {
+      if (
+        !window.confirm(
+          `Valider « ${partnership.establishmentName || partnership.managerName} » et générer un jeton SPOT ?`,
+        )
+      ) {
+        return;
+      }
+      setBusy(true);
+      const res = await approvePartnershipWithOnboarding(partnership);
+      setBusy(false);
+      if (!res.ok) {
+        setMsg(res.error ?? 'Validation impossible');
+        return;
+      }
+      setMsg(
+        res.tokenCode
+          ? `Partenaire validé. Jeton SPOT : ${res.tokenCode}`
+          : 'Partenaire validé.',
+      );
+      void loadPartnerships();
+      return;
+    }
+
     setBusy(true);
     const res = await updatePartnershipStatus(id, status);
     setBusy(false);
@@ -294,7 +335,7 @@ export function DemandesPage() {
             className={`tab ${tab === 'partnerships' ? 'active' : ''}`}
             onClick={() => setTab('partnerships')}
           >
-            Partenariats
+            Partenariats{partnershipPendingCount > 0 ? ` (${partnershipPendingCount})` : ''}
           </button>
         ) : null}
         {canModeration ? (
@@ -303,7 +344,7 @@ export function DemandesPage() {
             className={`tab ${tab === 'moderation' ? 'active' : ''}`}
             onClick={() => setTab('moderation')}
           >
-            Modération
+            Modération{moderationPendingCount > 0 ? ` (${moderationPendingCount})` : ''}
           </button>
         ) : null}
         {canIdeas ? (
@@ -312,7 +353,7 @@ export function DemandesPage() {
             className={`tab ${tab === 'ideas' ? 'active' : ''}`}
             onClick={() => setTab('ideas')}
           >
-            Idées
+            Idées{ideasPendingCount > 0 ? ` (${ideasPendingCount})` : ''}
           </button>
         ) : null}
       </nav>
@@ -669,14 +710,21 @@ export function DemandesPage() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn small ghost"
-                        disabled={busy}
-                        onClick={() => void cycleIdea(s)}
-                      >
-                        Avancer
-                      </button>
+                      <div className="edit-actions">
+                        {suggestionEditorPath(s) ? (
+                          <Link className="btn small" to={suggestionEditorPath(s)!}>
+                            Créer contenu
+                          </Link>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="btn small ghost"
+                          disabled={busy}
+                          onClick={() => void cycleIdea(s)}
+                        >
+                          Avancer
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
