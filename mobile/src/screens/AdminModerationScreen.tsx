@@ -137,10 +137,10 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   }, [load]);
 
   async function handleModerateEvent(id: string, approve: boolean, reason?: string) {
-    const ok = await moderateEvent(id, approve, reason);
+    const result = await moderateEvent(id, approve, reason);
     invalidateContentCache();
     await Promise.all([load(), refresh()]);
-    const copy = moderationResultCopy('event', approve, ok);
+    const copy = moderationResultCopy('event', approve, result.ok, result.reason);
     Alert.alert(copy.title, copy.message);
   }
 
@@ -425,20 +425,22 @@ export function AdminModerationScreen({ route, navigation }: Props) {
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalSheet, { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder }]}>
             <Text style={[styles.modalTitle, { color: shell.pageTitle }]}>Refuser la soumission</Text>
-            <Text style={[styles.modalSubtitle, { color: shell.pageKicker }]}>
-              {rejectTarget ? `« ${rejectTarget.title} »` : ''}
-            </Text>
-            <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
-            <TextInput
-              style={inputStyle}
-              value={rejectReason}
-              onChangeText={setRejectReason}
-              placeholder="Ex. photo floue, horaires incomplets…"
-              placeholderTextColor={shell.pageKicker}
-              multiline
-              textAlignVertical="top"
-              autoFocus
-            />
+            <KeyboardAwareFormScroll style={styles.modalForm} nestedScrollEnabled keyboardPriority={10}>
+              <Text style={[styles.modalSubtitle, { color: shell.pageKicker }]}>
+                {rejectTarget ? `« ${rejectTarget.title} »` : ''}
+              </Text>
+              <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
+              <TextInput
+                style={inputStyle}
+                value={rejectReason}
+                onChangeText={setRejectReason}
+                placeholder="Ex. photo floue, horaires incomplets…"
+                placeholderTextColor={shell.pageKicker}
+                multiline
+                textAlignVertical="top"
+                autoFocus
+              />
+            </KeyboardAwareFormScroll>
             <Pressable
               style={[styles.submit, { backgroundColor: '#ef4444' }]}
               onPress={() => void confirmReject()}
@@ -468,6 +470,7 @@ const styles = StyleSheet.create({
   denied: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
   modalSheet: { borderWidth: 1, borderRadius: 16, margin: 12, marginBottom: 24, padding: 16 },
+  modalForm: { maxHeight: 280, flexGrow: 0 },
   modalTitle: { fontSize: 17, fontWeight: '800' },
   modalSubtitle: { marginTop: 6, marginBottom: 12, fontSize: 13 },
   label: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginBottom: 6 },

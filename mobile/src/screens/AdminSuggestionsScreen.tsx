@@ -20,6 +20,7 @@ import {
   type SuggestionStatus,
   type SuggestionType,
 } from '@/lib/suggestions-store';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminSuggestions'>;
@@ -54,7 +55,9 @@ export function AdminSuggestionsScreen({ navigation, route }: Props) {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
   const load = useCallback(async (force = false) => {
-    setItems(await listCommunitySuggestions(countryCode, { force }));
+    const fetchFresh = force || isSupabaseConfigured();
+    if (fetchFresh) setItems([]);
+    setItems(await listCommunitySuggestions(countryCode, { force: fetchFresh }));
   }, [countryCode]);
 
   const { run } = useFocusLoad(

@@ -31,6 +31,21 @@ export async function notifyPartnerModerationDecision(params: {
   });
 }
 
+export async function notifyAdminPendingSubmission(params: {
+  kind: 'event' | 'spot' | 'tool';
+  title: string;
+  partnerName: string;
+  countryCode?: string | null;
+}): Promise<void> {
+  const kindLabel =
+    params.kind === 'event' ? 'événement' : params.kind === 'tool' ? 'outil' : 'spot';
+  await notifyAdminUsers({
+    title: 'Contenu à modérer',
+    message: `${params.partnerName} a soumis un ${kindLabel} : « ${params.title} ». Consultez Modération.`,
+    countryCode: params.countryCode ?? undefined,
+  });
+}
+
 export async function notifyAdminWithdrawalRequest(params: {
   kind: 'event' | 'spot' | 'tool';
   title: string;

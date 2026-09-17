@@ -1,9 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { THE_LOOP_ORGANIZER_LABEL, isTeamContentOrigin, type ContentOrigin } from '@/lib/content-origin';
+import { normalizePartnerName } from '@/lib/partner-name-utils';
 import { isNetworkOnline, readLocalCache, writeLocalCache } from '@/lib/offline-store';
 import { listPartnerDirectory } from '@/lib/partner-directory-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 const KEY = 'loop_partner_validation_codes_v1';
+
+/** Clé stable partagée — super admin + admins délégués (contenus équipe THE LOOP). */
+export const THE_LOOP_TEAM_PARTNER_KEY = 'theloop-team';
+export const THE_LOOP_TEAM_PARTNER_NAME = THE_LOOP_ORGANIZER_LABEL;
 
 export interface PartnerValidationCode {
   partnerId: string;
@@ -40,6 +46,16 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
+export function isTheLoopTeamPartnerKey(partnerKey: string | null | undefined): boolean {
+  return partnerKey?.trim() === THE_LOOP_TEAM_PARTNER_KEY;
+}
+
+export function isTheLoopTeamPartnerName(partnerName: string | null | undefined): boolean {
+  const norm = partnerName?.trim() ? normalizePartnerName(partnerName) : '';
+  if (!norm) return false;
+  return norm === normalizePartnerName(THE_LOOP_TEAM_PARTNER_NAME);
+}
+
 function parsePartnerUserId(partnerId: string): string | null {
   const userPrefix = /^user:([0-9a-f-]{36})$/i.exec(partnerId.trim());
   if (userPrefix) return userPrefix[1];
@@ -63,6 +79,10 @@ async function resolveCodeRemoteLinks(
   partnerId: string,
   partnerName: string,
 ): Promise<{ stableKey: string; establishmentId: string | null; userId: string | null }> {
+  if (isTheLoopTeamPartnerKey(partnerId) || isTheLoopTeamPartnerName(partnerName)) {
+    return { stableKey: THE_LOOP_TEAM_PARTNER_KEY, establishmentId: null, userId: null };
+  }
+
   const stableKey = await resolveStablePartnerKey(partnerId, partnerName);
   const candidateUserId = parsePartnerUserId(partnerId);
 
@@ -92,6 +112,9 @@ export async function resolveStablePartnerKey(
   userId: string,
   partnerName: string | null | undefined,
 ): Promise<string> {
+  if (isTheLoopTeamPartnerKey(userId) || isTheLoopTeamPartnerName(partnerName)) {
+    return THE_LOOP_TEAM_PARTNER_KEY;
+  }
   if (isUuid(userId)) return userId;
 
   if (isSupabaseConfigured() && supabase) {
@@ -302,10 +325,37 @@ export async function ensurePartnerValidationCodes(countryCode?: string): Promis
   return Array.from(byPartner.values());
 }
 
+/** Code partenaire unique pour toute l'équipe THE LOOP (admins + super admin). */
+export async function getOrCreateTheLoopTeamValidationCode(): Promise<PartnerValidationCode> {
+  const remote = await resolveRemotePartnerCode(THE_LOOP_TEAM_PARTNER_KEY, THE_LOOP_TEAM_PARTNER_NAME);
+  if (remote) {
+    await cacheEntry(remote);
+    return remote;
+  }
+
+  const all = await loadAll();
+  const found = all.find((e) => isTheLoopTeamPartnerKey(e.partnerId));
+  if (found) return found;
+
+  const entry: PartnerValidationCode = {
+    partnerId: THE_LOOP_TEAM_PARTNER_KEY,
+    partnerName: THE_LOOP_TEAM_PARTNER_NAME,
+    code: formatPartnerValidationCode(generateCodeSuffix()),
+    createdAt: new Date().toISOString(),
+  };
+  all.push(entry);
+  await saveAll(all);
+  return entry;
+}
+
 export async function getOrCreatePartnerValidationCode(
   partnerId: string,
   partnerName: string,
 ): Promise<PartnerValidationCode> {
+  if (isTheLoopTeamPartnerKey(partnerId) || isTheLoopTeamPartnerName(partnerName)) {
+    return getOrCreateTheLoopTeamValidationCode();
+  }
+
   const links = await resolveCodeRemoteLinks(partnerId, partnerName);
   const remote = await resolveRemotePartnerCode(partnerId, partnerName);
   if (remote) {
@@ -354,9 +404,42 @@ export async function getOrCreatePartnerValidationCode(
   return entry;
 }
 
+async function fetchPublishedContentOrigin(contentId: string): Promise<ContentOrigin | null> {
+  if (!canUseRemotePartnerCodes() || !supabase || !(await isNetworkOnline())) return null;
+
+  const [est, evt, spotSub, eventSub] = await Promise.all([
+    supabase.from('establishments').select('content_origin').eq('id', contentId).maybeSingle(),
+    supabase.from('events').select('content_origin').eq('id', contentId).maybeSingle(),
+    supabase
+      .from('partner_spot_submissions')
+      .select('content_origin')
+      .or(`published_establishment_id.eq.${contentId},published_tool_id.eq.${contentId}`)
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('partner_event_submissions')
+      .select('content_origin')
+      .eq('published_event_id', contentId)
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const candidates: Array<ContentOrigin | null | undefined> = [
+    est.data?.content_origin as ContentOrigin | null | undefined,
+    evt.data?.content_origin as ContentOrigin | null | undefined,
+    spotSub.data?.content_origin as ContentOrigin | null | undefined,
+    eventSub.data?.content_origin as ContentOrigin | null | undefined,
+  ];
+
+  for (const origin of candidates) {
+    if (origin && isTeamContentOrigin(origin)) return origin;
+  }
+  return null;
+}
+
 /**
  * Résout le CODE partenaire pour une utilisation depuis une fiche contenu.
- * Priorité : establishment_id = contentId → partner_key = contentId → getOrCreate classique.
+ * Priorité : contenu équipe THE LOOP → establishment_id → partner_key → propriétaire partenaire.
  */
 export async function resolvePartnerValidationCodeForContent(
   partnerId: string,
@@ -364,6 +447,17 @@ export async function resolvePartnerValidationCodeForContent(
   contentId?: string | null,
 ): Promise<PartnerValidationCode> {
   const cid = contentId?.trim();
+  if (cid) {
+    const teamOrigin = await fetchPublishedContentOrigin(cid);
+    if (teamOrigin) {
+      return getOrCreateTheLoopTeamValidationCode();
+    }
+  }
+
+  if (isTheLoopTeamPartnerName(partnerName) && !isUuid(partnerId)) {
+    return getOrCreateTheLoopTeamValidationCode();
+  }
+
   if (cid && canUseRemotePartnerCodes() && supabase && (await isNetworkOnline())) {
     const { data: byEst } = await supabase
       .from('partner_validation_codes')
@@ -391,17 +485,25 @@ export async function resolvePartnerValidationCodeForContent(
     const [spotSub, eventSub] = await Promise.all([
       supabase
         .from('partner_spot_submissions')
-        .select('partner_user_id, name')
+        .select('partner_user_id, name, content_origin')
         .or(`published_establishment_id.eq.${cid},published_tool_id.eq.${cid}`)
         .limit(1)
         .maybeSingle(),
       supabase
         .from('partner_event_submissions')
-        .select('partner_user_id, title')
+        .select('partner_user_id, title, content_origin')
         .eq('published_event_id', cid)
         .limit(1)
         .maybeSingle(),
     ]);
+
+    const submissionOrigin =
+      (spotSub.data?.content_origin as ContentOrigin | null | undefined) ??
+      (eventSub.data?.content_origin as ContentOrigin | null | undefined);
+    if (submissionOrigin && isTeamContentOrigin(submissionOrigin)) {
+      return getOrCreateTheLoopTeamValidationCode();
+    }
+
     const ownerId =
       (spotSub.data?.partner_user_id ? String(spotSub.data.partner_user_id) : null) ??
       (eventSub.data?.partner_user_id ? String(eventSub.data.partner_user_id) : null);
@@ -417,6 +519,10 @@ export async function resolvePartnerValidationCodeForContent(
       }
       return getOrCreatePartnerValidationCode(ownerId, label);
     }
+  }
+
+  if (isTheLoopTeamPartnerName(partnerName)) {
+    return getOrCreateTheLoopTeamValidationCode();
   }
 
   return getOrCreatePartnerValidationCode(partnerId, partnerName);

@@ -1540,7 +1540,7 @@ export async function requestBenefitValidation(
       partnerName,
       contextContentId || offering?.contentId || null,
     );
-    return { partnerId, partnerCode };
+    return { partnerId: partnerCode.partnerId, partnerCode };
   };
 
   let partnerId = offeringPartnerId;
@@ -1551,18 +1551,31 @@ export async function requestBenefitValidation(
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 6000)),
     ]);
     if (resolved) {
-      partnerId = resolved.partnerId;
+      partnerId = resolved.partnerCode.partnerId;
       partnerCode = resolved.partnerCode;
     } else {
       console.warn('[Benefits] partner resolve timeout — fallback getOrCreate');
-      const { getOrCreatePartnerValidationCode } = await import('@/lib/partner-validation-code-store');
-      partnerCode = await getOrCreatePartnerValidationCode(offeringPartnerId, partnerName);
-      partnerId = offeringPartnerId;
+      const {
+        getOrCreatePartnerValidationCode,
+        getOrCreateTheLoopTeamValidationCode,
+        isTheLoopTeamPartnerName,
+      } = await import('@/lib/partner-validation-code-store');
+      partnerCode = isTheLoopTeamPartnerName(partnerName)
+        ? await getOrCreateTheLoopTeamValidationCode()
+        : await getOrCreatePartnerValidationCode(offeringPartnerId, partnerName);
+      partnerId = partnerCode.partnerId;
     }
   } catch (err) {
     console.warn('[Benefits] partner resolve error', err);
-    const { getOrCreatePartnerValidationCode } = await import('@/lib/partner-validation-code-store');
-    partnerCode = await getOrCreatePartnerValidationCode(offeringPartnerId, partnerName);
+    const {
+      getOrCreatePartnerValidationCode,
+      getOrCreateTheLoopTeamValidationCode,
+      isTheLoopTeamPartnerName,
+    } = await import('@/lib/partner-validation-code-store');
+    partnerCode = isTheLoopTeamPartnerName(partnerName)
+      ? await getOrCreateTheLoopTeamValidationCode()
+      : await getOrCreatePartnerValidationCode(offeringPartnerId, partnerName);
+    partnerId = partnerCode.partnerId;
   }
 
   const activatedWithPartner = {

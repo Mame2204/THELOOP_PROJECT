@@ -110,6 +110,7 @@ export function moderationResultCopy(
   kind: PublicationKind,
   approve: boolean,
   ok: boolean,
+  failureReason?: string | null,
 ): { title: string; message?: string } {
   const label = kindLabel(kind, true);
 
@@ -127,8 +128,11 @@ export function moderationResultCopy(
     };
   }
 
+  const detail = failureReason?.trim();
   return {
     title: 'Publication impossible',
-    message: 'La publication n\'a pas abouti. Vérifiez la connexion et réessayez.',
+    message: detail
+      ? `${detail}\n\nVérifiez la connexion et réessayez.`
+      : 'La publication n\'a pas abouti. Vérifiez la connexion et réessayez.',
   };
 }

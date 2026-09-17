@@ -13,15 +13,17 @@ import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { AdminModuleDenied } from '@/components/admin/AdminModuleDenied';
 import { useAdminModuleAccess } from '@/hooks/useAdminModuleAccess';
 import {
+  ALL_DRAW_TARGET_ROLES,
+  allDrawRolesSelected,
   countEligibleDrawCandidates,
   DRAW_ROLE_OPTIONS,
   listAdminBenefitDraws,
+  listDrawEligibleCatalog,
   runAdminBenefitDraw,
   type BenefitDrawRecord,
   type DrawTargetRole,
 } from '@/lib/admin-benefit-draw-store';
 import {
-  listAutomationGrantableCatalog,
   offeringsForBenefit,
   offeringPartnerKey,
   uniqueGrantableBenefits,
@@ -74,12 +76,17 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
   }, [partnerOfferings, selectedPartnerKey]);
 
   const loadGrantable = useCallback(async () => {
-    const grantable = await listAutomationGrantableCatalog({
+    if (!selectedRoles.length) {
+      setGrantableOfferings([]);
+      return;
+    }
+    const grantable = await listDrawEligibleCatalog({
+      roles: selectedRoles,
       countryCode,
-      job: { countryCode, city: drawCity.trim() || null },
+      drawCity: drawCity.trim() || null,
     });
     setGrantableOfferings(grantable);
-  }, [countryCode, drawCity]);
+  }, [countryCode, drawCity, selectedRoles]);
 
   const refreshEligible = useCallback(async () => {
     setEligible(
@@ -109,6 +116,12 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
   }, [refreshEligible]);
 
   useEffect(() => {
+    if (catalogId && !grantableBenefits.some((b) => b.id === catalogId)) {
+      setCatalogId(null);
+    }
+  }, [grantableBenefits, catalogId]);
+
+  useEffect(() => {
     if (!catalogId) {
       setSelectedPartnerKey(null);
       return;
@@ -129,6 +142,10 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
 
   function toggleRole(r: DrawTargetRole) {
     setSelectedRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
+  }
+
+  function toggleAllRoles() {
+    setSelectedRoles((prev) => (allDrawRolesSelected(prev) ? [] : [...ALL_DRAW_TARGET_ROLES]));
   }
 
   async function handleDraw() {
@@ -180,9 +197,11 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
                   const msg =
                     res.error === 'no_candidates'
                       ? 'Aucun compte éligible pour cette zone / ce privilège.'
-                      : res.error === 'grant_failed'
-                        ? 'Octroi impossible.'
-                        : 'Tirage impossible.';
+                      : res.error === 'catalog_not_draw_eligible'
+                        ? 'Ce privilège est déjà octroyé à tout le rôle cible. Utilisez « Octroyer » ou choisissez une campagne limitée / code promo.'
+                        : res.error === 'grant_failed'
+                          ? 'Octroi impossible.'
+                          : 'Tirage impossible.';
                   Alert.alert('Erreur', msg);
                   return;
                 }
@@ -233,9 +252,15 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
         <AdminCountryBar shell={shell} />
 
         <View style={[styles.help, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
-          <Text style={{ color: shell.pageTitle, fontWeight: '800', fontSize: 13 }}>Fonctionnement</Text>
+          <Text style={{ color: shell.pageTitle, fontWeight: '800', fontSize: 13 }}>Campagnes limitées</Text>
           <Text style={{ color: shell.pageKicker, fontSize: 11, lineHeight: 17, marginTop: 6 }}>
-            Seuls les privilèges actifs validés par un partenaire Pro sont proposés. Maillage ville = préfecture (commune/quartier ignorés). Les privilèges « tout le pays / en ligne » incluent tout le pays.
+            Le tirage attribue N gagnants parmi un pool — pas tout un rôle. Exemples : 3 dîners offerts ce mois-ci parmi 800 membres, 10 codes promo Instagram, 5 places VIP Loop.
+          </Text>
+          <Text style={{ color: shell.pageKicker, fontSize: 11, lineHeight: 17, marginTop: 6 }}>
+            Choisissez un ou plusieurs rôles, ou « Tous » (Membres + Prime + Partenaires + Admins délégués). Le super admin est exclu du pool.
+          </Text>
+          <Text style={{ color: shell.pageKicker, fontSize: 11, lineHeight: 17, marginTop: 6 }}>
+            Privilège disponible pour le tirage = actif, validé par un partenaire Pro, et pas déjà donné à tout le rôle sélectionné via Octroyer (sauf codes promo). Maillage ville = préfecture.
           </Text>
           <Text style={{ color: ADMIN_THEME.accent, fontSize: 12, fontWeight: '700', marginTop: 8 }}>
             {eligible} compte(s) éligible(s) · {countryCode}
@@ -254,8 +279,22 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
           placeholder="Vide = tout le pays — filtre le pool et le catalogue"
         />
 
-        <Text style={[styles.lbl, { color: shell.pageKicker }]}>Rôles cibles</Text>
+        <Text style={[styles.lbl, { color: shell.pageKicker }]}>Rôles du pool de tirage</Text>
         <View style={styles.chips}>
+          <Pressable
+            style={[styles.chip, allDrawRolesSelected(selectedRoles) && { backgroundColor: ADMIN_THEME.accent }]}
+            onPress={toggleAllRoles}
+          >
+            <Text
+              style={{
+                color: allDrawRolesSelected(selectedRoles) ? '#fff' : shell.pageTitle,
+                fontSize: 11,
+                fontWeight: '700',
+              }}
+            >
+              Tous
+            </Text>
+          </Pressable>
           {DRAW_ROLE_OPTIONS.map((r) => (
             <Pressable
               key={r.value}
@@ -278,10 +317,10 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
           onChangeText={setWinnerCount}
         />
 
-        <Text style={[styles.lbl, { color: shell.pageKicker }]}>Privilège catalogue</Text>
+        <Text style={[styles.lbl, { color: shell.pageKicker }]}>Privilège à tirer</Text>
         {grantableBenefits.length === 0 ? (
           <Text style={[styles.hint, { color: shell.pageKicker, marginBottom: 8 }]}>
-            Aucun privilège actif validé par un partenaire pour cette zone. Créez et validez l'association dans Privilèges.
+            Aucun privilège disponible pour ces rôles et cette zone. Vérifiez le catalogue (actif + validé partenaire), ou retirez l’octroi global dans Octroyer si le privilège est déjà pour tout le rôle.
           </Text>
         ) : null}
         {grantableBenefits.map((item) => (

@@ -11,7 +11,11 @@ import { MemberQrCard } from '@/components/MemberQrCard';
 import { PageHeader } from '@/components/PageHeader';
 import { SupportFooter } from '@/components/SupportFooter';
 import { formatDateFr } from '@/lib/date-utils';
-import { getOrCreatePartnerValidationCode } from '@/lib/partner-validation-code-store';
+import {
+  getOrCreatePartnerValidationCode,
+  getOrCreateTheLoopTeamValidationCode,
+  THE_LOOP_TEAM_PARTNER_NAME,
+} from '@/lib/partner-validation-code-store';
 import { getReferralStats, type ReferralStats } from '@/lib/referral-store';
 import {
   getUserFacingPrimePass,
@@ -85,11 +89,13 @@ export function ProfilScreen({ navigation }: Props) {
       setPartnerValidationCode(null);
       return;
     }
-    const label =
+    const entry =
       role === 'ADMIN'
-        ? (user.company ?? 'THE LOOP')
-        : (user.company ?? user.fullName ?? 'Partenaire');
-    const entry = await getOrCreatePartnerValidationCode(user.id, label);
+        ? await getOrCreateTheLoopTeamValidationCode()
+        : await getOrCreatePartnerValidationCode(
+            user.id,
+            user.company ?? user.fullName ?? 'Partenaire',
+          );
     setPartnerValidationCode(entry.code);
   }, [user?.id, user?.company, user?.fullName, showPartnerCode, role]);
 
@@ -181,7 +187,7 @@ export function ProfilScreen({ navigation }: Props) {
           <Text style={[styles.partnerCode, { color: accent.accent }]}>{partnerValidationCode}</Text>
           <Text style={[styles.partnerCodeHint, { color: shell.pageKicker }]}>
             {role === 'ADMIN'
-              ? 'Validation des privilèges lors de vos activités THE LOOP (onglet THE LOOP).'
+              ? `Code équipe ${THE_LOOP_TEAM_PARTNER_NAME} — partagé avec toute l’administration. Validation des privilèges sur nos événements et contenus (onglet THE LOOP).`
               : 'À communiquer à votre équipe pour valider les privilèges membres au comptoir.'}
           </Text>
         </View>

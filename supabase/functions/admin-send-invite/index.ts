@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     const redirectTo =
       (body.redirectTo ?? '').trim() ||
       Deno.env.get('AUTH_REDIRECT_URL') ||
-      'https://admin.theloop-app.com/auth-callback.html';
+      'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
 
     const metadata: Record<string, unknown> = {
       pending_welcome: true,

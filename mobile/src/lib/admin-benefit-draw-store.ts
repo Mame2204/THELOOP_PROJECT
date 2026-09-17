@@ -14,16 +14,84 @@ import {
   type PrimeBenefit,
 } from '@/lib/prime-benefits-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { listAutomationGrantableCatalog, type GrantableCatalogEntry } from '@/lib/admin-automation-benefits';
 import { userMatchesBenefitCountry } from '@/lib/role-benefit-eligibility';
+import {
+  refreshRoleBenefitEntitlementsConfig,
+  type RoleBenefitEntitlementsConfig,
+  type RoleEntitlementKind,
+} from '@/lib/role-benefit-entitlements-store';
+import { resolveCountryCode } from '@/lib/country-settings-keys';
 import type { UserRole } from '@/types';
 
-export type DrawTargetRole = Extract<UserRole, 'USER_FREE' | 'USER_PRIME' | 'PARTNER'>;
+export type DrawTargetRole = Extract<UserRole, 'USER_FREE' | 'USER_PRIME' | 'PARTNER' | 'ADMIN'>;
+
+export const ALL_DRAW_TARGET_ROLES: DrawTargetRole[] = ['USER_FREE', 'USER_PRIME', 'PARTNER', 'ADMIN'];
 
 export const DRAW_ROLE_OPTIONS: { value: DrawTargetRole; label: string }[] = [
   { value: 'USER_FREE', label: 'Membres' },
-  { value: 'USER_PRIME', label: 'Prime' },
+  { value: 'USER_PRIME', label: 'Loop Prime' },
   { value: 'PARTNER', label: 'Partenaires' },
+  { value: 'ADMIN', label: 'Admins délégués' },
 ];
+
+/** Super admin exclu du pool de tirage (réservé aux admins délégués). */
+export function isSuperAdminDrawUser(user: { userRole?: string | null }): boolean {
+  return (user.userRole ?? '').toLowerCase() === 'super_admin';
+}
+
+export function isDelegatedAdminDrawUser(user: { userRole?: string | null; role?: UserRole }): boolean {
+  if (isSuperAdminDrawUser(user)) return false;
+  return user.role === 'ADMIN' || (user.userRole ?? '').toLowerCase() === 'admin';
+}
+
+export function allDrawRolesSelected(roles: DrawTargetRole[]): boolean {
+  return ALL_DRAW_TARGET_ROLES.every((role) => roles.includes(role));
+}
+
+function entitlementKindsForDrawRoles(roles: DrawTargetRole[]): RoleEntitlementKind[] {
+  const out: RoleEntitlementKind[] = [];
+  if (roles.includes('USER_FREE')) out.push('member');
+  if (roles.includes('USER_PRIME')) out.push('prime');
+  if (roles.includes('PARTNER')) out.push('partner');
+  if (roles.includes('ADMIN')) out.push('admin');
+  return out;
+}
+
+/** Exclut les privilèges déjà octroyés à tout un rôle ; conserve promo_code et campagnes limitées. */
+export function isCatalogEligibleForDraw(
+  catalogId: string,
+  benefitPurpose: string | undefined,
+  roles: DrawTargetRole[],
+  config: RoleBenefitEntitlementsConfig,
+): boolean {
+  if (benefitPurpose === 'promo_code') return true;
+  const kinds = entitlementKindsForDrawRoles(roles);
+  for (const kind of kinds) {
+    if ((config[kind] ?? []).some((entry) => entry.catalogId === catalogId)) return false;
+  }
+  return true;
+}
+
+export async function listDrawEligibleCatalog(options: {
+  roles: DrawTargetRole[];
+  countryCode?: string;
+  drawCity?: string | null;
+}): Promise<GrantableCatalogEntry[]> {
+  const kinds = entitlementKindsForDrawRoles(options.roles);
+  if (!kinds.length) return [];
+
+  const cc = resolveCountryCode(options.countryCode);
+  const grantable = await listAutomationGrantableCatalog({
+    countryCode: cc,
+    job: { countryCode: cc, city: options.drawCity?.trim() || null },
+  });
+  const config = await refreshRoleBenefitEntitlementsConfig(cc);
+
+  return grantable.filter((row) =>
+    isCatalogEligibleForDraw(row.item.id, row.item.benefitPurpose, options.roles, config),
+  );
+}
 
 export interface BenefitDrawWinner {
   userId: string;
@@ -74,6 +142,8 @@ function matchesDrawRoleFromDb(
         return dbRole === 'prime';
       case 'PARTNER':
         return dbRole === 'partner' || dbRole === 'tool_partner';
+      case 'ADMIN':
+        return dbRole === 'admin';
       default:
         return false;
     }
@@ -96,6 +166,8 @@ function matchesDrawRole(
         );
       case 'PARTNER':
         return user.role === 'PARTNER' || user.userRole === 'partner' || user.userRole === 'tool_partner';
+      case 'ADMIN':
+        return isDelegatedAdminDrawUser(user);
       default:
         return false;
     }
@@ -111,7 +183,9 @@ function userEligibleForDraw(
     catalogGeo?: BenefitGeoTarget | null;
   },
 ): boolean {
-  if (user.role === 'ADMIN' || user.role === 'USER_ANONYMOUS') return false;
+  if (user.role === 'USER_ANONYMOUS') return false;
+  if (isSuperAdminDrawUser(user)) return false;
+  if ((user.role === 'ADMIN' || user.userRole === 'admin') && !roles.includes('ADMIN')) return false;
   if (
     !userMatchesBenefitCountry(
       {
@@ -144,7 +218,8 @@ function dbUserEligibleForDraw(
     catalogGeo?: BenefitGeoTarget | null;
   },
 ): boolean {
-  if (user.user_role === 'admin' || user.user_role === 'super_admin') return false;
+  if (user.user_role === 'super_admin') return false;
+  if (user.user_role === 'admin' && !roles.includes('ADMIN')) return false;
   if (!matchesDrawRoleFromDb(user, roles)) return false;
   if (options?.drawCity?.trim() && !locationsMatchPrefectureMesh(user.city, options.drawCity)) return false;
   if (
@@ -289,6 +364,15 @@ export async function runAdminBenefitDraw(input: {
 }): Promise<{ ok: boolean; error?: string; record?: BenefitDrawRecord }> {
   if (!input.roles.length) return { ok: false, error: 'roles_required' };
   if (input.winnerCount < 1) return { ok: false, error: 'invalid_count' };
+
+  const drawEligible = await listDrawEligibleCatalog({
+    roles: input.roles,
+    countryCode: input.countryCode,
+    drawCity: input.drawCity,
+  });
+  if (!drawEligible.some((row) => row.item.id === input.catalogId)) {
+    return { ok: false, error: 'catalog_not_draw_eligible' };
+  }
 
   const catalog = await getBenefitCatalogItem(input.catalogId);
   if (!catalog || !catalog.isActive) return { ok: false, error: 'invalid_catalog' };

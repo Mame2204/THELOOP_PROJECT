@@ -22,14 +22,24 @@ export function isPartnerEventVisible(event: StagingEvent): boolean {
     const raw = event.id.replace(/^transfer-/, '').replace(/^catalog-event-/, '');
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
   }
-  return event.status === 'draft' || event.status === 'pending' || event.status === 'rejected';
+  return (
+    event.status === 'draft'
+    || event.status === 'pending'
+    || event.status === 'rejected'
+    || event.status === 'withdrawal_requested'
+  );
 }
 
 export function isPartnerSpotVisible(spot: StagingSpot): boolean {
   if (spot.status === 'approved') {
     return Boolean(spotPublishedId(spot));
   }
-  return spot.status === 'draft' || spot.status === 'pending' || spot.status === 'rejected';
+  return (
+    spot.status === 'draft'
+    || spot.status === 'pending'
+    || spot.status === 'rejected'
+    || spot.status === 'withdrawal_requested'
+  );
 }
 
 export function filterVisiblePartnerEvents(events: StagingEvent[]): StagingEvent[] {
@@ -110,6 +120,7 @@ export async function applyPartnerLiveCatalogFilter(
 
   return {
     events: dropRemoved.events.filter((e) => {
+      if (e.status === 'withdrawal_requested') return true;
       if (e.status !== 'approved') return isPartnerEventVisible(e);
       const pub =
         e.publishedEventId?.trim()
@@ -118,6 +129,7 @@ export async function applyPartnerLiveCatalogFilter(
       return liveIds.has(pub) || liveIds.has(e.id);
     }),
     spots: dropRemoved.spots.filter((s) => {
+      if (s.status === 'withdrawal_requested') return true;
       if (s.status !== 'approved') return isPartnerSpotVisible(s);
       const pub = spotPublishedId(s);
       if (!pub) return false;

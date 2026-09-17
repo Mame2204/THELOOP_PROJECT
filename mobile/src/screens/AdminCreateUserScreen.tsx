@@ -73,7 +73,7 @@ export function AdminCreateUserScreen({ navigation }: Props) {
       });
       Alert.alert(
         'Invitation créée',
-        `Un e-mail d'activation sera envoyé à ${invite.email}.\n\nLa personne ouvre Connexion → « Activer un compte invité », saisit cet e-mail et définit son mot de passe.\n\nRôle : ${USER_ROLE_LABELS[userRole]}`,
+        `Un e-mail d'activation sera envoyé à ${invite.email}.\n\nLa personne touche le lien : app si installée, sinon mot de passe sur le web puis installation de THE LOOP.\n\nRôle : ${USER_ROLE_LABELS[userRole]}`,
         [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
     } catch (err) {
@@ -87,7 +87,7 @@ export function AdminCreateUserScreen({ navigation }: Props) {
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
       <AdminPageHeader
         title="Créer un compte"
-        subtitle="Invitation par e-mail — la personne définit son mot de passe à l'activation"
+        subtitle="Invitation par e-mail — app ou web selon installation"
         shell={shell}
         onBack={() => navigation.goBack()}
       />

@@ -149,9 +149,8 @@ async function fetchRemoteSuggestions(countryCode?: string): Promise<CommunitySu
   }
 
   const remote = (data as DbRow[]).map(mapRow);
-  const local = await loadLocalFallback();
-  const remoteIds = new Set(remote.map((r) => r.id));
-  return [...remote, ...local.filter((l) => !remoteIds.has(l.id))];
+  // En prod Supabase : pas de fusion avec le fallback local (évite des fiches « Anonyme » obsolètes).
+  return remote;
 }
 
 /** Suggestions immédiates depuis le cache local. */
@@ -246,6 +245,16 @@ export async function submitCommunitySuggestion(
   return { ok: true };
 }
 
+async function resolveCommunitySuggestions(
+  countryCode?: string,
+): Promise<CommunitySuggestion[]> {
+  if (isSupabaseConfigured()) {
+    const remote = await fetchRemoteSuggestions(countryCode);
+    return remote ?? [];
+  }
+  return filterByCountry(await loadLocalFallback(), countryCode);
+}
+
 export async function listCommunitySuggestions(
   countryCode?: string,
   options?: { force?: boolean },
@@ -253,8 +262,9 @@ export async function listCommunitySuggestions(
   const scope = suggestionsScope(countryCode);
   const diskKey = scopedStorageKey('loop_suggestions', scope);
 
-  if (options?.force) {
-    const fresh = (await fetchRemoteSuggestions(countryCode)) ?? filterByCountry(await loadLocalFallback(), countryCode);
+  // Supabase : toujours réseau — mieux vide qu’un cache stale (contacts « Anonyme »).
+  if (options?.force || isSupabaseConfigured()) {
+    const fresh = await resolveCommunitySuggestions(countryCode);
     await hydrateScoped(scope, diskKey, fresh);
     return fresh;
   }
@@ -264,7 +274,7 @@ export async function listCommunitySuggestions(
     return cached;
   }
 
-  const fresh = (await fetchRemoteSuggestions(countryCode)) ?? filterByCountry(await loadLocalFallback(), countryCode);
+  const fresh = await resolveCommunitySuggestions(countryCode);
   await hydrateScoped(scope, diskKey, fresh);
   return fresh;
 }

@@ -72,7 +72,7 @@ describe('auth-redirect', () => {
     jest.resetModules();
     const mod = require('@/lib/auth-redirect') as typeof import('@/lib/auth-redirect');
     expect(mod.getAuthMemberFacingRedirectUrl()).toBe(
-      'https://admin.theloop-app.com/auth-callback.html',
+      'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback',
     );
   });
 

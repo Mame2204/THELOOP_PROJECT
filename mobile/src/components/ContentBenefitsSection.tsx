@@ -18,7 +18,7 @@ import {
   type BenefitCatalogItem,
   type BenefitKind,
 } from '@/lib/benefit-catalog-store';
-import { isAuthenticated } from '@/types';
+import { isAuthenticated, type UserRole } from '@/types';
 import { formatDateDdMmYyyy } from '@/lib/date-utils';
 import {
   listCatalogBenefitsForContent,
@@ -159,6 +159,56 @@ function isSentinelExpiry(iso: string): boolean {
 }
 
 /** Date de fin affichée en jj/mm/aaaa (catalogue ou octroi). */
+type LockedPrivilegeCtaMode = 'prime' | 'disabled' | 'none';
+
+function getLockedPrivilegePresentation(
+  role: UserRole,
+  passPurchaseEnabled: boolean,
+): {
+  title: string;
+  body: string;
+  ctaMode: LockedPrivilegeCtaMode;
+  ctaLabel: string;
+} {
+  if (role === 'PARTNER') {
+    return {
+      title: 'Privilège réservé aux membres Loop Prime',
+      body:
+        'Les privilèges affichés sur les fiches sont réservés à la consommation des membres Loop Prime. En tant que partenaire, vous ne pouvez pas les activer ici.',
+      ctaMode: 'disabled',
+      ctaLabel: 'Réservé aux membres Prime',
+    };
+  }
+
+  if (role === 'ADMIN') {
+    return {
+      title: 'Ce privilège n’est pas encore activé',
+      body:
+        'Pour bénéficier de ce privilège, merci de contacter votre super admin — il pourra vous l’octroyer depuis TEAMS.',
+      ctaMode: 'disabled',
+      ctaLabel: 'Contacter le super admin',
+    };
+  }
+
+  if (role === 'USER_FREE') {
+    return {
+      title: 'Un privilège réservé aux membres Prime',
+      body: passPurchaseEnabled
+        ? 'Ce lieu cache une expérience pensée pour ceux qui vivent Conakry autrement. Passez en Loop Prime pour débloquer ce privilège.'
+        : 'Ce privilège est réservé aux membres Loop Prime. L\'abonnement en ligne arrive bientôt.',
+      ctaMode: passPurchaseEnabled ? 'prime' : 'none',
+      ctaLabel: 'Passer en Loop Prime',
+    };
+  }
+
+  return {
+    title: 'Privilège non disponible',
+    body: 'Ce privilège n’est pas activé sur votre compte pour le moment.',
+    ctaMode: 'disabled',
+    ctaLabel: 'Réservé aux membres Prime',
+  };
+}
+
 function privilegeValidityLabel(item: BenefitCatalogItem, benefit: PrimeBenefit | null): string {
   // Échéance réelle déjà posée sur l’octroi
   if (benefit?.expiresAt && !isSentinelExpiry(benefit.expiresAt)) {
@@ -567,6 +617,9 @@ export function ContentBenefitsSection({
 
   const lockedModal = modal?.kind === 'locked' ? modal.line : null;
   const unlockedModal = modal?.kind === 'unlocked' ? modal.line : null;
+  const lockedPresentation = lockedModal
+    ? getLockedPrivilegePresentation(role, passPurchaseEnabled)
+    : null;
 
   return (
     <View style={styles.wrap}>
@@ -635,22 +688,36 @@ export function ContentBenefitsSection({
           >
             <Text style={[styles.upsellKicker, { color: shell.tabIndicator }]}>LOOP PRIME</Text>
             <Text style={[styles.modalTitle, { color: shell.pageTitle }]}>
-              Un privilège réservé aux membres Prime
+              {lockedPresentation?.title ?? 'Un privilège réservé aux membres Prime'}
             </Text>
             <Text style={[styles.upsellBody, { color: shell.pageKicker }]}>
-              {passPurchaseEnabled
-                ? 'Ce lieu cache une expérience pensée pour ceux qui vivent Conakry autrement. Passez en Loop Prime pour débloquer ce privilège.'
-                : 'Ce privilège est réservé aux membres Loop Prime. L\'abonnement en ligne arrive bientôt.'}
+              {lockedPresentation?.body ?? ''}
             </Text>
-            {passPurchaseEnabled ? (
+            {lockedPresentation?.ctaMode === 'prime' ? (
               <Pressable
                 style={[styles.useBtn, { backgroundColor: shell.tabIndicator }]}
                 onPress={goToPrime}
               >
-                <Text style={styles.useBtnTextDark}>
-                  {role === 'USER_ANONYMOUS' ? 'Me connecter & découvrir Prime' : 'Passer en Loop Prime'}
-                </Text>
+                <Text style={styles.useBtnTextDark}>{lockedPresentation.ctaLabel}</Text>
               </Pressable>
+            ) : null}
+            {lockedPresentation?.ctaMode === 'disabled' ? (
+              <View
+                style={[
+                  styles.useBtn,
+                  styles.useBtnDisabled,
+                  {
+                    backgroundColor: shell.filterInactiveBg,
+                    borderColor: shell.filterInactiveBorder,
+                  },
+                ]}
+                accessibilityRole="text"
+                accessibilityState={{ disabled: true }}
+              >
+                <Text style={[styles.useBtnTextDisabled, { color: shell.pageKicker }]}>
+                  {lockedPresentation.ctaLabel}
+                </Text>
+              </View>
             ) : null}
             <Pressable onPress={() => setModal(null)} style={{ marginTop: 14 }}>
               <Text style={{ color: shell.pageKicker, textAlign: 'center', fontSize: 13 }}>
@@ -791,5 +858,7 @@ const styles = StyleSheet.create({
   },
   factValue: { fontSize: 13, lineHeight: 18 },
   useBtn: { borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  useBtnDisabled: { borderWidth: StyleSheet.hairlineWidth, opacity: 0.92 },
   useBtnTextDark: { color: '#111', fontWeight: '800', fontSize: 14 },
+  useBtnTextDisabled: { fontWeight: '800', fontSize: 14, textAlign: 'center' },
 });

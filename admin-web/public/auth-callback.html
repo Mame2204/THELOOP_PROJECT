@@ -4,64 +4,50 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>THE LOOP — Ouverture</title>
+  <title>THE LOOP — Compte</title>
   <style>
     :root { color-scheme: light; --bg:#f4fcfd; --text:#0a0a0a; --muted:#636e72; --gold:#c9a84c; }
+    * { box-sizing: border-box; }
     body {
       margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
       padding: 24px; font-family: system-ui, -apple-system, sans-serif;
       background: var(--bg); color: var(--text); text-align: center;
     }
-    main { max-width: 400px; }
+    main { max-width: 400px; width: 100%; }
     .kicker { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
-    h1 { margin: 12px 0 0; font-size: 1.2rem; }
-    p { margin: 14px 0 0; font-size: .92rem; line-height: 1.5; color: var(--muted); }
-    .btn {
-      display: inline-block; margin-top: 24px; padding: 14px 22px; border-radius: 12px;
-      background: #0a0a0a; color: #fff; font-weight: 700; text-decoration: none;
-    }
+    h1 { margin: 12px 0 0; font-size: 1.25rem; line-height: 1.3; }
+    p { margin: 12px 0 0; font-size: .9rem; line-height: 1.5; color: var(--muted); }
+    .hint { margin-top: 16px; font-size: .8rem; color: var(--muted); }
   </style>
 </head>
 <body>
   <main>
     <p class="kicker">THE LOOP</p>
-    <h1 id="title">Ouverture de l'application…</h1>
-    <p id="message">Vous allez choisir votre mot de passe dans l'app.</p>
-    <a class="btn" id="openApp" href="theloop://auth/callback" style="display:none">Ouvrir THE LOOP</a>
+    <h1 id="title">Chargement…</h1>
+    <p id="message">Validation du lien…</p>
+    <p class="hint" id="hint"></p>
   </main>
   <script>
     (function () {
+      /** Page pont — mot de passe choisi dans le navigateur (sans app installée). */
+      var AUTH_CALLBACK_BASE = 'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
       var title = document.getElementById('title');
       var message = document.getElementById('message');
-      var openApp = document.getElementById('openApp');
+      var hint = document.getElementById('hint');
 
-      function readParams() {
-        var hash = window.location.hash || '';
-        var search = window.location.search || '';
-        var paramString = hash.indexOf('#') === 0 ? hash.slice(1)
-          : (search.indexOf('?') === 0 ? search.slice(1) : '');
-        return { paramString: paramString, params: new URLSearchParams(paramString) };
+      var hash = window.location.hash || '';
+      var search = window.location.search || '';
+      var paramString = hash.indexOf('#') === 0 ? hash.slice(1)
+        : (search.indexOf('?') === 0 ? search.slice(1) : '');
+
+      if (!paramString) {
+        title.textContent = 'Lien incomplet';
+        message.textContent = 'Ce lien ne fonctionne pas. Demandez un nouvel e-mail d\'invitation ou de réinitialisation.';
+        hint.textContent = 'contact@theloop-app.com';
+        return;
       }
 
-      function openTheLoopApp(queryString) {
-        var deepLink = 'theloop://auth/callback?' + queryString;
-        openApp.href = deepLink;
-        try { window.location.replace(deepLink); } catch (e) { /* ignore */ }
-        setTimeout(function () {
-          title.textContent = 'Ouvrez THE LOOP';
-          message.textContent = 'Le mot de passe se choisit dans l\'application. Si rien ne s\'ouvre, touchez le bouton.';
-          openApp.style.display = 'inline-block';
-        }, 1200);
-      }
-
-      var parsed = readParams();
-      var params = parsed.params;
-      var paramString = parsed.paramString;
-      var kind = (params.get('type') || 'invite').toLowerCase();
-      var tokenHash = params.get('token_hash');
-      var accessToken = params.get('access_token');
-      var refreshToken = params.get('refresh_token');
-
+      var params = new URLSearchParams(paramString);
       var error = params.get('error_description') || params.get('error');
       if (error) {
         title.textContent = 'Lien invalide';
@@ -69,22 +55,12 @@
         return;
       }
 
-      if (tokenHash) {
-        var appParams = new URLSearchParams({
-          token_hash: tokenHash,
-          type: kind === 'recovery' ? 'recovery' : 'invite',
-        });
-        openTheLoopApp(appParams.toString());
-        return;
-      }
+      title.textContent = 'Un instant…';
+      message.textContent = 'Ouverture de la page sécurisée pour choisir votre mot de passe.';
+      hint.textContent = 'Vous n\'avez pas besoin d\'installer l\'app pour cette étape.';
 
-      if (paramString && accessToken && refreshToken) {
-        openTheLoopApp(paramString);
-        return;
-      }
-
-      title.textContent = 'Lien incomplet';
-      message.textContent = 'Demandez un nouvel e-mail d\'invitation, puis ouvrez-le sur votre téléphone.';
+      var target = AUTH_CALLBACK_BASE + '?' + paramString;
+      window.location.replace(target);
     })();
   </script>
 </body>

@@ -15,7 +15,11 @@ import { PartnerSubmissionChoiceModal } from '@/components/PartnerSubmissionChoi
 import { isToolLocation } from '@/lib/location-kind-utils';
 import { isTeamContentOrigin } from '@/lib/content-origin';
 import { matchesAdminCountry } from '@/lib/admin-country';
-import { getOrCreatePartnerValidationCode } from '@/lib/partner-validation-code-store';
+import {
+  getOrCreateTheLoopTeamValidationCode,
+  THE_LOOP_TEAM_PARTNER_KEY,
+  THE_LOOP_TEAM_PARTNER_NAME,
+} from '@/lib/partner-validation-code-store';
 import { countPartnerValidationMetrics } from '@/lib/benefit-redemption-store';
 import { countDashboardActiveCatalogBenefits } from '@/lib/benefit-catalog-store';
 import { listAllPartnerBenefitOffersForAdmin } from '@/lib/partner-benefit-offers-store';
@@ -47,12 +51,12 @@ export function AdminLoopScreen({ navigation }: Props) {
   const [activeBenefits, setActiveBenefits] = useState(0);
   const [benefitOffers, setBenefitOffers] = useState(0);
   const [validationCode, setValidationCode] = useState<string | null>(null);
+  const [validationPartnerKey, setValidationPartnerKey] = useState(THE_LOOP_TEAM_PARTNER_KEY);
   const [refreshing, setRefreshing] = useState(false);
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const partnerLabel = 'THE LOOP';
     const locs = getHomeLocations();
     const teamEvents = [...publicEvents, ...primeEvents].filter(
       (e) => isTeamContentOrigin(e.contentOrigin) && matchesAdminCountry(e.countryCode, countryCode),
@@ -64,10 +68,11 @@ export function AdminLoopScreen({ navigation }: Props) {
     setSpotCount(teamLocs.filter((s) => !isToolLocation(s)).length);
     setToolCount(teamLocs.filter((s) => isToolLocation(s)).length);
 
-    const codeEntry = await getOrCreatePartnerValidationCode(user.id, partnerLabel);
+    const codeEntry = await getOrCreateTheLoopTeamValidationCode();
     setValidationCode(codeEntry.code);
+    setValidationPartnerKey(codeEntry.partnerId);
     const [monthStats, offers, loopBenefits] = await Promise.all([
-      countPartnerValidationMetrics(codeEntry.partnerId, partnerLabel, startOfCurrentMonth()),
+      countPartnerValidationMetrics(codeEntry.partnerId, THE_LOOP_TEAM_PARTNER_NAME, startOfCurrentMonth()),
       listAllPartnerBenefitOffersForAdmin(countryCode),
       countDashboardActiveCatalogBenefits(countryCode, { theLoopOnly: true }),
     ]);
@@ -89,13 +94,13 @@ export function AdminLoopScreen({ navigation }: Props) {
   );
 
   const openBenefitScan = useCallback(() => {
-    if (!user || !validationCode) return;
+    if (!validationCode) return;
     navigateRoot(navigation, 'PartnerBenefitScan', {
-      partnerId: user.id,
-      partnerName: user.company ?? 'THE LOOP',
+      partnerId: validationPartnerKey,
+      partnerName: THE_LOOP_TEAM_PARTNER_NAME,
       partnerCode: validationCode,
     });
-  }, [navigation, user, validationCode]);
+  }, [navigation, validationCode, validationPartnerKey]);
 
   const openSubmission = useCallback(
     (params: { type: 'event' | 'spot'; isTool?: boolean }) => {

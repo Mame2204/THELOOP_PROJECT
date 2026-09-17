@@ -555,6 +555,17 @@ export function invalidatePartnerBenefitOffersRemoteCache(): void {
   partnerOffersInflight = null;
 }
 
+async function isBenefitCatalogActiveInDb(catalogLocalId: string): Promise<boolean> {
+  if (!isSupabaseConfigured() || !supabase) return false;
+  const { data, error } = await supabase
+    .from('benefit_catalog')
+    .select('is_active')
+    .eq('local_id', catalogLocalId.trim())
+    .maybeSingle();
+  if (error || !data) return false;
+  return data.is_active === true;
+}
+
 export async function acceptPartnerCatalogOfferViaSupabase(
   catalogLocalId: string,
 ): Promise<{ ok: boolean; error?: string }> {
@@ -601,7 +612,10 @@ export async function respondPartnerBenefitOfferViaSupabase(
 
   if (accept && catalogLocalId && !catalogLocalId.startsWith('pending-title-')) {
     const direct = await acceptPartnerCatalogOfferViaSupabase(catalogLocalId);
-    if (direct.ok) return direct;
+    if (direct.ok) {
+      const active = await isBenefitCatalogActiveInDb(catalogLocalId);
+      if (active) return direct;
+    }
     if (__DEV__) {
       console.warn('[PartnerBenefitOffers] accept direct:', direct.error);
     }
@@ -618,6 +632,13 @@ export async function respondPartnerBenefitOfferViaSupabase(
     if (accept && catalogLocalId && !catalogLocalId.startsWith('pending-title-')) {
       const activation = await acceptPartnerCatalogOfferViaSupabase(catalogLocalId);
       if (!activation.ok) return activation;
+      const active = await isBenefitCatalogActiveInDb(catalogLocalId);
+      if (!active) {
+        return {
+          ok: false,
+          error: 'Le catalogue n\'a pas pu être activé côté serveur. Réessayez ou contactez THE LOOP.',
+        };
+      }
     }
     return { ok: true };
   }

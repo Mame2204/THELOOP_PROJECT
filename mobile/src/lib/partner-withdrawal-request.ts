@@ -14,8 +14,70 @@ function remoteTable(kind: PartnerContentKind): 'partner_event_submissions' | 'p
   return kind === 'event' ? 'partner_event_submissions' : 'partner_spot_submissions';
 }
 
+/** Colonnes retournées après UPDATE — events.title · spots/outils.name (pas de colonne croisée). */
+function withdrawalNotifySelect(kind: PartnerContentKind): string {
+  if (kind === 'event') {
+    return 'local_id, title, partner_name, country_code';
+  }
+  return 'local_id, name, partner_name, country_code';
+}
+
+function labelFromWithdrawalRow(
+  kind: PartnerContentKind,
+  row: { title?: string | null; name?: string | null },
+): string {
+  if (kind === 'event') {
+    return String(row.title ?? 'Événement');
+  }
+  const fallback = kind === 'tool' ? 'Outil' : 'Spot';
+  return String(row.name ?? fallback);
+}
+
 function contentTitle(kind: PartnerContentKind, item: StagingEvent | StagingSpot): string {
   return kind === 'event' ? (item as StagingEvent).title : (item as StagingSpot).name;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function catalogIdFromSyntheticLocalId(localId: string, kind: PartnerContentKind): string | null {
+  const prefix =
+    kind === 'event' ? 'catalog-event-' : kind === 'tool' ? 'catalog-tool-' : 'catalog-spot-';
+  if (localId.startsWith(prefix)) {
+    const id = localId.slice(prefix.length);
+    return UUID_RE.test(id) ? id : null;
+  }
+  return null;
+}
+
+/** Résout l’id de soumission réel (catalog-event-* → local_id en base). */
+async function resolveSubmissionLocalId(
+  kind: PartnerContentKind,
+  localId: string,
+): Promise<string> {
+  if (!localId.startsWith('catalog-') || !isSupabaseConfigured() || !supabase) {
+    return localId;
+  }
+
+  const catalogId = catalogIdFromSyntheticLocalId(localId, kind);
+  if (!catalogId) return localId;
+
+  const table = remoteTable(kind);
+  const pubCol =
+    kind === 'event'
+      ? 'published_event_id'
+      : kind === 'tool'
+        ? 'published_tool_id'
+        : 'published_establishment_id';
+
+  const { data, error } = await supabase
+    .from(table)
+    .select('local_id')
+    .eq(pubCol, catalogId)
+    .in('status', ['approved', 'withdrawal_requested'])
+    .maybeSingle();
+
+  if (error || !data?.local_id) return localId;
+  return String(data.local_id);
 }
 
 async function resolvePartnerNotifyUserId(
@@ -40,12 +102,13 @@ export async function requestPartnerContentWithdrawal(
   }
 
   const table = remoteTable(kind);
+  const resolvedId = await resolveSubmissionLocalId(kind, localId);
   const { data, error } = await supabase
     .from(table)
     .update({ status: 'withdrawal_requested', updated_at: new Date().toISOString() })
-    .eq('local_id', localId)
+    .eq('local_id', resolvedId)
     .eq('status', 'approved')
-    .select('local_id, title, name, partner_name, country_code')
+    .select(withdrawalNotifySelect(kind))
     .maybeSingle();
 
   if (error) return { ok: false, error: error.message };
@@ -53,10 +116,10 @@ export async function requestPartnerContentWithdrawal(
     return { ok: false, error: 'Contenu introuvable ou déjà en cours de retrait.' };
   }
 
-  const title =
-    kind === 'event'
-      ? String((data as { title?: string }).title ?? 'Événement')
-      : String((data as { name?: string }).name ?? 'Contenu');
+  const title = labelFromWithdrawalRow(
+    kind,
+    data as { title?: string | null; name?: string | null },
+  );
   await notifyAdminWithdrawalRequest({
     kind,
     title,
@@ -77,10 +140,11 @@ export async function cancelPartnerContentWithdrawal(
   }
 
   const table = remoteTable(kind);
+  const resolvedId = await resolveSubmissionLocalId(kind, localId);
   const { data, error } = await supabase
     .from(table)
     .update({ status: 'approved', updated_at: new Date().toISOString() })
-    .eq('local_id', localId)
+    .eq('local_id', resolvedId)
     .eq('status', 'withdrawal_requested')
     .select('local_id')
     .maybeSingle();
@@ -157,10 +221,11 @@ export async function rejectPartnerWithdrawalRequest(
   }
 
   const table = remoteTable(kind);
+  const resolvedId = await resolveSubmissionLocalId(kind, item.id);
   const { error } = await supabase
     .from(table)
     .update({ status: 'approved', updated_at: new Date().toISOString() })
-    .eq('local_id', item.id)
+    .eq('local_id', resolvedId)
     .eq('status', 'withdrawal_requested');
 
   if (error) return { ok: false, error: error.message };

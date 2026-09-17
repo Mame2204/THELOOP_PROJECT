@@ -2,9 +2,6 @@ import {
   getHomeLocations,
   getPrimeLocations,
   loadAdminCatalogSnapshot,
-  loadContentSnapshot,
-  peekAdminCatalogSnapshot,
-  peekContentSnapshot,
   type ContentSnapshot,
 } from '@/lib/content-store';
 import { isSpotLocation } from '@/lib/location-kind-utils';
@@ -22,15 +19,9 @@ function normalizeVenueKey(name: string, address: string): string {
   return `${name.trim().toLowerCase()}|${address.trim().toLowerCase()}`;
 }
 
-async function resolveCatalogSnapshot(isAdminMode: boolean): Promise<ContentSnapshot> {
-  if (isAdminMode) {
-    const peeked = await peekAdminCatalogSnapshot();
-    if (peeked.locations.length > 0) return peeked;
-    return loadAdminCatalogSnapshot(true);
-  }
-  const peeked = await peekContentSnapshot();
-  if (peeked.locations.length > 0) return peeked;
-  return loadContentSnapshot(false);
+/** Catalogue publié complet — sans filtres catégories du flux public (organisateur sans spot propre). */
+async function resolveCatalogSnapshot(_isAdminMode: boolean): Promise<ContentSnapshot> {
+  return loadAdminCatalogSnapshot(true);
 }
 
 function catalogVenueOptions(snapshot: ContentSnapshot, countryCode: string): VenueSpotOption[] {

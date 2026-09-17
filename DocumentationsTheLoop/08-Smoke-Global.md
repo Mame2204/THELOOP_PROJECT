@@ -1,7 +1,7 @@
 # THE LOOP — Smoke test complet (à cocher)
 
 > **Màj :** 17 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
-> **App mobile :** build **39** (TestFlight + Play internal — en cours de déploiement)  
+> **App mobile :** build **40** (TestFlight + Play internal — en cours de déploiement)  
 > **Admin web :** `https://admin.theloop-app.com` (deploy `2a1a1ce` — supprimer campagnes push)  
 > **Serveur :** `https://api.theloop-app.com` (cron push, paiements)
 
@@ -48,8 +48,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## 0 — Avant de commencer
 
 ### Environnement
-- [ ] **📱** Build **39** installé (TestFlight)
-- [ ] **🤖** Build **39** installé (Play internal)
+- [ ] **📱** Build **40** installé (TestFlight)
+- [ ] **🤖** Build **40** installé (Play internal)
 - [ x ] **💻** Admin-web accessible
 - [ x ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
 
@@ -217,25 +217,25 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Publications
 - [ x ] **📱** Soumettre événement → statut **pending**
 - [ x ] **🤖** Idem
-- [ ] **📱** Soumettre spot / outil → pending
-- [ ] **🤖** Idem
-- [ ] **📱** Modifier une soumission pending (retest post-fix `editId` + sync Supabase)
-- [ ] **🤖** Idem
-- [ r ] **📱** **Annuler** une soumission pending (avant validation admin)
-- [ r ] **🤖** Idem
-- [ r ] **📱** Création événement · **Spot existant** (liste spots publiés)
-- [ r ] **🤖** Idem
+- [ x ] **📱** Soumettre spot / outil → pending
+- [ x ] **🤖** Idem
+- [ x ] **📱** Modifier une soumission pending (retest post-fix `editId` + sync Supabase)
+- [ x ] **🤖** Idem
+- [ x ] **📱** **Annuler** une soumission pending (avant validation admin)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Création événement · **Spot existant** (liste spots publiés)
+- [ x ] **🤖** Idem
 - [ r ] **📱** Voir rejet admin + motif · resoumettre
 - [ r ] **🤖** Idem
 
 ### Retrait & favoris
 - [ r ] **📱** Demander retrait d’un contenu **publié**
 - [ r ] **🤖** Idem
-- [ r ] **📱** Annuler demande retrait (si encore pending)
-- [ r ] **🤖** Idem
+- [ x ] **📱** Annuler demande retrait (si encore pending)
+- [ x ] **🤖** Idem
 - [ r ] **📱** Notif quand admin approuve / refuse retrait
 - [ r ] **🤖** Idem
-- [ ] **💻** Demande visible admin-web → Demandes
+- [ x ] **💻** Demande visible admin-web → Demandes
 - [ x ] **📱** Favoris via onglet **Favoris**
 - [ x ] **🤖** Idem
 
@@ -286,8 +286,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Paiements · refs Djomy · **Resync**
 - [ x ] **🤖** Idem
-- [ ] **📱** Octroi manuel privilège
-- [ ] **🤖** Idem
+- [ x ] **📱** Octroi manuel privilège
+- [ x ] **🤖** Idem
 
 ### Contenu & accueil
 - [ x ] **📱** Publier / archiver contenu
@@ -298,6 +298,43 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Idée utilisateur → préremplir éditeur contenu
 - [ x ] **🤖** Idem
+
+### Transfert contenu THE LOOP ↔ partenaire
+
+*Fiche contenu publiée (événement / spot / outil) · mode admin · bouton **Transférer / changer le partenaire** (`admin_reassign_content_owner`).*
+
+> **Code validation privilège** (règle produit) : le code demandé à la consommation suit le **`content_origin`** du contenu publié, pas le libellé « THE LOOP » sur l’association catalogue.
+> - Contenu **équipe** (`admin` / `loop`) → code **THE LOOP équipe** (`theloop-team` / `CODE-96NDE`)
+> - Contenu **partenaire** (`partner`) → code **du partenaire propriétaire** (`CODE-XXXXX` de son compte)
+
+#### THE LOOP → partenaire
+- [ ] **📱** Admin ouvre fiche événement ou spot créé par THE LOOP → **Transférer** vers compte partenaire X
+- [ ] **🤖** Idem
+- [ ] **📱** Transfert OK · propriétaire affiché = partenaire X
+- [ ] **🤖** Idem
+- [ ] **📱** Compte partenaire X → contenu visible dans **Espace Pro** (gestion / stats)
+- [ ] **🤖** Idem
+- [ ] **💻** (optionnel) SQL ou admin : `content_origin = partner` · `partner_user_id` = X sur le contenu publié
+
+#### Privilège lié au contenu transféré (THE LOOP → partenaire)
+- [ ] **📱** Préparer : privilège catalogue **actif**, associé au contenu transféré (offrant THE LOOP ou partenaire)
+- [ ] **📱** Compte **Prime** → fiche du contenu → **Utiliser chez le partenaire**
+- [ ] **🤖** Idem
+- [ ] **📱** À la validation : scanner / saisie demande le code **partenaire X** (pas le code THE LOOP équipe)
+- [ ] **🤖** Idem
+- [ ] **📱** Saisie code partenaire X → validation **OK**
+- [ ] **🤖** Idem
+
+#### Partenaire → THE LOOP (retour équipe)
+- [ ] **📱** Admin → même fiche → **Transférer** vers **THE LOOP** (reprise gestion équipe · `partner_user_id` null)
+- [ ] **🤖** Idem
+- [ ] **📱** `content_origin = admin` (ou `loop` selon canal création)
+- [ ] **📱** Compte Prime → consommer privilège sur ce contenu → code **THE LOOP équipe** demandé
+- [ ] **🤖** Idem
+
+#### Sécurité
+- [ ] **💻** Compte non admin ne peut pas appeler `admin_reassign_content_owner` (cf. `docs/TESTS_MANUELS.md` A7)
+- [ ] **📱** Membre / partenaire : pas de bouton transfert sur la fiche
 
 ### Push (Control Tower mobile)
 - [ x ] **📱** Notifications → envoi immédiat audience « Tous »
@@ -341,9 +378,9 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Partenaire invité → connexion e-mail + MDP → Espace Pro
 - [ x ] **🤖** Idem
-- [ ] **💻** Users → **Waitlist** → pré-créer compte → statut `invited`
-- [ ] **📱** Admin mobile → Waitlist → pré-créer (même flux)
-- [ ] **🤖** Idem
+- [ x ] **💻** Users → **Waitlist** → pré-créer compte → statut `invited`
+- [ x ] **📱** Admin mobile → Waitlist → pré-créer (même flux)
+- [ x ] **🤖** Idem
 
 ---
 
@@ -357,10 +394,10 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Menu masque modules sans permission
 
 ### Users · PASS · paiements
-- [ ] **💻** Users · liste · édition · invite · waitlist
-- [ ] **💻** PASS · prix · octrois manuels
+- [ x ] **💻** Users · liste · édition · invite · waitlist
+- [ x ] **💻** PASS · prix · octrois manuels
 - [ x ] **💻** Paiements · liste · Resync · refs Djomy
-- [ ] **💻** Export CSV · analytics revenus
+- [ x ] **💻** Export CSV · analytics revenus
 - [ ] **💻** Demandes · modération · retraits partenaire
 
 ### Contenu
@@ -368,6 +405,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Créer / modifier (ContentEditor)
 - [ x ] **💻** À la une · archiver
 - [ x ] **💻** Idée → ouvrir éditeur prérempli
+- [ ] **💻** Transfert propriétaire contenu · retest smoke **§ E — Transfert contenu** (effectué sur **📱** admin mobile)
 
 ### Accueil · Loop · étoiles
 - [ x ] **💻** Accueil · sondage · parcours · singulier · logos
@@ -482,12 +520,12 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ```
 Date : 17 sept. 2026
 Testeur :
-Build iPhone : 39 (déploiement en cours)
-Build Android : 39 (déploiement en cours)
+Build iPhone : 40 (déploiement en cours)
+Build Android : 40 (déploiement en cours)
 Admin-web à jour : oui (2a1a1ce)
 Serveur Render à jour : oui
 Migration e-mail appliquée : oui
 Migrations à appliquer : 20260918_partnership_submit_rpc · 20260918_partner_accept_activate_catalog
 Validé session : PASS file d’attente · achat Djomy · soumission événement pending · privilège partenaire (notif + acceptation) · push · contact · profil membre jamais Prime
-En cours / retest : modifier pending partenaire · modération admin sync · annuler soumission · spot existant formulaire · catalogue actif après accept privilège
+En cours / retest : modifier pending partenaire · modération admin sync · annuler soumission · spot existant formulaire · catalogue actif après accept privilège · transfert THE LOOP ↔ partenaire + code validation privilège
 ```

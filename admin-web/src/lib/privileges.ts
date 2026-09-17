@@ -887,6 +887,50 @@ function entitlementsRemoteKey(countryCode: string): string {
   return `role_benefit_entitlements_${countryCode.toUpperCase().slice(0, 2)}`;
 }
 
+export type DrawEligibleRole = 'member' | 'prime' | 'partner' | 'admin';
+
+export const ALL_DRAW_ELIGIBLE_ROLES: DrawEligibleRole[] = ['member', 'prime', 'partner', 'admin'];
+
+export function allDrawRolesSelected(roles: DrawEligibleRole[]): boolean {
+  return ALL_DRAW_ELIGIBLE_ROLES.every((role) => roles.includes(role));
+}
+
+export function entitlementKindsForDrawRoles(roles: DrawEligibleRole[]): RoleEntitlementKind[] {
+  const out: RoleEntitlementKind[] = [];
+  if (roles.includes('member')) out.push('member');
+  if (roles.includes('prime')) out.push('prime');
+  if (roles.includes('partner')) out.push('partner');
+  if (roles.includes('admin')) out.push('admin');
+  return out;
+}
+
+/** Exclut les privilèges déjà octroyés à tout un rôle ; conserve promo_code. */
+export function isCatalogEligibleForDraw(
+  catalogId: string,
+  benefitPurpose: string,
+  roles: DrawEligibleRole[],
+  config: RoleBenefitEntitlementsConfig,
+): boolean {
+  if (benefitPurpose === 'promo_code') return true;
+  const kinds = entitlementKindsForDrawRoles(roles);
+  for (const kind of kinds) {
+    if ((config[kind] ?? []).some((entry) => entry.catalogId === catalogId)) return false;
+  }
+  return true;
+}
+
+export async function filterDrawEligibleCatalog(
+  items: BenefitCatalogRow[],
+  countryCode: string,
+  roles: DrawEligibleRole[],
+): Promise<BenefitCatalogRow[]> {
+  if (!roles.length) return [];
+  const config = await getRoleBenefitEntitlements(countryCode);
+  return items.filter((item) =>
+    isCatalogEligibleForDraw(item.localId, item.benefitPurpose, roles, config),
+  );
+}
+
 export async function getRoleBenefitEntitlements(
   countryCode: string,
 ): Promise<RoleBenefitEntitlementsConfig> {

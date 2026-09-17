@@ -3,7 +3,8 @@ import * as Linking from 'expo-linking';
 
 export const THELOOP_AUTH_CALLBACK = 'theloop://auth/callback';
 
-const DEFAULT_MEMBER_AUTH_CALLBACK_URL = 'https://admin.theloop-app.com/auth-callback.html';
+const DEFAULT_MEMBER_AUTH_CALLBACK_URL =
+  'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
 
 function getSupabaseHttpsAuthCallbackUrl(): string | null {
   return DEFAULT_MEMBER_AUTH_CALLBACK_URL;

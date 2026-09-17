@@ -3,13 +3,19 @@ import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
 import { formatWhen } from '../lib/format';
 import {
+  ALL_DRAW_ELIGIBLE_ROLES,
+  allDrawRolesSelected,
+  filterDrawEligibleCatalog,
   grantBenefitsToUsers,
+  isCatalogEligibleForDraw,
+  getRoleBenefitEntitlements,
   listBenefitCatalog,
   type BenefitCatalogRow,
+  type DrawEligibleRole,
 } from '../lib/privileges';
 import { supabase } from '../lib/supabase';
 
-type DrawRole = 'member' | 'prime' | 'partner';
+type DrawRole = DrawEligibleRole;
 
 interface DrawRow {
   id: string;
@@ -23,9 +29,20 @@ interface DrawRow {
 
 const ROLE_OPTIONS: { id: DrawRole; label: string }[] = [
   { id: 'member', label: 'Membres' },
-  { id: 'prime', label: 'Prime' },
+  { id: 'prime', label: 'Loop Prime' },
   { id: 'partner', label: 'Partenaires' },
+  { id: 'admin', label: 'Admins délégués' },
 ];
+
+/** Pool tirage : admins délégués uniquement (pas super_admin). */
+function rolesToDbValues(roles: DrawRole[]): string[] {
+  return roles.flatMap((r) => {
+    if (r === 'member') return ['member', 'USER_FREE'];
+    if (r === 'prime') return ['prime', 'USER_PRIME'];
+    if (r === 'partner') return ['partner', 'PARTNER', 'tool_partner'];
+    return ['admin'];
+  });
+}
 
 function shufflePick<T>(arr: T[], n: number): T[] {
   const copy = [...arr];
@@ -52,8 +69,14 @@ export function TiragePage() {
   const load = useCallback(async () => {
     setError(null);
     const cat = await listBenefitCatalog(countryCode);
-    setCatalog(cat.items.filter((i) => i.isActive));
-    if (!catalogId && cat.items[0]) setCatalogId(cat.items[0].localId);
+    const active = cat.items.filter((i) => i.isActive);
+    const eligible = await filterDrawEligibleCatalog(active, countryCode, roles);
+    setCatalog(eligible);
+    if (catalogId && !eligible.some((i) => i.localId === catalogId)) {
+      setCatalogId(eligible[0]?.localId ?? '');
+    } else if (!catalogId && eligible[0]) {
+      setCatalogId(eligible[0].localId);
+    }
 
     let q = supabase
       .from('admin_benefit_draws')
@@ -80,7 +103,7 @@ export function TiragePage() {
         winners: Array.isArray(r.winners) ? (r.winners as DrawRow['winners']) : [],
       })),
     );
-  }, [countryCode, catalogId]);
+  }, [countryCode, catalogId, roles]);
 
   useEffect(() => {
     void load();
@@ -92,11 +115,7 @@ export function TiragePage() {
       return;
     }
     void (async () => {
-      const roleDb = roles.flatMap((r) => {
-        if (r === 'member') return ['member', 'USER_FREE'];
-        if (r === 'prime') return ['prime', 'USER_PRIME'];
-        return ['partner', 'PARTNER'];
-      });
+      const roleDb = rolesToDbValues(roles);
       const { count } = await supabase
         .from('users')
         .select('id', { count: 'exact', head: true })
@@ -111,6 +130,10 @@ export function TiragePage() {
     setRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
   }
 
+  function toggleAllRoles() {
+    setRoles((prev) => (allDrawRolesSelected(prev) ? [] : [...ALL_DRAW_ELIGIBLE_ROLES]));
+  }
+
   async function runDraw() {
     if (!catalogId || !roles.length || winnerCount < 1) {
       setMsg('Choisissez un catalogue, des rôles et un nombre de gagnants.');
@@ -121,13 +144,16 @@ export function TiragePage() {
       setMsg('Catalogue introuvable.');
       return;
     }
+    const entitlements = await getRoleBenefitEntitlements(countryCode);
+    if (!isCatalogEligibleForDraw(item.localId, item.benefitPurpose, roles, entitlements)) {
+      setMsg(
+        'Ce privilège est déjà octroyé à tout le rôle cible. Utilisez Octroyer ou une campagne limitée / code promo.',
+      );
+      return;
+    }
     setBusy(true);
     setMsg(null);
-    const roleDb = roles.flatMap((r) => {
-      if (r === 'member') return ['member', 'USER_FREE'];
-      if (r === 'prime') return ['prime', 'USER_PRIME'];
-      return ['partner', 'PARTNER'];
-    });
+    const roleDb = rolesToDbValues(roles);
     const { data: users, error: uErr } = await supabase
       .from('users')
       .select('id, first_name, last_name, phone_number, user_role')
@@ -216,19 +242,25 @@ export function TiragePage() {
       <div className="split-pane">
         <div className="card">
           <h3>Nouveau tirage</h3>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Campagnes limitées : N gagnants parmi un pool (ex. 3 dîners / 800 membres, 10 codes promo Instagram, 5
+            places VIP, avantages partenaires ou admins). Choisissez un ou plusieurs rôles, ou « Tous ». Super admin exclu du pool.
+          </p>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Privilège disponible pour le tirage = actif dans le catalogue, validé par un partenaire Pro, et pas déjà
+            donné à tout le rôle sélectionné via Octroyer (sauf codes promo).
+          </p>
           <div className="field">
-            <label>Privilège catalogue</label>
-            <select value={catalogId} onChange={(e) => setCatalogId(e.target.value)}>
-              {catalog.map((c) => (
-                <option key={c.localId} value={c.localId}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label>Rôles éligibles</label>
+            <label>Rôles du pool de tirage</label>
             <div className="toolbar" style={{ margin: 0 }}>
+              <label className="check-inline">
+                <input
+                  type="checkbox"
+                  checked={allDrawRolesSelected(roles)}
+                  onChange={toggleAllRoles}
+                />
+                Tous
+              </label>
               {ROLE_OPTIONS.map((r) => (
                 <label key={r.id} className="check-inline">
                   <input
@@ -241,6 +273,20 @@ export function TiragePage() {
               ))}
             </div>
             <p className="meta">Candidats estimés : {poolSize ?? '…'}</p>
+          </div>
+          <div className="field">
+            <label>Privilège à tirer</label>
+            <select value={catalogId} onChange={(e) => setCatalogId(e.target.value)}>
+              {catalog.length === 0 ? (
+                <option value="">Aucun privilège disponible pour ces rôles</option>
+              ) : (
+                catalog.map((c) => (
+                  <option key={c.localId} value={c.localId}>
+                    {c.title}
+                  </option>
+                ))
+              )}
+            </select>
           </div>
           <div className="field">
             <label>Nombre de gagnants</label>

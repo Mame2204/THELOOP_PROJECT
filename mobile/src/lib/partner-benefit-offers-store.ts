@@ -921,19 +921,17 @@ export async function proposeCatalogBenefitsToPartners(
   partners: BenefitOfferingPartner[],
 ): Promise<PartnerBenefitOffer[]> {
   const created: PartnerBenefitOffer[] = [];
-  let anyAccepted = false;
 
   for (const partner of partners) {
     const partnerUserId =
       (await resolvePartnerUserIdForSync(partner.partnerId, partner.displayName)) ?? partner.partnerId;
+    const selfAssign = await isSuperAdminPartnerUser(partnerUserId);
     const existing = await findExistingOffer(catalogItem.id, partnerUserId, partner.displayName);
     if (existing && (existing.status === 'pending' || isPartnerOfferActive(existing.status))) {
-      if (isPartnerOfferActive(existing.status)) anyAccepted = true;
       continue;
     }
 
-    // Super admin s'affecte lui-même : pas de circuit validation partenaire
-    const selfAssign = await isSuperAdminPartnerUser(partnerUserId);
+    // THE LOOP (super admin) : offre acceptée + catalogue activé dès que toutes les offres sont réglées
     const offer = await createPartnerBenefitOffer({
       partnerUserId,
       partnerName: partner.displayName,
@@ -950,13 +948,16 @@ export async function proposeCatalogBenefitsToPartners(
       benefitKind: catalogItem.benefitKind ?? null,
       status: selfAssign ? 'accepted' : 'pending',
     });
-    if (selfAssign) anyAccepted = true;
     created.push(offer);
   }
 
-  if (anyAccepted) {
+  const catalogOffers = (await loadAll()).filter((o) => o.catalogId === catalogItem.id);
+  const hasPending = catalogOffers.some((o) => o.status === 'pending');
+  const hasAccepted = catalogOffers.some((o) => isPartnerOfferActive(o.status));
+
+  if (hasAccepted && !hasPending) {
     await updateBenefitCatalogItem(catalogItem.id, { isActive: true });
-  } else if (created.length) {
+  } else if (hasPending) {
     const item = await getBenefitCatalogItem(catalogItem.id);
     if (item?.isActive) {
       await updateBenefitCatalogItem(catalogItem.id, { isActive: false });

@@ -396,6 +396,15 @@ export async function createPartnerEvent(input: StagingEventInput, options?: { d
   let remoteSync: { ok: boolean; reason?: string } = { ok: false, reason: options?.draft ? 'draft_local_only' : 'pending_sync' };
   if (!options?.draft) {
     remoteSync = await syncEventToRemote(item);
+    if (remoteSync.ok) {
+      const { notifyAdminPendingSubmission } = await import('@/lib/partner-moderation-notify');
+      void notifyAdminPendingSubmission({
+        kind: 'event',
+        title: item.title,
+        partnerName: item.partnerName,
+        countryCode: item.countryCode,
+      }).catch(() => undefined);
+    }
   }
 
   store.events.unshift(item);
@@ -470,6 +479,15 @@ export async function createPartnerSpot(input: StagingSpotInput, options?: { dra
   if (!options?.draft) {
     // Soumission à modération uniquement — jamais de publish ici (event/spot/outil).
     remoteSync = await syncSpotToRemote({ ...item, status: 'pending' });
+    if (remoteSync.ok) {
+      const { notifyAdminPendingSubmission } = await import('@/lib/partner-moderation-notify');
+      void notifyAdminPendingSubmission({
+        kind: isTool ? 'tool' : 'spot',
+        title: item.name,
+        partnerName: item.partnerName,
+        countryCode: item.countryCode,
+      }).catch(() => undefined);
+    }
   }
 
   store.spots.unshift(item);
@@ -668,12 +686,14 @@ async function ensureLocalStagingSpot(id: string): Promise<StagingSpot | null> {
   return getStagingSpotById(id);
 }
 
-export async function moderateEvent(id: string, approve: boolean, reason?: string): Promise<boolean> {
+export type ModerationResult = { ok: boolean; reason?: string };
+
+export async function moderateEvent(id: string, approve: boolean, reason?: string): Promise<ModerationResult> {
   const ensured = await ensureLocalStagingEvent(id);
-  if (!ensured) return false;
+  if (!ensured) return { ok: false, reason: 'Soumission introuvable.' };
   const store = await loadStore();
   const idx = store.events.findIndex((e) => e.id === id);
-  if (idx < 0) return false;
+  if (idx < 0) return { ok: false, reason: 'Soumission introuvable.' };
   const event = store.events[idx];
 
   if (!approve) {
@@ -702,21 +722,18 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
     } catch (e) {
       console.warn('[Staging] notify partner moderateEvent:', e);
     }
-    return true;
+    return { ok: true };
   }
 
   try {
-    const { publishPartnerEventToEvents, syncPartnerEventSubmission } =
+    const { publishPartnerEventToEvents, fetchRemotePartnerEventSubmissions } =
       await import('@/lib/partner-content-sync');
-    // Toujours publier au nom du partenaire créateur (pas l'admin qui valide)
-    await syncPartnerEventSubmission({
-      ...event,
-      status: 'approved',
-      contentOrigin: 'partner',
-    });
+    // Aligné admin-web : publish RPC direct (évite un upsert local qui écrase la soumission remote).
     const pub = await publishPartnerEventToEvents(id);
     if (pub.ok) {
-      store.events[idx] = {
+      const remote = await fetchRemotePartnerEventSubmissions({ statuses: ['approved'] });
+      const approvedRemote = remote.find((e) => e.id === id);
+      store.events[idx] = approvedRemote ?? {
         ...event,
         status: 'approved',
         contentOrigin: 'partner',
@@ -735,13 +752,13 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
       } catch (e) {
         console.warn('[Staging] notify partner moderateEvent:', e);
       }
-      return true;
+      return { ok: true };
     }
     console.warn('[Staging] Publication event:', pub.reason);
-    return false;
+    return { ok: false, reason: pub.reason ?? 'Publication impossible.' };
   } catch (e) {
     console.warn('[Staging] moderateEvent remote:', e);
-    return false;
+    return { ok: false, reason: e instanceof Error ? e.message : 'Publication impossible.' };
   }
 }
 

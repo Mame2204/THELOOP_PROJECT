@@ -931,7 +931,10 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
 
       if (onlyTheLoop) {
         setTab('catalog');
-        Alert.alert('Créé', 'Association THE LOOP activée — l\'privilège apparaît dans Catalogue.');
+        Alert.alert(
+          'Créé et activé',
+          'Association THE LOOP acceptée et privilège activé dans le Catalogue — disponible pour tirage et octroi.',
+        );
       } else {
         setTab('creation');
         setCreationSection('validations');
@@ -1111,7 +1114,7 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
           {creationSection === 'create' ? (
             <>
               <Text style={[styles.hint, { color: shell.pageKicker }]}>
-                Choisissez un privilège créé dans Paramètres → Privilège, un partenaire (THE LOOP inclus), puis un événement / spot / outil. Hors THE LOOP : envoi en validation partenaire — actif seulement après acceptation (passe alors dans Catalogue).
+                Choisissez un privilège créé dans Paramètres → Privilège, un partenaire (THE LOOP inclus), puis un événement / spot / outil. THE LOOP : acceptation et activation automatiques. Partenaire Pro : validation requise, puis actif après acceptation.
               </Text>
 
               <Text style={[styles.label, { color: shell.pageKicker }]}>Privilège (Paramètres) *</Text>

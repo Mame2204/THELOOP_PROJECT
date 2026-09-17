@@ -148,7 +148,8 @@ function paymentPage(variant: PageVariant): string {
       ${isSuccess ? 'Confirmé' : 'Non débité'}
     </div>
     <p class="hint">${hint}</p>
-    <a class="btn" id="openApp" href="theloop://payment/complete?status=${variant}" style="display:none">Ouvrir THE LOOP</a>
+    <p class="hint">Si THE LOOP est déjà installée, touchez le bouton ci-dessous. Sinon, fermez cet onglet et rouvrez l’app depuis l’écran d’accueil de votre téléphone.</p>
+    <a class="btn" id="openApp" href="theloop://payment/complete?status=${variant}">Ouvrir THE LOOP</a>
     <a class="btn-secondary" href="https://www.theloop-app.com/">www.theloop-app.com</a>
   </main>
   <script>
@@ -158,24 +159,19 @@ function paymentPage(variant: PageVariant): string {
       var androidIntent =
         'intent://payment/complete?status=${variant}#Intent;scheme=theloop;package=gn.theloop.app;end';
 
-      function openTheLoopApp() {
+      if (!openApp) return;
+
+      openApp.addEventListener('click', function (e) {
+        e.preventDefault();
         var isAndroid = /Android/i.test(navigator.userAgent);
         try {
           if (isAndroid) {
             window.location.href = androidIntent;
-            setTimeout(function () {
-              window.location.replace(deepLink);
-            }, 600);
           } else {
-            window.location.replace(deepLink);
+            window.location.href = deepLink;
           }
-        } catch (e) { /* ignore */ }
-      }
-
-      openTheLoopApp();
-      setTimeout(function () {
-        if (openApp) openApp.style.display = 'inline-block';
-      }, 1200);
+        } catch (err) { /* ignore */ }
+      });
     })();
   </script>
 </body>

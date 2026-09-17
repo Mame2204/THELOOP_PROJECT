@@ -12,7 +12,6 @@
       --text: #0a0a0a;
       --muted: #636e72;
       --gold: #c9a84c;
-      --accent: #12a8bc;
     }
     * { box-sizing: border-box; }
     body {
@@ -35,37 +34,9 @@
       text-transform: uppercase;
       color: var(--gold);
     }
-    h1 {
-      margin: 12px 0 0;
-      font-size: 1.35rem;
-      line-height: 1.3;
-    }
-    p {
-      margin: 16px 0 0;
-      font-size: 0.95rem;
-      line-height: 1.55;
-      color: var(--muted);
-    }
+    h1 { margin: 12px 0 0; font-size: 1.35rem; line-height: 1.3; }
+    p { margin: 16px 0 0; font-size: 0.95rem; line-height: 1.55; color: var(--muted); }
     .hint { margin-top: 20px; font-size: 0.8rem; }
-    .btn {
-      display: inline-block;
-      margin-top: 24px;
-      padding: 14px 22px;
-      border-radius: 12px;
-      background: #0a0a0a;
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 700;
-      text-decoration: none;
-    }
-    .btn-secondary {
-      display: block;
-      margin-top: 12px;
-      color: var(--accent);
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-    }
   </style>
 </head>
 <body>
@@ -74,16 +45,13 @@
     <h1 id="title">Confirmation en cours…</h1>
     <p id="message">Validation de votre e-mail…</p>
     <p class="hint" id="hint"></p>
-    <a class="btn" id="openApp" href="theloop://auth/callback" style="display:none">Ouvrir THE LOOP</a>
-    <a class="btn-secondary" id="stayHere" href="#" style="display:none">Rester sur cette page</a>
   </main>
   <script>
     (function () {
+      var AUTH_CALLBACK_BASE = 'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
       var title = document.getElementById('title');
       var message = document.getElementById('message');
       var hint = document.getElementById('hint');
-      var openApp = document.getElementById('openApp');
-      var stayHere = document.getElementById('stayHere');
 
       var hash = window.location.hash || '';
       var search = window.location.search || '';
@@ -91,21 +59,9 @@
         ? hash.slice(1)
         : (search.indexOf('?') === 0 ? search.slice(1) : '');
 
-      function showSuccess(deepLink) {
-        title.textContent = 'E-mail confirmé';
-        message.textContent = 'Votre compte THE LOOP est activé. Revenez dans l’application et connectez-vous avec votre mot de passe.';
-        hint.textContent = 'Sur Expo Go : ouvrez l’app manuellement, puis Connexion. Sur l’APK/IPA : le bouton ci-dessous peut rouvrir l’app.';
-        if (deepLink) {
-          openApp.href = deepLink;
-          openApp.style.display = 'inline-block';
-        }
-        stayHere.style.display = 'block';
-        stayHere.onclick = function (e) { e.preventDefault(); };
-      }
-
       if (!paramString) {
         title.textContent = 'Lien incomplet';
-        message.textContent = 'Ce lien ne contient pas les informations attendues. Rouvrez le message reçu par e-mail ou demandez un nouvel envoi depuis l’application.';
+        message.textContent = 'Ce lien ne contient pas les informations attendues. Rouvrez le message reçu par e-mail ou demandez un nouvel envoi depuis l\'application.';
         return;
       }
 
@@ -114,18 +70,15 @@
       if (error) {
         title.textContent = 'Confirmation impossible';
         message.textContent = decodeURIComponent(String(error).replace(/\+/g, ' '));
-        hint.textContent = 'THE LOOP → Connexion → renvoyez l’e-mail de confirmation.';
+        hint.textContent = 'THE LOOP → Connexion → renvoyez l\'e-mail de confirmation.';
         return;
       }
 
-      // L’e-mail est déjà confirmé côté Supabase avant cette redirection.
-      var deepLink = 'theloop://auth/callback#' + paramString;
-      showSuccess(deepLink);
+      title.textContent = 'Un instant…';
+      message.textContent = 'Ouverture de la page sécurisée pour finaliser votre compte.';
+      hint.textContent = 'Aucune application à installer pour cette étape — choisissez votre mot de passe dans le navigateur.';
 
-      // Tentative d’ouverture native (APK/IPA). Sur Expo Go, l’utilisateur ouvre l’app manuellement.
-      setTimeout(function () {
-        try { window.location.href = deepLink; } catch (e) { /* ignore */ }
-      }, 600);
+      window.location.replace(AUTH_CALLBACK_BASE + '?' + paramString);
     })();
   </script>
 </body>
