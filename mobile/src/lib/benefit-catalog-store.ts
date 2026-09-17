@@ -83,6 +83,10 @@ const LEGACY_KEY = 'loop_benefit_catalog_v1';
 
 let catalogMemoryCache: BenefitCatalogItem[] | null = null;
 
+export function invalidateBenefitCatalogCache(): void {
+  catalogMemoryCache = null;
+}
+
 export const EXTERNAL_PARTNER_LABEL = 'Autre partenaire';
 
 function partnerOptionsFromOffering(partners: BenefitOfferingPartner[]): string[] {

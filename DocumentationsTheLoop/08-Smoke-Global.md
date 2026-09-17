@@ -1,7 +1,7 @@
 # THE LOOP — Smoke test complet (à cocher)
 
-> **Màj :** 16 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
-> **App mobile :** build **37** (TestFlight / Play internal) · build **38** prévu (contact Android, CGU, profil Prime, agenda jour J)  
+> **Màj :** 17 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
+> **App mobile :** build **39** (TestFlight + Play internal — en cours de déploiement)  
 > **Admin web :** `https://admin.theloop-app.com` (deploy `2a1a1ce` — supprimer campagnes push)  
 > **Serveur :** `https://api.theloop-app.com` (cron push, paiements)
 
@@ -48,8 +48,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## 0 — Avant de commencer
 
 ### Environnement
-- [ x ] **📱** Build **37** installé (TestFlight)
-- [ x ] **🤖** Build **37** installé (Play internal)
+- [ ] **📱** Build **39** installé (TestFlight)
+- [ ] **🤖** Build **39** installé (Play internal)
 - [ x ] **💻** Admin-web accessible
 - [ x ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
 
@@ -96,8 +96,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ k ] **📱** Nouvelle demande autorisée si statut admin **rejeté** ou **approuvé**
 - [ x ] **📱** Après envoi : **tous** les appareils admin (iOS + Android) reçoivent la notif inbox + push OS (pas seulement l’appareil du test)
 - [ x ] **🤖** Idem
-- [ k ] **📱** CGU / Politique de confidentialité (modales légales)
-- [ k ] **🤖** Idem
+- [ x ] **📱** CGU / Politique de confidentialité (modales légales)
+- [ x ] **🤖** Idem
 
 ### Validation privilège (double tap logo)
 - [ x ] **📱** **Double tap** logo THE LOOP → écran **Code établissement**
@@ -140,8 +140,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Profil & upgrade (gate achat PASS **ON**)
 - [ x ] **📱** Profil : QR membre · parrainage · paramètres
 - [ x ] **🤖** Idem
-- [ k ] **📱** **Membre jamais Prime** → carte **« Passez à l’expérience premium »** (Découvrir Prime) · **pas** de bouton **Mon PASS**
-- [ r ] **🤖** Idem
+- [ x ] **📱** **Membre jamais Prime** → carte **« Passez à l’expérience premium »** (Découvrir Prime) · **pas** de bouton **Mon PASS**
+- [ x ] **🤖** Idem
 - [ x ] **📱** **Membre ex-Prime** (PASS expiré / historique en base ou local) → **Mon PASS** visible · **pas** de carte Découvrir Prime
 - [ x ] **🤖** Idem
 - [ x ] **📱** Pas d’accès aux privilèges Prime octroyés (tant que rôle `member`)
@@ -170,12 +170,14 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Profil → bouton **Mon PASS** (pas de carte « Découvrir Prime ») · historique PASS
 - [ x ] **🤖** Idem
-- [ ] **📱** Profil → **Mes avantages** / privilèges octroyés
-- [ ] **🤖** Idem
+> **Note :** « Profil → Mes avantages » n’existe plus. L’écran `MyBenefits` (« Mes privilèges ») est enregistré mais **sans lien de navigation**. Les privilèges s’affichent sur les **fiches événement / spot**.
+
 - [ x ] **📱** Contenu et offres réservés Prime accessibles
 - [ x ] **🤖** Idem
 
-### Privilèges & scan
+### Privilèges (fiches contenu + validation)
+- [ x ] **📱** Fiche événement ou spot → section privilèges · **Utiliser chez le partenaire**
+- [ x ] **🤖** Idem
 - [ x ] **📱** Scanner QR privilège partenaire → validation OK
 - [ x ] **🤖** Idem
 - [ x ] **📱** Utiliser un privilège octroyé → succès côté partenaire
@@ -186,10 +188,12 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Paiement Orange Money ou carte · succès
 - [ x ] **🤖** Idem
-- [ k ] **📱** Rôle Prime actif · notif confirmation
-- [ k ] **🤖** Idem
+- [ x ] **📱** Rôle Prime actif · notif confirmation
+- [ x ] **🤖** Idem
 - [ x ] **💻** Paiement visible admin-web → Paiements
 - [ x ] **📱** Échec paiement → message clair · pas Prime fantôme
+- [ x ] **🤖** Idem
+- [ x ] **📱** PASS déjà actif → achat suivant **en file d’attente** (pending) · date de démarrage affichée
 - [ x ] **🤖** Idem
 
 ---
@@ -211,22 +215,26 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 
 ### Publications
-- [ ] **📱** Soumettre événement → statut **pending**
-- [ ] **🤖** Idem
+- [ x ] **📱** Soumettre événement → statut **pending**
+- [ x ] **🤖** Idem
 - [ ] **📱** Soumettre spot / outil → pending
 - [ ] **🤖** Idem
-- [ ] **📱** Modifier une soumission pending
+- [ ] **📱** Modifier une soumission pending (retest post-fix `editId` + sync Supabase)
 - [ ] **🤖** Idem
-- [ ] **📱** Voir rejet admin + motif · resoumettre
-- [ ] **🤖** Idem
+- [ r ] **📱** **Annuler** une soumission pending (avant validation admin)
+- [ r ] **🤖** Idem
+- [ r ] **📱** Création événement · **Spot existant** (liste spots publiés)
+- [ r ] **🤖** Idem
+- [ r ] **📱** Voir rejet admin + motif · resoumettre
+- [ r ] **🤖** Idem
 
 ### Retrait & favoris
-- [ ] **📱** Demander retrait d’un contenu **publié**
-- [ ] **🤖** Idem
-- [ ] **📱** Annuler demande retrait (si encore pending)
-- [ ] **🤖** Idem
-- [ ] **📱** Notif quand admin approuve / refuse retrait
-- [ ] **🤖** Idem
+- [ r ] **📱** Demander retrait d’un contenu **publié**
+- [ r ] **🤖** Idem
+- [ r ] **📱** Annuler demande retrait (si encore pending)
+- [ r ] **🤖** Idem
+- [ r ] **📱** Notif quand admin approuve / refuse retrait
+- [ r ] **🤖** Idem
 - [ ] **💻** Demande visible admin-web → Demandes
 - [ x ] **📱** Favoris via onglet **Favoris**
 - [ x ] **🤖** Idem
@@ -235,6 +243,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **📱** Scan QR membre · validation code partenaire
 - [ x ] **🤖** Idem
 - [ x ] **📱** Code établissement `CODE-XXXXX` fonctionnel
+- [ x ] **🤖** Idem
+- [ x ] **📱** Notif **privilège à valider** · accepter / refuser (Espace Pro)
 - [ x ] **🤖** Idem
 
 ---
@@ -252,14 +262,14 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 
 ### Modération
-- [ ] **📱** Voir soumissions pending partenaire
-- [ ] **🤖** Idem
-- [ ] **📱** Approuver → contenu public
-- [ ] **🤖** Idem
-- [ ] **📱** Rejeter + motif → partenaire informé
-- [ ] **🤖** Idem
-- [ ] **📱** Approuver / refuser **retrait** partenaire
-- [ ] **🤖** Idem
+- [ x ] **📱** Voir soumissions pending partenaire
+- [ x ] **🤖** Idem
+- [ x ] **📱** Approuver → contenu public
+- [ x ] **🤖** Idem
+- [ x ] **📱** Rejeter + motif → partenaire informé
+- [ x ] **🤖** Idem
+- [ x ] **📱** Approuver / refuser **retrait** partenaire
+- [ x ] **🤖** Idem
 
 ### Users & équipe
 - [ x ] **📱** Liste users · pagination · filtre inactifs 30j
@@ -268,8 +278,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** TEAMS · activer/désactiver privilège par membre
 - [ x ] **🤖** Idem
-- [ ] **📱** Permissions admin délégué (super admin)
-- [ ] **🤖** Idem
+- [ x ] **📱** Permissions admin délégué (super admin)
+- [ x ] **🤖** Idem
 
 ### PASS & paiements
 - [ x ] **📱** Gestion PASS · prix Guinée (super admin)
@@ -286,16 +296,16 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Partenariat approuvé → note système · inviter le contact (Utilisateurs · rôle **Partenaire**)
 - [ x ] **🤖** Idem
-- [ ] **📱** Idée utilisateur → préremplir éditeur contenu
-- [ ] **🤖** Idem
+- [ x ] **📱** Idée utilisateur → préremplir éditeur contenu
+- [ x ] **🤖** Idem
 
 ### Push (Control Tower mobile)
 - [ x ] **📱** Notifications → envoi immédiat audience « Tous »
 - [ x ] **🤖** Idem
 - [ x ] **📱** Planifier campagne · **Annuler** une planifiée
 - [ x ] **🤖** Idem
-- [ ] **📱** Audiences favoris · anniversaires
-- [ ] **🤖** Idem
+- [ x ] **📱** Audiences favoris · anniversaires
+- [ x ] **🤖** Idem
 
 ---
 
@@ -349,7 +359,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Users · PASS · paiements
 - [ ] **💻** Users · liste · édition · invite · waitlist
 - [ ] **💻** PASS · prix · octrois manuels
-- [ ] **💻** Paiements · liste · Resync · refs Djomy
+- [ x ] **💻** Paiements · liste · Resync · refs Djomy
 - [ ] **💻** Export CSV · analytics revenus
 - [ ] **💻** Demandes · modération · retraits partenaire
 
@@ -362,6 +372,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Accueil · Loop · étoiles
 - [ x ] **💻** Accueil · sondage · parcours · singulier · logos
 - [ x ] **💻** Loop hub · privilèges
+- [ x ] **💻** Privilège associé (partenaire + contenu) → notif partenaire · validation · **catalogue actif** (retest post-migration `20260918_partner_accept_activate_catalog`)
 - [ x ] **💻** Étoiles · spots (et outils / parcours si dispo)
 - [ x ] **💻** TEAMS · toggles overrides par membre
 
@@ -374,7 +385,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Notifications (admin-web)
 - [ x ] **💻** Envoi immédiat · audience Tous
 - [ x ] **💻** Audiences : favoris · anniversaires · individuel
-- [ r ] **💻** Planifier · modifier · annuler · **supprimer** campagne (retest post-deploy `2a1a1ce`)
+- [ x ] **💻** Planifier · modifier · annuler · **supprimer** campagne (retest post-deploy `2a1a1ce`)
 - [ x ] **💻** Historique · statuts `sent` / `failed` / `cancelled`
 
 > Détail push : voir aussi `07-Smoke-Push.md`
@@ -408,12 +419,12 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 
 # I — Contact & support
 
-- [ r ] **📱** Profil → pied de page **contact@theloop-app.com**
-- [ r ] **🤖** Idem
-- [ r ] **📱** Feuille contact (WhatsApp / e-mail) → `mailto:contact@theloop-app.com`
-- [ r ] **🤖** Idem
-- [ r ] **📱** FAQ / pages / CGU (contenu Supabase) → e-mail **contact@theloop-app.com** (après migration)
-- [ r ] **🤖** Idem
+- [ x ] **📱** Profil → pied de page **contact@theloop-app.com**
+- [ x ] **🤖** Idem
+- [ x ] **📱** Feuille contact (WhatsApp / e-mail) → `mailto:contact@theloop-app.com`
+- [ x ] **🤖** Idem
+- [ x ] **📱** FAQ / pages / CGU (contenu Supabase) → e-mail **contact@theloop-app.com** (après migration)
+- [ x ] **🤖** Idem
 
 ---
 
@@ -460,7 +471,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 # M — Plus tard (non bloquant)
 
 - [ x ] **🔜** Build **37** TestFlight + Play (quota EAS)
-- [ r ] **🔜** E-mail support dans le binaire app (build 37+)
+- [ x ] **🔜** E-mail support dans le binaire app (build 37+)
 - [ x ] **🔜** Refaire § F (bienvenue immédiate) sur build 37
 - [ x ] **🔜** Reset MDP via page web sans app installée
 
@@ -469,13 +480,14 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## Notes de session
 
 ```
-Date : 16 sept. 2026
+Date : 17 sept. 2026
 Testeur :
-Build iPhone : 37
-Build Android : 37
+Build iPhone : 39 (déploiement en cours)
+Build Android : 39 (déploiement en cours)
 Admin-web à jour : oui (2a1a1ce)
 Serveur Render à jour : oui
 Migration e-mail appliquée : oui
-Migration partenariat 20260918 : non (à appliquer)
-Bloquants trouvés : CGU illisibles · contact Android · profil Prime nouveau compte · partenariat après rejet
+Migrations à appliquer : 20260918_partnership_submit_rpc · 20260918_partner_accept_activate_catalog
+Validé session : PASS file d’attente · achat Djomy · soumission événement pending · privilège partenaire (notif + acceptation) · push · contact · profil membre jamais Prime
+En cours / retest : modifier pending partenaire · modération admin sync · annuler soumission · spot existant formulaire · catalogue actif après accept privilège
 ```

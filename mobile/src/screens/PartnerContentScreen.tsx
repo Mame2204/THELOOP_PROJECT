@@ -8,6 +8,7 @@ import { AdminPageHeader } from '@/components/admin/AdminShell';
 import { FilterPills } from '@/components/FilterPills';
 import {
   STATUS_LABELS,
+  cancelPartnerPendingSubmission,
   listPartnerEvents,
   listPartnerSpots,
   retryPartnerStagingSync,
@@ -54,6 +55,42 @@ function statusColor(status: string): string {
 function withdrawalKind(type: 'event' | 'spot', isTool: boolean): PartnerContentKind {
   if (type === 'event') return 'event';
   return isTool ? 'tool' : 'spot';
+}
+
+function confirmCancelSubmission(
+  kind: PartnerContentKind,
+  localId: string,
+  title: string,
+  partnerUserId: string,
+  partnerLabel: string,
+  onDone: () => void,
+) {
+  Alert.alert(
+    'Annuler la soumission',
+    `« ${title} » sera retiré de la file de modération THE LOOP. Vous pourrez le recréer plus tard.`,
+    [
+      { text: 'Non', style: 'cancel' },
+      {
+        text: 'Annuler la soumission',
+        style: 'destructive',
+        onPress: () => {
+          void cancelPartnerPendingSubmission(
+            kind === 'event' ? 'event' : kind,
+            localId,
+            partnerUserId,
+            partnerLabel,
+          ).then((res) => {
+            if (!res.ok) {
+              Alert.alert('Annulation impossible', res.error ?? 'Réessayez.');
+              return;
+            }
+            Alert.alert('Soumission annulée', 'Votre contenu n\'est plus en attente de validation.');
+            onDone();
+          });
+        },
+      },
+    ],
+  );
 }
 
 function confirmWithdrawal(
@@ -131,6 +168,18 @@ export function PartnerContentScreen({ navigation }: Props) {
     ttlMs: 90_000,
     enabled: role === 'PARTNER' && Boolean(user),
   });
+
+  const [partnerWorkspace, setPartnerWorkspace] = useState<{ effectiveUserId: string; partnerLabel: string } | null>(null);
+
+  useEffect(() => {
+    if (!user || role !== 'PARTNER') {
+      setPartnerWorkspace(null);
+      return;
+    }
+    void resolvePartnerWorkspaceContext(user).then((ctx) => {
+      setPartnerWorkspace({ effectiveUserId: ctx.effectiveUserId, partnerLabel: ctx.partnerLabel });
+    });
+  }, [user, role]);
 
   const venueSpots = useMemo(() => spots.filter((s) => s.subCategory !== 'tools'), [spots]);
   const toolSpots = useMemo(() => spots.filter((s) => s.subCategory === 'tools'), [spots]);
@@ -234,7 +283,7 @@ export function PartnerContentScreen({ navigation }: Props) {
               if (editable) {
                 navigateRoot(navigation, 'PartnerSubmission', {
                   type,
-                  editId: item.id,
+                  id: item.id,
                   isTool: type === 'spot' ? isTool : undefined,
                 });
                 return;
@@ -251,6 +300,24 @@ export function PartnerContentScreen({ navigation }: Props) {
             </Text>
             {item.status === 'rejected' && item.rejectionReason ? (
               <Text style={[styles.rejection, { color: '#f87171' }]}>Motif : {item.rejectionReason}</Text>
+            ) : null}
+            {item.status === 'pending' && partnerWorkspace ? (
+              <Pressable
+                style={[styles.withdrawBtn, { borderColor: '#fca5a5' }]}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  confirmCancelSubmission(
+                    withdrawalKind(type, isTool),
+                    item.id,
+                    title,
+                    partnerWorkspace.effectiveUserId,
+                    partnerWorkspace.partnerLabel,
+                    () => void run(true),
+                  );
+                }}
+              >
+                <Text style={[styles.withdrawBtnText, { color: '#dc2626' }]}>Annuler la soumission</Text>
+              </Pressable>
             ) : null}
             {item.status === 'approved' ? (
               <Pressable

@@ -203,6 +203,36 @@ export async function rejectPartnerEventSubmission(localId: string, reason?: str
     .eq('local_id', localId);
 }
 
+export async function deletePartnerEventSubmission(localId: string): Promise<{ ok: boolean; reason?: string }> {
+  if (!isSupabaseConfigured() || !supabase) return { ok: true };
+  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  const { error } = await supabase
+    .from('partner_event_submissions')
+    .delete()
+    .eq('local_id', localId)
+    .in('status', ['pending', 'draft', 'rejected']);
+  if (error) {
+    console.warn('[PartnerSync] delete event submission:', error.message);
+    return { ok: false, reason: error.message };
+  }
+  return { ok: true };
+}
+
+export async function deletePartnerSpotSubmission(localId: string): Promise<{ ok: boolean; reason?: string }> {
+  if (!isSupabaseConfigured() || !supabase) return { ok: true };
+  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  const { error } = await supabase
+    .from('partner_spot_submissions')
+    .delete()
+    .eq('local_id', localId)
+    .in('status', ['pending', 'draft', 'rejected']);
+  if (error) {
+    console.warn('[PartnerSync] delete spot submission:', error.message);
+    return { ok: false, reason: error.message };
+  }
+  return { ok: true };
+}
+
 type RemoteSubmissionStatus = StagingEvent['status'];
 
 function mapEventSubmissionRow(row: Record<string, unknown>): StagingEvent {

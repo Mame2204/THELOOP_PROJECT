@@ -3,6 +3,7 @@ import {
   deleteBenefitCatalogItem,
   forceDeleteBenefitCatalogRemote,
   getBenefitCatalogItem,
+  invalidateBenefitCatalogCache,
   listBenefitCatalog,
   peekBenefitCatalog,
   removePartnerFromCatalogItem,
@@ -25,6 +26,7 @@ import {
   buildPartnerBenefitOfferNotificationMessage,
   fetchPartnerBenefitOffersViaSupabase,
   invalidatePartnerBenefitOffersRemoteCache,
+  resolvePartnerOfferCatalogLocalId,
   respondPartnerBenefitOfferViaSupabase,
   parseRpcJsonArray,
 } from '@/lib/partner-benefit-offers-supabase-fallback';
@@ -1168,9 +1170,15 @@ async function runPartnerOfferRespondSideEffects(
     return;
   }
 
-  if (!isSupabaseConfigured()) {
-    await updateBenefitCatalogItem(current.catalogId, { isActive: true }, { syncMode: 'partner' });
+  const catalogLocalId = resolvePartnerOfferCatalogLocalId(current);
+  await updateBenefitCatalogItem(catalogLocalId || current.catalogId, { isActive: true }, { syncMode: 'partner' });
+  if (isSupabaseConfigured() && catalogLocalId) {
+    const activation = await acceptPartnerCatalogOfferViaSupabase(catalogLocalId);
+    if (!activation.ok && __DEV__) {
+      console.warn('[PartnerBenefitOffers] activation catalogue:', activation.error);
+    }
   }
+  invalidateBenefitCatalogCache();
   await notifyAdminUsers({
     title: 'Privilège validé par le partenaire',
     message: `${next.partnerName} a accepté « ${next.catalogTitle} ». Le privilège est maintenant actif.`,

@@ -47,6 +47,7 @@ import { adminContentActionsFor, CONTENT_STATUS_LABELS, type ContentStatus } fro
 import {
   adminDeletePartnerEvent,
   adminDeletePartnerSpot,
+  cancelPartnerPendingSubmission,
   createPartnerEvent,
   createPartnerSpot,
   deletePartnerEvent,
@@ -60,6 +61,7 @@ import {
   updatePartnerEvent,
   updatePartnerSpot,
   type StagingSpot,
+  type SubmissionStatus,
 } from '@/lib/partner-staging-store';
 import {
   loadEditableEvent,
@@ -92,6 +94,7 @@ import {
 } from '@/lib/content-origin';
 import {
   guineaLocationSnapshotFromLabel,
+  guineaLocationSnapshotFromStored,
   normalizePhysicalLocationForSave,
   normalizeSpotLocationPickerValue,
   spotDistrictFromGuineaLabel,
@@ -108,6 +111,7 @@ import {
   type WeeklyHoursSlot,
 } from '@/lib/opening-hours';
 import { getOpeningHoursSettings } from '@/lib/opening-hours-settings-store';
+import { buildVenueSpotOptions, type VenueSpotOption } from '@/lib/venue-spot-options';
 
 type SpeakerDraft = {
   name: string;
@@ -170,13 +174,6 @@ type VenueMode = 'existing' | 'custom';
 
 type CategoryOption = { id: string; label: string; emoji: string };
 
-interface VenueSpotOption {
-  id: string;
-  name: string;
-  address: string;
-  source: 'database' | 'staging';
-}
-
 export function PartnerSubmissionScreen({ route, navigation }: Props) {
   const { type, id, asAdmin, contentChannel: contentChannelParam, isTool: isToolRoute } = route.params;
   const { user, role } = useAuthContext();
@@ -184,7 +181,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   const { enabledCountries } = useContentCountries();
   const { shell } = useMemberTheme();
   const { hasPermission, isLoading: permissionsLoading } = useAdminPermissions();
-  const { refresh, getHomeLocations, primeLocations } = useContent();
+  const { refresh } = useContent();
   const { canManageEvents, canManageSpots, canManageTools } = usePartnerContentScopes();
   const isEdit = Boolean(id);
   const isLocalStagingDraft = Boolean(
@@ -249,8 +246,11 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   const [partnerAccounts, setPartnerAccounts] = useState<PartnerDirectoryEntry[]>([]);
   const [ownerPickerOpen, setOwnerPickerOpen] = useState(false);
   const [reassigning, setReassigning] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus | null>(null);
 
   const isToolForm = type === 'spot' && (subCategory === 'tools' || Boolean(isToolRoute));
+  const partnerNameHint = user?.company ?? user?.fullName ?? '';
+  const canCancelPendingSubmission = !isAdminMode && submissionStatus === 'pending' && Boolean(id);
   const reassignKind = type === 'event' ? 'event' as const : isToolForm ? 'tool' as const : 'spot' as const;
 
   const refreshContentOwner = useCallback(async () => {
@@ -391,47 +391,19 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   }, [id, type, isEdit, contentChannel, user?.company, user?.fullName]);
 
   useEffect(() => {
-    const normalizeKey = (name: string, address: string) =>
-      `${name.trim().toLowerCase()}|${address.trim().toLowerCase()}`;
-
-    const dbSpots: VenueSpotOption[] = [
-      ...getHomeLocations().map((s) => ({
-        id: s.id,
-        name: s.name,
-        address: s.address,
-        source: 'database' as const,
-      })),
-      ...primeLocations.map((s) => ({
-        id: s.id,
-        name: s.name,
-        address: s.address,
-        source: 'database' as const,
-      })),
-    ];
-    const stagingSpots: VenueSpotOption[] = partnerSpots.map((s) => ({
-      id: s.id,
-      name: s.name,
-      address: s.address,
-      source: 'staging' as const,
-    }));
-
-    // Dédupliquer : si un brouillon partenaire correspond à un spot publié (même nom),
-    // garder uniquement l’entrée catalogue (Base THE LOOP).
-    const byId = new Map<string, VenueSpotOption>();
-    const byName = new Map<string, VenueSpotOption>();
-    for (const spot of dbSpots) {
-      byId.set(spot.id, spot);
-      byName.set(normalizeKey(spot.name, spot.address), spot);
-    }
-    for (const spot of stagingSpots) {
-      const key = normalizeKey(spot.name, spot.address);
-      if (byName.has(key)) continue;
-      if (byId.has(spot.id)) continue;
-      byId.set(spot.id, spot);
-      byName.set(key, spot);
-    }
-    setVenueSpots(Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name)));
-  }, [getHomeLocations, primeLocations, partnerSpots]);
+    if (type !== 'event') return;
+    let cancelled = false;
+    void buildVenueSpotOptions({
+      countryCode,
+      partnerSpots,
+      isAdminMode,
+    }).then((options) => {
+      if (!cancelled) setVenueSpots(options);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [type, countryCode, partnerSpots, isAdminMode]);
 
   const loadFormData = useCallback(async () => {
     if (!id) {
@@ -491,6 +463,8 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
             setVenueName(loaded.venueName);
             applyStoredLocation(loaded.venueAddress, null, loaded.venueName, loaded.venueLocation ?? null);
           }
+          const stagingAfterLoad = await getStagingEventById(id);
+          setSubmissionStatus(stagingAfterLoad?.status ?? 'pending');
           return;
         }
         const stagingItem = await getStagingEventById(id);
@@ -537,6 +511,8 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
           setIsVerified(loaded.isVerified ?? false);
           setPartnershipStatus(loaded.partnershipStatus ?? (loaded.subCategory === 'tools' ? 'pending' : 'none'));
           setCountryCode((loaded.countryCode ?? DEFAULT_COUNTRY_CODE) as CountryCode);
+          const stagingAfterLoad = await getStagingSpotById(id);
+          setSubmissionStatus(stagingAfterLoad?.status ?? 'pending');
           return;
         }
         const stagingItem = await getStagingSpotById(id);
@@ -562,6 +538,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   }, [loadFormData]);
 
   function applyEventForm(item: Awaited<ReturnType<typeof listPartnerEvents>>[number]) {
+    setSubmissionStatus(item.status);
     setTitle(item.title);
     setDescription(item.description);
     setProgram(item.program ?? '');
@@ -607,6 +584,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   }
 
   async function applySpotForm(item: Awaited<ReturnType<typeof listPartnerSpots>>[number]) {
+    setSubmissionStatus(item.status);
     setTitle(item.name);
     setDescription(item.description);
     applyStoredLocation(item.address, item.district, item.name);
@@ -1118,7 +1096,14 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
         isAdminMode,
         kind: type === 'event' ? 'event' : isToolForm ? 'tool' : 'spot',
       });
-      Alert.alert(finalCopy.title, finalCopy.message, [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      const pendingSubmitted = !isAdminMode && !asDraft && !isEdit;
+      Alert.alert(
+        finalCopy.title,
+        pendingSubmitted
+          ? `${finalCopy.message}\n\nVous pouvez annuler cette soumission depuis Mes contenus tant qu'elle n'est pas validée.`
+          : finalCopy.message,
+        [{ text: 'OK', onPress: () => navigation.goBack() }],
+      );
     } catch (e) {
       const detail = e instanceof Error ? e.message : 'Erreur inconnue';
       if (detail === 'published_readonly') {
@@ -1134,6 +1119,36 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleCancelSubmission() {
+    if (!user || !id || !canCancelPendingSubmission) return;
+    Alert.alert(
+      'Annuler la soumission',
+      'Ce contenu sera retiré de la file de modération THE LOOP. Confirmer ?',
+      [
+        { text: 'Non', style: 'cancel' },
+        {
+          text: 'Annuler la soumission',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              const kind = type === 'event' ? 'event' : isToolForm ? 'tool' : 'spot';
+              const res = await cancelPartnerPendingSubmission(kind, id, user.id, partnerNameHint);
+              if (!res.ok) {
+                Alert.alert('Annulation impossible', res.error ?? 'Réessayez.');
+                return;
+              }
+              invalidateContentCache();
+              await refresh();
+              Alert.alert('Soumission annulée', 'Votre contenu n\'est plus en attente de validation.', [
+                { text: 'OK', onPress: () => navigation.goBack() },
+              ]);
+            })();
+          },
+        },
+      ],
+    );
   }
 
   async function handleDelete() {
@@ -1153,8 +1168,8 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
               ? await adminDeletePartnerEvent(id)
               : await adminDeletePartnerSpot(id)
             : type === 'event'
-              ? await deletePartnerEvent(id, user.id)
-              : await deletePartnerSpot(id, user.id);
+              ? await deletePartnerEvent(id, user.id, partnerNameHint)
+              : await deletePartnerSpot(id, user.id, partnerNameHint);
           if (ok) {
             invalidateContentCache();
             await refresh();
@@ -1921,7 +1936,17 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
           </Pressable>
         ) : null}
 
-        {isEdit && (!isAdminMode || adminActions?.canDelete) ? (
+        {canCancelPendingSubmission ? (
+          <Pressable
+            style={[styles.draft, { borderColor: '#fca5a5' }]}
+            onPress={() => void handleCancelSubmission()}
+            disabled={formLoading || saving}
+          >
+            <Text style={[styles.draftText, { color: '#dc2626' }]}>Annuler la soumission</Text>
+          </Pressable>
+        ) : null}
+
+        {isEdit && (!isAdminMode || adminActions?.canDelete) && submissionStatus !== 'pending' ? (
           <Pressable style={styles.delete} onPress={() => void handleDelete()} disabled={formLoading}>
             <Text style={styles.deleteText}>Supprimer</Text>
           </Pressable>

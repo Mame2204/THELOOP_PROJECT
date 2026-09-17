@@ -38,7 +38,6 @@ import {
   synchronizeSubscriptionHistory,
 } from '@/lib/subscription-history';
 import { isPassPurchaseUiEnabled } from '@/lib/pass-purchase-ui';
-import { DjomyFeeBreakdown } from '@/components/DjomyFeeBreakdown';
 import { subscribePaymentReturn } from '@/lib/payment-return-events';
 import { useAppGates } from '@/context/AppGatesContext';
 import type { RootStackParamList } from '@/navigation/types';
@@ -58,7 +57,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [payerPhone, setPayerPhone] = useState(
     user?.phoneNumber?.replace(/\D/g, '').slice(-9) || '',
   );
-  const [chargedAmountGnf, setChargedAmountGnf] = useState<number | null>(null);
   const [passPrices, setPassPrices] = useState<PassPriceMap | null>(null);
   const [activeExpiry, setActiveExpiry] = useState<string | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
@@ -315,9 +313,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       }
 
       if (payment.status === 'pending' && payment.paymentUrl && payment.paymentIntentId) {
-        if (payment.chargedAmountGnf != null) {
-          setChargedAmountGnf(payment.chargedAmountGnf);
-        }
         if (payment.sandboxMode) {
           setServerSandboxMode(true);
         }
@@ -439,7 +434,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         return;
       }
 
-      if (payment.chargedAmountGnf != null) setChargedAmountGnf(payment.chargedAmountGnf);
       setServerSandboxMode(true);
       setLastSandboxIntentId(payment.paymentIntentId);
 
@@ -523,15 +517,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
               : 'PASS sans échéance'}
         </Text>
       </View>
-
-      {amountGnf != null && isDjomyPaymentConfigured() ? (
-        <DjomyFeeBreakdown
-          amountGnf={chargedAmountGnf ?? amountGnf}
-          paymentMethod="all"
-          shell={shell}
-          accentColor={accent.accent}
-        />
-      ) : null}
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
         Vous serez redirigé vers le portail sécurisé {PASS_PAYMENT_PROVIDER_LABEL} pour choisir votre mode de paiement

@@ -614,7 +614,13 @@ export async function respondPartnerBenefitOfferViaSupabase(
     p_catalog_local_id: catalogLocalId || offer.catalogId,
   });
 
-  if (!error) return { ok: true };
+  if (!error) {
+    if (accept && catalogLocalId && !catalogLocalId.startsWith('pending-title-')) {
+      const activation = await acceptPartnerCatalogOfferViaSupabase(catalogLocalId);
+      if (!activation.ok) return activation;
+    }
+    return { ok: true };
+  }
 
   if (/does not exist|could not find|schema cache/i.test(error.message)) {
     if (accept && catalogLocalId) {
