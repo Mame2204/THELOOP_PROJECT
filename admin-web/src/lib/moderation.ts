@@ -64,6 +64,7 @@ export async function listPendingStaging(
         'local_id, partner_user_id, partner_name, title, description, venue_name, starts_at, country_code, cover_image_url, status, created_at, updated_at',
       )
       .eq('status', 'pending')
+      .is('published_event_id', null)
       .order('updated_at', { ascending: false })
       .limit(100),
     supabase
@@ -72,6 +73,8 @@ export async function listPendingStaging(
         'local_id, partner_user_id, partner_name, name, description, address, sub_category, country_code, cover_image_url, status, created_at, updated_at',
       )
       .eq('status', 'pending')
+      .is('published_establishment_id', null)
+      .is('published_tool_id', null)
       .order('updated_at', { ascending: false })
       .limit(100),
   ]);
@@ -157,16 +160,14 @@ export async function rejectStagingItem(
   reason: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const motif = reason.trim() || 'Refusé par l’admin';
-  const table =
-    item.kind === 'event' ? 'partner_event_submissions' : 'partner_spot_submissions';
-  const { error } = await supabase
-    .from(table)
-    .update({
-      status: 'rejected',
-      rejection_reason: motif,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('local_id', item.localId);
+  const rpcName =
+    item.kind === 'event'
+      ? 'reject_partner_event_submission'
+      : 'reject_partner_spot_submission';
+  const { error } = await supabase.rpc(rpcName, {
+    p_local_id: item.localId,
+    p_reason: motif,
+  });
 
   if (error) return { ok: false, error: error.message };
 

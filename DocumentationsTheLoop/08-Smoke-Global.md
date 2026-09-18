@@ -228,15 +228,15 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Voir rejet admin + motif · resoumettre
 - [ x ] **🤖** Idem
-- [ r ] **📱/🤖** **Validation admin → publication Agenda** : voir § E — *Validation publication événement partenaire*
+- [ x ] **📱/🤖** **Validation admin → publication Agenda** : voir § E — *Validation publication événement partenaire*
 
 ### Retrait & favoris
-- [ r ] **📱** Demander retrait d’un contenu **publié**
-- [ r ] **🤖** Idem
-- [ x ] **📱** Annuler demande retrait (si encore pending)
+- [ x ] **📱** Demander retrait d’un contenu **publié**
 - [ x ] **🤖** Idem
-- [ r ] **📱** Notif quand admin approuve / refuse retrait
+- [ r ] **📱** Annuler demande retrait (si encore pending)
 - [ r ] **🤖** Idem
+- [ x ] **📱** Notif quand admin approuve / refuse retrait
+- [ x ] **🤖** Idem
 - [ x ] **💻** Demande visible admin-web → Demandes
 - [ x ] **📱** Favoris via onglet **Favoris**
 - [ x ] **🤖** Idem
@@ -285,23 +285,23 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **📱** Notif admin à réception de la soumission (retest build 40)
 
 #### Approuver (super admin / admin modération)
-- [ ] **📱** Admin → **Modération** → onglet Événements → **Valider** la soumission
-- [ ] **🤖** Idem
-- [ ] **📱** Succès **sans** message `professional_title` / « vérifiez la connexion »
-- [ ] **🤖** Idem
-- [ ] **📱** Événement visible sur **Agenda** public (pull-to-refresh)
-- [ ] **🤖** Idem
-- [ ] **📱** Partenaire : statut **approuvé** · événement dans Espace Pro
-- [ ] **🤖** Idem
-- [ ] **💻** (optionnel) SQL : ligne `events` publiée · `partner_event_submissions.status = approved` · `event_speakers` synchronisés
+- [ x ] **📱** Admin → **Modération** → onglet Événements → **Valider** la soumission
+- [ x ] **🤖** Idem
+- [ x ] **📱** Succès **sans** message `professional_title` / « vérifiez la connexion »
+- [ x ] **🤖** Idem
+- [ x ] **📱** Événement visible sur **Agenda** public (pull-to-refresh)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Partenaire : statut **approuvé** · événement dans Espace Pro
+- [ x ] **🤖** Idem
+- [ x ] **💻** (optionnel) SQL : ligne `events` publiée · `partner_event_submissions.status = approved` · `event_speakers` synchronisés
 
 #### Refuser (modale motif)
-- [ ] **📱** Admin → **Refuser** une autre soumission pending → saisir motif
-- [ ] **🤖** Idem
-- [ ] **📱** Modale refus : champ motif **visible au-dessus du clavier** (fix UI build **41+**)
-- [ ] **🤖** Idem
-- [ ] **📱** Partenaire reçoit motif · peut resoumettre
-- [ ] **🤖** Idem
+- [ x ] **📱** Admin → **Refuser** une autre soumission pending → saisir motif
+- [ x ] **🤖** Idem
+- [ k ] **📱** Modale refus : champ motif **visible au-dessus du clavier** (fix UI build **41+**)
+- [ k ] **🤖** Idem
+- [ x ] **📱** Partenaire reçoit motif · peut resoumettre
+- [ x ] **🤖** Idem
 
 ### Users & équipe
 - [ x ] **📱** Liste users · pagination · filtre inactifs 30j
@@ -365,7 +365,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 
 #### Sécurité
-- [ ] **💻** Compte non admin ne peut pas appeler `admin_reassign_content_owner` (cf. `docs/TESTS_MANUELS.md` A7)
+- [ x ] **💻** Compte non admin ne peut pas appeler `admin_reassign_content_owner` (cf. `docs/TESTS_MANUELS.md` A7)
 - [ x ] **📱** Membre / partenaire : pas de bouton transfert sur la fiche
 
 ### Push (Control Tower mobile)
@@ -430,7 +430,16 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** PASS · prix · octrois manuels
 - [ x ] **💻** Paiements · liste · Resync · refs Djomy
 - [ x ] **💻** Export CSV · analytics revenus
-- [ ] **💻** Demandes · modération · retraits partenaire
+- [ r ] **💻** Demandes · modération · retraits partenaire (retest post-migration `20260926`)
+
+#### Modération soumissions partenaire (admin-web)
+- [ r ] **💻** Partenaire soumet **spot** pending → admin **Valider** → visible Agenda/Spots · notif partenaire OK
+- [ r ] **💻** Partenaire soumet **événement** pending → admin **Valider** → visible Agenda · notif partenaire OK
+- [ r ] **💻** Admin **Refuser** une soumission (spot ou événement) → **plus visible** dans l’app (catalogue retiré) · notif partenaire avec motif
+- [ r ] **💻** Cas régression : refus **après** publication accidentelle → contenu **disparaît** du public (pas « refusé mais publié »)
+
+#### Retraits partenaire (admin-web)
+- [ ] **💻** Demande retrait pending → approuver / refuser · sync avec app mobile
 
 ### Contenu
 - [ x ] **💻** Contenu · liste events / spots / outils
@@ -450,7 +459,14 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Gates · pays · catégories · permissions · legal
 - [ x ] **💻** Types privilège · standalone benefit
 - [ x ] **💻** Automatisations · jobs · exécuter (si bouton présent)
-- [ ] **💻** Horaires · onglets · milestones · tirage
+- [ r ] **💻** Horaires · onglets · milestones · tirage (retest post-fix `20260925` + `20260926`)
+
+#### Tirage privilèges (admin-web)
+- [ r ] **💻** Pool éligibles > 0 (rôle Prime coché · compte Prime GN)
+- [ r ] **💻** Tirage OK → historique enregistré (migration `20260925` `draw_city`)
+- [ r ] **📱** Gagnant reçoit notif inbox **« Nouveau privilège »** (retest post-fix admin-web notif)
+- [ r ] **📱** Gagnant Prime → fiche événement liée → privilège **sans cadenas** · bouton **Utiliser chez le partenaire** (retest build **43+** `ContentBenefitsSection`)
+- [ r ] **📱** Gagnant **non-Prime** (membre tiré) → même accès sur la fiche · pas de message « réservé aux Prime »
 
 ### Notifications (admin-web)
 - [ x ] **💻** Envoi immédiat · audience Tous
@@ -560,5 +576,6 @@ Serveur Render à jour : oui
 Migration e-mail appliquée : oui
 Migrations à appliquer : 20260918_partnership_submit_rpc · 20260918_partner_accept_activate_catalog · 20260918_theloop_team_validation_code · 20260919_event_speakers_default_empty_title
 Validé session : PASS file d’attente · achat Djomy · soumission événement pending · privilège partenaire (notif + acceptation) · push · contact · profil membre jamais Prime
-En cours / retest : validation publication événement (intervenants sans titre) · modale refus modération (build 41) · transfert THE LOOP ↔ partenaire · code THE LOOP équipe · tirage campagnes
+En cours / retest : modération web refus→dépublie (20260926) · tirage notif+gagnant fiche événement (build 43) · modale refus clavier (build 43) · annuler retrait partenaire (build 43)
+Bugs session 18/09 : refusé mais publié (modération web) · tirage sans notif · cadenas Prime sur gagnant — correctifs en cours
 ```

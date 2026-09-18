@@ -675,7 +675,22 @@ export async function grantBenefitsToUsers(input: {
       p_catalog_local_id: input.catalogLocalId,
       p_role_entitlement: null,
     });
-    if (!error) granted += 1;
+    if (!error) {
+      granted += 1;
+      const message = input.customNote?.trim()
+        ? `Vous avez reçu le privilège « ${input.title} ». ${input.customNote.trim()}`
+        : `Vous avez reçu le privilège « ${input.title} ».`;
+      const { error: notifyErr } = await supabase.from('user_notifications').insert({
+        user_id: userId,
+        title: 'Nouveau privilège',
+        message,
+        audience: 'individual',
+        sent_at: new Date().toISOString(),
+      });
+      if (notifyErr) {
+        console.warn('[privileges] notify grant:', notifyErr.message);
+      }
+    }
   }
   if (!granted) return { ok: false, granted: 0, error: 'Octroi impossible (RPC).' };
   return { ok: true, granted };
