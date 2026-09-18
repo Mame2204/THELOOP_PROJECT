@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -464,11 +462,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
         animationType="slide"
         onRequestClose={() => setRejectTarget(null)}
       >
-        <KeyboardAvoidingView
-          style={styles.modalBackdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-        >
+        <View style={styles.modalBackdrop}>
           <Pressable style={styles.modalDismiss} onPress={() => setRejectTarget(null)} accessibilityLabel="Fermer" />
           <View
             style={[
@@ -480,32 +474,42 @@ export function AdminModerationScreen({ route, navigation }: Props) {
               },
             ]}
           >
-            <Text style={[styles.modalTitle, { color: shell.pageTitle }]}>Refuser la soumission</Text>
-            <Text style={[styles.modalSubtitle, { color: shell.pageKicker }]}>
+            <Text style={[styles.modalTitle, { color: shell.pageTitle, paddingHorizontal: 16, paddingTop: 16 }]}>
+              Refuser la soumission
+            </Text>
+            <Text style={[styles.modalSubtitle, { color: shell.pageKicker, paddingHorizontal: 16 }]}>
               {rejectTarget ? `« ${rejectTarget.title} »` : ''}
             </Text>
-            <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
-            <TextInput
-              style={inputStyle}
-              value={rejectReason}
-              onChangeText={setRejectReason}
-              placeholder="Ex. photo floue, horaires incomplets…"
-              placeholderTextColor={shell.pageKicker}
-              multiline
-              textAlignVertical="top"
-              autoFocus
-            />
-            <Pressable
-              style={[styles.submit, { backgroundColor: '#ef4444' }]}
-              onPress={() => void confirmReject()}
+            <KeyboardAwareFormScroll
+              style={styles.modalForm}
+              contentContainerStyle={styles.modalFormContent}
+              nestedScrollEnabled
+              keyboardPriority={10}
+              extraKeyboardPadding={20}
             >
-              <Text style={styles.submitText}>Confirmer le refus</Text>
-            </Pressable>
-            <Pressable style={styles.modalClose} onPress={() => setRejectTarget(null)}>
-              <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>Annuler</Text>
-            </Pressable>
+              <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
+              <TextInput
+                style={inputStyle}
+                value={rejectReason}
+                onChangeText={setRejectReason}
+                placeholder="Ex. photo floue, horaires incomplets…"
+                placeholderTextColor={shell.pageKicker}
+                multiline
+                textAlignVertical="top"
+                autoFocus
+              />
+              <Pressable
+                style={[styles.submit, { backgroundColor: '#ef4444' }]}
+                onPress={() => void confirmReject()}
+              >
+                <Text style={styles.submitText}>Confirmer le refus</Text>
+              </Pressable>
+              <Pressable style={styles.modalClose} onPress={() => setRejectTarget(null)}>
+                <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>Annuler</Text>
+              </Pressable>
+            </KeyboardAwareFormScroll>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </>
   );
@@ -528,7 +532,9 @@ const styles = StyleSheet.create({
   denied: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
   modalDismiss: { ...StyleSheet.absoluteFillObject },
-  modalSheet: { borderWidth: 1, borderRadius: 16, marginHorizontal: 12, padding: 16, maxHeight: '88%' },
+  modalSheet: { borderWidth: 1, borderRadius: 16, marginHorizontal: 12, maxHeight: '88%' },
+  modalForm: { maxHeight: 360, flexGrow: 0 },
+  modalFormContent: { paddingHorizontal: 16, paddingBottom: 8 },
   modalTitle: { fontSize: 17, fontWeight: '800' },
   modalSubtitle: { marginTop: 6, marginBottom: 12, fontSize: 13 },
   label: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginBottom: 6 },
