@@ -379,6 +379,46 @@ export async function fetchRemotePartnerEventSubmissions(options?: {
   return (data ?? []).map((row) => mapEventSubmissionRow(row as Record<string, unknown>));
 }
 
+/** Une soumission spot/outil par local_id (statut à jour côté serveur). */
+export async function fetchRemotePartnerSpotSubmissionByLocalId(
+  localId: string,
+): Promise<StagingSpot | null> {
+  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return null;
+  const id = localId.trim();
+  if (!id) return null;
+
+  const { data, error } = await supabase
+    .from('partner_spot_submissions')
+    .select(
+      'local_id, partner_user_id, partner_name, name, description, address, district, sub_category, category_slugs, phone, website, logo_url, cover_image_url, gallery_images, opening_hours, price_label, instagram_url, facebook_url, cta_url, organizer_name, country_code, tool_category, developer, is_verified, partnership_status, content_origin, status, published_establishment_id, published_tool_id, rejection_reason, created_at, updated_at',
+    )
+    .eq('local_id', id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapSpotSubmissionRow(data as Record<string, unknown>);
+}
+
+/** Une soumission événement par local_id (statut à jour côté serveur). */
+export async function fetchRemotePartnerEventSubmissionByLocalId(
+  localId: string,
+): Promise<StagingEvent | null> {
+  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return null;
+  const id = localId.trim();
+  if (!id) return null;
+
+  const { data, error } = await supabase
+    .from('partner_event_submissions')
+    .select(
+      'local_id, partner_user_id, master_user_id, partner_name, title, description, program, category, category_slugs, starts_at, ends_at, venue_name, venue_address, spot_id, entry_price, is_invitation_only, currency, info_url, instagram_url, facebook_url, website_url, cover_image_url, gallery_images, organizer_name, content_origin, country_code, speakers, published_event_id, status, rejection_reason, created_at, updated_at',
+    )
+    .eq('local_id', id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapEventSubmissionRow(data as Record<string, unknown>);
+}
+
 /** Soumissions spot/outil depuis Supabase (modération / mon contenu). */
 export async function fetchRemotePartnerSpotSubmissions(options?: {
   partnerUserId?: string;

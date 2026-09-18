@@ -189,6 +189,13 @@ export async function reassignContentOwner(
     /* noop */
   }
 
+  try {
+    const { invalidateBenefitCatalogCache } = await import('@/lib/benefit-catalog-store');
+    invalidateBenefitCatalogCache();
+  } catch {
+    /* noop */
+  }
+
   return {
     ok: true,
     ownerUserId: ownerUserId ?? undefined,

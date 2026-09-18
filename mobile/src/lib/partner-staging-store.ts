@@ -4,6 +4,8 @@ import type { ContentOrigin } from '@/lib/content-origin';
 import { normalizeCategoriesList, primaryCategory } from '@/lib/content-categories-utils';
 import { guineaLocationSnapshotFromLabel, guineaLocationSnapshotFromStored, type GuineaLocationSnapshot } from '@/lib/guinea-locations';
 import { partnerNamesMatch } from '@/lib/partner-name-utils';
+import { isNetworkOnline } from '@/lib/offline-store';
+import { isSupabaseConfigured } from '@/lib/supabase';
 export type SubmissionStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'withdrawal_requested';
 
 export interface StagingEvent {
@@ -231,6 +233,31 @@ async function syncEventToRemote(event: StagingEvent): Promise<{ ok: boolean; re
   }
 }
 
+async function notifyAdminIfPendingSubmission(
+  item: StagingEvent | StagingSpot,
+  kind: 'event' | 'spot' | 'tool',
+  remoteSync: { ok: boolean },
+): Promise<void> {
+  if (!remoteSync.ok || item.status !== 'pending') return;
+  const { notifyAdminPendingSubmission } = await import('@/lib/partner-moderation-notify');
+  const title = kind === 'event' ? (item as StagingEvent).title : (item as StagingSpot).name;
+  await notifyAdminPendingSubmission({
+    kind,
+    title,
+    partnerName: item.partnerName,
+    countryCode: item.countryCode,
+    localId: item.id,
+  }).catch(() => undefined);
+}
+
+function spotSubmissionKind(spot: StagingSpot): 'spot' | 'tool' {
+  return spot.subCategory === 'tools'
+    || (spot.categories?.includes('tools') ?? false)
+    || Boolean(spot.toolCategory?.trim())
+    ? 'tool'
+    : 'spot';
+}
+
 function belongsToPartnerRecord(
   record: { partnerId: string; partnerName: string },
   partnerId: string,
@@ -329,26 +356,31 @@ function matchesPendingCountry(itemCountry: string | null | undefined, countryCo
   return (itemCountry ?? 'GN').toUpperCase() === countryCode.toUpperCase();
 }
 
-async function mergeRemotePendingEventsIntoStore(): Promise<void> {
-  const { fetchRemotePartnerEventSubmissions } = await import('@/lib/partner-content-sync');
-  const remote = await fetchRemotePartnerEventSubmissions({ statuses: ['pending'] });
-  if (!remote.length) return;
+function isPendingModerationEvent(event: StagingEvent): boolean {
+  if (event.status !== 'pending') return false;
+  if (event.publishedEventId?.trim()) return false;
+  return true;
+}
+
+function isPendingModerationSpot(spot: StagingSpot): boolean {
+  if (spot.status !== 'pending') return false;
+  if (spot.publishedEstablishmentId?.trim() || spot.publishedToolId?.trim()) return false;
+  return true;
+}
+
+async function syncRemoteSubmissionsToStore(
+  events: StagingEvent[],
+  spots: StagingSpot[],
+): Promise<void> {
+  if (!events.length && !spots.length) return;
   const store = await loadStore();
-  for (const item of remote) {
+  for (const item of events) {
     const idx = store.events.findIndex((e) => e.id === item.id);
     const normalized = normalizeEvent(item);
     if (idx >= 0) store.events[idx] = normalizeEvent({ ...store.events[idx], ...normalized });
     else store.events.push(normalized);
   }
-  await saveStore(store);
-}
-
-async function mergeRemotePendingSpotsIntoStore(): Promise<void> {
-  const { fetchRemotePartnerSpotSubmissions } = await import('@/lib/partner-content-sync');
-  const remote = await fetchRemotePartnerSpotSubmissions({ statuses: ['pending'] });
-  if (!remote.length) return;
-  const store = await loadStore();
-  for (const item of remote) {
+  for (const item of spots) {
     const idx = store.spots.findIndex((sp) => sp.id === item.id);
     const normalized = normalizeSpot(item);
     if (idx >= 0) store.spots[idx] = normalizeSpot({ ...store.spots[idx], ...normalized });
@@ -357,19 +389,70 @@ async function mergeRemotePendingSpotsIntoStore(): Promise<void> {
   await saveStore(store);
 }
 
+/** Met à jour le statut local après demande / annulation de retrait. */
+export async function patchStagingSubmissionStatus(
+  kind: 'event' | 'spot' | 'tool',
+  localId: string,
+  status: SubmissionStatus,
+): Promise<void> {
+  const id = localId.trim();
+  if (!id) return;
+
+  if (kind === 'event') {
+    const store = await loadStore();
+    const idx = store.events.findIndex((e) => e.id === id);
+    if (idx >= 0) {
+      store.events[idx] = normalizeEvent({
+        ...store.events[idx],
+        status,
+        updatedAt: new Date().toISOString(),
+      });
+      await saveStore(store);
+    }
+    return;
+  }
+
+  const store = await loadStore();
+  const idx = store.spots.findIndex((s) => s.id === id);
+  if (idx >= 0) {
+    store.spots[idx] = normalizeSpot({
+      ...store.spots[idx],
+      status,
+      updatedAt: new Date().toISOString(),
+    });
+    await saveStore(store);
+  }
+}
+
 export async function listPendingEvents(countryCode?: string): Promise<StagingEvent[]> {
-  await mergeRemotePendingEventsIntoStore();
+  const { fetchRemotePartnerEventSubmissions } = await import('@/lib/partner-content-sync');
+  if (isSupabaseConfigured() && (await isNetworkOnline())) {
+    const remote = await fetchRemotePartnerEventSubmissions({ statuses: ['pending'] });
+    await syncRemoteSubmissionsToStore(remote, []);
+    return remote
+      .filter((e) => isPendingModerationEvent(e) && matchesPendingCountry(e.countryCode, countryCode))
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
   const store = await loadStore();
   return store.events
-    .filter((e) => e.status === 'pending' && matchesPendingCountry(e.countryCode, countryCode))
+    .filter((e) => isPendingModerationEvent(e) && matchesPendingCountry(e.countryCode, countryCode))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 export async function listPendingSpots(countryCode?: string): Promise<StagingSpot[]> {
-  await mergeRemotePendingSpotsIntoStore();
+  const { fetchRemotePartnerSpotSubmissions } = await import('@/lib/partner-content-sync');
+  if (isSupabaseConfigured() && (await isNetworkOnline())) {
+    const remote = await fetchRemotePartnerSpotSubmissions({ statuses: ['pending'] });
+    await syncRemoteSubmissionsToStore([], remote);
+    return remote
+      .filter((s) => isPendingModerationSpot(s) && matchesPendingCountry(s.countryCode, countryCode))
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
   const store = await loadStore();
   return store.spots
-    .filter((s) => s.status === 'pending' && matchesPendingCountry(s.countryCode, countryCode))
+    .filter((s) => isPendingModerationSpot(s) && matchesPendingCountry(s.countryCode, countryCode))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
@@ -396,15 +479,7 @@ export async function createPartnerEvent(input: StagingEventInput, options?: { d
   let remoteSync: { ok: boolean; reason?: string } = { ok: false, reason: options?.draft ? 'draft_local_only' : 'pending_sync' };
   if (!options?.draft) {
     remoteSync = await syncEventToRemote(item);
-    if (remoteSync.ok) {
-      const { notifyAdminPendingSubmission } = await import('@/lib/partner-moderation-notify');
-      void notifyAdminPendingSubmission({
-        kind: 'event',
-        title: item.title,
-        partnerName: item.partnerName,
-        countryCode: item.countryCode,
-      }).catch(() => undefined);
-    }
+    void notifyAdminIfPendingSubmission(item, 'event', remoteSync);
   }
 
   store.events.unshift(item);
@@ -430,7 +505,8 @@ export async function updatePartnerEvent(
   });
   store.events[idx] = updated;
   await saveStore(store);
-  void syncEventToRemote(updated);
+  const remoteSync = await syncEventToRemote(updated);
+  void notifyAdminIfPendingSubmission(updated, 'event', remoteSync);
   return updated;
 }
 
@@ -461,16 +537,28 @@ export async function createPartnerSpot(input: StagingSpotInput, options?: { dra
   const store = await loadStore();
   const now = new Date().toISOString();
   const status: SubmissionStatus = options?.draft ? 'draft' : 'pending';
-  const isTool =
-    input.subCategory === 'tools'
-    || (input.categories?.includes('tools') ?? false)
-    || Boolean(input.toolCategory?.trim());
   const item = normalizeSpot({
     ...input,
-    id: newId(isTool ? 'tool' : 'spot'),
+    id: newId(
+      input.subCategory === 'tools'
+      || (input.categories?.includes('tools') ?? false)
+      || Boolean(input.toolCategory?.trim())
+        ? 'tool'
+        : 'spot',
+    ),
     status,
-    subCategory: isTool ? 'tools' : input.subCategory,
-    categories: isTool ? ['tools', ...(input.categories ?? []).filter((c) => c !== 'tools')] : input.categories,
+    subCategory:
+      input.subCategory === 'tools'
+      || (input.categories?.includes('tools') ?? false)
+      || Boolean(input.toolCategory?.trim())
+        ? 'tools'
+        : input.subCategory,
+    categories:
+      input.subCategory === 'tools'
+      || (input.categories?.includes('tools') ?? false)
+      || Boolean(input.toolCategory?.trim())
+        ? ['tools', ...(input.categories ?? []).filter((c) => c !== 'tools')]
+        : input.categories,
     createdAt: now,
     updatedAt: now,
   });
@@ -479,15 +567,7 @@ export async function createPartnerSpot(input: StagingSpotInput, options?: { dra
   if (!options?.draft) {
     // Soumission à modération uniquement — jamais de publish ici (event/spot/outil).
     remoteSync = await syncSpotToRemote({ ...item, status: 'pending' });
-    if (remoteSync.ok) {
-      const { notifyAdminPendingSubmission } = await import('@/lib/partner-moderation-notify');
-      void notifyAdminPendingSubmission({
-        kind: isTool ? 'tool' : 'spot',
-        title: item.name,
-        partnerName: item.partnerName,
-        countryCode: item.countryCode,
-      }).catch(() => undefined);
-    }
+    void notifyAdminIfPendingSubmission(item, spotSubmissionKind(item), remoteSync);
   }
 
   store.spots.unshift(item);
@@ -513,7 +593,8 @@ export async function updatePartnerSpot(
   });
   store.spots[idx] = updated;
   await saveStore(store);
-  void syncSpotToRemote(updated);
+  const remoteSync = await syncSpotToRemote(updated);
+  void notifyAdminIfPendingSubmission(updated, spotSubmissionKind(updated), remoteSync);
   return updated;
 }
 
@@ -659,30 +740,22 @@ export async function prunePublishedStagingLocal(): Promise<number> {
 }
 
 async function ensureLocalStagingEvent(id: string): Promise<StagingEvent | null> {
-  const store = await loadStore();
-  const local = store.events.find((e) => e.id === id);
-  if (local) return local;
-  const { fetchRemotePartnerEventSubmissions } = await import('@/lib/partner-content-sync');
-  const remote = await fetchRemotePartnerEventSubmissions({
-    statuses: ['pending', 'withdrawal_requested', 'draft', 'rejected'],
-  });
-  const item = remote.find((e) => e.id === id);
-  if (!item) return null;
-  await mergeStagingEvent(item);
+  const { fetchRemotePartnerEventSubmissionByLocalId } = await import('@/lib/partner-content-sync');
+  const remote = await fetchRemotePartnerEventSubmissionByLocalId(id);
+  if (remote) {
+    await mergeStagingEvent(remote);
+    return remote;
+  }
   return getStagingEventById(id);
 }
 
 async function ensureLocalStagingSpot(id: string): Promise<StagingSpot | null> {
-  const store = await loadStore();
-  const local = store.spots.find((s) => s.id === id);
-  if (local) return local;
-  const { fetchRemotePartnerSpotSubmissions } = await import('@/lib/partner-content-sync');
-  const remote = await fetchRemotePartnerSpotSubmissions({
-    statuses: ['pending', 'withdrawal_requested', 'draft', 'rejected'],
-  });
-  const item = remote.find((s) => s.id === id);
-  if (!item) return null;
-  await mergeStagingSpot(item);
+  const { fetchRemotePartnerSpotSubmissionByLocalId } = await import('@/lib/partner-content-sync');
+  const remote = await fetchRemotePartnerSpotSubmissionByLocalId(id);
+  if (remote) {
+    await mergeStagingSpot(remote);
+    return remote;
+  }
   return getStagingSpotById(id);
 }
 
@@ -695,6 +768,19 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
   const idx = store.events.findIndex((e) => e.id === id);
   if (idx < 0) return { ok: false, reason: 'Soumission introuvable.' };
   const event = store.events[idx];
+
+  if (event.status === 'withdrawal_requested') {
+    return {
+      ok: false,
+      reason: 'Demande de retrait en cours — utilisez la section « Demandes de retrait ».',
+    };
+  }
+  if (approve && event.status === 'approved' && event.publishedEventId?.trim()) {
+    return { ok: false, reason: 'Cet événement est déjà publié.' };
+  }
+  if (approve && event.status !== 'pending') {
+    return { ok: false, reason: 'Seules les soumissions en attente peuvent être validées.' };
+  }
 
   if (!approve) {
     store.events[idx] = {
@@ -714,6 +800,8 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
       const { notifyPartnerModerationDecision } = await import('@/lib/partner-moderation-notify');
       await notifyPartnerModerationDecision({
         partnerUserId: event.masterId || event.partnerId,
+        partnerName: event.partnerName,
+        localId: event.id,
         kind: 'event',
         title: event.title,
         approve: false,
@@ -745,6 +833,8 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
         const { notifyPartnerModerationDecision } = await import('@/lib/partner-moderation-notify');
         await notifyPartnerModerationDecision({
           partnerUserId: event.masterId || event.partnerId,
+          partnerName: event.partnerName,
+          localId: event.id,
           kind: 'event',
           title: event.title,
           approve: true,
@@ -762,13 +852,30 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
   }
 }
 
-export async function moderateSpot(id: string, approve: boolean, reason?: string): Promise<boolean> {
+export async function moderateSpot(id: string, approve: boolean, reason?: string): Promise<ModerationResult> {
   const ensured = await ensureLocalStagingSpot(id);
-  if (!ensured) return false;
+  if (!ensured) return { ok: false, reason: 'Soumission introuvable.' };
   const store = await loadStore();
   const idx = store.spots.findIndex((s) => s.id === id);
-  if (idx < 0) return false;
+  if (idx < 0) return { ok: false, reason: 'Soumission introuvable.' };
   const spot = store.spots[idx];
+  const publishedId =
+    spot.subCategory === 'tools'
+      ? spot.publishedToolId?.trim()
+      : spot.publishedEstablishmentId?.trim();
+
+  if (spot.status === 'withdrawal_requested') {
+    return {
+      ok: false,
+      reason: 'Demande de retrait en cours — utilisez la section « Demandes de retrait ».',
+    };
+  }
+  if (approve && spot.status === 'approved' && publishedId) {
+    return { ok: false, reason: 'Ce contenu est déjà publié.' };
+  }
+  if (approve && spot.status !== 'pending') {
+    return { ok: false, reason: 'Seules les soumissions en attente peuvent être validées.' };
+  }
 
   if (!approve) {
     store.spots[idx] = {
@@ -788,6 +895,8 @@ export async function moderateSpot(id: string, approve: boolean, reason?: string
       const { notifyPartnerModerationDecision } = await import('@/lib/partner-moderation-notify');
       await notifyPartnerModerationDecision({
         partnerUserId: spot.partnerId,
+        partnerName: spot.partnerName,
+        localId: spot.id,
         kind: spot.subCategory === 'tools' ? 'tool' : 'spot',
         title: spot.name,
         approve: false,
@@ -796,7 +905,7 @@ export async function moderateSpot(id: string, approve: boolean, reason?: string
     } catch (e) {
       console.warn('[Staging] notify partner moderateSpot:', e);
     }
-    return true;
+    return { ok: true };
   }
 
   try {
@@ -809,14 +918,14 @@ export async function moderateSpot(id: string, approve: boolean, reason?: string
     });
     const pub = await publishPartnerSpotToEstablishments(id);
     if (pub.ok) {
-      const publishedId = pub.establishmentId ?? null;
+      const newPublishedId = pub.establishmentId ?? null;
       const isTool = spot.subCategory === 'tools';
       store.spots[idx] = {
         ...spot,
         status: 'approved',
         contentOrigin: 'partner',
-        publishedEstablishmentId: isTool ? null : (publishedId ?? spot.publishedEstablishmentId ?? null),
-        publishedToolId: isTool ? (publishedId ?? spot.publishedToolId ?? null) : null,
+        publishedEstablishmentId: isTool ? null : (newPublishedId ?? spot.publishedEstablishmentId ?? null),
+        publishedToolId: isTool ? (newPublishedId ?? spot.publishedToolId ?? null) : null,
         updatedAt: new Date().toISOString(),
       };
       await saveStore(store);
@@ -824,6 +933,8 @@ export async function moderateSpot(id: string, approve: boolean, reason?: string
         const { notifyPartnerModerationDecision } = await import('@/lib/partner-moderation-notify');
         await notifyPartnerModerationDecision({
           partnerUserId: spot.partnerId,
+          partnerName: spot.partnerName,
+          localId: spot.id,
           kind: spot.subCategory === 'tools' ? 'tool' : 'spot',
           title: spot.name,
           approve: true,
@@ -831,13 +942,13 @@ export async function moderateSpot(id: string, approve: boolean, reason?: string
       } catch (e) {
         console.warn('[Staging] notify partner moderateSpot:', e);
       }
-      return true;
+      return { ok: true };
     }
     console.warn('[Staging] Publication establishment:', pub.reason);
-    return false;
+    return { ok: false, reason: pub.reason ?? 'Publication impossible.' };
   } catch (e) {
     console.warn('[Staging] moderateSpot remote:', e);
-    return false;
+    return { ok: false, reason: e instanceof Error ? e.message : 'Publication impossible.' };
   }
 }
 

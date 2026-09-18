@@ -1,8 +1,8 @@
 # THE LOOP — Smoke test complet (à cocher)
 
 > **Màj :** 17 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
-> **App mobile :** build **40** (TestFlight + Play internal — en cours de déploiement)  
-> **Admin web :** `https://admin.theloop-app.com` (deploy `2a1a1ce` — supprimer campagnes push)  
+> **App mobile :** build **41** (TestFlight + Play internal — **en cours**)  
+> **Admin web :** `https://admin.theloop-app.com` (deploy `96212f0` — tirage · privilèges)  
 > **Serveur :** `https://api.theloop-app.com` (cron push, paiements)
 
 ---
@@ -48,14 +48,15 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## 0 — Avant de commencer
 
 ### Environnement
-- [ ] **📱** Build **40** installé (TestFlight)
-- [ ] **🤖** Build **40** installé (Play internal)
+- [ x ] **📱** Build **40** installé (TestFlight)
+- [ x ] **🤖** Build **40** installé (Play internal)
 - [ x ] **💻** Admin-web accessible
 - [ x ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
 
 ### Migrations Supabase appliquées
 - [ x ] `20260916_admin_push_campaign_failed_status.sql` (statut `failed`)
 - [ x ] `20260916_support_email_contact_theloop_app.sql` (e-mail `contact@theloop-app.com` dans FAQ / légal / pages)
+- [ x ] `20260919_event_speakers_default_empty_title.sql` (publication événement · intervenants sans titre)
 
 ### Comptes test prêts
 - [ x ] Membre (`member`)
@@ -93,7 +94,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Lien **Pro ? Rejoindre THE LOOP →** (demande partenariat)
 - [ x ] **📱** Même e-mail + demande **en cours** (`pending` / `to_contact` / `in_discussion`) → alerte **Demande déjà enregistrée** (pas « duplicate » brut Postgres)
-- [ k ] **📱** Nouvelle demande autorisée si statut admin **rejeté** ou **approuvé**
+- [ x ] **📱** Nouvelle demande autorisée si statut admin **rejeté** ou **approuvé**
 - [ x ] **📱** Après envoi : **tous** les appareils admin (iOS + Android) reçoivent la notif inbox + push OS (pas seulement l’appareil du test)
 - [ x ] **🤖** Idem
 - [ x ] **📱** CGU / Politique de confidentialité (modales légales)
@@ -225,8 +226,9 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Création événement · **Spot existant** (liste spots publiés)
 - [ x ] **🤖** Idem
-- [ r ] **📱** Voir rejet admin + motif · resoumettre
-- [ r ] **🤖** Idem
+- [ x ] **📱** Voir rejet admin + motif · resoumettre
+- [ x ] **🤖** Idem
+- [ r ] **📱/🤖** **Validation admin → publication Agenda** : voir § E — *Validation publication événement partenaire*
 
 ### Retrait & favoris
 - [ r ] **📱** Demander retrait d’un contenu **publié**
@@ -271,6 +273,36 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **📱** Approuver / refuser **retrait** partenaire
 - [ x ] **🤖** Idem
 
+### Validation publication événement partenaire
+
+*Prérequis : migration `20260919_event_speakers_default_empty_title.sql` appliquée (intervenants sans titre → chaîne vide, plus d’erreur `professional_title` NOT NULL).*
+
+#### Préparer la soumission (partenaire)
+- [ x ] **📱** Compte **partenaire** → soumettre un **événement** (statut pending)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Inclure au moins un **intervenant sans titre** (nom seul, champs titre/entreprise vides) — cas régression build 40
+- [ x ] **🤖** Idem
+- [ x ] **📱** Notif admin à réception de la soumission (retest build 40)
+
+#### Approuver (super admin / admin modération)
+- [ ] **📱** Admin → **Modération** → onglet Événements → **Valider** la soumission
+- [ ] **🤖** Idem
+- [ ] **📱** Succès **sans** message `professional_title` / « vérifiez la connexion »
+- [ ] **🤖** Idem
+- [ ] **📱** Événement visible sur **Agenda** public (pull-to-refresh)
+- [ ] **🤖** Idem
+- [ ] **📱** Partenaire : statut **approuvé** · événement dans Espace Pro
+- [ ] **🤖** Idem
+- [ ] **💻** (optionnel) SQL : ligne `events` publiée · `partner_event_submissions.status = approved` · `event_speakers` synchronisés
+
+#### Refuser (modale motif)
+- [ ] **📱** Admin → **Refuser** une autre soumission pending → saisir motif
+- [ ] **🤖** Idem
+- [ ] **📱** Modale refus : champ motif **visible au-dessus du clavier** (fix UI build **41+**)
+- [ ] **🤖** Idem
+- [ ] **📱** Partenaire reçoit motif · peut resoumettre
+- [ ] **🤖** Idem
+
 ### Users & équipe
 - [ x ] **📱** Liste users · pagination · filtre inactifs 30j
 - [ x ] **🤖** Idem
@@ -308,33 +340,33 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 > - Contenu **partenaire** (`partner`) → code **du partenaire propriétaire** (`CODE-XXXXX` de son compte)
 
 #### THE LOOP → partenaire
-- [ ] **📱** Admin ouvre fiche événement ou spot créé par THE LOOP → **Transférer** vers compte partenaire X
-- [ ] **🤖** Idem
-- [ ] **📱** Transfert OK · propriétaire affiché = partenaire X
-- [ ] **🤖** Idem
-- [ ] **📱** Compte partenaire X → contenu visible dans **Espace Pro** (gestion / stats)
-- [ ] **🤖** Idem
-- [ ] **💻** (optionnel) SQL ou admin : `content_origin = partner` · `partner_user_id` = X sur le contenu publié
+- [ x ] **📱** Admin ouvre fiche événement ou spot créé par THE LOOP → **Transférer** vers compte partenaire X
+- [ x ] **🤖** Idem
+- [ x ] **📱** Transfert OK · propriétaire affiché = partenaire X
+- [ x ] **🤖** Idem
+- [ x ] **📱** Compte partenaire X → contenu visible dans **Espace Pro** (gestion / stats)
+- [ x ] **🤖** Idem
+- [ x ] **💻** (optionnel) SQL ou admin : `content_origin = partner` · `partner_user_id` = X sur le contenu publié
 
 #### Privilège lié au contenu transféré (THE LOOP → partenaire)
-- [ ] **📱** Préparer : privilège catalogue **actif**, associé au contenu transféré (offrant THE LOOP ou partenaire)
-- [ ] **📱** Compte **Prime** → fiche du contenu → **Utiliser chez le partenaire**
-- [ ] **🤖** Idem
-- [ ] **📱** À la validation : scanner / saisie demande le code **partenaire X** (pas le code THE LOOP équipe)
-- [ ] **🤖** Idem
-- [ ] **📱** Saisie code partenaire X → validation **OK**
-- [ ] **🤖** Idem
+- [ x ] **📱** Préparer : privilège catalogue **actif**, associé au contenu transféré (offrant THE LOOP ou partenaire)
+- [ x ] **📱** Compte **Prime** → fiche du contenu → **Utiliser chez le partenaire**
+- [ x ] **🤖** Idem
+- [ x ] **📱** À la validation : scanner / saisie demande le code **partenaire X** (pas le code THE LOOP équipe)
+- [ x ] **🤖** Idem
+- [ x ] **📱** Saisie code partenaire X → validation **OK**
+- [ x ] **🤖** Idem
 
 #### Partenaire → THE LOOP (retour équipe)
-- [ ] **📱** Admin → même fiche → **Transférer** vers **THE LOOP** (reprise gestion équipe · `partner_user_id` null)
-- [ ] **🤖** Idem
-- [ ] **📱** `content_origin = admin` (ou `loop` selon canal création)
-- [ ] **📱** Compte Prime → consommer privilège sur ce contenu → code **THE LOOP équipe** demandé
-- [ ] **🤖** Idem
+- [ x ] **📱** Admin → même fiche → **Transférer** vers **THE LOOP** (reprise gestion équipe · `partner_user_id` null)
+- [ x ] **🤖** Idem
+- [ x ] **📱** `content_origin = admin` (ou `loop` selon canal création)
+- [ x ] **📱** Compte Prime → consommer privilège sur ce contenu → code **THE LOOP équipe** demandé
+- [ x ] **🤖** Idem
 
 #### Sécurité
 - [ ] **💻** Compte non admin ne peut pas appeler `admin_reassign_content_owner` (cf. `docs/TESTS_MANUELS.md` A7)
-- [ ] **📱** Membre / partenaire : pas de bouton transfert sur la fiche
+- [ x ] **📱** Membre / partenaire : pas de bouton transfert sur la fiche
 
 ### Push (Control Tower mobile)
 - [ x ] **📱** Notifications → envoi immédiat audience « Tous »
@@ -405,7 +437,7 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Créer / modifier (ContentEditor)
 - [ x ] **💻** À la une · archiver
 - [ x ] **💻** Idée → ouvrir éditeur prérempli
-- [ ] **💻** Transfert propriétaire contenu · retest smoke **§ E — Transfert contenu** (effectué sur **📱** admin mobile)
+- [ x ] **💻** Transfert propriétaire contenu · retest smoke **§ E — Transfert contenu** (effectué sur **📱** admin mobile)
 
 ### Accueil · Loop · étoiles
 - [ x ] **💻** Accueil · sondage · parcours · singulier · logos
@@ -520,12 +552,13 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ```
 Date : 17 sept. 2026
 Testeur :
-Build iPhone : 40 (déploiement en cours)
-Build Android : 40 (déploiement en cours)
-Admin-web à jour : oui (2a1a1ce)
+Build iPhone : 40 (TestFlight OK)
+Build Android : 40 (Play internal OK)
+Admin-web à jour : oui (96212f0)
+Git commit build 40 : 96212f0
 Serveur Render à jour : oui
 Migration e-mail appliquée : oui
-Migrations à appliquer : 20260918_partnership_submit_rpc · 20260918_partner_accept_activate_catalog
+Migrations à appliquer : 20260918_partnership_submit_rpc · 20260918_partner_accept_activate_catalog · 20260918_theloop_team_validation_code · 20260919_event_speakers_default_empty_title
 Validé session : PASS file d’attente · achat Djomy · soumission événement pending · privilège partenaire (notif + acceptation) · push · contact · profil membre jamais Prime
-En cours / retest : modifier pending partenaire · modération admin sync · annuler soumission · spot existant formulaire · catalogue actif après accept privilège · transfert THE LOOP ↔ partenaire + code validation privilège
+En cours / retest : validation publication événement (intervenants sans titre) · modale refus modération (build 41) · transfert THE LOOP ↔ partenaire · code THE LOOP équipe · tirage campagnes
 ```

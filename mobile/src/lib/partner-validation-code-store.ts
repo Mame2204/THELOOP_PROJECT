@@ -404,8 +404,8 @@ export async function getOrCreatePartnerValidationCode(
   return entry;
 }
 
-async function fetchPublishedContentOrigin(contentId: string): Promise<ContentOrigin | null> {
-  if (!canUseRemotePartnerCodes() || !supabase || !(await isNetworkOnline())) return null;
+async function fetchPublishedContentOrigins(contentId: string): Promise<ContentOrigin[]> {
+  if (!canUseRemotePartnerCodes() || !supabase || !(await isNetworkOnline())) return [];
 
   const [est, evt, spotSub, eventSub] = await Promise.all([
     supabase.from('establishments').select('content_origin').eq('id', contentId).maybeSingle(),
@@ -424,17 +424,25 @@ async function fetchPublishedContentOrigin(contentId: string): Promise<ContentOr
       .maybeSingle(),
   ]);
 
-  const candidates: Array<ContentOrigin | null | undefined> = [
+  return [
     est.data?.content_origin as ContentOrigin | null | undefined,
     evt.data?.content_origin as ContentOrigin | null | undefined,
     spotSub.data?.content_origin as ContentOrigin | null | undefined,
     eventSub.data?.content_origin as ContentOrigin | null | undefined,
-  ];
+  ].filter((origin): origin is ContentOrigin => Boolean(origin));
+}
 
-  for (const origin of candidates) {
-    if (origin && isTeamContentOrigin(origin)) return origin;
+async function fetchPublishedContentOrigin(contentId: string): Promise<ContentOrigin | null> {
+  const origins = await fetchPublishedContentOrigins(contentId);
+  for (const origin of origins) {
+    if (isTeamContentOrigin(origin)) return origin;
   }
   return null;
+}
+
+async function isPublishedPartnerOwnedContent(contentId: string): Promise<boolean> {
+  const origins = await fetchPublishedContentOrigins(contentId);
+  return origins.some((origin) => origin === 'partner');
 }
 
 /**
@@ -459,15 +467,19 @@ export async function resolvePartnerValidationCodeForContent(
   }
 
   if (cid && canUseRemotePartnerCodes() && supabase && (await isNetworkOnline())) {
-    const { data: byEst } = await supabase
-      .from('partner_validation_codes')
-      .select('partner_key, partner_name, validation_code')
-      .eq('establishment_id', cid)
-      .maybeSingle();
-    if (byEst) {
-      const entry = toEntry(byEst as PartnerCodeRow);
-      await cacheEntry(entry);
-      return entry;
+    const partnerOwned = await isPublishedPartnerOwnedContent(cid);
+
+    if (!partnerOwned) {
+      const { data: byEst } = await supabase
+        .from('partner_validation_codes')
+        .select('partner_key, partner_name, validation_code')
+        .eq('establishment_id', cid)
+        .maybeSingle();
+      if (byEst) {
+        const entry = toEntry(byEst as PartnerCodeRow);
+        await cacheEntry(entry);
+        return entry;
+      }
     }
 
     const { data: byKey } = await supabase

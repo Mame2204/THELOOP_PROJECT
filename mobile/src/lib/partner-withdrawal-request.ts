@@ -127,6 +127,12 @@ export async function requestPartnerContentWithdrawal(
     countryCode: (data as { country_code?: string }).country_code ?? null,
   }).catch(() => undefined);
 
+  const { patchStagingSubmissionStatus } = await import('@/lib/partner-staging-store');
+  await patchStagingSubmissionStatus(kind, resolvedId, 'withdrawal_requested');
+  if (resolvedId !== localId.trim()) {
+    await patchStagingSubmissionStatus(kind, localId.trim(), 'withdrawal_requested');
+  }
+
   return { ok: true };
 }
 
@@ -151,6 +157,13 @@ export async function cancelPartnerContentWithdrawal(
 
   if (error) return { ok: false, error: error.message };
   if (!data) return { ok: false, error: 'Demande introuvable ou déjà traitée.' };
+
+  const { patchStagingSubmissionStatus } = await import('@/lib/partner-staging-store');
+  await patchStagingSubmissionStatus(kind, resolvedId, 'approved');
+  if (resolvedId !== localId.trim()) {
+    await patchStagingSubmissionStatus(kind, localId.trim(), 'approved');
+  }
+
   return { ok: true };
 }
 
@@ -202,6 +215,8 @@ export async function approvePartnerWithdrawalRequest(
     if (partnerUserId) {
       await notifyPartnerWithdrawalDecision({
         partnerUserId,
+        partnerName: item.partnerName,
+        localId: item.id,
         kind,
         title: contentTitle(kind, item),
         approved: true,
@@ -234,6 +249,8 @@ export async function rejectPartnerWithdrawalRequest(
   if (partnerUserId) {
     await notifyPartnerWithdrawalDecision({
       partnerUserId,
+      partnerName: item.partnerName,
+      localId: item.id,
       kind,
       title: contentTitle(kind, item),
       approved: false,

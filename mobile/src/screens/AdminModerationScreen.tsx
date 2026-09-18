@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -61,6 +72,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   const { role } = useAuthContext();
   const { countryCode } = useAdminCountry();
   const { shell } = useMemberTheme();
+  const insets = useSafeAreaInsets();
   const { allowed, isLoading, permissionLabel } = useAdminModuleAccess('moderation');
   const { publicEvents, primeEvents, getHomeLocations, refresh } = useAdminCatalog();
 
@@ -145,10 +157,10 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   }
 
   async function handleModerateSpot(id: string, approve: boolean, asTool = false, reason?: string) {
-    const ok = await moderateSpot(id, approve, reason);
+    const result = await moderateSpot(id, approve, reason);
     invalidateContentCache();
     await Promise.all([load(), refresh()]);
-    const copy = moderationResultCopy(asTool ? 'tool' : 'spot', approve, ok);
+    const copy = moderationResultCopy(asTool ? 'tool' : 'spot', approve, result.ok, result.reason);
     Alert.alert(copy.title, copy.message);
   }
 
@@ -211,19 +223,35 @@ export function AdminModerationScreen({ route, navigation }: Props) {
     await handleModerateSpot(target.id, false, target.kind === 'tool', reason);
   }
 
+  const withdrawalIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const item of withdrawalEvents) ids.add(item.id);
+    for (const item of withdrawalSpots) ids.add(item.id);
+    return ids;
+  }, [withdrawalEvents, withdrawalSpots]);
+
   const rows = useMemo((): ModerationRow[] => {
     const list: ModerationRow[] = [];
+    const skip = (item: StagingEvent | StagingSpot) =>
+      item.status === 'withdrawal_requested' || withdrawalIds.has(item.id);
+
     if (tab === 'all' || tab === 'events') {
-      events.forEach((item) => list.push({ kind: 'event', item }));
+      events.forEach((item) => {
+        if (!skip(item)) list.push({ kind: 'event', item });
+      });
     }
     if (tab === 'all' || tab === 'spots') {
-      pendingSpots.forEach((item) => list.push({ kind: 'spot', item }));
+      pendingSpots.forEach((item) => {
+        if (!skip(item)) list.push({ kind: 'spot', item });
+      });
     }
     if (tab === 'all' || tab === 'tools') {
-      pendingTools.forEach((item) => list.push({ kind: 'tool', item }));
+      pendingTools.forEach((item) => {
+        if (!skip(item)) list.push({ kind: 'tool', item });
+      });
     }
     return list;
-  }, [tab, events, pendingSpots, pendingTools]);
+  }, [tab, events, pendingSpots, pendingTools, withdrawalIds]);
 
   function editRow(row: ModerationRow) {
     if (row.kind === 'event') {
@@ -336,15 +364,22 @@ export function AdminModerationScreen({ route, navigation }: Props) {
                 <Text style={[styles.kind, { color: '#c2410c' }]}>Événement · retrait</Text>
                 <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>{item.title}</Text>
                 <Text style={[styles.meta, { color: shell.pageKicker }]}>{item.partnerName}</Text>
+                <Text style={[styles.withdrawHint, { color: shell.pageKicker }]}>
+                  Contenu déjà publié — valider = retirer du catalogue public.
+                </Text>
                 <View style={styles.row}>
-                  <AdminActionIcon
-                    action="approve"
+                  <Pressable
+                    style={[styles.withdrawBtn, { backgroundColor: '#c2410c' }]}
                     onPress={() => void handleApproveWithdrawal('event', item)}
-                  />
-                  <AdminActionIcon
-                    action="reject"
+                  >
+                    <Text style={styles.withdrawBtnText}>Retirer du catalogue</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.withdrawBtnOutline, { borderColor: '#c2410c' }]}
                     onPress={() => void handleRejectWithdrawal('event', item)}
-                  />
+                  >
+                    <Text style={[styles.withdrawBtnText, { color: '#c2410c' }]}>Garder publié</Text>
+                  </Pressable>
                 </View>
               </View>
             ))}
@@ -361,15 +396,22 @@ export function AdminModerationScreen({ route, navigation }: Props) {
                   </Text>
                   <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: shell.pageKicker }]}>{item.partnerName}</Text>
+                  <Text style={[styles.withdrawHint, { color: shell.pageKicker }]}>
+                    Contenu déjà publié — valider = retirer du catalogue public.
+                  </Text>
                   <View style={styles.row}>
-                    <AdminActionIcon
-                      action="approve"
+                    <Pressable
+                      style={[styles.withdrawBtn, { backgroundColor: '#c2410c' }]}
                       onPress={() => void handleApproveWithdrawal(kind, item)}
-                    />
-                    <AdminActionIcon
-                      action="reject"
+                    >
+                      <Text style={styles.withdrawBtnText}>Retirer du catalogue</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.withdrawBtnOutline, { borderColor: '#c2410c' }]}
                       onPress={() => void handleRejectWithdrawal(kind, item)}
-                    />
+                    >
+                      <Text style={[styles.withdrawBtnText, { color: '#c2410c' }]}>Garder publié</Text>
+                    </Pressable>
                   </View>
                 </View>
               );
@@ -422,25 +464,37 @@ export function AdminModerationScreen({ route, navigation }: Props) {
         animationType="slide"
         onRequestClose={() => setRejectTarget(null)}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={[styles.modalSheet, { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder }]}>
+        <KeyboardAvoidingView
+          style={styles.modalBackdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+        >
+          <Pressable style={styles.modalDismiss} onPress={() => setRejectTarget(null)} accessibilityLabel="Fermer" />
+          <View
+            style={[
+              styles.modalSheet,
+              {
+                backgroundColor: shell.pageBg,
+                borderColor: shell.filterInactiveBorder,
+                marginBottom: Math.max(insets.bottom, 12),
+              },
+            ]}
+          >
             <Text style={[styles.modalTitle, { color: shell.pageTitle }]}>Refuser la soumission</Text>
-            <KeyboardAwareFormScroll style={styles.modalForm} nestedScrollEnabled keyboardPriority={10}>
-              <Text style={[styles.modalSubtitle, { color: shell.pageKicker }]}>
-                {rejectTarget ? `« ${rejectTarget.title} »` : ''}
-              </Text>
-              <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
-              <TextInput
-                style={inputStyle}
-                value={rejectReason}
-                onChangeText={setRejectReason}
-                placeholder="Ex. photo floue, horaires incomplets…"
-                placeholderTextColor={shell.pageKicker}
-                multiline
-                textAlignVertical="top"
-                autoFocus
-              />
-            </KeyboardAwareFormScroll>
+            <Text style={[styles.modalSubtitle, { color: shell.pageKicker }]}>
+              {rejectTarget ? `« ${rejectTarget.title} »` : ''}
+            </Text>
+            <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
+            <TextInput
+              style={inputStyle}
+              value={rejectReason}
+              onChangeText={setRejectReason}
+              placeholder="Ex. photo floue, horaires incomplets…"
+              placeholderTextColor={shell.pageKicker}
+              multiline
+              textAlignVertical="top"
+              autoFocus
+            />
             <Pressable
               style={[styles.submit, { backgroundColor: '#ef4444' }]}
               onPress={() => void confirmReject()}
@@ -451,7 +505,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
               <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>Annuler</Text>
             </Pressable>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
@@ -461,6 +515,10 @@ const styles = StyleSheet.create({
   container: { paddingHorizontal: 16, paddingBottom: 32 },
   withdrawSection: { marginBottom: 16 },
   withdrawTitle: { fontSize: 13, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  withdrawHint: { marginTop: 8, fontSize: 12, lineHeight: 17 },
+  withdrawBtn: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
+  withdrawBtnOutline: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
+  withdrawBtnText: { fontWeight: '800', fontSize: 12, color: '#fff' },
   card: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 10 },
   kind: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
   cardTitle: { fontWeight: '700', fontSize: 15 },
@@ -469,8 +527,8 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', marginTop: 24, fontSize: 14 },
   denied: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
-  modalSheet: { borderWidth: 1, borderRadius: 16, margin: 12, marginBottom: 24, padding: 16 },
-  modalForm: { maxHeight: 280, flexGrow: 0 },
+  modalDismiss: { ...StyleSheet.absoluteFillObject },
+  modalSheet: { borderWidth: 1, borderRadius: 16, marginHorizontal: 12, padding: 16, maxHeight: '88%' },
   modalTitle: { fontSize: 17, fontWeight: '800' },
   modalSubtitle: { marginTop: 6, marginBottom: 12, fontSize: 13 },
   label: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginBottom: 6 },
