@@ -129,6 +129,105 @@ function shufflePick<T>(items: T[], count: number): T[] {
   return arr.slice(0, Math.min(count, arr.length));
 }
 
+type DrawCandidateUser = {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber: string;
+  userRole?: string | null;
+  role?: UserRole;
+  countryCode?: string;
+  interestCountryCode?: string | null;
+  city?: string | null;
+};
+
+function rolesToDbValues(roles: DrawTargetRole[]): string[] {
+  const out: string[] = [];
+  if (roles.includes('USER_FREE')) out.push('member');
+  if (roles.includes('USER_PRIME')) out.push('prime');
+  if (roles.includes('PARTNER')) out.push('partner', 'tool_partner');
+  if (roles.includes('ADMIN')) out.push('admin');
+  return out;
+}
+
+function mapDbRowToDrawCandidate(
+  row: {
+    id: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    phone_number?: string | null;
+    user_role?: string | null;
+    country_code?: string | null;
+    interest_country_code?: string | null;
+    city?: string | null;
+  },
+  countryCode: string,
+): DrawCandidateUser {
+  return {
+    id: String(row.id),
+    firstName: row.first_name,
+    lastName: row.last_name,
+    phoneNumber: row.phone_number ?? '',
+    userRole: row.user_role,
+    countryCode: row.country_code ?? countryCode,
+    interestCountryCode: row.interest_country_code,
+    city: row.city,
+  };
+}
+
+function mapRegistryUserToDrawCandidate(
+  user: Awaited<ReturnType<typeof listRegistryUsers>>[number],
+): DrawCandidateUser {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phoneNumber: user.phoneNumber,
+    userRole: user.userRole,
+    role: user.role,
+    countryCode: user.countryCode,
+    interestCountryCode: user.interestCountryCode,
+    city: user.city,
+  };
+}
+
+async function loadDrawCandidatePool(
+  roles: DrawTargetRole[],
+  countryCode: string,
+  options?: {
+    drawCity?: string | null;
+    catalogGeo?: BenefitGeoTarget | null;
+  },
+): Promise<DrawCandidateUser[]> {
+  if (!roles.length) return [];
+
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    const roleDb = rolesToDbValues(roles);
+    if (!roleDb.length) return [];
+
+    const { data, error } = await supabase
+      .from('users')
+      .select(
+        'id, first_name, last_name, phone_number, user_role, country_code, interest_country_code, city',
+      )
+      .eq('is_active', true)
+      .or(`country_code.eq.${countryCode},interest_country_code.eq.${countryCode}`)
+      .in('user_role', roleDb)
+      .limit(2000);
+
+    if (!error && data) {
+      return data
+        .filter((u) => dbUserEligibleForDraw(u, roles, countryCode, options))
+        .map((u) => mapDbRowToDrawCandidate(u, countryCode));
+    }
+  }
+
+  const users = await listRegistryUsers(true);
+  return users
+    .filter((u) => userEligibleForDraw(u, roles, countryCode, options))
+    .map(mapRegistryUserToDrawCandidate);
+}
+
 function matchesDrawRoleFromDb(
   user: { user_role?: string | null },
   roles: DrawTargetRole[],
@@ -259,6 +358,7 @@ async function syncDrawRemote(record: BenefitDrawRecord): Promise<void> {
     validity_days: record.validityDays ?? 30,
     validity_starts_on_activation: record.validityStartsOnActivation,
     country_code: record.countryCode,
+    draw_city: record.drawCity ?? null,
     custom_note: record.customNote,
     drawn_by: /^[0-9a-f-]{36}$/i.test(record.drawnBy) ? record.drawnBy : null,
     drawn_at: record.drawnAt,
@@ -334,21 +434,8 @@ export async function countEligibleDrawCandidates(
     catalogGeo?: BenefitGeoTarget | null;
   },
 ): Promise<number> {
-  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, user_role, country_code, interest_country_code, city')
-      .eq('is_active', true)
-      .or(`country_code.eq.${countryCode},interest_country_code.eq.${countryCode}`)
-      .limit(15);
-
-    if (!error && data) {
-      return data.filter((u) => dbUserEligibleForDraw(u, roles, countryCode, options)).length;
-    }
-  }
-
-  const users = await listRegistryUsers();
-  return users.filter((u) => userEligibleForDraw(u, roles, countryCode, options)).length;
+  const pool = await loadDrawCandidatePool(roles, countryCode, options);
+  return pool.length;
 }
 
 export async function runAdminBenefitDraw(input: {
@@ -380,13 +467,10 @@ export async function runAdminBenefitDraw(input: {
   const offering = findCatalogOffering(catalog, input.partnerId, input.partnerDisplayName);
   const catalogGeo = await resolveBenefitGeoFromOffering(catalog, offering);
 
-  const users = await listRegistryUsers();
-  const pool = users.filter((u) =>
-    userEligibleForDraw(u, input.roles, input.countryCode, {
-      drawCity: input.drawCity,
-      catalogGeo,
-    }),
-  );
+  const pool = await loadDrawCandidatePool(input.roles, input.countryCode, {
+    drawCity: input.drawCity,
+    catalogGeo,
+  });
 
   if (!pool.length) return { ok: false, error: 'no_candidates' };
 

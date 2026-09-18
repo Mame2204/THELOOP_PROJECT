@@ -534,6 +534,14 @@ export function RootNavigator() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="AdminReferralSettings"
+            getComponent={requireScreen(
+              () => require('@/screens/AdminReferralSettingsScreen').AdminReferralSettingsScreen,
+              'AdminReferralSettings',
+            )}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="AdminSuggestions"
             getComponent={requireScreen(
               () => require('@/screens/AdminSuggestionsScreen').AdminSuggestionsScreen,

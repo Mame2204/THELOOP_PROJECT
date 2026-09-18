@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Keyboard,
   Modal,
+  Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -90,6 +93,27 @@ export function AdminModerationScreen({ route, navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [rejectKeyboardInset, setRejectKeyboardInset] = useState(0);
+
+  useEffect(() => {
+    if (!rejectTarget) {
+      setRejectKeyboardInset(0);
+      return;
+    }
+
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (event) => {
+      setRejectKeyboardInset(Math.max(0, event.endCoordinates.height - insets.bottom));
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => setRejectKeyboardInset(0));
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [rejectTarget, insets.bottom]);
 
   const typeTabs = useFilteredAdminTabs('moderation', MODERATION_TYPE_TABS);
   const pendingSpots = useMemo(() => spots.filter((s) => s.subCategory !== 'tools'), [spots]);
@@ -148,7 +172,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
 
   async function handleModerateEvent(id: string, approve: boolean, reason?: string) {
     const result = await moderateEvent(id, approve, reason);
-    invalidateContentCache();
+    if (result.ok) invalidateContentCache();
     await Promise.all([load(), refresh()]);
     const copy = moderationResultCopy('event', approve, result.ok, result.reason);
     Alert.alert(copy.title, copy.message);
@@ -156,7 +180,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
 
   async function handleModerateSpot(id: string, approve: boolean, asTool = false, reason?: string) {
     const result = await moderateSpot(id, approve, reason);
-    invalidateContentCache();
+    if (result.ok) invalidateContentCache();
     await Promise.all([load(), refresh()]);
     const copy = moderationResultCopy(asTool ? 'tool' : 'spot', approve, result.ok, result.reason);
     Alert.alert(copy.title, copy.message);
@@ -470,7 +494,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
               {
                 backgroundColor: shell.pageBg,
                 borderColor: shell.filterInactiveBorder,
-                marginBottom: Math.max(insets.bottom, 12),
+                marginBottom: Math.max(insets.bottom, 12) + rejectKeyboardInset,
               },
             ]}
           >
@@ -480,12 +504,12 @@ export function AdminModerationScreen({ route, navigation }: Props) {
             <Text style={[styles.modalSubtitle, { color: shell.pageKicker, paddingHorizontal: 16 }]}>
               {rejectTarget ? `« ${rejectTarget.title} »` : ''}
             </Text>
-            <KeyboardAwareFormScroll
+            <ScrollView
               style={styles.modalForm}
               contentContainerStyle={styles.modalFormContent}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
               nestedScrollEnabled
-              keyboardPriority={10}
-              extraKeyboardPadding={20}
             >
               <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
               <TextInput
@@ -507,7 +531,7 @@ export function AdminModerationScreen({ route, navigation }: Props) {
               <Pressable style={styles.modalClose} onPress={() => setRejectTarget(null)}>
                 <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>Annuler</Text>
               </Pressable>
-            </KeyboardAwareFormScroll>
+            </ScrollView>
           </View>
         </View>
       </Modal>

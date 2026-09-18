@@ -97,12 +97,21 @@ export async function publishPartnerSpotToEstablishments(localId: string): Promi
   return { ok: true, establishmentId };
 }
 
-export async function rejectPartnerSpotSubmission(localId: string, reason?: string): Promise<void> {
-  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return;
-  await supabase
-    .from('partner_spot_submissions')
-    .update({ status: 'rejected', rejection_reason: reason ?? 'Refusé', updated_at: new Date().toISOString() })
-    .eq('local_id', localId);
+export async function rejectPartnerSpotSubmission(
+  localId: string,
+  reason?: string,
+): Promise<{ ok: boolean; reason?: string }> {
+  if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
+  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  const { error } = await supabase.rpc('reject_partner_spot_submission', {
+    p_local_id: localId,
+    p_reason: reason ?? 'Refusé',
+  });
+  if (error) {
+    console.warn('[PartnerSync] reject spot:', error.message);
+    return { ok: false, reason: error.message };
+  }
+  return { ok: true };
 }
 
 function eventToPayload(event: StagingEvent): Record<string, unknown> {
@@ -195,12 +204,21 @@ export async function publishPartnerEventToEvents(localId: string): Promise<{ ok
   return { ok: true, eventId: data ? String(data) : undefined };
 }
 
-export async function rejectPartnerEventSubmission(localId: string, reason?: string): Promise<void> {
-  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return;
-  await supabase
-    .from('partner_event_submissions')
-    .update({ status: 'rejected', rejection_reason: reason ?? 'Refusé', updated_at: new Date().toISOString() })
-    .eq('local_id', localId);
+export async function rejectPartnerEventSubmission(
+  localId: string,
+  reason?: string,
+): Promise<{ ok: boolean; reason?: string }> {
+  if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
+  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  const { error } = await supabase.rpc('reject_partner_event_submission', {
+    p_local_id: localId,
+    p_reason: reason ?? 'Refusé',
+  });
+  if (error) {
+    console.warn('[PartnerSync] reject event:', error.message);
+    return { ok: false, reason: error.message };
+  }
+  return { ok: true };
 }
 
 export async function deletePartnerEventSubmission(localId: string): Promise<{ ok: boolean; reason?: string }> {

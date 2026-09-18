@@ -52,6 +52,7 @@ export type RootStackParamList = {
   AdminInsights: { teamOnly?: boolean } | undefined;
   AdminPartnerships: { embedded?: boolean } | undefined;
   AdminPartnerMilestones: undefined;
+  AdminReferralSettings: undefined;
   AdminSuggestions: { embedded?: boolean } | undefined;
   AdminDemandes: { filter?: 'partnerships' | 'moderation' | 'ideas' } | undefined;
   AdminCreateUser: undefined;

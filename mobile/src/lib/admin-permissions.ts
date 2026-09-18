@@ -63,6 +63,7 @@ export const ADMIN_PERMISSION_CATALOG: AdminPermissionDef[] = [
   { id: 'content_countries', group: 'parametres', parentId: 'manage_admins', label: 'Pays du contenu', description: 'Activer des pays pour le catalogue', route: 'AdminContentCountries' },
   { id: 'categories', group: 'parametres', parentId: 'manage_admins', label: 'Catégories', description: 'Libellés et activation des catégories', route: 'AdminCategories' },
   { id: 'partner_milestones', group: 'parametres', parentId: 'manage_admins', label: 'Paliers partenaires', description: 'Récompenses milestones partenaires', route: 'AdminPartnerMilestones' },
+  { id: 'referral_settings', group: 'parametres', parentId: 'manage_admins', label: 'Parrainage', description: 'Seuil filleuls et mois Prime offerts', route: 'AdminReferralSettings', superAdminOnly: true },
   { id: 'automation', group: 'parametres', parentId: 'manage_admins', label: 'Automatisations', description: 'Jobs bienvenue, anniversaire, octroi…', route: 'AdminAutomationJobs' },
   { id: 'notifications', group: 'parametres', parentId: 'manage_admins', label: 'Notifications auto', description: 'Push planifiés et envois ciblés', route: 'AdminNotifications' },
   { id: 'standalone_benefit', group: 'parametres', parentId: 'manage_admins', label: 'Privilège standalone', description: 'Modèles privilège THE LOOP sans partenaire', route: 'AdminStandaloneBenefit' },

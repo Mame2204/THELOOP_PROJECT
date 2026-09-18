@@ -95,7 +95,7 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
         catalogGeo: selectedOffering ? geoTargetFromGrantableEntry(selectedOffering) : null,
       }),
     );
-  }, [selectedRoles, countryCode, drawCity, selectedCatalog]);
+  }, [selectedRoles, countryCode, drawCity, selectedOffering]);
 
   const load = useCallback(async () => {
     await loadGrantable();

@@ -49,6 +49,44 @@ function catalogIdFromSyntheticLocalId(localId: string, kind: PartnerContentKind
   return null;
 }
 
+function resolveWithdrawalCatalogId(
+  kind: PartnerContentKind,
+  item: StagingEvent | StagingSpot,
+): string | null {
+  if (kind === 'event') {
+    const event = item as StagingEvent;
+    const published = event.publishedEventId?.trim();
+    if (published) return published;
+    return catalogIdFromSyntheticLocalId(item.id, 'event');
+  }
+
+  const spot = item as StagingSpot;
+  if (kind === 'tool') {
+    const published = spot.publishedToolId?.trim();
+    if (published) return published;
+    return catalogIdFromSyntheticLocalId(item.id, 'tool');
+  }
+
+  const published = spot.publishedEstablishmentId?.trim();
+  if (published) return published;
+  return catalogIdFromSyntheticLocalId(item.id, 'spot');
+}
+
+async function purgeWithdrawalSubmissionLocal(
+  kind: PartnerContentKind,
+  localIds: string[],
+): Promise<void> {
+  const unique = [...new Set(localIds.map((id) => id.trim()).filter(Boolean))];
+  if (!unique.length) return;
+
+  const { removeStagingEvent, removeStagingSpot } = await import('@/lib/partner-staging-store');
+  if (kind === 'event') {
+    for (const id of unique) await removeStagingEvent(id);
+    return;
+  }
+  for (const id of unique) await removeStagingSpot(id);
+}
+
 /** Résout l’id de soumission réel (catalog-event-* → local_id en base). */
 async function resolveSubmissionLocalId(
   kind: PartnerContentKind,
@@ -197,26 +235,58 @@ export async function approvePartnerWithdrawalRequest(
   item: StagingEvent | StagingSpot,
 ): Promise<{ ok: boolean; error?: string }> {
   const isTool = kind === 'tool';
-  const catalogId =
-    kind === 'event'
-      ? (item as StagingEvent).publishedEventId
-      : isTool
-        ? (item as StagingSpot).publishedToolId
-        : (item as StagingSpot).publishedEstablishmentId;
+  const catalogId = resolveWithdrawalCatalogId(kind, item);
+  const resolvedLocalId = await resolveSubmissionLocalId(kind, item.id);
+  const localIds = [...new Set([item.id.trim(), resolvedLocalId].filter(Boolean))];
 
-  if (!catalogId) {
-    return { ok: false, error: 'Aucune fiche publiée liée à cette demande.' };
+  if (isSupabaseConfigured() && supabase) {
+    const rpcKind = kind === 'event' ? 'event' : isTool ? 'tool' : 'spot';
+    if (catalogId) {
+      await supabase.rpc('admin_withdraw_partner_content', {
+        p_kind: rpcKind,
+        p_catalog_id: catalogId,
+        p_local_id: resolvedLocalId,
+      });
+    }
+
+    // Orphelins : catalogue déjà supprimé (FK published_* → NULL).
+    const table = remoteTable(kind);
+    for (const localId of localIds) {
+      await supabase
+        .from(table)
+        .delete()
+        .eq('local_id', localId)
+        .eq('status', 'withdrawal_requested');
+    }
   }
 
-  const deleted = await deleteAdminContent(kind === 'event' ? 'event' : 'spot', catalogId, { isTool });
-  if (deleted.ok) {
+  if (!catalogId) {
+    await purgeWithdrawalSubmissionLocal(kind, localIds);
     invalidateContentCache();
     const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
     if (partnerUserId) {
       await notifyPartnerWithdrawalDecision({
         partnerUserId,
         partnerName: item.partnerName,
-        localId: item.id,
+        localId: resolvedLocalId,
+        kind,
+        title: contentTitle(kind, item),
+        approved: true,
+      }).catch(() => undefined);
+    }
+    return { ok: true };
+  }
+
+  const deleted = await deleteAdminContent(kind === 'event' ? 'event' : 'spot', catalogId, { isTool });
+  if (deleted.ok) {
+    await purgeWithdrawalSubmissionLocal(kind, localIds);
+    invalidateContentCache();
+    const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
+    if (partnerUserId) {
+      await notifyPartnerWithdrawalDecision({
+        partnerUserId,
+        partnerName: item.partnerName,
+        localId: resolvedLocalId,
         kind,
         title: contentTitle(kind, item),
         approved: true,
@@ -245,12 +315,18 @@ export async function rejectPartnerWithdrawalRequest(
 
   if (error) return { ok: false, error: error.message };
 
+  const { patchStagingSubmissionStatus } = await import('@/lib/partner-staging-store');
+  await patchStagingSubmissionStatus(kind, resolvedId, 'approved');
+  if (resolvedId !== item.id.trim()) {
+    await patchStagingSubmissionStatus(kind, item.id.trim(), 'approved');
+  }
+
   const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
   if (partnerUserId) {
     await notifyPartnerWithdrawalDecision({
       partnerUserId,
       partnerName: item.partnerName,
-      localId: item.id,
+      localId: resolvedId,
       kind,
       title: contentTitle(kind, item),
       approved: false,

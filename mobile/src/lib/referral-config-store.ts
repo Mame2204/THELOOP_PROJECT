@@ -52,16 +52,44 @@ export async function loadReferralSettings(): Promise<ReferralSettings> {
   return cached ?? { ...DEFAULT_SETTINGS };
 }
 
-export async function saveReferralSettings(settings: ReferralSettings): Promise<void> {
-  await saveCachedJson(CACHE_KEY, settings);
+export type SaveReferralSettingsResult = {
+  ok: boolean;
+  error?: string;
+};
 
-  if (supabase) {
-    await supabase.from('referral_settings').upsert({
-      id: 1,
-      referrals_per_reward: settings.referralsPerReward,
-      reward_months: settings.rewardMonths,
-      max_reward_months_per_year: settings.maxRewardMonthsPerYear,
-      updated_at: settings.updatedAt,
-    });
+export async function saveReferralSettings(
+  settings: ReferralSettings,
+): Promise<SaveReferralSettingsResult> {
+  const payload: ReferralSettings = {
+    ...settings,
+    updatedAt: new Date().toISOString(),
+  };
+  await saveCachedJson(CACHE_KEY, payload);
+
+  if (!supabase) {
+    return { ok: true };
   }
+
+  const { data, error } = await supabase.rpc('admin_update_referral_settings', {
+    p_referrals_per_reward: payload.referralsPerReward,
+    p_reward_months: payload.rewardMonths,
+    p_max_reward_months_per_year: payload.maxRewardMonthsPerYear,
+  });
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  if (data && typeof data === 'object') {
+    const row = data as {
+      referrals_per_reward?: number | null;
+      reward_months?: number | null;
+      max_reward_months_per_year?: number | null;
+      updated_at?: string | null;
+    };
+    const synced = normalizeSettings(row);
+    await saveCachedJson(CACHE_KEY, synced);
+  }
+
+  return { ok: true };
 }

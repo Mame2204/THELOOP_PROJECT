@@ -389,6 +389,7 @@ export const ADMIN_THEME_ROUTES = new Set([
   'AdminInsights',
   'AdminPartnerships',
   'AdminPartnerMilestones',
+  'AdminReferralSettings',
   'AdminSuggestions',
   'AdminCreateUser',
   'AdminWaitlist',

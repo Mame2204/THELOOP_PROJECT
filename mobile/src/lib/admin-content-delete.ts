@@ -53,10 +53,13 @@ export async function deleteAdminContent(
   );
   const allContentIds = [...new Set([...resolved.catalogIds, ...resolved.localIds, id])];
 
+  // Soumissions partenaire AVANT le DELETE catalogue : FK published_* → ON DELETE SET NULL
+  // sinon admin_withdraw_partner_content ne retrouve plus la soumission.
+  await syncPartnerViewsAfterAdminContentChange(cascadeKind, id, 'removed');
+
   const remote = await deleteSupabaseContent(kind, id, options?.isTool);
   if (!remote.ok) return remote;
 
-  await syncPartnerViewsAfterAdminContentChange(cascadeKind, id, 'removed');
   await markAllIdsRemoved(kind, allContentIds);
   invalidateContentCache();
 

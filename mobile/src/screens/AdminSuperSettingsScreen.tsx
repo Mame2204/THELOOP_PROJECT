@@ -58,6 +58,13 @@ const ENTRIES: SettingsEntry[] = [
     permission: 'partner_milestones',
   },
   {
+    icon: '🤝',
+    title: 'Parrainage',
+    description: 'Filleuls requis, mois Prime offerts et plafond annuel',
+    route: 'AdminReferralSettings',
+    permission: 'referral_settings',
+  },
+  {
     icon: '⚡',
     title: 'Automatisations',
     description: 'Jobs bienvenue, anniversaire, membre du mois…',

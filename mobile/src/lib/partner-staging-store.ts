@@ -783,19 +783,29 @@ export async function moderateEvent(id: string, approve: boolean, reason?: strin
   }
 
   if (!approve) {
+    try {
+      const { rejectPartnerEventSubmission } = await import('@/lib/partner-content-sync');
+      const remote = await rejectPartnerEventSubmission(id, reason);
+      if (!remote.ok) {
+        return { ok: false, reason: remote.reason ?? 'Refus impossible (connexion ou serveur).' };
+      }
+    } catch (e) {
+      console.warn('[Staging] moderateEvent remote:', e);
+      return {
+        ok: false,
+        reason: e instanceof Error ? e.message : 'Refus impossible (connexion ou serveur).',
+      };
+    }
+
     store.events[idx] = {
       ...event,
       status: 'rejected',
       rejectionReason: reason ?? 'Refusé par l\'admin',
+      publishedEventId: null,
       updatedAt: new Date().toISOString(),
     };
     await saveStore(store);
-    try {
-      const { rejectPartnerEventSubmission } = await import('@/lib/partner-content-sync');
-      await rejectPartnerEventSubmission(id, reason);
-    } catch (e) {
-      console.warn('[Staging] moderateEvent remote:', e);
-    }
+
     try {
       const { notifyPartnerModerationDecision } = await import('@/lib/partner-moderation-notify');
       await notifyPartnerModerationDecision({
@@ -878,19 +888,30 @@ export async function moderateSpot(id: string, approve: boolean, reason?: string
   }
 
   if (!approve) {
+    try {
+      const { rejectPartnerSpotSubmission } = await import('@/lib/partner-content-sync');
+      const remote = await rejectPartnerSpotSubmission(id, reason);
+      if (!remote.ok) {
+        return { ok: false, reason: remote.reason ?? 'Refus impossible (connexion ou serveur).' };
+      }
+    } catch (e) {
+      console.warn('[Staging] moderateSpot remote:', e);
+      return {
+        ok: false,
+        reason: e instanceof Error ? e.message : 'Refus impossible (connexion ou serveur).',
+      };
+    }
+
     store.spots[idx] = {
       ...spot,
       status: 'rejected',
       rejectionReason: reason ?? 'Refusé par l\'admin',
+      publishedEstablishmentId: null,
+      publishedToolId: null,
       updatedAt: new Date().toISOString(),
     };
     await saveStore(store);
-    try {
-      const { rejectPartnerSpotSubmission } = await import('@/lib/partner-content-sync');
-      await rejectPartnerSpotSubmission(id, reason);
-    } catch (e) {
-      console.warn('[Staging] moderateSpot remote:', e);
-    }
+
     try {
       const { notifyPartnerModerationDecision } = await import('@/lib/partner-moderation-notify');
       await notifyPartnerModerationDecision({

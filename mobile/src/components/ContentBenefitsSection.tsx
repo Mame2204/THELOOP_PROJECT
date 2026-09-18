@@ -29,7 +29,7 @@ import {
   canPushBenefitValidation,
   ensureActivePrivilegeGrant,
   isBenefitFullyUsed,
-  peekUserPrimeBenefits,
+  listUserPrimeBenefits,
   requestBenefitValidation,
   syncExpiredBenefitPendingStates,
   syncUserRoleBenefitEntitlements,
@@ -203,9 +203,10 @@ function getLockedPrivilegePresentation(
 
   return {
     title: 'Privilège non disponible',
-    body: 'Ce privilège n’est pas activé sur votre compte pour le moment.',
+    body:
+      'Vous n’avez pas encore reçu ce privilège sur votre compte. Il peut être réservé à certains membres (tirage au sort, campagne, etc.).',
     ctaMode: 'disabled',
-    ctaLabel: 'Réservé aux membres Prime',
+    ctaLabel: 'Non disponible',
   };
 }
 
@@ -275,7 +276,7 @@ export function ContentBenefitsSection({
 
     if (user && user.id !== 'anonymous') {
       try {
-        const listed = await peekUserPrimeBenefits(user.id, {
+        const listed = await listUserPrimeBenefits(user.id, {
           phone: user.phoneNumber,
           email: user.email,
         });
@@ -305,15 +306,6 @@ export function ContentBenefitsSection({
       // Super admin TEAMS : l’item peut n’être que dans enabledCatalogIds, hors config.admin.
       if (staffUnlocked && !roles.includes('admin')) roles.push('admin');
 
-      const unlocked =
-        Boolean(user && user.id !== 'anonymous') &&
-        roles.length > 0 &&
-        (staffUnlocked ||
-          roles.some((r) => {
-            if (r === 'admin') return staffUnlocked;
-            return userQualifiesForRole(r, user!);
-          }));
-
       const fromActive =
         userBenefitsActive.find((b) => b.catalogId === item.id) ?? null;
       const fromUsed =
@@ -330,6 +322,20 @@ export function ContentBenefitsSection({
         Boolean(userBenefit) &&
         !pendingValidation &&
         (userBenefit!.status === 'used' || isBenefitFullyUsed(userBenefit!));
+
+      const hasIndividualGrant =
+        Boolean(fromActive) && !pendingValidation && !exhausted;
+
+      const roleUnlocked =
+        Boolean(user && user.id !== 'anonymous') &&
+        roles.length > 0 &&
+        (staffUnlocked ||
+          roles.some((r) => {
+            if (r === 'admin') return staffUnlocked;
+            return userQualifiesForRole(r, user!);
+          }));
+
+      const unlocked = hasIndividualGrant || roleUnlocked;
 
       next.push({
         item,
