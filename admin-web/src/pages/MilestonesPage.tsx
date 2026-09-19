@@ -356,6 +356,14 @@ export function MilestonesPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {msg ? <p className="muted">{msg}</p> : null}
 
+      <div className="card" style={{ marginBottom: 16 }}>
+        <p className="meta" style={{ margin: 0 }}>
+          <strong>Éditer</strong> : modifier seuil, période ou récompense d’un palier existant (bouton dans le
+          tableau). <strong>Archiver</strong> : désactive le palier et le retire de la liste partenaires — l’historique
+          des octrois est conservé (cochez « Archives » pour les revoir).
+        </p>
+      </div>
+
       <div className="split-pane">
         <div className="card">
           <h3>{editing ? 'Modifier le palier' : 'Nouveau palier'}</h3>

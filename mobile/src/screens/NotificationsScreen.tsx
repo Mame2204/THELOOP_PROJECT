@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Alert,
   Pressable,
@@ -10,13 +11,13 @@ import {
 import { useAuthContext } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationsContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
-import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { PageHeader } from '@/components/PageHeader';
 import { formatDateFr } from '@/lib/date-utils';
 import {
   deleteUserNotification,
   listUserNotifications,
   markNotificationRead,
+  subscribeUserNotifications,
   type UserNotification,
 } from '@/lib/user-notifications-store';
 import { isAuthenticated } from '@/types';
@@ -109,15 +110,20 @@ export function NotificationsScreen({ navigation }: Props) {
     [user?.id, user?.phoneNumber, role],
   );
 
-  // Liste au focus (TTL) ; badge sync via AppState / push (plus de Realtime permanent).
-  const { run } = useFocusLoad(load, {
-    ttlMs: 90_000,
-    enabled: Boolean(user) && isAuthenticated(role),
-    resetKey: user?.id ?? null,
-  });
+  useFocusEffect(
+    useCallback(() => {
+      void load(true);
+    }, [load]),
+  );
+
+  useEffect(() => {
+    return subscribeUserNotifications(() => {
+      void load(true);
+    });
+  }, [load]);
 
   async function reload() {
-    await run(true);
+    await load(true);
     await refresh();
   }
 

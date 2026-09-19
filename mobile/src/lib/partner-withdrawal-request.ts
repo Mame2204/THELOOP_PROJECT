@@ -196,12 +196,16 @@ export async function cancelPartnerContentWithdrawal(
   if (error) return { ok: false, error: error.message };
   if (!data) return { ok: false, error: 'Demande introuvable ou déjà traitée.' };
 
-  const { patchStagingSubmissionStatus } = await import('@/lib/partner-staging-store');
-  await patchStagingSubmissionStatus(kind, resolvedId, 'approved');
-  if (resolvedId !== localId.trim()) {
-    await patchStagingSubmissionStatus(kind, localId.trim(), 'approved');
+  const { patchStagingSubmissionStatus, resyncStagingSubmissionFromRemote } = await import(
+    '@/lib/partner-staging-store'
+  );
+  const idsToSync = [...new Set([resolvedId, localId.trim()].filter(Boolean))];
+  for (const id of idsToSync) {
+    await resyncStagingSubmissionFromRemote(kind, id);
+    await patchStagingSubmissionStatus(kind, id, 'approved');
   }
 
+  invalidateContentCache();
   return { ok: true };
 }
 
@@ -239,28 +243,17 @@ export async function approvePartnerWithdrawalRequest(
   const resolvedLocalId = await resolveSubmissionLocalId(kind, item.id);
   const localIds = [...new Set([item.id.trim(), resolvedLocalId].filter(Boolean))];
 
-  if (isSupabaseConfigured() && supabase) {
-    const rpcKind = kind === 'event' ? 'event' : isTool ? 'tool' : 'spot';
-    if (catalogId) {
-      await supabase.rpc('admin_withdraw_partner_content', {
-        p_kind: rpcKind,
-        p_catalog_id: catalogId,
-        p_local_id: resolvedLocalId,
-      });
-    }
-
-    // Orphelins : catalogue déjà supprimé (FK published_* → NULL).
-    const table = remoteTable(kind);
-    for (const localId of localIds) {
-      await supabase
-        .from(table)
-        .delete()
-        .eq('local_id', localId)
-        .eq('status', 'withdrawal_requested');
-    }
-  }
-
   if (!catalogId) {
+    if (isSupabaseConfigured() && supabase) {
+      const table = remoteTable(kind);
+      for (const localId of localIds) {
+        await supabase
+          .from(table)
+          .delete()
+          .eq('local_id', localId)
+          .eq('status', 'withdrawal_requested');
+      }
+    }
     await purgeWithdrawalSubmissionLocal(kind, localIds);
     invalidateContentCache();
     const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
@@ -278,22 +271,32 @@ export async function approvePartnerWithdrawalRequest(
   }
 
   const deleted = await deleteAdminContent(kind === 'event' ? 'event' : 'spot', catalogId, { isTool });
-  if (deleted.ok) {
-    await purgeWithdrawalSubmissionLocal(kind, localIds);
-    invalidateContentCache();
-    const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
-    if (partnerUserId) {
-      await notifyPartnerWithdrawalDecision({
-        partnerUserId,
-        partnerName: item.partnerName,
-        localId: resolvedLocalId,
-        kind,
-        title: contentTitle(kind, item),
-        approved: true,
-      }).catch(() => undefined);
-    }
+  if (!deleted.ok) return deleted;
+
+  if (isSupabaseConfigured() && supabase) {
+    const rpcKind = kind === 'event' ? 'event' : isTool ? 'tool' : 'spot';
+    await supabase.rpc('admin_withdraw_partner_content', {
+      p_kind: rpcKind,
+      p_catalog_id: catalogId,
+      p_local_id: resolvedLocalId,
+    });
   }
-  return deleted;
+
+  await purgeWithdrawalSubmissionLocal(kind, localIds);
+  invalidateContentCache();
+
+  const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
+  if (partnerUserId) {
+    await notifyPartnerWithdrawalDecision({
+      partnerUserId,
+      partnerName: item.partnerName,
+      localId: resolvedLocalId,
+      kind,
+      title: contentTitle(kind, item),
+      approved: true,
+    }).catch(() => undefined);
+  }
+  return { ok: true };
 }
 
 /** Admin : refuse la demande — le contenu reste publié. */
@@ -315,11 +318,15 @@ export async function rejectPartnerWithdrawalRequest(
 
   if (error) return { ok: false, error: error.message };
 
-  const { patchStagingSubmissionStatus } = await import('@/lib/partner-staging-store');
-  await patchStagingSubmissionStatus(kind, resolvedId, 'approved');
-  if (resolvedId !== item.id.trim()) {
-    await patchStagingSubmissionStatus(kind, item.id.trim(), 'approved');
+  const { patchStagingSubmissionStatus, resyncStagingSubmissionFromRemote } = await import(
+    '@/lib/partner-staging-store'
+  );
+  const idsToSync = [...new Set([resolvedId, item.id.trim()].filter(Boolean))];
+  for (const id of idsToSync) {
+    await resyncStagingSubmissionFromRemote(kind, id);
+    await patchStagingSubmissionStatus(kind, id, 'approved');
   }
+  invalidateContentCache();
 
   const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
   if (partnerUserId) {

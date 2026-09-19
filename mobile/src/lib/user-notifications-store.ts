@@ -470,6 +470,11 @@ function notifListCacheKey(userId: string, phoneKey: string | null): string {
   return `${userId}|${phoneKey ?? ''}`;
 }
 
+/** Invalide le cache liste (ex. push reçu alors que l’écran cloche est ouvert). */
+export function invalidateNotificationListCache(): void {
+  notifListMemory = null;
+}
+
 export async function listUserNotifications(
   userId: string,
   phone?: string | null,

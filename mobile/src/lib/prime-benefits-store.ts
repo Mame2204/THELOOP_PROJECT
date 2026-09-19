@@ -2115,7 +2115,8 @@ export async function syncUserRoleBenefitEntitlements(user: User): Promise<numbe
 }
 
 /**
- * Garantit un grant actif pour un catalogue (création locale rapide).
+ * Garantit un grant actif pour un catalogue (octroi existant ou entitlement rôle configuré).
+ * Pas d'octroi « sauvage » : tirage / campagne admin doivent déjà exister en local ou remote.
  * Utilisé depuis les fiches contenu — ne bloque PAS sur sync réseau.
  */
 export async function ensureActivePrivilegeGrant(
@@ -2307,42 +2308,9 @@ export async function ensureActivePrivilegeGrant(
     }
   }
 
-  // Dernier recours : premier offering catalogue + premier rôle qualifiant
-  const offering = offeringForContent ?? catalog.offeringPartners[0];
-  if (!offering?.displayName?.trim()) {
-    console.warn('[Benefits] ensure grant no offering', { catalogId });
-    return null;
-  }
-
-  const role: RoleEntitlementKind =
-    preferredRoles.find((r) => {
-      if (r === 'member') return userQualifiesForMemberEntitlements(user);
-      if (r === 'prime') return userQualifiesForPrimeEntitlements(user);
-      if (r === 'partner') return userQualifiesForPartnerEntitlements(user);
-      if (r === 'admin') return userQualifiesForAdminEntitlements(user);
-      return false;
-    }) ??
-    (userQualifiesForPrimeEntitlements(user)
-      ? 'prime'
-      : userQualifiesForMemberEntitlements(user)
-        ? 'member'
-        : userQualifiesForPartnerEntitlements(user)
-          ? 'partner'
-          : userQualifiesForAdminEntitlements(user)
-            ? 'admin'
-            : 'member');
-
-  const expiresAt =
-    role === 'prime' ? resolvePrimeEntitlementExpiresAt(user) : MEMBER_ROLE_ENTITLEMENT_EXPIRES;
-  const built = await materialize(
-    {
-      catalogId,
-      partnerId: offering.partnerId,
-      partnerDisplayName: offering.displayName,
-    },
-    role,
-    expiresAt,
-  );
-  console.log('[Benefits] ensure grant fallback', { id: built?.id ?? null, role });
-  return built;
+  console.warn('[Benefits] ensure grant denied — pas d’octroi individuel ni entitlement rôle', {
+    catalogId,
+    userId: user.id,
+  });
+  return null;
 }

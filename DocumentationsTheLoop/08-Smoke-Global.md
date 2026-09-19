@@ -1,8 +1,8 @@
 # THE LOOP — Smoke test complet (à cocher)
 
-> **Màj :** 17 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
-> **App mobile :** build **41** (TestFlight + Play internal — **en cours**)  
-> **Admin web :** `https://admin.theloop-app.com` (deploy `96212f0` — tirage · privilèges)  
+> **Màj :** 18 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
+> **App mobile :** build **44** (TestFlight + Play internal — **à publier**)  
+> **Admin web :** `https://admin.theloop-app.com` (deploy post-fix tirage · paliers · retraits)  
 > **Serveur :** `https://api.theloop-app.com` (cron push, paiements)
 
 ---
@@ -233,8 +233,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ### Retrait & favoris
 - [ x ] **📱** Demander retrait d’un contenu **publié**
 - [ x ] **🤖** Idem
-- [ r ] **📱** Annuler demande retrait (si encore pending)
-- [ r ] **🤖** Idem
+- [ k ] **📱** Annuler demande retrait (si encore pending) — contenu disparaît Mon contenu (fix build **44**)
+- [ k ] **🤖** Idem
 - [ x ] **📱** Notif quand admin approuve / refuse retrait
 - [ x ] **🤖** Idem
 - [ x ] **💻** Demande visible admin-web → Demandes
@@ -270,7 +270,13 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Rejeter + motif → partenaire informé
 - [ x ] **🤖** Idem
-- [ x ] **📱** Approuver / refuser **retrait** partenaire
+- [ k ] **📱** Soumission partenaire → super admin **push OS OK** mais **cloche vide** (fix cache build **44**)
+- [ k ] **🤖** Idem
+- [ k ] **📱** Retrait partenaire → **Retirer du catalogue** ne retire pas l’événement (fix ordre delete build **44**)
+- [ k ] **🤖** Idem
+- [ x ] **📱** Retrait partenaire → **Garder publié** (refus) OK · notif partenaire
+- [ x ] **🤖** Idem
+- [ x ] **📱** Valider / refuser soumission → notif partenaire OK
 - [ x ] **🤖** Idem
 
 ### Validation publication événement partenaire
@@ -430,16 +436,17 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** PASS · prix · octrois manuels
 - [ x ] **💻** Paiements · liste · Resync · refs Djomy
 - [ x ] **💻** Export CSV · analytics revenus
-- [ r ] **💻** Demandes · modération · retraits partenaire (retest post-migration `20260926`)
+- [ x ] **💻** Demandes · modération · retraits partenaire
 
 #### Modération soumissions partenaire (admin-web)
-- [ r ] **💻** Partenaire soumet **spot** pending → admin **Valider** → visible Agenda/Spots · notif partenaire OK
-- [ r ] **💻** Partenaire soumet **événement** pending → admin **Valider** → visible Agenda · notif partenaire OK
-- [ r ] **💻** Admin **Refuser** une soumission (spot ou événement) → **plus visible** dans l’app (catalogue retiré) · notif partenaire avec motif
-- [ r ] **💻** Cas régression : refus **après** publication accidentelle → contenu **disparaît** du public (pas « refusé mais publié »)
+- [ x ] **💻** Partenaire soumet **spot** pending → admin **Valider** → visible Agenda/Spots · notif partenaire OK
+- [ x ] **💻** Partenaire soumet **événement** pending → admin **Valider** → visible Agenda · notif partenaire OK
+- [ x ] **💻** Admin **Refuser** une soumission (spot ou événement) → **plus visible** dans l’app (catalogue retiré) · notif partenaire avec motif
+- [ x ] **💻** Cas régression : refus **après** publication accidentelle → contenu **disparaît** du public (pas « refusé mais publié »)
 
 #### Retraits partenaire (admin-web)
-- [ ] **💻** Demande retrait pending → approuver / refuser · sync avec app mobile
+- [ x ] **💻** Demande retrait pending → **refuser** (garder publié) · sync app mobile
+- [ k ] **💻** Demande retrait pending → **approuver** (retirer catalogue) · disparaît app public (retest build **44** mobile)
 
 ### Contenu
 - [ x ] **💻** Contenu · liste events / spots / outils
@@ -459,14 +466,25 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Gates · pays · catégories · permissions · legal
 - [ x ] **💻** Types privilège · standalone benefit
 - [ x ] **💻** Automatisations · jobs · exécuter (si bouton présent)
-- [ r ] **💻** Horaires · onglets · milestones · tirage (retest post-fix `20260925` + `20260926`)
+- [ k ] **💻** Horaires · onglets · **paliers** (éditer / archiver — retest deploy admin-web + build **44** mobile)
+- [ x ] **💻** Tirage · historique (migration `20260925` `draw_city`)
+
+#### Paliers partenaires (Paramètres)
+- [ k ] **💻** Paramètres → Paliers → **Éditer** un palier existant (seuil, période, récompense)
+- [ k ] **💻** Paramètres → Paliers → **Archiver** → disparaît liste · visible via « Archives »
+- [ k ] **📱** Admin → Paramètres → Paliers → éditer / archiver (icônes carte · build **44**)
+
+#### Parrainage admin (super admin)
+- [ x ] **📱** Paramètres → Parrainage → modifier seuils · enregistrement OK
+- [ x ] **🤖** Idem
 
 #### Tirage privilèges (admin-web)
-- [ r ] **💻** Pool éligibles > 0 (rôle Prime coché · compte Prime GN)
-- [ r ] **💻** Tirage OK → historique enregistré (migration `20260925` `draw_city`)
-- [ r ] **📱** Gagnant reçoit notif inbox **« Nouveau privilège »** (retest post-fix admin-web notif)
-- [ r ] **📱** Gagnant Prime → fiche événement liée → privilège **sans cadenas** · bouton **Utiliser chez le partenaire** (retest build **43+** `ContentBenefitsSection`)
-- [ r ] **📱** Gagnant **non-Prime** (membre tiré) → même accès sur la fiche · pas de message « réservé aux Prime »
+- [ x ] **💻** Pool éligibles > 0 (rôle Prime coché · compte Prime GN)
+- [ x ] **💻** Tirage OK → historique enregistré (migration `20260925` `draw_city`)
+- [ k ] **📱** Gagnant reçoit notif inbox + push **« Nouveau privilège »** (fix `notify_user` + push admin-web)
+- [ k ] **📱** Gagnant Prime → fiche événement liée → privilège **sans cadenas** · **Utiliser chez le partenaire** (build **43+**)
+- [ k ] **📱** Gagnant **non-Prime** (membre tiré) → accès fiche · pas « réservé aux Prime »
+- [ k ] **📱** Privilège **associé à un contenu** → pas visible pour **tous** les Prime sans octroi (cadenas / entitlements)
 
 ### Notifications (admin-web)
 - [ x ] **💻** Envoi immédiat · audience Tous
@@ -566,16 +584,23 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## Notes de session
 
 ```
-Date : 17 sept. 2026
+Date : 18 sept. 2026
 Testeur :
-Build iPhone : 40 (TestFlight OK)
-Build Android : 40 (Play internal OK)
-Admin-web à jour : oui (96212f0)
-Git commit build 40 : 96212f0
+Build iPhone : 43 testé · 44 à publier
+Build Android : 43 testé · 44 à publier
+Admin-web à jour : deploy post-fix (tirage notify_user · paliers aide · retraits)
 Serveur Render à jour : oui
-Migration e-mail appliquée : oui
-Migrations à appliquer : 20260918_partnership_submit_rpc · 20260918_partner_accept_activate_catalog · 20260918_theloop_team_validation_code · 20260919_event_speakers_default_empty_title
-Validé session : PASS file d’attente · achat Djomy · soumission événement pending · privilège partenaire (notif + acceptation) · push · contact · profil membre jamais Prime
-En cours / retest : modération web refus→dépublie (20260926) · tirage notif+gagnant fiche événement (build 43) · modale refus clavier (build 43) · annuler retrait partenaire (build 43)
-Bugs session 18/09 : refusé mais publié (modération web) · tirage sans notif · cadenas Prime sur gagnant — correctifs en cours
+Validé session build 43 : modération web valider/refuser · parrainage admin seuils · notif partenaire modération/retrait · garder publié retrait
+KO session build 43 : paliers éditer/archiver · tirage sans notif gagnant · cloche admin vide (push OK) · retirer catalogue mobile · annuler retrait pending · privilège contenu = tous Prime
+Retest build 44 + admin-web : voir liste ci-dessous
 ```
+
+### Tests à refaire (build 44 + admin-web déployé)
+
+1. **Cloche admin** — partenaire soumet événement → super admin : push **et** ligne dans Notifications (cloche).
+2. **Retrait approuvé** — partenaire demande retrait → admin mobile **Retirer du catalogue** → événement absent Agenda (refresh).
+3. **Annuler retrait** — partenaire annule demande pending → contenu **reste** dans Mon contenu · statut publié.
+4. **Tirage** — admin-web tirage → gagnant reçoit inbox + push « Nouveau privilège ».
+5. **Paliers** — admin-web + mobile : éditer seuil · archiver · revoir via « Archives ».
+6. **Privilège contenu** — Prime sans octroi : cadenas sur fiche · gagnant tirage / octroi individuel : déverrouillé.
+7. **Modale refus** — admin mobile : champ motif visible au-dessus clavier (build 44).

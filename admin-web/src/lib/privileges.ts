@@ -1,3 +1,4 @@
+import { deliverPushToUsers } from './api';
 import { supabase } from './supabase';
 
 const EXTERNAL_PARTNER_ID = '__external__';
@@ -680,15 +681,23 @@ export async function grantBenefitsToUsers(input: {
       const message = input.customNote?.trim()
         ? `Vous avez reçu le privilège « ${input.title} ». ${input.customNote.trim()}`
         : `Vous avez reçu le privilège « ${input.title} ».`;
-      const { error: notifyErr } = await supabase.from('user_notifications').insert({
-        user_id: userId,
-        title: 'Nouveau privilège',
-        message,
-        audience: 'individual',
-        sent_at: new Date().toISOString(),
+      const title = 'Nouveau privilège';
+      const { error: notifyErr } = await supabase.rpc('notify_user', {
+        p_user_id: userId,
+        p_title: title,
+        p_message: message,
+        p_audience: 'individual',
+        p_recipient_phone: null,
       });
       if (notifyErr) {
-        console.warn('[privileges] notify grant:', notifyErr.message);
+        console.warn('[privileges] notify_user grant:', notifyErr.message);
+      } else {
+        void deliverPushToUsers({
+          userIds: [userId],
+          title,
+          body: message,
+          data: { audience: 'individual' },
+        });
       }
     }
   }

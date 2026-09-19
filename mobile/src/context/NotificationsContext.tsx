@@ -10,7 +10,11 @@ import {
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
-import { countUnreadNotifications, subscribeUserNotifications } from '@/lib/user-notifications-store';
+import {
+  countUnreadNotifications,
+  invalidateNotificationListCache,
+  subscribeUserNotifications,
+} from '@/lib/user-notifications-store';
 import {
   addNotificationReceivedListener,
   addNotificationResponseListener,
@@ -140,6 +144,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     let remove: (() => void) | undefined;
     let cancelled = false;
     void addNotificationReceivedListener(() => {
+      invalidateNotificationListCache();
       void refresh(true);
     }).then((sub) => {
       if (cancelled) {

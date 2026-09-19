@@ -759,6 +759,20 @@ async function ensureLocalStagingSpot(id: string): Promise<StagingSpot | null> {
   return getStagingSpotById(id);
 }
 
+/** Resync local staging depuis Supabase (ex. annulation demande retrait). */
+export async function resyncStagingSubmissionFromRemote(
+  kind: 'event' | 'spot' | 'tool',
+  localId: string,
+): Promise<void> {
+  const id = localId.trim();
+  if (!id) return;
+  if (kind === 'event') {
+    await ensureLocalStagingEvent(id);
+    return;
+  }
+  await ensureLocalStagingSpot(id);
+}
+
 export type ModerationResult = { ok: boolean; reason?: string };
 
 export async function moderateEvent(id: string, approve: boolean, reason?: string): Promise<ModerationResult> {

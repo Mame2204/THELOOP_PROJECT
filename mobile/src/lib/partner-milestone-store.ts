@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import { setContentFeatured } from '@/lib/admin-content-store';
 import { sendAdminNotification } from '@/lib/admin-notifications-store';
 import { resolvePartnerUserIdForSync } from '@/lib/partner-user-resolve';
@@ -259,7 +260,7 @@ export async function upsertPartnerMilestoneRule(
     ...input,
     archived: input.archived ?? false,
     periodMonths: input.periodMonths ?? 1,
-    id: input.id ?? `rule-${Date.now()}`,
+    id: input.id ?? Crypto.randomUUID(),
     createdAt: now,
     updatedAt: now,
   };
@@ -270,8 +271,8 @@ export async function upsertPartnerMilestoneRule(
   else rules.push(rule);
   await saveRulesLocal(rules.sort((a, b) => a.sortOrder - b.sortOrder));
 
-  if (isSupabaseConfigured() && supabase && !rule.id.startsWith('rule-')) {
-    await supabase.from('partner_milestone_rules').upsert({
+  if (isSupabaseConfigured() && supabase && /^[0-9a-f-]{36}$/i.test(rule.id)) {
+    const { error } = await supabase.from('partner_milestone_rules').upsert({
       id: rule.id,
       name: rule.name,
       description: rule.description,
@@ -288,6 +289,7 @@ export async function upsertPartnerMilestoneRule(
       period_months: rule.periodMonths,
       sort_order: rule.sortOrder,
     });
+    if (error) console.warn('[Milestones] upsert rule:', error.message);
   }
 
   return rule;
@@ -299,8 +301,9 @@ export async function togglePartnerMilestoneRuleActive(ruleId: string, isActive:
   if (idx < 0) return;
   rules[idx] = { ...rules[idx], isActive, updatedAt: new Date().toISOString() };
   await saveRulesLocal(rules);
-  if (isSupabaseConfigured() && supabase && !ruleId.startsWith('rule-')) {
-    await supabase.from('partner_milestone_rules').update({ is_active: isActive }).eq('id', ruleId);
+  if (isSupabaseConfigured() && supabase && /^[0-9a-f-]{36}$/i.test(ruleId)) {
+    const { error } = await supabase.from('partner_milestone_rules').update({ is_active: isActive }).eq('id', ruleId);
+    if (error) console.warn('[Milestones] toggle rule:', error.message);
   }
 }
 
@@ -315,8 +318,12 @@ export async function archivePartnerMilestoneRule(ruleId: string): Promise<void>
     updatedAt: new Date().toISOString(),
   };
   await saveRulesLocal(rules);
-  if (isSupabaseConfigured() && supabase && !ruleId.startsWith('rule-')) {
-    await supabase.from('partner_milestone_rules').update({ archived: true, is_active: false }).eq('id', ruleId);
+  if (isSupabaseConfigured() && supabase && /^[0-9a-f-]{36}$/i.test(ruleId)) {
+    const { error } = await supabase
+      .from('partner_milestone_rules')
+      .update({ archived: true, is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', ruleId);
+    if (error) console.warn('[Milestones] archive rule:', error.message);
   }
 }
 
