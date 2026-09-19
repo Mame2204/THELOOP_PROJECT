@@ -10,7 +10,9 @@ import {
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
+import type { NotificationAudience } from '@/lib/notification-audience';
 import {
+  appendUserNotification,
   countUnreadNotifications,
   invalidateNotificationListCache,
   subscribeUserNotifications,
@@ -143,8 +145,16 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let remove: (() => void) | undefined;
     let cancelled = false;
-    void addNotificationReceivedListener(() => {
+    void addNotificationReceivedListener((notification) => {
       invalidateNotificationListCache();
+      const title = notification.request.content.title?.trim() ?? '';
+      const body = notification.request.content.body?.trim() ?? '';
+      const rawAudience = notification.request.content.data?.audience;
+      const audience: NotificationAudience =
+        typeof rawAudience === 'string' ? (rawAudience as NotificationAudience) : 'individual';
+      if (userId && title && body) {
+        void appendUserNotification(userId, { title, message: body, audience }).catch(() => undefined);
+      }
       void refresh(true);
     }).then((sub) => {
       if (cancelled) {
@@ -157,7 +167,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       remove?.();
     };
-  }, [refresh]);
+  }, [refresh, userId]);
 
   const value = useMemo(
     () => ({

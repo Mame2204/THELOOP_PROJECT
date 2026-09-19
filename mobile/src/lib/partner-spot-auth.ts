@@ -205,12 +205,20 @@ export async function requirePartnerAuthUserId(maxWaitMs = 4000): Promise<string
   return null;
 }
 
+export type EnsurePartnerSessionOptions = {
+  /** false = ne jamais restaurer une session SPOT depuis le cache (cloche admin, modération). */
+  allowRestore?: boolean;
+};
+
 /**
  * Avant tout fetch cloud partenaire : garantir une session Supabase valide.
  * Connexion e-mail / mot de passe : la session auth courante suffit (pas de jeton SPOT).
  */
-export async function ensurePartnerSupabaseSession(): Promise<boolean> {
+export async function ensurePartnerSupabaseSession(
+  options?: EnsurePartnerSessionOptions,
+): Promise<boolean> {
   if (!isSupabaseConfigured() || !supabase) return false;
+  const allowRestore = options?.allowRestore !== false;
 
   const authUserId = await getPartnerAuthUserIdFromSession();
 
@@ -225,6 +233,8 @@ export async function ensurePartnerSupabaseSession(): Promise<boolean> {
     }
     return true;
   }
+
+  if (!allowRestore) return false;
 
   const partnerSession = await loadPartnerSpotSession();
 
@@ -275,11 +285,42 @@ export type PartnerWorkspaceContext = {
   phone: string | null;
 };
 
-async function isAdminAuthUserId(authUserId: string): Promise<boolean> {
+export async function isAdminAuthUserId(authUserId: string): Promise<boolean> {
   if (!isSupabaseConfigured() || !supabase || !isUuid(authUserId)) return false;
   const { data } = await supabase.from('users').select('user_role').eq('id', authUserId).maybeSingle();
   const role = String(data?.user_role ?? '').toLowerCase();
   return role === 'admin' || role === 'super_admin';
+}
+
+/**
+ * Lecture inbox (cloche) : ne jamais basculer vers une session partenaire en cache.
+ * Retourne auth.uid() seulement s'il correspond au compte attendu (RLS user_notifications).
+ */
+export async function ensureInboxReadSession(expectedUserId: string): Promise<string | null> {
+  if (!isSupabaseConfigured() || !supabase || !isUuid(expectedUserId)) return null;
+
+  const current = await getPartnerAuthUserIdFromSession();
+  if (current === expectedUserId) return current;
+
+  if (current) {
+    if (await isAdminAuthUserId(expectedUserId)) return null;
+    return current;
+  }
+
+  return null;
+}
+
+/** RPC soumission partenaire : auth.uid() doit être p_partner_user_id (assert_partner_submission_actor). */
+export async function resolveSubmissionPartnerUserId(
+  partnerId: string | null | undefined,
+  partnerName: string | null | undefined,
+): Promise<string | null> {
+  await ensurePartnerSupabaseSession();
+  const authUid = await getPartnerAuthUserIdFromSession();
+  if (authUid) return authUid;
+
+  const { resolvePartnerUserIdForSync } = await import('@/lib/partner-user-resolve');
+  return resolvePartnerUserIdForSync(partnerId, partnerName);
 }
 
 /** Si un admin est encore en session Supabase, bascule vers le compte partenaire du profil. */

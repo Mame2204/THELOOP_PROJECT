@@ -272,8 +272,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ k ] **📱** Soumission partenaire → super admin **push OS OK** mais **cloche vide** (fix cache build **44**)
 - [ k ] **🤖** Idem
-- [ k ] **📱** Retrait partenaire → **Retirer du catalogue** ne retire pas l’événement (fix ordre delete build **44**)
-- [ k ] **🤖** Idem
+- [ x ] **📱** Retrait partenaire → **Retirer du catalogue** ne retire pas l’événement (fix ordre delete build **44**)
+- [ x ] **🤖** Idem
 - [ x ] **📱** Retrait partenaire → **Garder publié** (refus) OK · notif partenaire
 - [ x ] **🤖** Idem
 - [ x ] **📱** Valider / refuser soumission → notif partenaire OK
@@ -304,8 +304,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 #### Refuser (modale motif)
 - [ x ] **📱** Admin → **Refuser** une autre soumission pending → saisir motif
 - [ x ] **🤖** Idem
-- [ k ] **📱** Modale refus : champ motif **visible au-dessus du clavier** (fix UI build **41+**)
-- [ k ] **🤖** Idem
+- [ x ] **📱** Modale refus : champ motif **visible au-dessus du clavier** (fix UI build **41+**)
+- [ x ] **🤖** Idem
 - [ x ] **📱** Partenaire reçoit motif · peut resoumettre
 - [ x ] **🤖** Idem
 
@@ -466,13 +466,13 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **💻** Gates · pays · catégories · permissions · legal
 - [ x ] **💻** Types privilège · standalone benefit
 - [ x ] **💻** Automatisations · jobs · exécuter (si bouton présent)
-- [ k ] **💻** Horaires · onglets · **paliers** (éditer / archiver — retest deploy admin-web + build **44** mobile)
+- [ x ] **💻** Horaires · onglets · **paliers** (éditer / archiver · OK build **45**)
 - [ x ] **💻** Tirage · historique (migration `20260925` `draw_city`)
 
 #### Paliers partenaires (Paramètres)
-- [ k ] **💻** Paramètres → Paliers → **Éditer** un palier existant (seuil, période, récompense)
-- [ k ] **💻** Paramètres → Paliers → **Archiver** → disparaît liste · visible via « Archives »
-- [ k ] **📱** Admin → Paramètres → Paliers → éditer / archiver (icônes carte · build **44**)
+- [ x ] **💻** Paramètres → Paliers → **Éditer** un palier existant (seuil, période, récompense)
+- [ x ] **💻** Paramètres → Paliers → **Archiver** → disparaît liste · visible via « Archives »
+- [ x ] **📱** Admin → Paramètres → Paliers → éditer / archiver (icônes carte · build **44**)
 
 #### Parrainage admin (super admin)
 - [ x ] **📱** Paramètres → Parrainage → modifier seuils · enregistrement OK
@@ -584,23 +584,21 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## Notes de session
 
 ```
-Date : 18 sept. 2026
+Date : 19 sept. 2026
 Testeur :
-Build iPhone : 43 testé · 44 à publier
-Build Android : 43 testé · 44 à publier
-Admin-web à jour : deploy post-fix (tirage notify_user · paliers aide · retraits)
+Build iPhone : 45 à tester
+Build Android : 45 à tester
+Admin-web à jour : deploy build 45 (tirage inbox+push · parrainage partenaire)
 Serveur Render à jour : oui
-Validé session build 43 : modération web valider/refuser · parrainage admin seuils · notif partenaire modération/retrait · garder publié retrait
-KO session build 43 : paliers éditer/archiver · tirage sans notif gagnant · cloche admin vide (push OK) · retirer catalogue mobile · annuler retrait pending · privilège contenu = tous Prime
-Retest build 44 + admin-web : voir liste ci-dessous
+Validé build 44/45 prep : paliers éditer/archiver · parrainage admin seuils
+Retest build 45 : voir liste ci-dessous
 ```
 
-### Tests à refaire (build 44 + admin-web déployé)
+### Tests à refaire (build 45 + admin-web déployé)
 
-1. **Cloche admin** — partenaire soumet événement → super admin : push **et** ligne dans Notifications (cloche).
-2. **Retrait approuvé** — partenaire demande retrait → admin mobile **Retirer du catalogue** → événement absent Agenda (refresh).
-3. **Annuler retrait** — partenaire annule demande pending → contenu **reste** dans Mon contenu · statut publié.
-4. **Tirage** — admin-web tirage → gagnant reçoit inbox + push « Nouveau privilège ».
-5. **Paliers** — admin-web + mobile : éditer seuil · archiver · revoir via « Archives ».
-6. **Privilège contenu** — Prime sans octroi : cadenas sur fiche · gagnant tirage / octroi individuel : déverrouillé.
-7. **Modale refus** — admin mobile : champ motif visible au-dessus clavier (build 44).
+1. **Cloche admin** — soumission partenaire + demande retrait événement → push **et** inbox super admin.
+2. **Modération spots/outils** — soumission partenaire visible admin mobile + admin-web.
+3. **Tirage** — gagnant : push + cloche « Nouveau privilège » · fiche contenu **déverrouillée**.
+4. **Privilège contenu** — Prime sans octroi : cadenas · gagnant tirage : accès.
+5. **Parrainage partenaire** — écran sans bloc récompense Prime (code + filleuls OK).
+6. **Retrait** — approuver retrait · annuler retrait pending (régression).

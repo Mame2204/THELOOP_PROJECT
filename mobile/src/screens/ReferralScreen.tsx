@@ -16,6 +16,9 @@ export function ReferralScreen({ navigation }: Props) {
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);
   const isAdminReferrer = role === 'ADMIN';
+  const isPartnerReferrer = role === 'PARTNER';
+  /** Partenaires : partage du code uniquement — pas de récompense Prime parrainage. */
+  const showReferralRewards = !isAdminReferrer && !isPartnerReferrer;
   const [stats, setStats] = useState<ReferralStats | null>(null);
 
   const load = useCallback(async () => {
@@ -65,7 +68,7 @@ export function ReferralScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      {!isAdminReferrer ? (
+      {showReferralRewards ? (
         <>
           <Text style={[styles.section, { color: shell.pageKicker }]}>Récompense</Text>
           <Text style={[styles.body, { color: shell.pageTitle }]}>
@@ -76,6 +79,11 @@ export function ReferralScreen({ navigation }: Props) {
             Maximum {stats?.maxRewardMonthsPerYear ?? 5} mois offerts par an.
           </Text>
         </>
+      ) : isPartnerReferrer ? (
+        <Text style={[styles.adminNote, { color: shell.pageKicker }]}>
+          Compte partenaire : partagez votre code pour inviter des contacts. Les récompenses Prime parrainage ne
+          s'appliquent pas aux comptes pro — votre abonnement Loop Prime reste géré via votre espace pro.
+        </Text>
       ) : (
         <Text style={[styles.adminNote, { color: shell.pageKicker }]}>
           Compte administrateur : suivi des filleuls et statistiques uniquement, sans récompense Prime.
@@ -83,7 +91,7 @@ export function ReferralScreen({ navigation }: Props) {
       )}
 
       <Text style={[styles.section, { color: shell.pageKicker }]}>Progression {new Date().getFullYear()}</Text>
-      {!isAdminReferrer ? (
+      {showReferralRewards ? (
         <>
           <View style={[styles.progressTrack, { backgroundColor: shell.filterInactiveBg }]}>
             <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: shell.tabIndicator }]} />
@@ -103,7 +111,7 @@ export function ReferralScreen({ navigation }: Props) {
           <Text style={[styles.statValue, { color: shell.pageTitle }]}>{stats?.referralsThisYear ?? 0}</Text>
           <Text style={[styles.statLabel, { color: shell.pageKicker }]}>Filleuls cette année</Text>
         </View>
-        {!isAdminReferrer ? (
+        {showReferralRewards ? (
           <>
             <View style={[styles.statCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
               <Text style={[styles.statValue, { color: accent.accent }]}>{stats?.monthsGrantedThisYear ?? 0}</Text>

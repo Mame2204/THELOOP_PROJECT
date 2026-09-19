@@ -1177,6 +1177,7 @@ export async function peekUserPrimeBenefits(
 export async function listUserPrimeBenefits(
   userId: string,
   identity?: { phone?: string | null; email?: string | null },
+  options?: { force?: boolean },
 ): Promise<UserPrimeBenefitList> {
   const { userIds, phone, email } = await resolveBenefitIdentityKeys(userId, identity);
   const uuid = [...userIds].find((id) => /^[0-9a-f-]{36}$/i.test(id));
@@ -1188,7 +1189,8 @@ export async function listUserPrimeBenefits(
   );
 
   const lastRemoteAt = lastExpiredSyncAt.get(`remote-list:${uuid}`) ?? 0;
-  const shouldFetchRemote = Date.now() - lastRemoteAt > EXPIRED_SYNC_COOLDOWN_MS;
+  const shouldFetchRemote =
+    options?.force === true || Date.now() - lastRemoteAt > EXPIRED_SYNC_COOLDOWN_MS;
 
   try {
     const { fetchRemotePrimeBenefitsForUser, mergePrimeBenefits } = await import('@/lib/prime-benefits-sync');

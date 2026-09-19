@@ -276,10 +276,14 @@ export function ContentBenefitsSection({
 
     if (user && user.id !== 'anonymous') {
       try {
-        const listed = await listUserPrimeBenefits(user.id, {
-          phone: user.phoneNumber,
-          email: user.email,
-        });
+        const listed = await listUserPrimeBenefits(
+          user.id,
+          {
+            phone: user.phoneNumber,
+            email: user.email,
+          },
+          { force: refreshCatalog },
+        );
         userBenefitsActive = listed.active;
         userBenefitsUsed = listed.used;
         const { listLivePendingBenefitIdsForUser } = await import('@/lib/benefit-redemption-store');
@@ -410,7 +414,7 @@ export function ContentBenefitsSection({
       }
       void (async () => {
         await syncExpiredBenefitPendingStates(user.id).catch(() => undefined);
-        const refreshed = await buildLines(false);
+        const refreshed = await buildLines(true);
         setLines(refreshed);
       })();
     });

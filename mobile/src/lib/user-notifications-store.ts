@@ -121,10 +121,14 @@ function resolveCampaignIdForInsert(campaignId?: string | null): string | null {
   return trimmed && /^[0-9a-f-]{36}$/i.test(trimmed) ? trimmed : null;
 }
 
-async function ensureNotificationAuthSession(): Promise<void> {
-  if (!isSupabaseConfigured() || !supabase) return;
-  const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
-  await ensurePartnerSupabaseSession();
+async function ensureNotificationAuthSession(expectedUserId?: string): Promise<string | null> {
+  if (!isSupabaseConfigured() || !supabase) return null;
+  if (expectedUserId && /^[0-9a-f-]{36}$/i.test(expectedUserId)) {
+    const { ensureInboxReadSession } = await import('@/lib/partner-spot-auth');
+    return ensureInboxReadSession(expectedUserId);
+  }
+  const { getPartnerAuthUserIdFromSession } = await import('@/lib/partner-spot-auth');
+  return getPartnerAuthUserIdFromSession();
 }
 
 async function insertNotificationsViaRpc(rows: NotificationInsertRow[]): Promise<boolean> {
@@ -352,14 +356,8 @@ async function selectUserNotificationsRemote(
 ): Promise<UserNotification[]> {
   if (!(await canUseRemoteNotifications()) || !supabase) return [];
 
-  const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
-  await ensurePartnerSupabaseSession();
-  const { data: authData } = await supabase.auth.getUser();
-  const queryUserId = authData.user?.id && /^[0-9a-f-]{36}$/i.test(authData.user.id)
-    ? authData.user.id
-    : userId;
-
-  if (!/^[0-9a-f-]{36}$/i.test(queryUserId)) return [];
+  const queryUserId = await ensureNotificationAuthSession(userId);
+  if (!queryUserId || queryUserId !== userId) return [];
 
   const full = await supabase
     .from('user_notifications')
@@ -571,15 +569,14 @@ export async function markNotificationRead(
   const phoneKey = phone ? normalizePhone(phone) : null;
 
   if (isSupabaseConfigured() && supabase && isRemoteNotificationId(notificationId)) {
-    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
-    await ensurePartnerSupabaseSession();
-    const { data: authData } = await supabase.auth.getUser();
-    const authUserId = authData.user?.id ?? userId;
-    await supabase
-      .from('user_notifications')
-      .update({ read_at: readAt })
-      .eq('id', notificationId)
-      .eq('user_id', authUserId);
+    const authUserId = await ensureNotificationAuthSession(userId);
+    if (authUserId === userId) {
+      await supabase
+        .from('user_notifications')
+        .update({ read_at: readAt })
+        .eq('id', notificationId)
+        .eq('user_id', authUserId);
+    }
   }
 
   const all = await loadAll();
@@ -604,11 +601,8 @@ async function deleteRemoteNotifications(
   const remoteIds = ids.filter(isRemoteNotificationId);
   if (!remoteIds.length) return true;
 
-  const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
-  await ensurePartnerSupabaseSession();
-
-  const { data: authData } = await supabase.auth.getUser();
-  const authUserId = authData.user?.id ?? userId;
+  const authUserId = await ensureNotificationAuthSession(userId);
+  if (authUserId !== userId) return false;
 
   const { error } = await supabase
     .from('user_notifications')

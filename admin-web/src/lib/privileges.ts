@@ -682,6 +682,7 @@ export async function grantBenefitsToUsers(input: {
         ? `Vous avez reçu le privilège « ${input.title} ». ${input.customNote.trim()}`
         : `Vous avez reçu le privilège « ${input.title} ».`;
       const title = 'Nouveau privilège';
+      let inboxOk = false;
       const { error: notifyErr } = await supabase.rpc('notify_user', {
         p_user_id: userId,
         p_title: title,
@@ -689,16 +690,26 @@ export async function grantBenefitsToUsers(input: {
         p_audience: 'individual',
         p_recipient_phone: null,
       });
-      if (notifyErr) {
-        console.warn('[privileges] notify_user grant:', notifyErr.message);
+      if (!notifyErr) {
+        inboxOk = true;
       } else {
-        void deliverPushToUsers({
-          userIds: [userId],
+        console.warn('[privileges] notify_user grant:', notifyErr.message);
+        const { error: insertErr } = await supabase.from('user_notifications').insert({
+          user_id: userId,
           title,
-          body: message,
-          data: { audience: 'individual' },
+          message,
+          audience: 'individual',
+          sent_at: new Date().toISOString(),
         });
+        if (!insertErr) inboxOk = true;
+        else console.warn('[privileges] inbox insert grant:', insertErr.message);
       }
+      void deliverPushToUsers({
+        userIds: [userId],
+        title,
+        body: message,
+        data: { audience: 'individual', ...(inboxOk ? {} : { inboxPending: '1' }) },
+      });
     }
   }
   if (!granted) return { ok: false, granted: 0, error: 'Octroi impossible (RPC).' };

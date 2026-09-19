@@ -22,6 +22,9 @@ function mapRemoteRow(row: Record<string, unknown>): PrimeBenefit {
   const status: PrimeBenefit['status'] =
     usedAt && rawStatus !== 'expired_unused' ? 'used' : rawStatus;
 
+  const grantAudience = (row.grant_audience as PrimeBenefit['grantAudience']) ?? 'individual';
+  const individualAdminGrant = !isRoleGrant && grantAudience === 'individual';
+
   return {
     id: localId,
     userId: String(row.user_id),
@@ -40,12 +43,14 @@ function mapRemoteRow(row: Record<string, unknown>): PrimeBenefit {
     expiresAt: String(row.expires_at),
     usedAt,
     grantedBy: isRoleGrant ? 'role-entitlement' : 'admin',
-    grantAudience: (row.grant_audience as PrimeBenefit['grantAudience']) ?? 'individual',
+    grantAudience,
     customNote: null,
     grantBatchId: isRoleGrant ? `role-entitlement-${roleEntitlement ?? 'member'}` : null,
     grantCountryCode: row.grant_country_code ? String(row.grant_country_code) : null,
     grantCity: row.grant_city ? String(row.grant_city) : null,
     roleEntitlement: roleEntitlement ?? null,
+    // Octroi individuel (tirage / admin) : validité dès l'octroi, pas à la 1ère activation.
+    validityStartsOnActivation: individualAdminGrant ? false : undefined,
   };
 }
 
@@ -127,15 +132,26 @@ export async function fetchRemotePrimeBenefitsForUser(userId: string): Promise<P
   if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return [];
   if (!isUuid(userId)) return [];
 
+  const selectCols =
+    'id, local_id, user_id, title, description, partner_name, status, granted_at, expires_at, used_at, grant_audience, grant_country_code, grant_city, role_entitlement, catalog_local_id';
+
+  let fromTable: PrimeBenefit[] = [];
   const { data, error } = await supabase
     .from('prime_benefit_grants')
-    .select('id, local_id, user_id, title, description, partner_name, status, granted_at, expires_at, used_at, grant_audience, grant_country_code, grant_city, role_entitlement, catalog_local_id')
+    .select(selectCols)
     .eq('user_id', userId)
     .order('granted_at', { ascending: false })
     .limit(100);
 
-  if (error || !data) return [];
-  return data.map((row) => mapRemoteRow(row as Record<string, unknown>));
+  if (!error && data) {
+    fromTable = data.map((row) => mapRemoteRow(row as Record<string, unknown>));
+  }
+
+  // RPC public : octrois actifs même si auth.uid() ≠ userId (session partenaire sur le même appareil).
+  const fromRpc = await fetchRemotePrimeBenefitsForUserPublic(userId);
+  if (!fromTable.length) return fromRpc;
+  if (!fromRpc.length) return fromTable;
+  return mergePrimeBenefits(fromTable, fromRpc);
 }
 
 /** Lecture octrois membre via RPC sécurisée — scan QR partenaire (contourne RLS session partenaire). */

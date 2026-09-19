@@ -213,6 +213,8 @@ async function saveStore(store: StagingStore) {
 
 async function syncSpotToRemote(spot: StagingSpot): Promise<{ ok: boolean; reason?: string }> {
   try {
+    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
+    await ensurePartnerSupabaseSession();
     const { syncPartnerSpotSubmission } = await import('@/lib/partner-content-sync');
     return await syncPartnerSpotSubmission(spot);
   } catch (e) {
@@ -224,6 +226,8 @@ async function syncSpotToRemote(spot: StagingSpot): Promise<{ ok: boolean; reaso
 
 async function syncEventToRemote(event: StagingEvent): Promise<{ ok: boolean; reason?: string }> {
   try {
+    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
+    await ensurePartnerSupabaseSession();
     const { syncPartnerEventSubmission } = await import('@/lib/partner-content-sync');
     return await syncPartnerEventSubmission(event);
   } catch (e) {
@@ -231,6 +235,34 @@ async function syncEventToRemote(event: StagingEvent): Promise<{ ok: boolean; re
     console.warn('[Staging] Sync event remote:', reason);
     return { ok: false, reason };
   }
+}
+
+/** Réessaie la sync cloud pour les soumissions pending locales orphelines (ex. auth.uid() ≠ partner_user_id). */
+async function resyncPendingLocalSpots(
+  local: StagingSpot[],
+  remote: StagingSpot[],
+  partnerUserId: string | null,
+): Promise<StagingSpot[]> {
+  if (!partnerUserId || !isSupabaseConfigured() || !(await isNetworkOnline())) return remote;
+
+  const remotePendingIds = new Set(
+    remote.filter((s) => s.status === 'pending').map((s) => s.id),
+  );
+  const orphans = local.filter((s) => s.status === 'pending' && !remotePendingIds.has(s.id));
+  if (!orphans.length) return remote;
+
+  let anySynced = false;
+  for (const spot of orphans) {
+    const result = await syncSpotToRemote(spot);
+    if (result.ok) anySynced = true;
+  }
+  if (!anySynced) return remote;
+
+  const { fetchRemotePartnerSpotSubmissions, mergeStagingWithRemote } = await import(
+    '@/lib/partner-content-sync'
+  );
+  const refreshed = await fetchRemotePartnerSpotSubmissions({ partnerUserId });
+  return mergeStagingWithRemote(remote, refreshed);
 }
 
 async function notifyAdminIfPendingSubmission(
@@ -340,9 +372,11 @@ export async function listPartnerSpots(
   const store = await loadStore();
   const local = store.spots.filter((s) => belongsToPartnerRecord(s, partnerId, queryUserId, partnerName));
 
-  const remote = queryUserId
+  let remote = queryUserId
     ? await fetchRemotePartnerSpotSubmissions({ partnerUserId: queryUserId })
     : [];
+
+  remote = await resyncPendingLocalSpots(local, remote, queryUserId);
 
   const merged = mergeStagingWithRemote(local, remote);
   const catalogPartnerId = queryUserId ?? partnerId;
