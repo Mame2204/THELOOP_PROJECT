@@ -245,10 +245,10 @@ async function resyncPendingLocalSpots(
 ): Promise<StagingSpot[]> {
   if (!partnerUserId || !isSupabaseConfigured() || !(await isNetworkOnline())) return remote;
 
-  const remotePendingIds = new Set(
-    remote.filter((s) => s.status === 'pending').map((s) => s.id),
-  );
-  const orphans = local.filter((s) => s.status === 'pending' && !remotePendingIds.has(s.id));
+  // Ne resynchroniser que les soumissions absentes du serveur : une soumission déjà
+  // refusée ou publiée ne doit jamais repasser en attente.
+  const remoteIds = new Set(remote.map((s) => s.id));
+  const orphans = local.filter((s) => s.status === 'pending' && !remoteIds.has(s.id));
   if (!orphans.length) return remote;
 
   let anySynced = false;
@@ -339,6 +339,9 @@ export async function listPartnerEvents(
     ? await fetchRemotePartnerEventSubmissions({ partnerUserId: queryUserId })
     : [];
 
+  // Le staging local doit refléter le statut serveur (refus, retrait) sinon l'édition est bloquée.
+  await syncRemoteSubmissionsToStore(remote, []);
+
   const merged = mergeStagingWithRemote(local, remote);
   const catalogPartnerId = queryUserId ?? partnerId;
   const supplemented = await supplementPartnerEventsFromCatalog(merged, catalogPartnerId, partnerName);
@@ -377,6 +380,8 @@ export async function listPartnerSpots(
     : [];
 
   remote = await resyncPendingLocalSpots(local, remote, queryUserId);
+
+  await syncRemoteSubmissionsToStore([], remote);
 
   const merged = mergeStagingWithRemote(local, remote);
   const catalogPartnerId = queryUserId ?? partnerId;
@@ -526,6 +531,7 @@ export async function updatePartnerEvent(
   partnerId: string,
   patch: Partial<Omit<StagingEvent, 'id' | 'partnerId' | 'partnerName' | 'masterId' | 'status' | 'createdAt'>>,
 ): Promise<StagingEvent | null> {
+  await resyncStagingSubmissionFromRemote('event', id);
   const store = await loadStore();
   const idx = store.events.findIndex((e) => e.id === id && e.partnerId === partnerId);
   if (idx < 0) return null;
@@ -551,6 +557,7 @@ export async function deletePartnerEvent(
 ): Promise<boolean> {
   const { resolvePartnerQueryUserId } = await import('@/lib/partner-catalog-ids');
   const queryUserId = await resolvePartnerQueryUserId(partnerId, partnerNameHint ?? '');
+  await resyncStagingSubmissionFromRemote('event', id);
   const store = await loadStore();
   const item = store.events.find((e) =>
     belongsToPartnerRecord(e, partnerId, queryUserId, partnerNameHint ?? ''),
@@ -614,6 +621,7 @@ export async function updatePartnerSpot(
   partnerId: string,
   patch: Partial<Omit<StagingSpot, 'id' | 'partnerId' | 'partnerName' | 'status' | 'createdAt'>>,
 ): Promise<StagingSpot | null> {
+  await resyncStagingSubmissionFromRemote('spot', id);
   const store = await loadStore();
   const idx = store.spots.findIndex((s) => s.id === id && s.partnerId === partnerId);
   if (idx < 0) return null;
@@ -639,6 +647,7 @@ export async function deletePartnerSpot(
 ): Promise<boolean> {
   const { resolvePartnerQueryUserId } = await import('@/lib/partner-catalog-ids');
   const queryUserId = await resolvePartnerQueryUserId(partnerId, partnerNameHint ?? '');
+  await resyncStagingSubmissionFromRemote('spot', id);
   const store = await loadStore();
   const item = store.spots.find((s) =>
     belongsToPartnerRecord(s, partnerId, queryUserId, partnerNameHint ?? ''),

@@ -170,7 +170,7 @@ export async function notifyAdminWithdrawalRequest(params: {
     title: params.title,
     partnerName: params.partnerName,
     countryCode: params.countryCode,
-    notifTitle: 'Demande de retrait partenaire',
+    notifTitle: 'Demande de retrait',
     messageOverride: `${params.partnerName} demande le retrait de « ${params.title} » (${kindLabel}). Consultez Modération → Demandes de retrait.`,
   });
 }
