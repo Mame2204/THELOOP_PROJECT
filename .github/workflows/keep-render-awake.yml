@@ -1,0 +1,44 @@
+# L'offre gratuite Render met le service en veille apres environ 15 minutes
+# sans trafic. Or le cron interne du serveur (expiration des PASS, campagnes
+# push planifiees) ne s'execute que tant que le processus est vivant : un
+# service endormi ne fait rien expirer. Ce ping maintient le serveur eveille.
+#
+# A supprimer le jour ou le service passe sur une offre payante, qui ne dort pas.
+
+name: Reveil du serveur Render
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keep-render-awake
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Appeler le controle de sante
+        run: |
+          code=$(curl --silent --show-error --location \
+            --max-time 120 --retry 2 --retry-delay 15 \
+            --output response.json --write-out '%{http_code}' \
+            https://api.theloop-app.com/health)
+
+          echo "Statut HTTP : $code"
+          cat response.json || true
+          echo
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Le serveur n'a pas repondu 200."
+            exit 1
+          fi
+
+          # Le cron interne doit etre actif, sinon le reveil ne sert a rien.
+          if ! grep -q '"internalPushCron":true' response.json; then
+            echo "::error::Le cron interne est inactif — verifier CRON_SECRET sur Render."
+            exit 1
+          fi
