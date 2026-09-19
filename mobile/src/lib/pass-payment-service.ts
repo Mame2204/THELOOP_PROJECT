@@ -61,6 +61,15 @@ export async function processPassPayment(request: PassPaymentRequest): Promise<P
     }
   }
 
+  // Sans serveur de paiement, aucun encaissement n'est possible : un build de
+  // production ne doit jamais activer un PASS sur la seule foi du téléphone.
+  if (!__DEV__) {
+    return {
+      status: 'failed',
+      message: 'Le service de paiement est indisponible. Réessayez plus tard.',
+    };
+  }
+
   await sleep(SANDBOX_DELAY_MS);
   const txId = `sandbox-${request.userId.slice(0, 8)}-${Date.now()}`;
   return {

@@ -45,14 +45,12 @@ export async function syncUserDbRoleIfNeeded(
   if (PROTECTED_ROLES.has(current)) return false;
   if (current === dbRole) return false;
 
-  const { error } = await supabase
-    .from('users')
-    .update({
-      user_role: dbRole,
-      updated_at: new Date().toISOString(),
-      ...(dbRole === 'prime' ? { prime_role_locked: false } : {}),
-    })
-    .eq('id', userId);
+  // L'écriture directe de user_role est refusée par la base depuis la migration
+  // 20260928 : le rôle est recalculé côté serveur à partir des PASS réels.
+  const { data: applied, error } = await supabase.rpc('sync_my_pass_role', {
+    p_desired: dbRole,
+  });
 
-  return !error;
+  if (error) return false;
+  return String(applied ?? current) === dbRole;
 }
