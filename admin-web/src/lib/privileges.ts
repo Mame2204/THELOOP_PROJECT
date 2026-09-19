@@ -954,6 +954,33 @@ export function isCatalogEligibleForDraw(
   return true;
 }
 
+/**
+ * Un avantage devient un « privilège » quand il est associé à un contenu :
+ * c'est cette association qui le rend visible sur une fiche événement / spot / outil.
+ */
+export type DrawCatalogScope = 'content' | 'standalone';
+
+export function catalogContentAttachments(item: BenefitCatalogRow): BenefitOfferingPartner[] {
+  return item.offeringPartners.filter((p) => Boolean(p.contentId));
+}
+
+export function isPromoCodeCatalog(item: BenefitCatalogRow): boolean {
+  return item.benefitPurpose === 'promo_code';
+}
+
+export function drawCatalogScope(item: BenefitCatalogRow): DrawCatalogScope {
+  return catalogContentAttachments(item).length > 0 ? 'content' : 'standalone';
+}
+
+/** Où le gagnant verra l'octroi (fiche contenu ou seulement « Mes avantages »). */
+export function drawCatalogDestinationLabel(item: BenefitCatalogRow): string {
+  const links = catalogContentAttachments(item);
+  if (!links.length) return 'Mes avantages uniquement';
+  const first = links[0];
+  const extra = links.length > 1 ? ` +${links.length - 1}` : '';
+  return `sur fiche : ${first.contentTitle?.trim() || 'contenu lié'}${extra}`;
+}
+
 export async function filterDrawEligibleCatalog(
   items: BenefitCatalogRow[],
   countryCode: string,

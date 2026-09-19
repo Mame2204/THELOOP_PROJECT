@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
 import { formatWhen } from '../lib/format';
 import {
   ALL_DRAW_ELIGIBLE_ROLES,
   allDrawRolesSelected,
+  drawCatalogDestinationLabel,
+  drawCatalogScope,
   filterDrawEligibleCatalog,
   grantBenefitsToUsers,
   isCatalogEligibleForDraw,
+  isPromoCodeCatalog,
   getRoleBenefitEntitlements,
   listBenefitCatalog,
   type BenefitCatalogRow,
@@ -16,6 +19,21 @@ import {
 import { supabase } from '../lib/supabase';
 
 type DrawRole = DrawEligibleRole;
+
+/** Deux modèles de tirage : privilèges / avantages d'un côté, codes promo de l'autre. */
+type DrawMode = 'privilege' | 'promo';
+type ScopeFilter = 'all' | 'content' | 'standalone';
+
+const MODE_OPTIONS: { id: DrawMode; label: string }[] = [
+  { id: 'privilege', label: 'Privilèges & avantages' },
+  { id: 'promo', label: 'Codes promo' },
+];
+
+const SCOPE_OPTIONS: { id: ScopeFilter; label: string }[] = [
+  { id: 'all', label: 'Tous' },
+  { id: 'content', label: 'Associés à un contenu' },
+  { id: 'standalone', label: 'Avantages seuls' },
+];
 
 interface DrawRow {
   id: string;
@@ -65,6 +83,8 @@ export function TiragePage() {
   const [winnerCount, setWinnerCount] = useState(3);
   const [roles, setRoles] = useState<DrawRole[]>(['member', 'prime']);
   const [poolSize, setPoolSize] = useState<number | null>(null);
+  const [mode, setMode] = useState<DrawMode>('privilege');
+  const [scope, setScope] = useState<ScopeFilter>('all');
 
   const load = useCallback(async () => {
     setError(null);
@@ -72,11 +92,6 @@ export function TiragePage() {
     const active = cat.items.filter((i) => i.isActive);
     const eligible = await filterDrawEligibleCatalog(active, countryCode, roles);
     setCatalog(eligible);
-    if (catalogId && !eligible.some((i) => i.localId === catalogId)) {
-      setCatalogId(eligible[0]?.localId ?? '');
-    } else if (!catalogId && eligible[0]) {
-      setCatalogId(eligible[0].localId);
-    }
 
     let q = supabase
       .from('admin_benefit_draws')
@@ -103,11 +118,29 @@ export function TiragePage() {
         winners: Array.isArray(r.winners) ? (r.winners as DrawRow['winners']) : [],
       })),
     );
-  }, [countryCode, catalogId, roles]);
+  }, [countryCode, roles]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const visibleCatalog = useMemo(() => {
+    const byMode = catalog.filter((c) =>
+      mode === 'promo' ? isPromoCodeCatalog(c) : !isPromoCodeCatalog(c),
+    );
+    if (mode === 'promo' || scope === 'all') return byMode;
+    return byMode.filter((c) => drawCatalogScope(c) === scope);
+  }, [catalog, mode, scope]);
+
+  useEffect(() => {
+    if (visibleCatalog.some((c) => c.localId === catalogId)) return;
+    setCatalogId(visibleCatalog[0]?.localId ?? '');
+  }, [visibleCatalog, catalogId]);
+
+  const selectedCatalog = useMemo(
+    () => visibleCatalog.find((c) => c.localId === catalogId) ?? null,
+    [visibleCatalog, catalogId],
+  );
 
   useEffect(() => {
     if (!roles.length) {
@@ -242,6 +275,26 @@ export function TiragePage() {
       <div className="split-pane">
         <div className="card">
           <h3>Nouveau tirage</h3>
+          <div className="field">
+            <label>Modèle de tirage</label>
+            <div className="toolbar" style={{ margin: 0 }}>
+              {MODE_OPTIONS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`btn small ${mode === m.id ? '' : 'ghost'}`}
+                  onClick={() => setMode(m.id)}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <p className="meta">
+              {mode === 'promo'
+                ? 'Codes promo : toujours tirables, même si le privilège est déjà donné à tout le rôle ciblé.'
+                : 'Un avantage associé à un contenu devient un privilège visible sur la fiche. Sans contenu associé, le gagnant le retrouve seulement dans « Mes avantages ».'}
+            </p>
+          </div>
           <p className="meta" style={{ marginBottom: 12 }}>
             Campagnes limitées : N gagnants parmi un pool (ex. 3 dîners / 800 membres, 10 codes promo Instagram, 5
             places VIP, avantages partenaires ou admins). Choisissez un ou plusieurs rôles, ou « Tous ». Super admin exclu du pool.
@@ -274,19 +327,47 @@ export function TiragePage() {
             </div>
             <p className="meta">Candidats estimés : {poolSize ?? '…'}</p>
           </div>
+          {mode === 'privilege' ? (
+            <div className="field">
+              <label>Filtrer le catalogue</label>
+              <div className="toolbar" style={{ margin: 0 }}>
+                {SCOPE_OPTIONS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`btn small ${scope === s.id ? '' : 'ghost'}`}
+                    onClick={() => setScope(s.id)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className="field">
-            <label>Privilège à tirer</label>
+            <label>{mode === 'promo' ? 'Code promo à tirer' : 'Privilège à tirer'}</label>
             <select value={catalogId} onChange={(e) => setCatalogId(e.target.value)}>
-              {catalog.length === 0 ? (
-                <option value="">Aucun privilège disponible pour ces rôles</option>
+              {visibleCatalog.length === 0 ? (
+                <option value="">
+                  {mode === 'promo'
+                    ? 'Aucun code promo actif dans ce pays'
+                    : 'Aucun privilège disponible pour ces rôles'}
+                </option>
               ) : (
-                catalog.map((c) => (
+                visibleCatalog.map((c) => (
                   <option key={c.localId} value={c.localId}>
-                    {c.title}
+                    {mode === 'promo' ? c.title : `${c.title} — ${drawCatalogDestinationLabel(c)}`}
                   </option>
                 ))
               )}
             </select>
+            {mode === 'privilege' && selectedCatalog ? (
+              <p className="meta">
+                {drawCatalogScope(selectedCatalog) === 'content'
+                  ? `Privilège : le gagnant le verra déverrouillé ${drawCatalogDestinationLabel(selectedCatalog)}.`
+                  : 'Avantage seul : aucun contenu associé, le gagnant le verra uniquement dans « Mes avantages ».'}
+              </p>
+            ) : null}
           </div>
           <div className="field">
             <label>Nombre de gagnants</label>
