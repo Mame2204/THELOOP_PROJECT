@@ -122,6 +122,7 @@ export function PrivilegesPage() {
   const [editItem, setEditItem] = useState<BenefitCatalogRow | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editIsPromoCode, setEditIsPromoCode] = useState(false);
 
   const loadAll = useCallback(async () => {
     const [catRes, offerRes, grantRes, entitlements] = await Promise.all([
@@ -302,7 +303,11 @@ export function PrivilegesPage() {
     setBusy(true);
     const res = await updateBenefitCatalogItem(
       editItem.localId,
-      { title: editTitle, description: editDescription },
+      {
+        title: editTitle,
+        description: editDescription,
+        benefitPurpose: editIsPromoCode ? 'promo_code' : 'standard',
+      },
       editItem,
     );
     setBusy(false);
@@ -630,6 +635,7 @@ export function PrivilegesPage() {
                             setEditItem(c);
                             setEditTitle(c.title);
                             setEditDescription(c.description);
+                            setEditIsPromoCode(c.benefitPurpose === 'promo_code');
                           }}
                         >
                           Éditer
@@ -940,6 +946,19 @@ export function PrivilegesPage() {
             <div className="field">
               <label>Description</label>
               <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="check-inline">
+                <input
+                  type="checkbox"
+                  checked={editIsPromoCode}
+                  onChange={(e) => setEditIsPromoCode(e.target.checked)}
+                />
+                Code promo
+              </label>
+              <p className="meta">
+                Reste tirable même s’il a déjà été octroyé à tout un rôle. Le code se saisit au moment du tirage.
+              </p>
             </div>
             <div className="edit-actions">
               <button type="button" className="btn ghost" onClick={() => setEditItem(null)}>

@@ -1,5 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBenefitCatalogItem, findCatalogOffering } from '@/lib/benefit-catalog-store';
+import {
+  getBenefitCatalogItem,
+  findCatalogOffering,
+  type BenefitCatalogItem,
+} from '@/lib/benefit-catalog-store';
 import {
   benefitGeoMatchesUser,
   resolveBenefitGeoFromOffering,
@@ -71,6 +75,41 @@ export function isCatalogEligibleForDraw(
     if ((config[kind] ?? []).some((entry) => entry.catalogId === catalogId)) return false;
   }
   return true;
+}
+
+/**
+ * Un avantage devient un « privilège » quand il est associé à un contenu :
+ * c'est cette association qui le rend visible sur une fiche événement / spot / outil.
+ */
+export type DrawCatalogScope = 'content' | 'standalone';
+
+export function isPromoCodeCatalogItem(item: BenefitCatalogItem): boolean {
+  return item.benefitPurpose === 'promo_code';
+}
+
+export function catalogContentOfferings(
+  offerings: GrantableCatalogEntry[],
+  catalogId: string,
+): GrantableCatalogEntry[] {
+  return offerings.filter((o) => o.item.id === catalogId && Boolean(o.contentId));
+}
+
+export function drawCatalogScope(
+  offerings: GrantableCatalogEntry[],
+  catalogId: string,
+): DrawCatalogScope {
+  return catalogContentOfferings(offerings, catalogId).length > 0 ? 'content' : 'standalone';
+}
+
+/** Où le gagnant verra l'octroi (fiche contenu ou seulement « Mes avantages »). */
+export function drawCatalogDestinationLabel(
+  offerings: GrantableCatalogEntry[],
+  catalogId: string,
+): string {
+  const links = catalogContentOfferings(offerings, catalogId);
+  if (!links.length) return 'Mes avantages uniquement';
+  const extra = links.length > 1 ? ` +${links.length - 1}` : '';
+  return `sur fiche : ${links[0].contentTitle?.trim() || 'contenu lié'}${extra}`;
 }
 
 export async function listDrawEligibleCatalog(options: {

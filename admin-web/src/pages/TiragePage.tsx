@@ -85,6 +85,7 @@ export function TiragePage() {
   const [poolSize, setPoolSize] = useState<number | null>(null);
   const [mode, setMode] = useState<DrawMode>('privilege');
   const [scope, setScope] = useState<ScopeFilter>('all');
+  const [customNote, setCustomNote] = useState('');
 
   const load = useCallback(async () => {
     setError(null);
@@ -177,6 +178,11 @@ export function TiragePage() {
       setMsg('Catalogue introuvable.');
       return;
     }
+    const note = customNote.trim();
+    if (mode === 'promo' && !note) {
+      setMsg('Saisissez le code promo à transmettre aux gagnants.');
+      return;
+    }
     const entitlements = await getRoleBenefitEntitlements(countryCode);
     if (!isCatalogEligibleForDraw(item.localId, item.benefitPurpose, roles, entitlements)) {
       setMsg(
@@ -214,7 +220,7 @@ export function TiragePage() {
       userIds: picked.map((u) => String(u.id)),
       countryCode,
       validityDays: 30,
-      customNote: `Tirage au sort THE LOOP — ${item.title}`,
+      customNote: note || `Tirage au sort THE LOOP — ${item.title}`,
     });
     if (!grant.ok) {
       setBusy(false);
@@ -242,7 +248,7 @@ export function TiragePage() {
       validity_starts_on_activation: true,
       country_code: countryCode,
       draw_city: null,
-      custom_note: `Tirage — ${item.title}`,
+      custom_note: note || `Tirage — ${item.title}`,
       drawn_by: profile?.id ?? null,
       drawn_at: new Date().toISOString(),
       winners,
@@ -252,6 +258,7 @@ export function TiragePage() {
       setMsg(`Octroyé (${grant.granted}) mais historique : ${dErr.message}`);
     } else {
       setMsg(`Tirage OK — ${grant.granted} gagnant(s) octroyés.`);
+      setCustomNote('');
     }
     void load();
   }
@@ -291,7 +298,7 @@ export function TiragePage() {
             </div>
             <p className="meta">
               {mode === 'promo'
-                ? 'Codes promo : toujours tirables, même si le privilège est déjà donné à tout le rôle ciblé.'
+                ? 'Codes promo : toujours tirables, même si l’avantage est déjà donné à tout le rôle ciblé. Se crée en cochant « Code promo » dans Privilèges standalone ou à l’édition d’un avantage.'
                 : 'Un avantage associé à un contenu devient un privilège visible sur la fiche. Sans contenu associé, le gagnant le retrouve seulement dans « Mes avantages ».'}
             </p>
           </div>
@@ -350,7 +357,7 @@ export function TiragePage() {
               {visibleCatalog.length === 0 ? (
                 <option value="">
                   {mode === 'promo'
-                    ? 'Aucun code promo actif dans ce pays'
+                    ? 'Aucun avantage marqué « Code promo » dans ce pays'
                     : 'Aucun privilège disponible pour ces rôles'}
                 </option>
               ) : (
@@ -378,6 +385,20 @@ export function TiragePage() {
               value={winnerCount}
               onChange={(e) => setWinnerCount(Number(e.target.value) || 1)}
             />
+          </div>
+          <div className="field">
+            <label>{mode === 'promo' ? 'Code promo' : 'Note personnalisée (optionnel)'}</label>
+            <textarea
+              rows={2}
+              value={customNote}
+              onChange={(e) => setCustomNote(e.target.value)}
+              placeholder={mode === 'promo' ? 'Ex. INSTA10 — valable jusqu’au 31/10' : 'Conditions spéciales, mode d’emploi…'}
+            />
+            <p className="meta">
+              {mode === 'promo'
+                ? 'Ce code est ajouté à la description de l’avantage reçu par chaque gagnant. Il est identique pour tous les gagnants du tirage.'
+                : 'Ce texte est ajouté à la description de l’avantage reçu par chaque gagnant.'}
+            </p>
           </div>
           <button
             type="button"

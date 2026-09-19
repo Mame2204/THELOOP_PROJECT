@@ -13,6 +13,7 @@ export function StandaloneBenefitPage() {
   const [description, setDescription] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [isPromoCode, setIsPromoCode] = useState(false);
 
   const load = useCallback(async () => {
     const res = await listBenefitCatalog(countryCode);
@@ -48,6 +49,20 @@ export function StandaloneBenefitPage() {
           <label>Description</label>
           <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
+        <div className="field">
+          <label className="check-inline">
+            <input
+              type="checkbox"
+              checked={isPromoCode}
+              onChange={(e) => setIsPromoCode(e.target.checked)}
+            />
+            Code promo
+          </label>
+          <p className="meta">
+            Un code promo reste tirable même s’il a déjà été octroyé à tout un rôle. Le code lui-même se saisit au
+            moment du tirage.
+          </p>
+        </div>
         <button
           type="button"
           className="btn"
@@ -59,6 +74,7 @@ export function StandaloneBenefitPage() {
               description,
               countryCode,
               partnerName: 'THE LOOP',
+              benefitPurpose: isPromoCode ? 'promo_code' : 'standard',
             }).then((r) => {
               setBusy(false);
               if (!r.ok) {
@@ -67,6 +83,7 @@ export function StandaloneBenefitPage() {
               }
               setTitle('');
               setDescription('');
+              setIsPromoCode(false);
               setMsg('Privilège créé.');
               void load();
             });

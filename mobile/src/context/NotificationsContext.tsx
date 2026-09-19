@@ -32,11 +32,16 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(nul
 /** Badge + sync push sans Realtime permanent (egress WebSocket + refetches en cascade). */
 const UNREAD_SYNC_TTL_MS = 90_000;
 
+/** Rafale de push reçus → un rechargement espacé, jamais un refetch forcé par push. */
+const PUSH_REFRESH_MIN_INTERVAL_MS = 3_000;
+
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user, role } = useAuthContext();
   const [unreadCount, setUnreadCount] = useState(0);
   const lastPushRegisterAtRef = useRef(0);
   const lastUnreadSyncAtRef = useRef(0);
+  const lastPushRefreshAtRef = useRef(0);
+  const pushRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const userId = user?.id;
 
@@ -55,6 +60,28 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     },
     [userId, role],
   );
+
+  const refreshFromPush = useCallback(() => {
+    invalidateNotificationListCache();
+    const elapsed = Date.now() - lastPushRefreshAtRef.current;
+    if (elapsed >= PUSH_REFRESH_MIN_INTERVAL_MS) {
+      lastPushRefreshAtRef.current = Date.now();
+      void refresh(true);
+      return;
+    }
+    if (pushRefreshTimerRef.current) return;
+    pushRefreshTimerRef.current = setTimeout(() => {
+      pushRefreshTimerRef.current = null;
+      lastPushRefreshAtRef.current = Date.now();
+      void refresh(true);
+    }, PUSH_REFRESH_MIN_INTERVAL_MS - elapsed);
+  }, [refresh]);
+
+  useEffect(() => {
+    return () => {
+      if (pushRefreshTimerRef.current) clearTimeout(pushRefreshTimerRef.current);
+    };
+  }, []);
 
   const registerPush = useCallback(
     (force = false) => {
@@ -145,8 +172,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     // Recharge depuis la base : ne jamais réinsérer la notif ici (appendUserNotification renvoie un push).
     void addNotificationReceivedListener(() => {
-      invalidateNotificationListCache();
-      void refresh(true);
+      refreshFromPush();
     }).then((sub) => {
       if (cancelled) {
         sub?.remove();
@@ -158,7 +184,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       remove?.();
     };
-  }, [refresh]);
+  }, [refreshFromPush]);
 
   const value = useMemo(
     () => ({

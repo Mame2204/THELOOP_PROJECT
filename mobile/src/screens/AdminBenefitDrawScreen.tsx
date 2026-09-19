@@ -17,6 +17,9 @@ import {
   allDrawRolesSelected,
   countEligibleDrawCandidates,
   DRAW_ROLE_OPTIONS,
+  drawCatalogDestinationLabel,
+  drawCatalogScope,
+  isPromoCodeCatalogItem,
   listAdminBenefitDraws,
   listDrawEligibleCatalog,
   runAdminBenefitDraw,
@@ -35,6 +38,21 @@ import { formatDateFr } from '@/lib/date-utils';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminBenefitDraw'>;
+
+/** Deux modèles de tirage : privilèges / avantages d'un côté, codes promo de l'autre. */
+type DrawMode = 'privilege' | 'promo';
+type ScopeFilter = 'all' | 'content' | 'standalone';
+
+const MODE_OPTIONS: { id: DrawMode; label: string }[] = [
+  { id: 'privilege', label: 'Privilèges & avantages' },
+  { id: 'promo', label: 'Codes promo' },
+];
+
+const SCOPE_OPTIONS: { id: ScopeFilter; label: string }[] = [
+  { id: 'all', label: 'Tous' },
+  { id: 'content', label: 'Associés à un contenu' },
+  { id: 'standalone', label: 'Avantages seuls' },
+];
 
 export function AdminBenefitDrawScreen({ navigation }: Props) {
   const { role, user } = useAuthContext();
@@ -55,10 +73,20 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
   const [customNote, setCustomNote] = useState('');
   const [running, setRunning] = useState(false);
   const [detailDraw, setDetailDraw] = useState<BenefitDrawRecord | null>(null);
+  const [mode, setMode] = useState<DrawMode>('privilege');
+  const [scope, setScope] = useState<ScopeFilter>('all');
+
+  const visibleBenefits = useMemo(() => {
+    const byMode = grantableBenefits.filter((item) =>
+      mode === 'promo' ? isPromoCodeCatalogItem(item) : !isPromoCodeCatalogItem(item),
+    );
+    if (mode === 'promo' || scope === 'all') return byMode;
+    return byMode.filter((item) => drawCatalogScope(grantableOfferings, item.id) === scope);
+  }, [grantableBenefits, grantableOfferings, mode, scope]);
 
   const selectedCatalog = useMemo(
-    () => grantableBenefits.find((c) => c.id === catalogId) ?? null,
-    [grantableBenefits, catalogId],
+    () => visibleBenefits.find((c) => c.id === catalogId) ?? null,
+    [visibleBenefits, catalogId],
   );
 
   const partnerOfferings = useMemo(
@@ -116,10 +144,10 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
   }, [refreshEligible]);
 
   useEffect(() => {
-    if (catalogId && !grantableBenefits.some((b) => b.id === catalogId)) {
+    if (catalogId && !visibleBenefits.some((b) => b.id === catalogId)) {
       setCatalogId(null);
     }
-  }, [grantableBenefits, catalogId]);
+  }, [visibleBenefits, catalogId]);
 
   useEffect(() => {
     if (!catalogId) {
@@ -160,6 +188,10 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
     }
     if (!selectedRoles.length) {
       Alert.alert('Rôles requis', 'Sélectionnez au moins un rôle cible.');
+      return;
+    }
+    if (mode === 'promo' && !customNote.trim()) {
+      Alert.alert('Code requis', 'Saisissez le code promo à transmettre aux gagnants.');
       return;
     }
     if (count > eligible) {
@@ -209,6 +241,7 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
                   'Tirage terminé',
                   `${res.record.winners.length} gagnant(s) ont reçu « ${res.record.catalogTitle} ».`,
                 );
+                setCustomNote('');
                 void load();
               })
               .finally(() => setRunning(false));
@@ -268,6 +301,26 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
           </Text>
         </View>
 
+        <Text style={[styles.lbl, { color: shell.pageKicker }]}>Modèle de tirage</Text>
+        <View style={styles.chips}>
+          {MODE_OPTIONS.map((m) => (
+            <Pressable
+              key={m.id}
+              style={[styles.chip, mode === m.id && { backgroundColor: ADMIN_THEME.accent }]}
+              onPress={() => setMode(m.id)}
+            >
+              <Text style={{ color: mode === m.id ? '#fff' : shell.pageTitle, fontSize: 11, fontWeight: '700' }}>
+                {m.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={[styles.hint, { color: shell.pageKicker, marginBottom: 12 }]}>
+          {mode === 'promo'
+            ? 'Codes promo : toujours tirables, même si l’avantage est déjà donné à tout le rôle ciblé. Se crée en passant la finalité d’un avantage à « Code promo » dans Avantages.'
+            : 'Un avantage associé à un contenu devient un privilège visible sur la fiche. Sans contenu associé, le gagnant le retrouve seulement dans « Mes avantages ».'}
+        </Text>
+
         <GuineaLocationPicker
           value={drawCity}
           onChange={setDrawCity}
@@ -317,13 +370,36 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
           onChangeText={setWinnerCount}
         />
 
-        <Text style={[styles.lbl, { color: shell.pageKicker }]}>Privilège à tirer</Text>
-        {grantableBenefits.length === 0 ? (
+        {mode === 'privilege' ? (
+          <>
+            <Text style={[styles.lbl, { color: shell.pageKicker }]}>Filtrer le catalogue</Text>
+            <View style={styles.chips}>
+              {SCOPE_OPTIONS.map((s) => (
+                <Pressable
+                  key={s.id}
+                  style={[styles.chip, scope === s.id && { backgroundColor: ADMIN_THEME.accent }]}
+                  onPress={() => setScope(s.id)}
+                >
+                  <Text style={{ color: scope === s.id ? '#fff' : shell.pageTitle, fontSize: 11, fontWeight: '700' }}>
+                    {s.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        <Text style={[styles.lbl, { color: shell.pageKicker }]}>
+          {mode === 'promo' ? 'Code promo à tirer' : 'Privilège à tirer'}
+        </Text>
+        {visibleBenefits.length === 0 ? (
           <Text style={[styles.hint, { color: shell.pageKicker, marginBottom: 8 }]}>
-            Aucun privilège disponible pour ces rôles et cette zone. Vérifiez le catalogue (actif + validé partenaire), ou retirez l’octroi global dans Octroyer si le privilège est déjà pour tout le rôle.
+            {mode === 'promo'
+              ? 'Aucun avantage marqué « Code promo » pour ces rôles et cette zone. Passez la finalité d’un avantage à « Code promo » dans Avantages.'
+              : 'Aucun privilège disponible pour ces rôles et cette zone. Vérifiez le catalogue (actif + validé partenaire), ou retirez l’octroi global dans Octroyer si le privilège est déjà pour tout le rôle.'}
           </Text>
         ) : null}
-        {grantableBenefits.map((item) => (
+        {visibleBenefits.map((item) => (
           <Pressable
             key={item.id}
             style={[
@@ -339,6 +415,11 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
             <Text style={{ color: shell.pageKicker, fontSize: 10, marginTop: 4, fontWeight: '700' }}>
               {formatGrantableBenefitGeoLabel(item, grantableOfferings)}
             </Text>
+            {mode === 'privilege' ? (
+              <Text style={{ color: ADMIN_THEME.accent, fontSize: 10, marginTop: 4, fontWeight: '700' }}>
+                {drawCatalogDestinationLabel(grantableOfferings, item.id)}
+              </Text>
+            ) : null}
             <Text style={{ color: shell.pageKicker, fontSize: 11, marginTop: 4 }}>{item.description}</Text>
           </Pressable>
         ))}
@@ -384,13 +465,23 @@ export function AdminBenefitDrawScreen({ navigation }: Props) {
           </Text>
         ) : null}
 
+        <Text style={[styles.lbl, { color: shell.pageKicker }]}>
+          {mode === 'promo' ? 'Code promo' : 'Note personnalisée (optionnel)'}
+        </Text>
         <TextInput
           style={inputStyle}
-          placeholder="Note optionnelle pour les gagnants"
+          placeholder={
+            mode === 'promo' ? 'Ex. INSTA10 — valable jusqu’au 31/10' : 'Note optionnelle pour les gagnants'
+          }
           placeholderTextColor={shell.pageKicker}
           value={customNote}
           onChangeText={setCustomNote}
         />
+        <Text style={[styles.hint, { color: shell.pageKicker, marginBottom: 12 }]}>
+          {mode === 'promo'
+            ? 'Ce code est ajouté à la description de l’avantage reçu par chaque gagnant. Il est identique pour tous les gagnants du tirage.'
+            : 'Ce texte est ajouté à la description de l’avantage reçu par chaque gagnant.'}
+        </Text>
 
         <Pressable
           style={[styles.drawBtn, { backgroundColor: running ? '#64748b' : ADMIN_THEME.accent }]}

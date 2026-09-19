@@ -432,8 +432,16 @@ export function subscribeUserNotifications(listener: NotificationListener): () =
   return () => notificationListeners.delete(listener);
 }
 
+/** Rafale d'écritures (octroi multiple, sync) → un seul rechargement abonné. */
+const EMIT_COALESCE_MS = 300;
+let emitTimer: ReturnType<typeof setTimeout> | null = null;
+
 function emitUserNotificationsChanged(): void {
-  for (const listener of notificationListeners) listener();
+  if (emitTimer) return;
+  emitTimer = setTimeout(() => {
+    emitTimer = null;
+    for (const listener of notificationListeners) listener();
+  }, EMIT_COALESCE_MS);
 }
 
 function notificationFingerprint(n: UserNotification): string {
@@ -686,7 +694,38 @@ export async function clearUserNotifications(userId: string, phone?: string | nu
   await saveAll(all.filter((n) => !notificationBelongsToUser(n, userId, phoneKey)));
 }
 
-export async function appendUserNotification(
+/**
+ * Anti-boucle : une notification identique (destinataire + titre + message) n'est créée
+ * qu'une fois par fenêtre, même si un appelant la redemande en cascade.
+ */
+const APPEND_DEDUP_WINDOW_MS = 60_000;
+const recentAppends = new Map<string, { at: number; task: Promise<UserNotification> }>();
+
+function pruneRecentAppends(now: number): void {
+  for (const [key, value] of recentAppends) {
+    if (now - value.at > APPEND_DEDUP_WINDOW_MS) recentAppends.delete(key);
+  }
+}
+
+export function appendUserNotification(
+  userId: string,
+  input: { title: string; message: string; audience: NotificationAudience },
+  options?: { recipientPhone?: string | null },
+): Promise<UserNotification> {
+  const now = Date.now();
+  pruneRecentAppends(now);
+  const key = `${userId}|${input.audience}|${input.title}|${input.message}`;
+  const pending = recentAppends.get(key);
+  if (pending) return pending.task;
+
+  const task = createUserNotification(userId, input, options);
+  recentAppends.set(key, { at: now, task });
+  // Un échec ne doit pas bloquer une nouvelle tentative pendant toute la fenêtre.
+  void task.catch(() => recentAppends.delete(key));
+  return task;
+}
+
+async function createUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
   options?: { recipientPhone?: string | null },

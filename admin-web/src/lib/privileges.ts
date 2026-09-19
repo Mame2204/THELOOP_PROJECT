@@ -721,6 +721,7 @@ export async function createBenefitCatalogItem(input: {
   description: string;
   countryCode: string;
   partnerName?: string | null;
+  benefitPurpose?: string;
 }): Promise<{ ok: boolean; localId?: string; error?: string }> {
   const localId = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -734,6 +735,7 @@ export async function createBenefitCatalogItem(input: {
       ? [{ displayName: input.partnerName, partnerId: EXTERNAL_PARTNER_ID }]
       : [],
     benefit_kind: 'unlimited',
+    benefit_purpose: input.benefitPurpose ?? 'standard',
     updated_at: now,
     created_at: now,
   };
@@ -887,7 +889,9 @@ export async function catalogHasPendingOffers(catalogLocalId: string): Promise<b
 
 export async function updateBenefitCatalogItem(
   localId: string,
-  patch: Partial<Pick<BenefitCatalogRow, 'title' | 'description' | 'isActive' | 'offeringPartners'>>,
+  patch: Partial<
+    Pick<BenefitCatalogRow, 'title' | 'description' | 'isActive' | 'offeringPartners' | 'benefitPurpose'>
+  >,
   current: BenefitCatalogRow,
 ): Promise<{ ok: boolean; error?: string }> {
   if (patch.isActive === true && (await catalogHasPendingOffers(localId))) {
@@ -903,7 +907,7 @@ export async function updateBenefitCatalogItem(
     benefitKind: current.benefitKind,
     isActive: patch.isActive ?? current.isActive,
     countryCode: current.countryCode,
-    benefitPurpose: current.benefitPurpose,
+    benefitPurpose: patch.benefitPurpose ?? current.benefitPurpose,
   };
   return upsertBenefitCatalogRpc(next);
 }

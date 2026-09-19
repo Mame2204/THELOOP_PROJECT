@@ -351,47 +351,55 @@ function isHandledByServerCron(entry: AdminNotification): boolean {
   return !hasFavoriteFilters;
 }
 
+/** Campagnes déjà diffusées par ce process — le runner tourne toutes les 45 s. */
+const claimedCampaignIds = new Set<string>();
+
 export async function processDueScheduledNotifications(): Promise<number> {
   const all = await listAdminNotifications();
   const now = Date.now();
-  let sent = 0;
-  const sentEntries: AdminNotification[] = [];
 
-  const updated = await Promise.all(
-    all.map(async (entry) => {
-      if (entry.status !== 'scheduled' || !entry.scheduledAt) return entry;
-      if (new Date(entry.scheduledAt).getTime() > now) return entry;
-      if (isHandledByServerCron(entry)) return entry;
+  const due = all.filter(
+    (entry) =>
+      entry.status === 'scheduled' &&
+      entry.scheduledAt != null &&
+      new Date(entry.scheduledAt).getTime() <= now &&
+      !isHandledByServerCron(entry) &&
+      !claimedCampaignIds.has(entry.id),
+  );
+  if (!due.length) return 0;
 
-      const recipientCount = await distributeNotification({
-        title: entry.title,
-        message: entry.message,
-        audience: entry.audience,
-        targetPhone: entry.targetPhone,
-        favoriteEventCategories: entry.favoriteEventCategories,
-        favoriteSpotCategories: entry.favoriteSpotCategories,
-        favoriteToolCategories: entry.favoriteToolCategories,
-        countryCode: entry.countryCode ?? 'GN',
-        campaignId: entry.id,
-      });
-
-      sent += 1;
-      const next: AdminNotification = {
-        ...entry,
-        status: 'sent' as const,
-        sentAt: new Date().toISOString(),
-        recipientCount,
-      };
-      sentEntries.push(next);
-      return next;
-    }),
+  // Marquer « envoyée » avant la diffusion : sinon une persistance qui échoue fait
+  // rediffuser la campagne à chaque passage du runner, et inonde les destinataires.
+  const sentAt = new Date().toISOString();
+  const dueIds = new Set(due.map((entry) => entry.id));
+  for (const id of dueIds) claimedCampaignIds.add(id);
+  await saveAll(
+    all.map((entry) =>
+      dueIds.has(entry.id) ? { ...entry, status: 'sent' as const, sentAt } : entry,
+    ),
   );
 
-  if (sent > 0) {
-    await saveAll(updated);
-    await Promise.all(sentEntries.map((entry) => persistPushCampaignRemote(entry)));
+  const sentEntries: AdminNotification[] = [];
+  for (const entry of due) {
+    const recipientCount = await distributeNotification({
+      title: entry.title,
+      message: entry.message,
+      audience: entry.audience,
+      targetPhone: entry.targetPhone,
+      favoriteEventCategories: entry.favoriteEventCategories,
+      favoriteSpotCategories: entry.favoriteSpotCategories,
+      favoriteToolCategories: entry.favoriteToolCategories,
+      countryCode: entry.countryCode ?? 'GN',
+      campaignId: entry.id,
+    });
+    sentEntries.push({ ...entry, status: 'sent', sentAt, recipientCount });
   }
-  return sent;
+
+  const latest = await listAdminNotifications();
+  const byId = new Map(sentEntries.map((entry) => [entry.id, entry]));
+  await saveAll(latest.map((entry) => byId.get(entry.id) ?? entry));
+  await Promise.all(sentEntries.map((entry) => persistPushCampaignRemote(entry)));
+  return sentEntries.length;
 }
 
 export function isPushCampaignEditable(status: PushCampaignStatus): boolean {
