@@ -9,6 +9,12 @@ export type MediaFolder = 'events' | 'spots' | 'gallery';
 
 const ASPECT_EPSILON = 0.03;
 
+// Le plan Supabase ne donne pas accès aux Image Transformations : l'original
+// stocké est servi tel quel à chaque affichage. La largeur couvre donc le plus
+// grand besoin réel (galerie plein écran sur un écran 3x) sans aller au-delà.
+const UPLOAD_MAX_WIDTH = 1280;
+const UPLOAD_JPEG_QUALITY = 0.72;
+
 function decodeBase64ToArrayBuffer(base64: string): ArrayBuffer {
   const binary = globalThis.atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -163,12 +169,12 @@ export async function cropToAspect(
     },
   ];
 
-  if (cropWidth > 1600) {
-    actions.push({ resize: { width: 1600 } });
+  if (cropWidth > UPLOAD_MAX_WIDTH) {
+    actions.push({ resize: { width: UPLOAD_MAX_WIDTH } });
   }
 
   const result = await manipulateAsync(readableUri, actions, {
-    compress: 0.86,
+    compress: UPLOAD_JPEG_QUALITY,
     format: SaveFormat.JPEG,
   });
   return normalizeLocalFileUri(result.uri);
@@ -189,16 +195,18 @@ export async function compressImageForUpload(localUri: string): Promise<string> 
     }
 
     const actions =
-      width > 1600 ? ([{ resize: { width: 1600 } }] as Parameters<typeof manipulateAsync>[1]) : [];
+      width > UPLOAD_MAX_WIDTH
+        ? ([{ resize: { width: UPLOAD_MAX_WIDTH } }] as Parameters<typeof manipulateAsync>[1])
+        : [];
 
     const result = await manipulateAsync(readableUri, actions, {
-      compress: 0.86,
+      compress: UPLOAD_JPEG_QUALITY,
       format: SaveFormat.JPEG,
     });
     return normalizeLocalFileUri(result.uri);
   } catch {
     const fallback = await manipulateAsync(readableUri, [], {
-      compress: 0.86,
+      compress: UPLOAD_JPEG_QUALITY,
       format: SaveFormat.JPEG,
     });
     return normalizeLocalFileUri(fallback.uri);
