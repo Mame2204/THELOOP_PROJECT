@@ -1,6 +1,6 @@
-import { parseRotatingQrPayload, shortUserId, verifyRotatingQrPayload } from '@/lib/rotating-qr-token';
+import { parseRotatingQrPayload } from '@/lib/rotating-qr-token';
 
-import { findRegistryUserById, listRegistryUsers } from '@/lib/user-registry-store';
+import { findRegistryUserById } from '@/lib/user-registry-store';
 
 import { mapDbRole } from '@/lib/user-mapper';
 
@@ -23,8 +23,6 @@ export interface ScannedMemberProfile {
   role: User['role'];
 
   isVerified: boolean;
-
-  qrCodeToken: string | null;
 
 }
 
@@ -90,8 +88,6 @@ async function mapRegistryToProfile(userId: string): Promise<ScannedMemberProfil
 
       isVerified: true,
 
-      qrCodeToken: null,
-
     };
 
   }
@@ -100,89 +96,6 @@ async function mapRegistryToProfile(userId: string): Promise<ScannedMemberProfil
 
 }
 
-
-
-function rowToProfile(row: {
-
-  id: string;
-
-  first_name: string | null;
-
-  last_name: string | null;
-
-  phone_number: string | null;
-
-  user_role: string | null;
-
-  qr_code_token: string | null;
-
-}): ScannedMemberProfile {
-
-  return {
-
-    userId: String(row.id),
-
-    firstName: row.first_name ?? null,
-
-    lastName: row.last_name ?? null,
-
-    phoneNumber: row.phone_number ?? null,
-
-    role: mapDbRole(row.user_role ?? 'member'),
-
-    isVerified: true,
-
-    qrCodeToken: row.qr_code_token ?? null,
-
-  };
-
-}
-
-
-
-async function verifyLocallyForUser(
-
-  trimmed: string,
-
-  userId: string,
-
-  qrCodeToken: string | null,
-
-): Promise<boolean> {
-
-  if (!qrCodeToken?.trim()) return false;
-
-  return verifyRotatingQrPayload(trimmed, qrCodeToken, userId);
-
-}
-
-
-
-async function resolveFromLocalFallback(trimmed: string, parsed: { userIdShort: string }): Promise<ScannedMemberProfile | null> {
-  if (isSupabaseConfigured() && supabase) {
-    const { data: rows } = await supabase
-      .from('users')
-      .select('id, first_name, last_name, phone_number, user_role, is_active, qr_code_token')
-      .eq('is_active', true)
-      .limit(200);
-
-    for (const row of rows ?? []) {
-      if (shortUserId(String(row.id)) !== parsed.userIdShort || !row.qr_code_token) continue;
-      const valid = await verifyRotatingQrPayload(trimmed, row.qr_code_token, String(row.id));
-      if (valid) return rowToProfile(row);
-    }
-  }
-
-  const registryUsers = await listRegistryUsers();
-  for (const u of registryUsers) {
-    if (shortUserId(u.id) !== parsed.userIdShort) continue;
-    if (!isSupabaseConfigured() || !supabase) continue;
-    const profile = await tryLocalVerifyForUserId(trimmed, u.id);
-    if (profile) return profile;
-  }
-
-  return null;
-}
 
 
 
@@ -218,42 +131,25 @@ async function profileFromValidRpc(body: QrRpcBody): Promise<ScannedMemberProfil
       phoneNumber: body.phone_number ?? null,
       role: mapDbRole(body.user_role ?? 'member'),
       isVerified: true,
-      qrCodeToken: null,
     };
   }
 
+  // verify_member_qr_payload masque l'identité : seul l'annuaire admin peut la
+  // compléter. Un partenaire garde un profil vérifié mais anonyme.
   const profile = await mapRegistryToProfile(userId);
   if (profile) return profile;
 
-  if (!isSupabaseConfigured() || !supabase) return null;
-
-  const { data: row } = await supabase
-    .from('users')
-    .select('id, first_name, last_name, phone_number, user_role, is_active, qr_code_token')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (row && row.is_active !== false) return rowToProfile(row);
-  return null;
+  return {
+    userId,
+    firstName: null,
+    lastName: null,
+    phoneNumber: null,
+    role: mapDbRole(body.user_role ?? 'member'),
+    isVerified: true,
+  };
 }
 
-async function tryLocalVerifyForUserId(trimmed: string, userId: string): Promise<ScannedMemberProfile | null> {
-  if (!isSupabaseConfigured() || !supabase) return null;
-
-  const { data: row } = await supabase
-    .from('users')
-    .select('id, first_name, last_name, phone_number, user_role, is_active, qr_code_token')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (row?.qr_code_token && row.is_active !== false) {
-    const valid = await verifyLocallyForUser(trimmed, userId, row.qr_code_token);
-    if (valid) return rowToProfile(row);
-  }
-  return null;
-}
-
-async function parseQrRpcResponse(trimmed: string, data: unknown): Promise<QrScanResult | null> {
+async function parseQrRpcResponse(data: unknown): Promise<QrScanResult | null> {
   if (!data || typeof data !== 'object') return null;
   const body = data as QrRpcBody;
 
@@ -264,9 +160,6 @@ async function parseQrRpcResponse(trimmed: string, data: unknown): Promise<QrSca
   }
 
   if (body.user_id && body.reason === 'expired_or_invalid') {
-    const userId = String(body.user_id);
-    const localMember = await tryLocalVerifyForUserId(trimmed, userId);
-    if (localMember) return { member: localMember };
     return {
       member: null,
       reason: 'expired_or_invalid',
@@ -296,7 +189,7 @@ export async function resolveMemberFromRotatingQrDetailed(payload: string): Prom
       const { data, error } = await supabase.rpc(rpcName, { p_payload: trimmed });
 
       if (!error && data) {
-        const parsedResult = await parseQrRpcResponse(trimmed, data);
+        const parsedResult = await parseQrRpcResponse(data);
         if (parsedResult) return parsedResult;
         continue;
       }
@@ -306,9 +199,6 @@ export async function resolveMemberFromRotatingQrDetailed(payload: string): Prom
         if (__DEV__) console.warn(`[QR scan] RPC ${rpcName}:`, error.message);
       }
     }
-
-    const local = await resolveFromLocalFallback(trimmed, parsed);
-    if (local) return { member: local };
 
     const isMigrationIssue = lastError?.toLowerCase().includes('digest') ?? false;
     return {
@@ -320,8 +210,9 @@ export async function resolveMemberFromRotatingQrDetailed(payload: string): Prom
     };
   }
 
-  const local = await resolveFromLocalFallback(trimmed, parsed);
-  if (local) return { member: local };
-
-  return { member: null, reason: 'offline_fallback_failed' };
+  return {
+    member: null,
+    reason: 'offline_fallback_failed',
+    detail: 'Vérification impossible sans connexion — réessayez une fois en ligne.',
+  };
 }

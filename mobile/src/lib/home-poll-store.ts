@@ -41,8 +41,6 @@ type StoredVote = {
   optionId: string;
   userId?: string;
   phone?: string;
-  /** @deprecated Ancien mode device_id — lecture seule. */
-  deviceId?: string;
 };
 
 function isoWeekKey(date = new Date()): string {
@@ -83,6 +81,12 @@ function normalizeVoterPhone(phone: string | null | undefined): string | null {
 
 function isLoggedInVoter(voter: HomePollVoter): boolean {
   return Boolean(voter.userId && voter.userId !== 'anonymous');
+}
+
+/** Clé d'identification du votant : compte connecté, sinon id téléphone local. */
+function voterKeyFor(voter: HomePollVoter): string | null {
+  if (isLoggedInVoter(voter)) return voter.userId;
+  return voter.phoneId?.trim() || null;
 }
 
 /**
@@ -197,7 +201,8 @@ interface CachedPollBundle {
   poll: HomePoll;
   counts: Record<string, number>;
   total: number;
-  votes: StoredVote[];
+  userOptionId: string | null;
+  voterKey: string | null;
 }
 
 function pollScope(countryCode?: string): string {
@@ -205,7 +210,8 @@ function pollScope(countryCode?: string): string {
 }
 
 function attachUserVote(bundle: CachedPollBundle, voter: HomePollVoter): HomePollSnapshot {
-  const mine = findMyOptionId(bundle.votes ?? [], voter);
+  const voterKey = voterKeyFor(voter);
+  const mine = voterKey !== null && voterKey === bundle.voterKey ? bundle.userOptionId : null;
   const options = asArray<HomePollOption>(bundle.poll?.options);
   const poll: HomePoll = {
     id: String(bundle.poll?.id ?? ''),
@@ -235,7 +241,8 @@ function normalizePollBundle(raw: unknown): CachedPollBundle | null {
     },
     counts: row.counts && typeof row.counts === 'object' ? row.counts : {},
     total: Number(row.total ?? 0),
-    votes: asArray<StoredVote>(row.votes),
+    userOptionId: typeof row.userOptionId === 'string' ? row.userOptionId : null,
+    voterKey: typeof row.voterKey === 'string' ? row.voterKey : null,
   };
 }
 
@@ -246,7 +253,38 @@ export async function peekHomePollBundle(countryCode?: string): Promise<CachedPo
   return normalizePollBundle(hit);
 }
 
-async function loadRemoteBundle(countryCode?: string): Promise<CachedPollBundle | null> {
+function parsePollResults(
+  raw: unknown,
+  options: HomePollOption[],
+): { counts: Record<string, number>; total: number; userOptionId: string | null } {
+  const counts: Record<string, number> = {};
+  for (const opt of options) counts[opt.id] = 0;
+
+  if (!raw || typeof raw !== 'object') {
+    return { counts, total: 0, userOptionId: null };
+  }
+
+  const row = raw as Record<string, unknown>;
+  if (row.counts && typeof row.counts === 'object') {
+    for (const [optionId, value] of Object.entries(row.counts as Record<string, unknown>)) {
+      if (counts[optionId] === undefined) continue;
+      const count = Number(value);
+      counts[optionId] = Number.isFinite(count) ? count : 0;
+    }
+  }
+
+  const mine = typeof row.userOptionId === 'string' ? row.userOptionId : null;
+  return {
+    counts,
+    total: Object.values(counts).reduce((a, b) => a + b, 0),
+    userOptionId: mine !== null && counts[mine] !== undefined ? mine : null,
+  };
+}
+
+async function loadRemoteBundle(
+  voter: HomePollVoter,
+  countryCode?: string,
+): Promise<CachedPollBundle | null> {
   if (!isSupabaseConfigured() || !supabase) return null;
   if (!countryCode) return null;
 
@@ -288,28 +326,18 @@ async function loadRemoteBundle(countryCode?: string): Promise<CachedPollBundle 
     weekKey: String(pollRow.week_key ?? isoWeekKey()),
   };
 
-  const { data: voteRows, error: votesError } = await supabase
-    .from('home_poll_votes')
-    .select('option_id, user_id, device_id, voter_phone')
-    .eq('poll_id', poll.id)
-    .limit(15);
+  const { data: resultsData, error: resultsError } = await supabase.rpc('get_home_poll_results', {
+    p_poll_id: poll.id,
+    p_phone_id: isLoggedInVoter(voter) ? null : (voter.phoneId?.trim() || null),
+  });
 
-  if (votesError) {
-    console.warn('[HomePoll] votes:', votesError.message);
+  if (resultsError) {
+    console.warn('[HomePoll] résultats:', resultsError.message);
   }
 
-  const votes: StoredVote[] = (voteRows ?? []).map((r) => ({
-    optionId: String(r.option_id),
-    userId: r.user_id ? String(r.user_id) : undefined,
-    phone: r.voter_phone ? String(r.voter_phone) : undefined,
-    deviceId: r.device_id ? String(r.device_id) : undefined,
-  }));
-  const { counts, total } = talliesFromVotes(
-    options,
-    votes.map((v) => ({ optionId: v.optionId })),
-  );
+  const { counts, total, userOptionId } = parsePollResults(resultsError ? null : resultsData, options);
 
-  return { poll, counts, total, votes };
+  return { poll, counts, total, userOptionId, voterKey: voterKeyFor(voter) };
 }
 
 async function loadRemoteSnapshot(
@@ -320,7 +348,7 @@ async function loadRemoteSnapshot(
     ? voter
     : { ...voter, phoneId: voter.phoneId ?? (await getPollPhoneId()) };
 
-  const bundle = await loadRemoteBundle(countryCode);
+  const bundle = await loadRemoteBundle(resolvedVoter, countryCode);
   if (!bundle) return null;
 
   const scope = pollScope(countryCode);
@@ -341,7 +369,7 @@ export async function loadHomePollSnapshot(
     if (cached) {
       scheduleScopedRefresh(
         `home_poll_${pollScope(countryCode)}`,
-        () => loadRemoteBundle(countryCode),
+        () => loadRemoteBundle(resolvedVoter, countryCode),
         undefined,
         async (fresh) => {
           if (fresh === null) {
