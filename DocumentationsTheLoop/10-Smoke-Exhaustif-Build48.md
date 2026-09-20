@@ -131,7 +131,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ### Bloqué sans connexion
 - [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [ ] **📱** Pas fiches détail catalogue
+- [x] **📱** Pas fiches détail catalogue *(20 sept. 2026 · build 48 · pile Auth seule)*
 - [ ] **🤖** Idem
 
 ---
