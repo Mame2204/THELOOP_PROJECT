@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A4-U1** |
+| **Prochain test** | **A4-U5** |
 | **Compte** | `contact@lavenue.gn` (partenaire) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -417,9 +417,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ## A4 — Partenaire (`partner`)
 
 ### Bottom nav & hub Pro
-- [ ] **📱** Thème teal partenaire
+- [x] **📱** Thème teal partenaire *(20 sept. 2026 · build 48 · contact@lavenue.gn · A4-U2 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerProScreen` (tab Pro) — hub modules
+- [x] **📱** `PartnerProScreen` (tab Pro) — hub modules *(20 sept. 2026 · build 48 · A4-U1/U3/U4 PASS · login partenaire · bottom nav avec Pro · hub tuiles OK)*
 - [ ] **🤖** Idem
 - [ ] **📱** `PartnerContentScreen` — Mes contenus (publié / pending / rejeté)
 - [ ] **🤖** Idem
@@ -844,7 +844,8 @@ A3 fiche privilège : PASS (cadenas → octroi → utilisation → quota atteint
 A3 écrans Accueil/Agenda/Spots/Outils : PASS navigation (build 48)
 A3 PrimeScreen : N/A statut (Mon PASS = Abonnement · PrimeScreen = boutique)
 A3 MyBenefitsScreen : BLOCKED/N/A (pas d’entrée menu build 48)
-Prochain test unitaire : A4-U1 (connexion partenaire)
+PACK A4-1 : PASS (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
+Prochain test unitaire : A4-U5 (Mes contenus)
 Build Android :
 Branch / commit :
 
