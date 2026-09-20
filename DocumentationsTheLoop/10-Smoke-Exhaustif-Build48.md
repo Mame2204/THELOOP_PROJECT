@@ -141,7 +141,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ### Bottom nav
 - [x] **📱** `AccueilScreen` — hero · sondage · parcours · singulier · fragment *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
-- [ ] **📱** `AgendaScreen` — liste événements · filtres · pull refresh
+- [x] **📱** `AgendaScreen` — liste événements · filtres · pull refresh *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** `SpotsScreen` — liste spots · catégories
 - [ ] **🤖** Idem
@@ -153,7 +153,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
-- [ ] **📱** Pas filtre LoopX / Loop Prime
+- [x] **📱** Pas filtre LoopX / Loop Prime *(Agenda · build 58 · 20 sept. 2026)*
 - [ ] **🤖** Idem
 - [ ] **📱** Contenu `prime` invisible / cadenas
 - [ ] **🤖** Idem
