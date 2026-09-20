@@ -40,7 +40,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ## Phase 0 — Prérequis
 
 ### Environnement
-- [ ] **📱** Build cible installé (48+ après merge correctifs → **49** recommandé)
+- [x] **📱** Build cible installé — **build 58** · lancement OK *(20 sept. 2026)*
 - [ ] **🤖** Idem Android
 - [ ] **💻** Admin-web déployé
 - [ ] **⏳** Serveur Render à jour (push planifiés)
@@ -645,9 +645,9 @@ Smoke Playwright prod — navigation + chargement (sans mutations destructives).
 ## Journal de session
 
 ```
-Date :
+Date : 20 sept. 2026
 Testeur :
-Build iPhone :
+Build iPhone : 58 — lancement OK
 Build Android :
 Branch / commit :
 
