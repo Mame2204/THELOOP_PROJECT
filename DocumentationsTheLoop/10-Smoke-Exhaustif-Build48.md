@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A4-U21** |
-| **Compte** | `contact@lavenue.gn` (partenaire) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1 → A4-5** |
+| **Prochain test** | **A5-U1** |
+| **Compte** | `admin@theloop.gn` (admin mobile) |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **A4 complet** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -459,19 +459,18 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 
 ### Validation privilèges
-- [ ] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX`
+- [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerBenefitScanScreen` — scan QR membre
+- [x] **📱** `PartnerBenefitScanScreen` — scan QR membre *(20 sept. 2026 · build 48 · A4-U22 PASS · validation identité OK depuis Pro connecté)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerBenefitConfirmScreen` — accepter / refuser
+- [x] **📱** `PartnerBenefitConfirmScreen` — accepter / refuser *(20 sept. 2026 · build 48 · A4-U23 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** Notif « privilège à valider » dans Pro
-- [ ] **🤖** Idem
+- [x] **📱** Notif « privilège à valider » dans Pro *(20 sept. 2026 · build 48 · A4-U24 **N/A** — aucun privilège en attente · comportement attendu)*
 
 ### Catalogue & favoris
-- [ ] **📱** Onglets Accueil / Agenda / Spots / Outils / Favoris / Profil
+- [x] **📱** Onglets Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48 · A4-U25 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** `FavorisScreen` — favoris partenaire
+- [x] **📱** `FavorisScreen` — favoris partenaire *(20 sept. 2026 · build 48 · A4-U26 PASS)*
 - [ ] **🤖** Idem
 
 ---
@@ -849,7 +848,10 @@ PACK A4-2 : PASS (U5 Mes contenus · U6 Stats · U7 À la une · U8 Privilèges 
 PACK A4-3 : PASS (U10 event · U11 spot · U12 outil → pending)
 PACK A4-4 : PASS (U13–U17 · U14 partiel · U15 badge Publié · motif rejet = liste)
 PACK A4-5 : PASS (U18 demander retrait · U19 annuler retrait pending)
-Prochain test unitaire : A4-U21 (validation privilège par code)
+PACK A4-6 : PASS (U22/U23 scan+confirm · U21 N/A connecté · U24 N/A vide)
+PACK A4-7 : PASS (U25 catalogue · U26 favoris)
+A4 partenaire : terminé build 48 (U20 notif retrait → après modération admin)
+Prochain test unitaire : A5-U1 (login admin mobile)
 Build Android :
 Branch / commit :
 
