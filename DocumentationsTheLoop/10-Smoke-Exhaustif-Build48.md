@@ -196,7 +196,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ### Interactions
 - [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [ ] **📱** Tentative favori sans compte → modal Auth
+- [x] **📱** Tentative favori sans compte → page connexion Auth *(20 sept. 2026 · build 48 · pile Auth sans compte)*
 - [ ] **🤖** Idem
 - [ ] **📱** Recherche inline (Agenda / Spots)
 - [ ] **🤖** Idem
