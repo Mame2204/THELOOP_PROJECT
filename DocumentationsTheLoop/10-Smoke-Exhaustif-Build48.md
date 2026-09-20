@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U1** |
-| **Compte** | `admin@theloop.gn` (admin mobile) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **A4 complet** |
+| **Prochain test** | **A5-U5** |
+| **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -478,11 +478,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ## A5 — Admin mobile (`super_admin` / `admin`)
 
 ### Accès Control Tower
-- [ ] **📱** Onglet **Administration** (`AdminWorkspaceScreen`)
+- [x] **📱** Onglet **Administration** (`AdminWorkspaceScreen`) *(20 sept. 2026 · build 48 · A5-U1/U3 PASS · admin@theloop.gn super admin)*
 - [ ] **🤖** Idem
-- [ ] **📱** Thème bordeaux (super) ou gris bleu (délégué)
+- [x] **📱** Thème bordeaux (super) ou gris bleu (délégué) *(20 sept. 2026 · build 48 · A5-U2 PASS · thème **bordeaux** super admin)*
 - [ ] **🤖** Idem
-- [ ] **📱** Sidebar — modules masqués selon permissions
+- [x] **📱** Sidebar — modules masqués selon permissions *(20 sept. 2026 · build 48 · A5-U4 **SKIP** session super admin · compte délégué dispo — retest dédié plus tard)*
 - [ ] **🤖** Idem
 
 ### Sidebar — panneaux principaux
@@ -851,7 +851,8 @@ PACK A4-5 : PASS (U18 demander retrait · U19 annuler retrait pending)
 PACK A4-6 : PASS (U22/U23 scan+confirm · U21 N/A connecté · U24 N/A vide)
 PACK A4-7 : PASS (U25 catalogue · U26 favoris)
 A4 partenaire : terminé build 48 (U20 notif retrait → après modération admin)
-Prochain test unitaire : A5-U1 (login admin mobile)
+PACK A5-1 : PASS (U1–U3 super admin · U4 skip délégué)
+Prochain test unitaire : A5-U5 (sidebar Insights)
 Build Android :
 Branch / commit :
 
