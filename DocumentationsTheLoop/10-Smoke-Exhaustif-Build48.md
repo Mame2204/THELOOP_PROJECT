@@ -167,7 +167,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** `FragmentDetailScreen` — Le Fragment *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
-- [ ] **📱** `LoopWalksListScreen` + `LoopWalkDetailScreen` — parcours
+- [x] **📱** `LoopWalksListScreen` + `LoopWalkDetailScreen` — parcours *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [ ] **📱** `PartnerPublicScreen` — depuis parcours
 - [ ] **🤖** Idem
@@ -653,6 +653,7 @@ Compte Prime iOS : carte membre Prime (thème violet/indigo)
 A2 contenu prime invisible : PASS (build 48)
 A2 CreatorCornerDetail (Singulier) : PASS (build 48)
 A2 FragmentDetail (Fragment) : PASS (build 48)
+A2 LoopWalks list + detail : PASS (build 48)
 Build Android :
 Branch / commit :
 
