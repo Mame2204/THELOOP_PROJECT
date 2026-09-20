@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { getSupabaseAdmin } from '../lib/supabase-admin.js';
+import { bruteForceLimiter } from '../middleware/rate-limit.js';
 
 export const partnerSpotSessionRouter = Router();
+
+// Route volontairement anonyme : sa seule protection est le secret du jeton SPOT.
+partnerSpotSessionRouter.use('/partner/spot-session', bruteForceLimiter);
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);

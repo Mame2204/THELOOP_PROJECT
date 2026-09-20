@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { getSupabaseAdmin } from '../lib/supabase-admin.js';
+import { requireSupabaseAuth } from '../middleware/auth.js';
+import { requirePartner } from '../middleware/require-partner.js';
 import {
   notifyMemberBenefitCancelled,
   notifyMemberBenefitValidated,
@@ -8,6 +10,10 @@ import {
 } from '../services/partner-benefit-notify.js';
 
 export const partnerValidationRouter = Router();
+
+partnerValidationRouter.use('/partner/pending-validations', requireSupabaseAuth, requirePartner);
+partnerValidationRouter.use('/partner/apply-validation', requireSupabaseAuth, requirePartner);
+partnerValidationRouter.use('/partner/benefit-notify', requireSupabaseAuth, requirePartner);
 
 type PartnerCodeRow = {
   partner_key: string;

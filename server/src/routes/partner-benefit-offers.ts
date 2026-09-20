@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { getSupabaseAdmin } from '../lib/supabase-admin.js';
+import { requireSupabaseAuth } from '../middleware/auth.js';
+import { requireAdmin } from '../middleware/require-admin.js';
+import { ownsPartnerAccount, requirePartner } from '../middleware/require-partner.js';
 
 export const partnerBenefitOffersRouter = Router();
+
+partnerBenefitOffersRouter.use('/partner/benefit-offers', requireSupabaseAuth, requirePartner);
+partnerBenefitOffersRouter.use('/admin/partner-benefit-offers', requireSupabaseAuth, requireAdmin);
 
 type OfferingPartner = {
   partnerId?: string;
@@ -154,6 +160,11 @@ partnerBenefitOffersRouter.post('/partner/benefit-offers/list', async (req, res)
       return;
     }
 
+    if (!ownsPartnerAccount(req, partnerUserId)) {
+      res.status(403).json({ error: 'forbidden' });
+      return;
+    }
+
     const catalog = await loadInactiveCatalog();
     res.json({ items: await catalogRowsToPendingOffers(catalog, partnerUserId) });
   } catch (e) {
@@ -176,6 +187,11 @@ partnerBenefitOffersRouter.post('/partner/benefit-offers/respond', async (req, r
 
     if (!isUuid(partnerUserId)) {
       res.status(400).json({ error: 'invalid_params' });
+      return;
+    }
+
+    if (!ownsPartnerAccount(req, partnerUserId)) {
+      res.status(403).json({ error: 'forbidden' });
       return;
     }
 

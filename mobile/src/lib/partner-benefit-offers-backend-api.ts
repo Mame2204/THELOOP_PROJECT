@@ -2,6 +2,7 @@ import type { PartnerBenefitOffer, PartnerBenefitOfferStatus } from '@/lib/partn
 import {
   getLoopBackendApiUrl,
   isLoopBackendConfigured,
+  loopBackendAuthHeaders,
   markLoopBackendUnreachable,
   shouldSkipLoopBackendFetch,
 } from '@/lib/loop-backend-api';
@@ -57,11 +58,13 @@ export async function fetchPartnerBenefitOffersViaBackend(
 ): Promise<PartnerBenefitOffer[] | null> {
   if (!isLoopBackendConfigured() || shouldSkipLoopBackendFetch()) return null;
 
+  const headers = await loopBackendAuthHeaders();
+
   let response: Response;
   try {
     response = await fetch(`${getLoopBackendApiUrl()}/api/partner/benefit-offers/list`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ partnerUserId }),
     });
   } catch {
@@ -87,11 +90,13 @@ export async function fetchAdminPartnerBenefitOffersViaBackend(
 ): Promise<PartnerBenefitOffer[] | null> {
   if (!isLoopBackendConfigured()) return null;
 
+  const headers = await loopBackendAuthHeaders();
+
   let response: Response;
   try {
     response = await fetch(`${getLoopBackendApiUrl()}/api/admin/partner-benefit-offers/list`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ countryCode: countryCode ?? null }),
     });
   } catch {
@@ -114,11 +119,13 @@ export async function respondPartnerBenefitOfferViaBackend(
     return { ok: false, error: 'backend_not_configured' };
   }
 
+  const headers = await loopBackendAuthHeaders();
+
   let response: Response;
   try {
     response = await fetch(`${getLoopBackendApiUrl()}/api/partner/benefit-offers/respond`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         partnerUserId,
         localId: offer.id,

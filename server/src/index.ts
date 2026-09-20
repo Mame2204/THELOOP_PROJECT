@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { config } from './config.js';
 import { probeDjomyAuth, type DjomyAuthProbe } from './lib/djomy.js';
+import { globalLimiter } from './middleware/rate-limit.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { adminRouter } from './routes/admin.js';
 import { partnerValidationRouter } from './routes/partner-validation.js';
@@ -15,6 +16,9 @@ import { cronRouter } from './routes/cron.js';
 import { startInternalPushCron } from './services/internal-push-cron.js';
 
 const app = express();
+
+// Render place l'app derrière un proxy : sans cela, le limiteur voit une seule IP pour tout le trafic.
+app.set('trust proxy', 1);
 
 app.use(
   helmet({
@@ -46,6 +50,8 @@ app.use(
     allowedHeaders: ['Authorization', 'Content-Type'],
   }),
 );
+
+app.use(globalLimiter);
 
 app.use('/api/webhook/djomy', express.raw({ type: 'application/json' }));
 

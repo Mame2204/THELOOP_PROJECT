@@ -1,5 +1,9 @@
 import type { PartnerPendingValidationRow } from '@/lib/benefit-redemption-store';
-import { getLoopBackendApiUrl, isLoopBackendConfigured } from '@/lib/loop-backend-api';
+import {
+  getLoopBackendApiUrl,
+  isLoopBackendConfigured,
+  loopBackendAuthHeaders,
+} from '@/lib/loop-backend-api';
 
 type BackendPendingItem = {
   redemptionLocalId: string;
@@ -38,11 +42,13 @@ export async function fetchPartnerPendingValidationsViaBackend(
 ): Promise<PartnerPendingValidationRow[]> {
   if (!isLoopBackendConfigured()) return [];
 
+  const headers = await loopBackendAuthHeaders();
+
   let response: Response;
   try {
     response = await fetch(`${getLoopBackendApiUrl()}/api/partner/pending-validations`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ memberUserId, partnerCode }),
     });
   } catch {
@@ -70,11 +76,13 @@ export async function applyPartnerBenefitValidationViaBackend(
   if (!isLoopBackendConfigured()) return 0;
   if (!redemptionLocalIds.length) return 0;
 
+  const headers = await loopBackendAuthHeaders();
+
   let response: Response;
   try {
     response = await fetch(`${getLoopBackendApiUrl()}/api/partner/apply-validation`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ partnerCode, redemptionLocalIds, validate }),
     });
   } catch {
@@ -97,10 +105,12 @@ export async function notifyPartnerBenefitOutcomeViaBackend(
 ): Promise<void> {
   if (!isLoopBackendConfigured() || !items.length) return;
 
+  const headers = await loopBackendAuthHeaders();
+
   try {
     await fetch(`${getLoopBackendApiUrl()}/api/partner/benefit-notify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ partnerCode, items }),
     });
   } catch {
