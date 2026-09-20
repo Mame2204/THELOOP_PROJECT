@@ -1,4 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { resolveCountryCode } from '@/lib/admin-country';
+import type { CountryCode } from '@/lib/countries';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { normalizePhone } from '@/lib/otp-auth';
 import { isNetworkOnline } from '@/lib/offline-store';
 import { hydrateScoped, peekMemory, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
@@ -147,6 +150,40 @@ export async function listRegistryUsers(forceRemote = false): Promise<RegistryUs
     saveRegistry,
   );
   return cached;
+}
+
+/** Admins délégués (`user_role = admin`, actifs) pour TEAMS — aligné admin-web. */
+export async function listDelegatedRegistryUsersForCountry(
+  countryCode: CountryCode,
+): Promise<RegistryUser[]> {
+  const cc = countryCode.toUpperCase().slice(0, 2);
+
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    const { data, error } = await supabase
+      .from('users')
+      .select(
+        'id, email, phone_number, first_name, last_name, user_role, birth_date, referral_code, referred_by_code, country_code, interest_country_code, city, prime_role_locked, is_active',
+      )
+      .eq('user_role', 'admin')
+      .eq('is_active', true)
+      .order('email')
+      .limit(100);
+    if (!error && data) {
+      return data
+        .map((row) => mapDbUserRow(row as Record<string, unknown>))
+        .filter(
+          (u) =>
+            (u.countryCode ?? DEFAULT_COUNTRY_CODE).toUpperCase().slice(0, 2) === cc,
+        );
+    }
+  }
+
+  const registry = await listRegistryUsers(true);
+  return registry.filter(
+    (u) =>
+      (u.userRole ?? '').toLowerCase() === 'admin' &&
+      (u.countryCode ?? DEFAULT_COUNTRY_CODE).toUpperCase().slice(0, 2) === cc,
+  );
 }
 
 export async function findRegistryUserById(userId: string): Promise<RegistryUser | null> {
