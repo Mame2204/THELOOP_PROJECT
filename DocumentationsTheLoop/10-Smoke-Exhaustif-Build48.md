@@ -185,7 +185,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** `PrimeScreen` — boutique PASS · forfaits + prix · bouton paiement *(20 sept. 2026 · build 48 · gate achat PASS ON · compte membre perso)*
 - [ ] **🤖** Idem
-- [ ] **📱** `AbonnementScreen` — Mon PASS (sans PASS actif)
+- [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
 - [ ] **🤖** Idem
 - [ ] **📱** `PassPaymentScreen` — flux paiement (si gate PASS ON)
 - [ ] **🤖** Idem
