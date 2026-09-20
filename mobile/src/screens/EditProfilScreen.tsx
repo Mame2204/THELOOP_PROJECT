@@ -9,16 +9,14 @@ import { CountrySelectField } from '@/components/CountrySelectField';
 import { DateTimeField } from '@/components/DateTimeField';
 import { GuineaLocationPicker } from '@/components/GuineaLocationPicker';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
-import { PasswordInput } from '@/components/PasswordInput';
 import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
 import { canonicalizeGuineaLocationLabel } from '@/lib/guinea-locations';
-import { isSupabaseConfigured } from '@/lib/supabase';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditProfil'>;
 
 export function EditProfilScreen({ navigation }: Props) {
-  const { user, updateProfile, changePassword } = useAuthContext();
+  const { user, updateProfile } = useAuthContext();
   const { enabledCountries } = useContentCountries();
   const { shell } = useMemberTheme();
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
@@ -28,9 +26,6 @@ export function EditProfilScreen({ navigation }: Props) {
   const [jobTitle, setJobTitle] = useState(user?.jobTitle ?? '');
   const [city, setCity] = useState(user?.city ? canonicalizeGuineaLocationLabel(user.city) : '');
   const [birthDate, setBirthDate] = useState(user?.birthDate ?? '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -69,31 +64,6 @@ export function EditProfilScreen({ navigation }: Props) {
       ]);
     } catch (err) {
       Alert.alert('Erreur', err instanceof Error ? err.message : 'Mise à jour impossible');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleChangePassword() {
-    if (newPassword.length < 8) {
-      Alert.alert('Mot de passe', 'Le nouveau mot de passe doit contenir au moins 8 caractères.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      Alert.alert('Mot de passe', 'Les mots de passe ne correspondent pas.');
-      return;
-    }
-    setSaving(true);
-    try {
-      await changePassword(currentPassword, newPassword);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      Alert.alert('Mot de passe modifié', 'Votre mot de passe a été mis à jour.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
-    } catch (err) {
-      Alert.alert('Erreur', err instanceof Error ? err.message : 'Modification impossible');
     } finally {
       setSaving(false);
     }
@@ -163,17 +133,12 @@ export function EditProfilScreen({ navigation }: Props) {
         <Text style={[styles.btnPrimaryText, { color: shell.filterActiveText }]}>{saving ? 'Enregistrement…' : 'Enregistrer le profil'}</Text>
       </Pressable>
 
-      {isSupabaseConfigured() ? (
-        <>
-          <Text style={[styles.section, { color: shell.pageKicker }]}>Mot de passe</Text>
-          <PasswordInput shell={shell} value={currentPassword} onChangeText={setCurrentPassword} placeholder="Mot de passe actuel" placeholderTextColor={shell.pageKicker} />
-          <PasswordInput shell={shell} value={newPassword} onChangeText={setNewPassword} placeholder="Nouveau mot de passe" placeholderTextColor={shell.pageKicker} />
-          <PasswordInput shell={shell} value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirmer le mot de passe" placeholderTextColor={shell.pageKicker} />
-          <Pressable style={[styles.btnOutline, { borderColor: shell.tabIndicator }]} onPress={() => void handleChangePassword()} disabled={saving}>
-            <Text style={[styles.btnOutlineText, { color: shell.tabIndicator }]}>Changer le mot de passe</Text>
-          </Pressable>
-        </>
-      ) : null}
+      <Pressable
+        style={[styles.btnOutline, { borderColor: shell.filterInactiveBorder }]}
+        onPress={() => navigation.navigate('Settings')}
+      >
+        <Text style={[styles.btnOutlineText, { color: shell.pageTitle }]}>Mot de passe & paramètres avancés</Text>
+      </Pressable>
 
       <Pressable style={styles.btnGhost} onPress={() => navigation.goBack()}>
         <Text style={[styles.btnGhostText, { color: shell.pageKicker }]}>Retour</Text>

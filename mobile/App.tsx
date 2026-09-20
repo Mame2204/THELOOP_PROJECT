@@ -13,6 +13,7 @@ import { ContentProvider } from '@/context/ContentContext';
 import { FavoritesProvider } from '@/context/FavoritesContext';
 import { RatingsProvider } from '@/context/RatingsContext';
 import { FavoritesSignupProvider } from '@/context/FavoritesSignupContext';
+import { AppLocaleProvider } from '@/context/AppLocaleContext';
 import { AppSettingsProvider } from '@/context/AppSettingsContext';
 import { AppGatesProvider } from '@/context/AppGatesContext';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -55,13 +56,15 @@ export default function App() {
                           <ContentProvider>
                             <FavoritesProvider>
                               <RatingsProvider>
-                                <AppSettingsProvider>
-                                  <AppGatesProvider>
-                                    <FavoritesSignupProvider>
-                                      <AppBootGate />
-                                    </FavoritesSignupProvider>
-                                  </AppGatesProvider>
-                                </AppSettingsProvider>
+                                <AppLocaleProvider>
+                                  <AppSettingsProvider>
+                                    <AppGatesProvider>
+                                      <FavoritesSignupProvider>
+                                        <AppBootGate />
+                                      </FavoritesSignupProvider>
+                                    </AppGatesProvider>
+                                  </AppSettingsProvider>
+                                </AppLocaleProvider>
                               </RatingsProvider>
                             </FavoritesProvider>
                           </ContentProvider>
