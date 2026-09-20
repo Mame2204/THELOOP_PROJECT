@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A4-U13** |
+| **Prochain test** | **A4-U15** puis **A4-U18** |
 | **Compte** | `contact@lavenue.gn` (partenaire) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1 · A4-2 · A4-3** |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1 · A4-2 · A4-3 · A4-4 (partiel)** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -439,15 +439,15 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** Soumettre **outil** → pending *(20 sept. 2026 · build 48 · A4-U12 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** Modifier soumission pending
+- [x] **📱** Modifier soumission pending *(20 sept. 2026 · build 48 · A4-U13 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** Annuler soumission pending
+- [x] **📱** Annuler soumission pending *(20 sept. 2026 · build 48 · A4-U14 PASS partiel · user incertain sur effet visible)*
 - [ ] **🤖** Idem
-- [ ] **📱** Événement · spot existant (liste publiés)
+- [ ] **📱** Événement · spot existant (liste publiés) *(cf. note U15 — pas d’onglet séparé · badge **Publié** dans Mes contenus)*
 - [ ] **🤖** Idem
-- [ ] **📱** Voir rejet + motif · resoumettre
+- [x] **📱** Voir rejet + motif · resoumettre *(20 sept. 2026 · build 48 · A4-U16 PASS · **motif dans la liste** pas dans l’écran détail · resoumission OK)*
 - [ ] **🤖** Idem
-- [ ] **📱** Intervenant sans titre (régression speakers)
+- [x] **📱** Intervenant sans titre (régression speakers) *(20 sept. 2026 · build 48 · A4-U17 PASS)*
 - [ ] **🤖** Idem
 
 ### Retraits
@@ -847,7 +847,8 @@ A3 MyBenefitsScreen : BLOCKED/N/A (pas d’entrée menu build 48)
 PACK A4-1 : PASS (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
 PACK A4-2 : PASS (U5 Mes contenus · U6 Stats · U7 À la une · U8 Privilèges · U9 Récompenses)
 PACK A4-3 : PASS (U10 event · U11 spot · U12 outil → pending)
-Prochain test unitaire : A4-U13 (modifier soumission pending)
+PACK A4-4 : partiel (U13/U16/U17 PASS · U14 incertain · U15 à confirmer · motif rejet = liste)
+Prochain test unitaire : A4-U15 (badge Publié) puis A4-U18 (demander retrait)
 Build Android :
 Branch / commit :
 
