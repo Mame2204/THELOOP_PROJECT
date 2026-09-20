@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U5** |
+| **Prochain test** | **A5-U18** |
 | **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1** |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel)** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -489,22 +489,22 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Module | Écran | 📱 | 🤖 |
 |--------|-------|----|----|
-| Insights | `AdminInsightsScreen` | [ ] | [ ] |
-| Accueil | `AdminAccueilScreen` | [ ] | [ ] |
-| Onglets & Espace Pro | `AdminRubriqueScreen` | [ ] | [ ] |
-| Hub THE LOOP | `AdminLoopScreen` | [ ] | [ ] |
-| Contenu | `AdminContentScreen` | [ ] | [ ] |
-| Utilisateurs | `AdminUsersScreen` | [ ] | [ ] |
-| Demandes | `AdminDemandesScreen` | [ ] | [ ] |
-| Privilèges THE LOOP | `AdminPrimeBenefitsScreen` | [ ] | [ ] |
-| Privilèges TEAMS | `AdminStaffBenefitsScreen` | [ ] | [ ] |
-| Tirage au sort | `AdminBenefitDrawScreen` | [ ] | [ ] |
-| Gestion PASS | `AdminPassManagementScreen` | [ ] | [ ] |
-| Compta PASS | `AdminComptaScreen` | [ ] | [ ] |
-| Paramètres | `AdminSuperSettingsScreen` | [ ] | [ ] |
+| Insights | `AdminInsightsScreen` | [x] FAIL partiel | [ ] |
+| Accueil | `AdminAccueilScreen` | [x] PASS | [ ] |
+| Onglets & Espace Pro | `AdminRubriqueScreen` | [x] PASS | [ ] |
+| Hub THE LOOP | `AdminLoopScreen` | [x] FAIL partiel | [ ] |
+| Contenu | `AdminContentScreen` | [x] PASS | [ ] |
+| Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [ ] |
+| Demandes | `AdminDemandesScreen` | [x] FAIL partiel | [ ] |
+| Privilèges THE LOOP | `AdminPrimeBenefitsScreen` | [x] PASS | [ ] |
+| Privilèges TEAMS | `AdminStaffBenefitsScreen` | [x] PASS partiel | [ ] |
+| Tirage au sort | `AdminBenefitDrawScreen` | [x] PASS | [ ] |
+| Gestion PASS | `AdminPassManagementScreen` | [x] PASS | [ ] |
+| Compta PASS | `AdminComptaScreen` | [x] PASS | [ ] |
+| Paramètres | `AdminSuperSettingsScreen` | [x] PASS | [ ] |
 
 ### Hub Demandes (sous-écrans)
-- [ ] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter
+- [x] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter *(20 sept. 2026 · build 48 · **FAIL partiel** · noms « . » au 1er affichage · OK après pull refresh · cache-first)*
 - [ ] **🤖** Idem
 - [ ] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser
 - [ ] **🤖** Idem
@@ -852,7 +852,15 @@ PACK A4-6 : PASS (U22/U23 scan+confirm · U21 N/A connecté · U24 N/A vide)
 PACK A4-7 : PASS (U25 catalogue · U26 favoris)
 A4 partenaire : terminé build 48 (U20 notif retrait → après modération admin)
 PACK A5-1 : PASS (U1–U3 super admin · U4 skip délégué)
-Prochain test unitaire : A5-U5 (sidebar Insights)
+PACK A5-2 : partiel (U5–U17 · écrans existent · bugs data ci-dessous)
+A5 bugs smoke build 48 :
+  - Insights : KPI privilèges / validation ne remontent pas correctement (cache local grants)
+  - Utilisateurs : filtre « Sans activité » incohérent · seuil 30j → souhait 60j (2 mois)
+  - Partenariats : cartes « . » jusqu’au refresh (cache sans refetch au focus)
+  - THE LOOP hub : KPI contenu parfois 0 au 1er focus (race catalogue · TTL 90s)
+  - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · Par admin = admins délégués du pays
+  - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
+Prochain test unitaire : A5-U18 (modération approuver event partenaire)
 Build Android :
 Branch / commit :
 
