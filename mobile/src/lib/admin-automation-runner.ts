@@ -522,7 +522,7 @@ async function runBenefitGrantJob(job: AutomationJob): Promise<number> {
     await grantJobBenefits(
       job,
       {
-        phoneNumber: target.phone ?? user?.phoneNumber ?? undefined,
+        phoneNumber: target.phone ?? user?.phoneNumber ?? null,
         countryCode: user?.countryCode ?? job.countryCode,
         city: userCity,
       },

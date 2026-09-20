@@ -1285,7 +1285,7 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
                         <Text style={{ color: shell.pageKicker, fontWeight: '700', fontSize: 11 }}>Détails</Text>
                       </Pressable>
                       {(offer.status === 'declined' || offer.status === 'disabled') ? (
-                        <Pressable onPress={() => void resendPartnerBenefitOffer(offer.id).then(load)}>
+                        <Pressable onPress={() => void resendPartnerBenefitOffer(offer.id).then(() => load())}>
                           <Text style={{ color: shell.tabIndicator, fontWeight: '700', fontSize: 11 }}>Remettre en validation</Text>
                         </Pressable>
                       ) : null}
@@ -1308,7 +1308,7 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
                               { text: 'Annuler', style: 'cancel' },
                               {
                                 text: 'Archiver',
-                                onPress: () => void archivePartnerBenefitOffer(offer.id).then(load),
+                                onPress: () => void archivePartnerBenefitOffer(offer.id).then(() => load()),
                               },
                             ]);
                           }}
@@ -1322,7 +1322,7 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
                             {
                               text: 'Supprimer',
                               style: 'destructive',
-                              onPress: () => void deletePartnerBenefitOffer(offer.id).then(load),
+                              onPress: () => void deletePartnerBenefitOffer(offer.id).then(() => load()),
                             },
                           ]);
                         }}
@@ -1398,10 +1398,10 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
                     {item.isActive ? (
                       <AdminActionIcon
                         action="deactivate"
-                        onPress={() => void updateBenefitCatalogItem(item.id, { isActive: false }).then(load)}
+                        onPress={() => void updateBenefitCatalogItem(item.id, { isActive: false }).then(() => load())}
                       />
                     ) : (
-                      <Pressable onPress={() => void updateBenefitCatalogItem(item.id, { isActive: true }).then(load)}>
+                      <Pressable onPress={() => void updateBenefitCatalogItem(item.id, { isActive: true }).then(() => load())}>
                         <Text style={{ color: '#34d399', fontWeight: '700', fontSize: 11 }}>Réactiver</Text>
                       </Pressable>
                     )}

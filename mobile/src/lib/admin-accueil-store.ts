@@ -829,7 +829,7 @@ async function fetchAdminCreatorCornersRemote(countryCode: string): Promise<Admi
 
     if (!error && data) {
       return data.map((row) => {
-        const r = row as Record<string, unknown>;
+        const r = row as unknown as Record<string, unknown>;
         const base = mapCreatorCornerRow(r);
         return {
           ...base,
@@ -1069,7 +1069,7 @@ async function fetchAdminChroniquesRemote(countryCode: string): Promise<AdminChr
         .limit(50);
 
       if (!error && data) {
-        return data.map((row) => mapAdminChroniqueRow(row as Record<string, unknown>, countryCode));
+        return data.map((row) => mapAdminChroniqueRow(row as unknown as Record<string, unknown>, countryCode));
       }
       if (error) console.warn('[AdminAccueil] chronique:', error.message);
     }
@@ -1180,6 +1180,7 @@ export async function upsertAdminChronique(input: {
   }
 
   if (isSupabaseConfigured() && supabase) {
+    const db = supabase;
     const payload = {
       slug,
       person_name: title,
@@ -1230,7 +1231,7 @@ export async function upsertAdminChronique(input: {
             : fullPayload;
 
         if (mode === 'update' && input.id) {
-          const { data, error } = await supabase
+          const { data, error } = await db
             .from('chronique_features')
             .update(lean)
             .eq('id', input.id)
@@ -1238,18 +1239,18 @@ export async function upsertAdminChronique(input: {
             .single();
           if (!error && data) {
             notifyAccueilKind(input.countryCode, 'chroniques');
-            return mapAdminChroniqueRow(data as Record<string, unknown>, input.countryCode);
+            return mapAdminChroniqueRow(data as unknown as Record<string, unknown>, input.countryCode);
           }
           if (error) console.warn('[AdminAccueil] chronique update:', error.message);
         } else if (mode === 'insert') {
-          const { data, error } = await supabase
+          const { data, error } = await db
             .from('chronique_features')
             .insert(lean)
             .select(select)
             .single();
           if (!error && data) {
             notifyAccueilKind(input.countryCode, 'chroniques');
-            return mapAdminChroniqueRow(data as Record<string, unknown>, input.countryCode);
+            return mapAdminChroniqueRow(data as unknown as Record<string, unknown>, input.countryCode);
           }
           if (error) console.warn('[AdminAccueil] chronique insert:', error.message);
         }
@@ -1385,7 +1386,7 @@ export async function upsertAdminHomePartnerLogo(input: {
       }
     } else {
       const list = await listAdminHomePartnerLogos(input.countryCode, { force: true });
-      const insertPayload = { ...payload, sort_order: list.length + 1 };
+      const insertPayload: Record<string, unknown> = { ...payload, sort_order: list.length + 1 };
       const { error } = await supabase.from('home_partner_logos').insert(insertPayload);
       if (error) {
         if (/source/i.test(error.message)) {

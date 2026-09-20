@@ -227,12 +227,13 @@ export async function upsertWalkRating(
   return {
     walkId,
     userRating: clamped,
-    ...stats,
-    clickCount: 0,
-    favoriteCount: 0,
-    engagementScore: 0,
-    starCount: 0,
-    starsSource: 'auto',
+    ratingAvg: stats.avg,
+    ratingCount: stats.count,
+    clickCount: stats.clickCount,
+    favoriteCount: stats.favoriteCount,
+    engagementScore: stats.engagementScore,
+    starCount: stats.starCount,
+    starsSource: stats.starsSource,
   };
 }
 

@@ -74,6 +74,7 @@ export function AdminFeaturedPanel({
   }).length;
 
   async function toggleFeatured(item: AdminContentItem, next: boolean) {
+    if (item.kind !== 'event' && item.kind !== 'spot') return;
     const result = await setContentFeatured(item.kind, item.id, next, item.featuredStartDate, item.featuredEndDate);
     if (!result.ok) {
       Alert.alert(
@@ -89,6 +90,7 @@ export function AdminFeaturedPanel({
   }
 
   async function updateFeaturedDates(item: AdminContentItem, start: string, end: string) {
+    if (item.kind !== 'event' && item.kind !== 'spot') return;
     const result = await setContentFeatured(item.kind, item.id, item.isFeatured, start || null, end || null);
     if (!result.ok) {
       Alert.alert('À la une', result.error ?? 'Impossible de mettre à jour les dates.');

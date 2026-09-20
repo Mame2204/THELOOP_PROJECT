@@ -260,25 +260,31 @@ export function PartnerContentScreen({ navigation }: Props) {
       />
       <Text style={[styles.notice, { color: shell.pageKicker }]}>{PARTNER_PUBLICATION_NOTICE}</Text>
       <FilterPills
-        options={filters.map((f) => ({ id: f.value, label: f.label }))}
-        value={filter}
+        options={filters}
+        active={filter}
         onChange={setFilter}
-        accent={PRO_ACCENT}
+        activeBg={PRO_ACCENT}
+        activeText="#ffffff"
       />
 
       {rows.map(({ type, item, isTool }) => {
         const editable = canPartnerEdit(item.status);
         const title = type === 'event' ? (item as StagingEvent).title : (item as StagingSpot).name;
-        const meta =
+        const meta: string =
           type === 'event'
-            ? (item as StagingEvent).date
-            : [(item as StagingSpot).district, (item as StagingSpot).city].filter(Boolean).join(' · ');
-        const kindLabel = type === 'event' ? eventLabel : isTool ? toolLabel : spotLabel;
+            ? (item as StagingEvent).startsAt
+            : (item as StagingSpot).district ?? '';
+        const kindLabel =
+          type === 'event'
+            ? eventLabel((item as StagingEvent).category)
+            : isTool
+              ? toolLabel((item as StagingSpot).toolCategory ?? (item as StagingSpot).subCategory)
+              : spotLabel((item as StagingSpot).subCategory);
         const actionHint = editable ? 'Modifier' : 'aperçu public';
         return (
           <Pressable
             key={`${type}-${item.id}`}
-            style={[styles.card, { backgroundColor: shell.cardBg, borderColor: shell.cardBorder }]}
+            style={[styles.card, { backgroundColor: shell.filterInactiveBg, borderColor: shell.filterInactiveBorder }]}
             onPress={() => {
               if (editable) {
                 navigateRoot(navigation, 'PartnerSubmission', {
@@ -293,7 +299,9 @@ export function PartnerContentScreen({ navigation }: Props) {
           >
             <View style={styles.row}>
               <Text style={[styles.title, { color: shell.pageTitle }]}>{title}</Text>
-              <Text style={[styles.status, { color: statusColor(item.status) }]}>{STATUS_LABELS[item.status]}</Text>
+              <Text style={[styles.status, { color: statusColor(item.status) }]}>
+                {STATUS_LABELS[item.status as keyof typeof STATUS_LABELS] ?? item.status}
+              </Text>
             </View>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>
               {kindLabel} · {meta} · {actionHint}
@@ -321,7 +329,7 @@ export function PartnerContentScreen({ navigation }: Props) {
             ) : null}
             {item.status === 'approved' ? (
               <Pressable
-                style={[styles.withdrawBtn, { borderColor: shell.cardBorder }]}
+                style={[styles.withdrawBtn, { borderColor: shell.filterInactiveBorder }]}
                 onPress={(e) => {
                   e.stopPropagation?.();
                   confirmWithdrawal(withdrawalKind(type, isTool), item.id, title, () => void run(true));

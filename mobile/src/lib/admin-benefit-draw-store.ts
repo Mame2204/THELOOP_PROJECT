@@ -221,10 +221,10 @@ function mapRegistryUserToDrawCandidate(
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
-    phoneNumber: user.phoneNumber,
+    phoneNumber: user.phoneNumber ?? '',
     userRole: user.userRole,
     role: user.role,
-    countryCode: user.countryCode,
+    countryCode: user.countryCode ?? undefined,
     interestCountryCode: user.interestCountryCode,
     city: user.city,
   };
@@ -327,9 +327,9 @@ function userEligibleForDraw(
   if (
     !userMatchesBenefitCountry(
       {
-        countryCode: user.countryCode,
+        countryCode: user.countryCode ?? countryCode,
         interestCountryCode: user.interestCountryCode ?? null,
-        phoneNumber: user.phoneNumber,
+        phoneNumber: user.phoneNumber ?? null,
       },
       countryCode,
     )

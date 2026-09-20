@@ -181,6 +181,7 @@ export function AdminSpotStarsScreen({ navigation, route }: Props) {
             );
             return {
               id: item.id,
+              kind: 'spot' as const,
               title: item.name,
               clickCount: item.clickCount,
               favoriteCount: item.favoriteCount,

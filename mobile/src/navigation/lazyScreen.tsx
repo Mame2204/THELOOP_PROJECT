@@ -96,13 +96,13 @@ export function lazyScreen<P extends object>(factory: ScreenFactory<P>, label?: 
 }
 
 /** Helper pour Stack.Screen getComponent — require statique obligatoire pour Metro. */
-export function requireScreen<T extends ComponentType<object>>(
-  loader: () => T,
+export function requireScreen<P extends object>(
+  loader: () => ComponentType<P>,
   label?: string,
-): () => T {
+): () => ComponentType<object> {
   return () => {
     try {
-      return loader();
+      return loader() as ComponentType<object>;
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error(`[requireScreen${label ? `:${label}` : ''}]`, error);

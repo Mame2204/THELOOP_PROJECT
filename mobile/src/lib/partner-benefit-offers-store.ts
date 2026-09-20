@@ -181,7 +181,7 @@ async function purgeBenefitOfferNotifications(offer: PartnerBenefitOffer): Promi
       })
       .map((n) => n.id);
     if (toDelete.length) {
-      await deleteUserNotifications(offer.partnerUserId, toDelete);
+      await deleteUserNotifications(toDelete, offer.partnerUserId);
     }
   } catch {
     /* non bloquant */

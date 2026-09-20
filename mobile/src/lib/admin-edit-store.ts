@@ -423,8 +423,10 @@ async function fetchEventFromSupabase(id: string): Promise<EditableEventPayload 
   const submissionMeta = await fetchEventSubmissionMeta(id);
   const programFromSchedules = formatProgramFromSchedules(data.event_schedules ?? null);
   const actionLink = data.action_link ? String(data.action_link) : null;
-  const venueAddressFromJoin = data.locations
-    ? `${data.locations.neighborhood_name}, ${data.locations.city}`
+  const locationJoin = Array.isArray(data.locations) ? data.locations[0] : data.locations;
+  const establishmentJoin = Array.isArray(data.establishments) ? data.establishments[0] : data.establishments;
+  const venueAddressFromJoin = locationJoin
+    ? `${locationJoin.neighborhood_name}, ${locationJoin.city}`
     : null;
 
   return {
@@ -438,10 +440,10 @@ async function fetchEventFromSupabase(id: string): Promise<EditableEventPayload 
     startsAt: String(data.start_date ?? new Date().toISOString()),
     endsAt: data.end_date ? String(data.end_date) : null,
     venueName: submissionMeta?.venueName
-      ?? String(data.custom_location_name ?? data.establishments?.name ?? ''),
+      ?? String(data.custom_location_name ?? establishmentJoin?.name ?? ''),
     venueAddress: (() => {
       const venueNameHint = submissionMeta?.venueName
-        ?? String(data.custom_location_name ?? data.establishments?.name ?? '');
+        ?? String(data.custom_location_name ?? establishmentJoin?.name ?? '');
       if (submissionMeta?.venueAddress != null) {
         const cleaned = sanitizePhysicalLocationInput(
           submissionMeta.venueAddress,
@@ -497,7 +499,7 @@ function normalizeEditableSpeakers(raw: unknown): EditableSpeakerInput[] {
           : null,
       };
     })
-    .filter((sp): sp is EditableSpeakerInput => sp !== null);
+    .filter((sp): sp is NonNullable<typeof sp> => sp !== null);
 }
 
 async function syncEventProgram(eventId: string, program: string | null): Promise<void> {

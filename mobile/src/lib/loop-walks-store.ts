@@ -477,7 +477,7 @@ export async function listAllLoopWalksForAdmin(countryCode?: string): Promise<Lo
 
       const { data, error } = await query;
       if (!error && data) {
-        return data.map((row) => mapRow(row as Record<string, unknown>));
+        return data.map((row) => mapRow(row as unknown as Record<string, unknown>));
       }
       if (error) console.warn('[LoopWalks] liste admin:', error.message);
     }

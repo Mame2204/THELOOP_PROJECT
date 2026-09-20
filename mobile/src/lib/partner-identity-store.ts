@@ -33,7 +33,7 @@ export async function resolvePartnerIdentity(
 
   addName(names, partnerName);
 
-  const stableKey = await resolveStablePartnerKey(partnerId, partnerName);
+  const stableKey = await resolveStablePartnerKey(rawId ?? '', partnerName);
   keys.add(stableKey);
 
   let resolvedUserId: string | null = null;

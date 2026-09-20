@@ -376,8 +376,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : 'deleted';
           if (!isAccountAccessAllowedForSession(access)) {
             // Différer signOut hors du callback auth pour éviter un verrou mort.
+            const client = supabase;
             setTimeout(() => {
-              void supabase.auth.signOut();
+              void client?.auth.signOut();
             }, 0);
             setUser(ANONYMOUS_USER);
             setIsLoading(false);
@@ -1631,17 +1632,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (newPassword.trim().length < 8) {
       throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
     }
-    let sessionData = await supabase.auth.getSession();
-    if (!sessionData.data.session) {
+    let activeSession = (await supabase.auth.getSession()).data.session;
+    if (!activeSession) {
       const refreshed = await supabase.auth.refreshSession();
-      sessionData = { data: refreshed.data, error: refreshed.error };
+      activeSession = refreshed.data.session;
     }
-    if (!sessionData.data.session) {
+    if (!activeSession) {
       throw new Error(
         'Lien expiré ou session perdue. Ouvrez le dernier e-mail reçu sur ce téléphone, puis réessayez.',
       );
     }
-    const activeSession = sessionData.data.session;
     const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
     if (error) {
       throw new Error(error.message || 'Impossible d’enregistrer le nouveau mot de passe.');

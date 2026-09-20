@@ -67,6 +67,7 @@ export interface AdminToolDirectInput {
   logoUrl?: string | null;
   coverImageUrl?: string | null;
   galleryImages?: string[];
+  categories?: string[];
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   ctaUrl?: string | null;

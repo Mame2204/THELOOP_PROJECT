@@ -33,6 +33,7 @@ import {
   userQualifiesForPrimeEntitlements,
 } from '@/lib/role-benefit-eligibility';
 import { EXTERNAL_PARTNER_ID } from '@/lib/partner-directory-store';
+import type { PartnerValidationCode } from '@/lib/partner-validation-code-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { User } from '@/types';
 
@@ -677,9 +678,9 @@ export async function listBenefitGrantRecipientTargets(
     if (!grantCountryCode) return true;
     return userMatchesBenefitCountry(
       {
-        countryCode: u.countryCode,
+        countryCode: u.countryCode ?? DEFAULT_COUNTRY_CODE,
         interestCountryCode: u.interestCountryCode ?? null,
-        phoneNumber: u.phoneNumber,
+        phoneNumber: u.phoneNumber ?? null,
       },
       grantCountryCode,
     );
@@ -1546,7 +1547,7 @@ export async function requestBenefitValidation(
   };
 
   let partnerId = offeringPartnerId;
-  let partnerCode: { code: string };
+  let partnerCode: PartnerValidationCode;
   try {
     const resolved = await Promise.race([
       resolvePartner(),

@@ -278,7 +278,6 @@ export function AdminWorkspaceScreen() {
         headerShown: false,
         animation: 'fade',
         contentStyle: { backgroundColor: '#ffffff' },
-        lazy: true,
       }}
     >
       <Panel.Screen name="AdminInsights" component={AdminInsightsScreen} />
