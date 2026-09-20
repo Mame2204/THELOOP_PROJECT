@@ -216,7 +216,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
-- [ ] **📱** Favoris via menu profil (pas seulement bottom nav)
+- [x] **📱** Favoris via menu profil (pas seulement bottom nav) *(20 sept. 2026 · build 48 · compte carte membre Prime · **écart mobile** — aucune entrée Favoris dans Profil · accès via **bottom nav** comme membre · spec PWA = menu profil Prime)*
 - [ ] **🤖** Idem
 
 ### Écrans Prime (reprendre A2 +)
@@ -228,7 +228,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem pour chaque écran ci-dessus
 
 ### Privilèges & fiches
-- [ ] **📱** Fiche event/spot avec privilège → **Utiliser chez le partenaire**
+- [x] **📱** Fiche event/spot avec privilège → section privilège **visible** sur fiche *(20 sept. 2026 · build 48 · compte carte membre Prime · à préciser : cadenas vs « Utiliser chez le partenaire »)*
 - [ ] **🤖** Idem
 - [ ] **📱** Privilège sans octroi → cadenas
 - [ ] **🤖** Idem
@@ -663,6 +663,9 @@ A3.2 LoopX (Agenda) : BLOCKED (build 48 — PR #4)
 A3.3 Loop Prime (Spots) : BLOCKED (build 48)
 A3.4 contenu prime accessible : FAIL/BLOCKED (build 48 — non exposé Agenda/Spots)
 A3 AbonnementScreen : PASS (build 48 — PASS en cours + 1 en attente)
+A3 Profil/Mon PASS : PASS (build 48 — idem en cours + en attente)
+A3 Favoris Profil : écart mobile (bottom nav seulement, pas Profil)
+A3 fiche privilège : PASS partiel (section visible — état cadenas/Utiliser à confirmer)
 Build Android :
 Branch / commit :
 
