@@ -149,7 +149,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** `FavorisScreen` — via **bottom nav** (pas menu profil) *(20 sept. 2026 · build 58 · compte membre perso)*
 - [ ] **🤖** Idem
-- [ ] **📱** `ProfilScreen` — infos · code parrain · liens compte
+- [x] **📱** `ProfilScreen` — infos · code parrain · liens compte *(20 sept. 2026 · build 58 · compte membre perso)*
 - [ ] **🤖** Idem
 - [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
