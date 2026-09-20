@@ -163,7 +163,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** `SpotDetailScreen` — depuis Spots / Accueil *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [ ] **📱** `CreatorCornerDetailScreen` — Le Singulier
+- [x] **📱** `CreatorCornerDetailScreen` — Le Singulier *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [ ] **📱** `FragmentDetailScreen` — Le Fragment
 - [ ] **🤖** Idem
@@ -651,6 +651,7 @@ Build iPhone : 48 — lancement OK
 Compte membre iOS : compte perso
 Compte Prime iOS : carte membre Prime (thème violet/indigo)
 A2 contenu prime invisible : PASS (build 48)
+A2 CreatorCornerDetail (Singulier) : PASS (build 48)
 Build Android :
 Branch / commit :
 
