@@ -18,6 +18,7 @@ import { resolveStablePartnerKey } from '@/lib/partner-validation-code-store';
 import { appendUserNotification, notifyAdminUsers } from '@/lib/user-notifications-store';
 import { listRegistryUsers } from '@/lib/user-registry-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson, undefinedIfNull } from '@/lib/supabase-types';
 import {
   fetchAdminPartnerBenefitOffersViaBackend,
 } from '@/lib/partner-benefit-offers-backend-api';
@@ -181,7 +182,7 @@ async function purgeBenefitOfferNotifications(offer: PartnerBenefitOffer): Promi
       })
       .map((n) => n.id);
     if (toDelete.length) {
-      await deleteUserNotifications(offer.partnerUserId, toDelete);
+      await deleteUserNotifications(toDelete, offer.partnerUserId);
     }
   } catch {
     /* non bloquant */
@@ -417,7 +418,7 @@ async function fetchRemoteOffersForAdmin(countryCode?: string): Promise<PartnerB
   if (!(await canRemoteWritePartnerOffers())) return null;
 
   const { data, error } = await supabase.rpc('list_admin_partner_benefit_offers', {
-    p_country_code: countryCode ?? null,
+    p_country_code: undefinedIfNull(countryCode ?? null),
   });
   if (error) {
     if (!/does not exist|could not find|schema cache/i.test(error.message)) {
@@ -435,7 +436,7 @@ async function upsertRemotePartnerOffer(offer: PartnerBenefitOffer): Promise<{ o
   if (!(await canRemoteWritePartnerOffers())) return { ok: true };
 
   const { error } = await supabase.rpc('admin_upsert_partner_benefit_offer', {
-    p_row: offerToRemoteRow(offer),
+    p_row: asJson(offerToRemoteRow(offer)),
   });
   if (!error) return { ok: true };
   if (/does not exist|could not find|schema cache/i.test(error.message)) {

@@ -704,7 +704,7 @@ export async function grantBenefitsToUsers(input: {
         if (!insertErr) inboxOk = true;
         else console.warn('[privileges] inbox insert grant:', insertErr.message);
       }
-      void deliverPushToUsers({
+      await deliverPushToUsers({
         userIds: [userId],
         title,
         body: message,

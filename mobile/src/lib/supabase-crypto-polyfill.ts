@@ -22,7 +22,7 @@ const subtlePolyfill: SubtleLike = {
       throw new Error(`Algorithme non supporté : ${name}`);
     }
     const bytes = toUint8Array(data);
-    return ExpoCrypto.digest(ExpoCrypto.CryptoDigestAlgorithm.SHA256, bytes);
+    return ExpoCrypto.digest(ExpoCrypto.CryptoDigestAlgorithm.SHA256, new Uint8Array(bytes));
   },
 };
 

@@ -18,6 +18,7 @@ import {
   type PrimeBenefit,
 } from '@/lib/prime-benefits-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 import { listAutomationGrantableCatalog, type GrantableCatalogEntry } from '@/lib/admin-automation-benefits';
 import { userMatchesBenefitCountry } from '@/lib/role-benefit-eligibility';
 import {
@@ -221,10 +222,10 @@ function mapRegistryUserToDrawCandidate(
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
-    phoneNumber: user.phoneNumber,
+    phoneNumber: user.phoneNumber ?? '',
     userRole: user.userRole,
     role: user.role,
-    countryCode: user.countryCode,
+    countryCode: user.countryCode ?? undefined,
     interestCountryCode: user.interestCountryCode,
     city: user.city,
   };
@@ -327,9 +328,9 @@ function userEligibleForDraw(
   if (
     !userMatchesBenefitCountry(
       {
-        countryCode: user.countryCode,
+        countryCode: user.countryCode ?? countryCode,
         interestCountryCode: user.interestCountryCode ?? null,
-        phoneNumber: user.phoneNumber,
+        phoneNumber: user.phoneNumber ?? null,
       },
       countryCode,
     )
@@ -401,7 +402,7 @@ async function syncDrawRemote(record: BenefitDrawRecord): Promise<void> {
     custom_note: record.customNote,
     drawn_by: /^[0-9a-f-]{36}$/i.test(record.drawnBy) ? record.drawnBy : null,
     drawn_at: record.drawnAt,
-    winners: record.winners,
+    winners: asJson(record.winners),
   });
 }
 

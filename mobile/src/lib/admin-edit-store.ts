@@ -13,7 +13,14 @@ import {
 } from '@/lib/content-location-utils';
 import { syncEstablishmentOpeningHours } from '@/lib/establishment-schedules-sync';
 import { canonicalizeGuineaLocationLabel, guineaLocationSnapshotFromStored, sanitizePhysicalLocationInput, type GuineaLocationSnapshot } from '@/lib/guinea-locations';
-import { mapDbEstablishmentToHomeLocation, mapDbToolToHomeLocation, formatProgramFromSchedules } from '@/lib/content-mappers';
+import {
+  mapDbEstablishmentToHomeLocation,
+  mapDbToolToHomeLocation,
+  formatProgramFromSchedules,
+  type DbEstablishmentRow,
+  type DbToolRow,
+} from '@/lib/content-mappers';
+import { asDbInsert, asDbUpdate } from '@/lib/supabase-types';
 import type { HomeLocation } from '@/lib/demo-data';
 import {
   getStagingEventById,
@@ -229,7 +236,7 @@ async function fetchSpotFromEstablishments(id: string): Promise<EditableSpotPayl
   const toolRes = await supabase.from('tools').select(TOOL_EDIT_SELECT).eq('id', id).maybeSingle();
   if (!toolRes.error && toolRes.data) {
     const slug = String(toolRes.data.name ?? 'outil').toLowerCase().replace(/\s+/g, '-');
-    const home = mapDbToolToHomeLocation(toolRes.data, slug);
+    const home = mapDbToolToHomeLocation(toolRes.data as DbToolRow, slug);
     const payload = fromHomeLocation(home, 'supabase');
     const { data: submission } = await supabase
       .from('partner_spot_submissions')
@@ -251,7 +258,7 @@ async function fetchSpotFromEstablishments(id: string): Promise<EditableSpotPayl
   if (error || !data) return null;
 
   const slug = String(data.name ?? 'spot').toLowerCase().replace(/\s+/g, '-');
-  const home = mapDbEstablishmentToHomeLocation(data, slug);
+  const home = mapDbEstablishmentToHomeLocation(data as DbEstablishmentRow, slug);
   const payload = fromHomeLocation(home, 'supabase');
 
   if (data.opening_hours_label?.trim()) {
@@ -423,8 +430,10 @@ async function fetchEventFromSupabase(id: string): Promise<EditableEventPayload 
   const submissionMeta = await fetchEventSubmissionMeta(id);
   const programFromSchedules = formatProgramFromSchedules(data.event_schedules ?? null);
   const actionLink = data.action_link ? String(data.action_link) : null;
-  const venueAddressFromJoin = data.locations
-    ? `${data.locations.neighborhood_name}, ${data.locations.city}`
+  const locationJoin = Array.isArray(data.locations) ? data.locations[0] : data.locations;
+  const establishmentJoin = Array.isArray(data.establishments) ? data.establishments[0] : data.establishments;
+  const venueAddressFromJoin = locationJoin
+    ? `${locationJoin.neighborhood_name}, ${locationJoin.city}`
     : null;
 
   return {
@@ -438,10 +447,10 @@ async function fetchEventFromSupabase(id: string): Promise<EditableEventPayload 
     startsAt: String(data.start_date ?? new Date().toISOString()),
     endsAt: data.end_date ? String(data.end_date) : null,
     venueName: submissionMeta?.venueName
-      ?? String(data.custom_location_name ?? data.establishments?.name ?? ''),
+      ?? String(data.custom_location_name ?? establishmentJoin?.name ?? ''),
     venueAddress: (() => {
       const venueNameHint = submissionMeta?.venueName
-        ?? String(data.custom_location_name ?? data.establishments?.name ?? '');
+        ?? String(data.custom_location_name ?? establishmentJoin?.name ?? '');
       if (submissionMeta?.venueAddress != null) {
         const cleaned = sanitizePhysicalLocationInput(
           submissionMeta.venueAddress,
@@ -497,7 +506,7 @@ function normalizeEditableSpeakers(raw: unknown): EditableSpeakerInput[] {
           : null,
       };
     })
-    .filter((sp): sp is EditableSpeakerInput => sp !== null);
+    .filter((sp): sp is NonNullable<typeof sp> => sp !== null);
 }
 
 async function syncEventProgram(eventId: string, program: string | null): Promise<void> {
@@ -628,7 +637,7 @@ async function syncEventSubmissionFull(eventId: string, payload: EditableEventPa
     .eq('published_event_id', eventId)
     .maybeSingle();
   if (existing) {
-    await supabase.from('partner_event_submissions').update(patch).eq('published_event_id', eventId);
+    await supabase.from('partner_event_submissions').update(asDbUpdate('partner_event_submissions', patch)).eq('published_event_id', eventId);
     return;
   }
 
@@ -642,7 +651,7 @@ async function syncEventSubmissionFull(eventId: string, payload: EditableEventPa
     ? String(eventRow.organizer_id)
     : (authData.user?.id ?? null);
 
-  await supabase.from('partner_event_submissions').insert({
+  await supabase.from('partner_event_submissions').insert(asDbInsert('partner_event_submissions', {
     local_id: `admin-sync-${eventId}`,
     partner_user_id: partnerUserId,
     partner_name: payload.organizerName?.trim() || 'THE LOOP Admin',
@@ -650,7 +659,7 @@ async function syncEventSubmissionFull(eventId: string, payload: EditableEventPa
     published_event_id: eventId,
     status: 'approved',
     ...patch,
-  });
+  }));
 }
 
 async function syncSpotSubmissionFull(
@@ -667,7 +676,7 @@ async function syncSpotSubmissionFull(
     .eq(publishedColumn, target.id)
     .maybeSingle();
   if (existing) {
-    await supabase.from('partner_spot_submissions').update(patch).eq(publishedColumn, target.id);
+    await supabase.from('partner_spot_submissions').update(asDbUpdate('partner_spot_submissions', patch)).eq(publishedColumn, target.id);
     return;
   }
 
@@ -675,14 +684,14 @@ async function syncSpotSubmissionFull(
   const partnerUserId = authData.user?.id ?? null;
   const localPrefix = target.kind === 'tool' ? 'tool-admin' : 'spot-admin';
 
-  await supabase.from('partner_spot_submissions').insert({
+  await supabase.from('partner_spot_submissions').insert(asDbInsert('partner_spot_submissions', {
     local_id: `${localPrefix}-${target.id}`,
     partner_user_id: partnerUserId,
     partner_name: payload.organizerName?.trim() || payload.developer?.trim() || 'THE LOOP Admin',
     [publishedColumn]: target.id,
     status: 'approved',
     ...patch,
-  });
+  }));
 }
 
 async function resolveEventLocationId(payload: EditableEventPayload): Promise<number | null | undefined> {
@@ -743,7 +752,7 @@ async function applyPublishedEventUpdate(
     eventUpdate.location_id = locationId;
   }
 
-  const { error } = await supabase.from('events').update(eventUpdate).eq('id', publishedId);
+  const { error } = await supabase.from('events').update(asDbUpdate('events', eventUpdate)).eq('id', publishedId);
 
   if (error) {
     console.warn('[AdminEdit] events update:', error.message);
@@ -833,7 +842,7 @@ async function applyPublishedSpotUpdate(
 
   const { error } = await supabase
     .from('establishments')
-    .update(establishmentUpdate)
+    .update(asDbUpdate('establishments', establishmentUpdate))
     .eq('id', target.id);
 
   if (error) {

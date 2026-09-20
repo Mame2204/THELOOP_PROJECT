@@ -10,6 +10,7 @@ import { isToolLocation } from '@/lib/location-kind-utils';
 import { listRegistryUsers, type RegistryUser } from '@/lib/user-registry-store';
 import { normalizePhone } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 import { resolveAuthUserPhone } from '@/lib/partner-auth-profile';
 import type { Event, EventCategory, LocationSubCategory, UserRole } from '@/types';
 
@@ -158,7 +159,7 @@ async function notifyUserViaRpc(
     p_title: input.title,
     p_message: input.message,
     p_audience: input.audience,
-    p_recipient_phone: recipientPhone ?? null,
+    p_recipient_phone: undefinedIfNull(recipientPhone ?? null),
   });
   if (error) {
     if (isNotificationsSchemaError(error.message)) {
@@ -357,7 +358,10 @@ async function selectUserNotificationsRemote(
   if (!(await canUseRemoteNotifications()) || !supabase) return [];
 
   const queryUserId = await ensureNotificationAuthSession(userId);
-  if (!queryUserId || queryUserId !== userId) return [];
+  if (!queryUserId || queryUserId !== userId) {
+    const local = await loadAll();
+    return local.filter((n) => n.userId === userId);
+  }
 
   const full = await supabase
     .from('user_notifications')
@@ -710,7 +714,7 @@ function pruneRecentAppends(now: number): void {
 export function appendUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null },
+  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
 ): Promise<UserNotification> {
   const now = Date.now();
   pruneRecentAppends(now);
@@ -728,7 +732,7 @@ export function appendUserNotification(
 async function createUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null },
+  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
 ): Promise<UserNotification> {
   const sentAt = new Date().toISOString();
   let id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -758,7 +762,7 @@ async function createUserNotification(
   await saveAll(withoutDup);
 
   // Alerte OS (arrière-plan / app fermée) — en plus de l’inbox.
-  if (/^[0-9a-f-]{36}$/i.test(userId)) {
+  if (!options?.skipOsDelivery && /^[0-9a-f-]{36}$/i.test(userId)) {
     void import('@/lib/push-notifications').then(async (m) => {
       await m.requestExpoPushDelivery({
         userIds: [userId],
@@ -831,8 +835,8 @@ export async function notifyAdminUsers(input: {
       p_title: title,
       p_message: message,
       p_audience: 'admin',
-      p_country_code: country,
-      p_campaign_id: null,
+      p_country_code: undefinedIfNull(country),
+      p_campaign_id: undefined,
     });
     if (!error) {
       await deliverPushToAdminUserIds(data, title, message, 'admin');
@@ -1303,8 +1307,8 @@ export async function distributeNotification(input: {
       p_title: title,
       p_message: message,
       p_audience: input.audience === 'all' ? 'everyone' : input.audience,
-      p_country_code: input.countryCode ?? null,
-      p_campaign_id: campaignId,
+      p_country_code: undefinedIfNull(input.countryCode ?? null),
+      p_campaign_id: undefinedIfNull(campaignId),
     });
     if (!error && Array.isArray(data)) {
       await deliverPushToAdminUserIds(data, title, message, input.audience);

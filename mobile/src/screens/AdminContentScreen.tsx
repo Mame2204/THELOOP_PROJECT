@@ -62,7 +62,7 @@ function resolveInitialTab(param?: RootStackParamList['AdminContent']['tab']): T
   return 'all';
 }
 
-function accueilPanelTab(tab: AccueilTab): AdminPanelParamList['AdminAccueil']['tab'] {
+function accueilPanelTab(tab: AccueilTab): NonNullable<AdminPanelParamList['AdminAccueil']>['tab'] {
   return tab;
 }
 

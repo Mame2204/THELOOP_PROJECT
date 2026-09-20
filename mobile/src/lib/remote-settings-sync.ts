@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isNetworkOnline } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 export async function fetchAppSetting<T>(key: string): Promise<T | null> {
   if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return null;
@@ -13,7 +14,7 @@ export async function upsertAppSetting(key: string, value: unknown): Promise<voi
   if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return;
   const { error } = await supabase.from('app_settings').upsert({
     key,
-    value,
+    value: asJson(value),
     updated_at: new Date().toISOString(),
   });
   if (error) console.warn(`[AppSettings:${key}]`, error.message);

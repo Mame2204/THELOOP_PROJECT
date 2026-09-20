@@ -1,6 +1,6 @@
 import { THELOOP_AUTH_CALLBACK } from '@/lib/auth-redirect';
 
-const mockCreateURL = jest.fn(() => 'exp://tunnel.exp.direct/--/auth/callback');
+const mockCreateURL = jest.fn((_path?: string) => 'exp://tunnel.exp.direct/--/auth/callback');
 
 jest.mock('expo-constants', () => ({
   __esModule: true,
@@ -12,7 +12,7 @@ jest.mock('expo-constants', () => ({
 }));
 
 jest.mock('expo-linking', () => ({
-  createURL: (...args: unknown[]) => mockCreateURL(...args),
+  createURL: (path: string) => mockCreateURL(path),
 }));
 
 describe('auth-redirect', () => {

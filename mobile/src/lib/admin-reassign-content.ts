@@ -6,6 +6,7 @@ import {
   type StagingSpot,
 } from '@/lib/partner-staging-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 import type { ContentOrigin } from '@/lib/content-origin';
 
 export type ReassignContentKind = 'event' | 'spot' | 'tool';
@@ -152,7 +153,7 @@ export async function reassignContentOwner(
   const { data, error } = await supabase.rpc('admin_reassign_content_owner', {
     p_kind: kind,
     p_content_id: contentId,
-    p_partner_user_id: partnerUserId,
+    p_partner_user_id: undefinedIfNull(partnerUserId),
   });
 
   if (error) {

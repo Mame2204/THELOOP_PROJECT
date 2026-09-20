@@ -63,7 +63,7 @@ describe('device-cache-reconcile', () => {
 
     const { supabase } = jest.requireMock('@/lib/supabase');
     supabase.from.mockImplementation((table: string) => {
-      const chain = {
+      const chain: { eq: jest.Mock } = {
         eq: jest.fn(function eq() {
           return chain;
         }),

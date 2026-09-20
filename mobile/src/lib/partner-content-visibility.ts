@@ -126,14 +126,14 @@ export async function applyPartnerLiveCatalogFilter(
         e.publishedEventId?.trim()
         || e.id.replace(/^transfer-/, '').replace(/^catalog-event-/, '');
       if (!pub) return false;
-      return liveIds.has(pub) || liveIds.has(e.id);
+      return liveIds.has(pub) || liveIds.has(e.id) || approvedPubIds.has(pub);
     }),
     spots: dropRemoved.spots.filter((s) => {
       if (s.status === 'withdrawal_requested') return true;
       if (s.status !== 'approved') return isPartnerSpotVisible(s);
       const pub = spotPublishedId(s);
       if (!pub) return false;
-      return liveIds.has(pub);
+      return liveIds.has(pub) || approvedPubIds.has(pub);
     }),
   };
 }

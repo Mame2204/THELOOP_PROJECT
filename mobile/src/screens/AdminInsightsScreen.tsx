@@ -78,6 +78,8 @@ export function AdminInsightsScreen({ navigation }: Props) {
       : INSIGHT_SECTION_DEFS,
   ) as Array<{ id: InsightSection; label: string }>;
 
+  const [section, setSection] = useState<InsightSection>('overview');
+
   useEffect(() => {
     if (insightSections.length && !insightSections.some((s) => s.id === section)) {
       setSection(insightSections[0].id);
@@ -102,7 +104,6 @@ export function AdminInsightsScreen({ navigation }: Props) {
   const pureSpots = useMemo(() => filterSpotsOnly(locations), [locations]);
   const tools = useMemo(() => filterTools(locations), [locations]);
   const toolIds = useMemo(() => toolLocationIds(locations), [locations]);
-  const [section, setSection] = useState<InsightSection>('overview');
   const [metric, setMetric] = useState<MetricTab>('all');
   const [data, setData] = useState<Awaited<ReturnType<typeof getFullAdminInsights>> | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(true);

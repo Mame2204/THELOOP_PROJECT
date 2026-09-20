@@ -3,6 +3,7 @@ import { countryCacheKey, countryRemoteKey, resolveCountryCode } from '@/lib/cou
 import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
 import { isNetworkOnline } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 export type RoleEntitlementKind = 'member' | 'prime' | 'partner' | 'admin';
 
@@ -98,7 +99,7 @@ async function fetchRemoteConfig(countryCode: CountryCode): Promise<RoleBenefitE
     .maybeSingle();
 
   if (!error && data?.value) {
-    return normalizeConfig(data.value as RoleBenefitEntitlementsConfig);
+    return normalizeConfig(data.value as unknown as RoleBenefitEntitlementsConfig);
   }
 
   if (isLegacyGn) {
@@ -108,17 +109,17 @@ async function fetchRemoteConfig(countryCode: CountryCode): Promise<RoleBenefitE
       .eq('key', LEGACY_REMOTE)
       .maybeSingle();
     if (!legacyError && legacy?.value) {
-      const config = normalizeConfig(legacy.value as RoleBenefitEntitlementsConfig);
+      const config = normalizeConfig(legacy.value as unknown as RoleBenefitEntitlementsConfig);
       await supabase.from('app_settings').upsert({
         key: remote,
-        value: {
+        value: asJson({
           member: config.member,
           prime: config.prime,
           partner: config.partner,
           admin: config.admin,
           updatedAt: config.updatedAt,
           updatedBy: config.updatedBy ?? null,
-        },
+        }),
         updated_at: new Date().toISOString(),
       });
       return config;
@@ -134,14 +135,14 @@ async function pushRemoteConfig(countryCode: CountryCode, config: RoleBenefitEnt
   const { remote } = keys(countryCode);
   const { error } = await supabase.from('app_settings').upsert({
     key: remote,
-    value: {
+    value: asJson({
       member: config.member,
       prime: config.prime,
       partner: config.partner,
       admin: config.admin,
       updatedAt: config.updatedAt,
       updatedBy: config.updatedBy ?? null,
-    },
+    }),
     updated_at: new Date().toISOString(),
   });
 

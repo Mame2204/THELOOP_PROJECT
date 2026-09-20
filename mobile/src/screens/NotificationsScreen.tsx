@@ -136,10 +136,11 @@ export function NotificationsScreen({ navigation }: Props) {
   }
 
   const userId = user.id;
+  const userPhone = user.phoneNumber;
 
   async function handleToggle(item: UserNotification) {
     if (!item.readAt) {
-      await markNotificationRead(item.id, userId, user.phoneNumber);
+      await markNotificationRead(item.id, userId, userPhone);
       setItems((prev) =>
         prev.map((row) => (row.id === item.id ? { ...row, readAt: new Date().toISOString() } : row)),
       );
@@ -161,7 +162,7 @@ export function NotificationsScreen({ navigation }: Props) {
         style: 'destructive',
         onPress: () => {
           setItems((prev) => prev.filter((row) => row.id !== item.id));
-          void deleteUserNotification(item.id, userId, user.phoneNumber).then(reload);
+          void deleteUserNotification(item.id, userId, userPhone).then(reload);
         },
       },
     ]);

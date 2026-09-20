@@ -299,15 +299,25 @@ export async function isAdminAuthUserId(authUserId: string): Promise<boolean> {
 export async function ensureInboxReadSession(expectedUserId: string): Promise<string | null> {
   if (!isSupabaseConfigured() || !supabase || !isUuid(expectedUserId)) return null;
 
-  const current = await getPartnerAuthUserIdFromSession();
-  if (current === expectedUserId) return current;
-
-  if (current) {
-    if (await isAdminAuthUserId(expectedUserId)) return null;
-    return current;
+  const expectedIsAdmin = await isAdminAuthUserId(expectedUserId);
+  if (expectedIsAdmin) {
+    await ensurePartnerSupabaseSession({ allowRestore: false });
   }
 
-  return null;
+  let current = await getPartnerAuthUserIdFromSession();
+  if (current === expectedUserId) return current;
+
+  if (current && current !== expectedUserId && expectedIsAdmin) {
+    await clearPartnerSpotSession();
+    current = await getPartnerAuthUserIdFromSession();
+    if (current === expectedUserId) return current;
+  }
+
+  if (current && current !== expectedUserId) {
+    return expectedIsAdmin ? null : current;
+  }
+
+  return expectedUserId;
 }
 
 /** RPC soumission partenaire : auth.uid() doit être p_partner_user_id (assert_partner_submission_actor). */

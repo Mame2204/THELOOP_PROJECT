@@ -3,6 +3,7 @@ import type { BenefitPurpose } from '@/lib/benefit-catalog-store';
 import { locationsMatchPrefectureMesh, normalizeLocationLabel, formatLocationPrefectureLabel } from '@/lib/guinea-locations';
 import { loadCachedJson, saveCachedJson } from '@/lib/remote-settings-sync';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 import { AUDIENCE_LABELS } from '@/lib/notification-audience';
 import { BENEFIT_PURPOSE_LABELS } from '@/lib/benefit-catalog-store';
 import { GRANT_AUDIENCE_LABELS, type BenefitGrantAudience } from '@/lib/prime-benefits-store';
@@ -317,7 +318,7 @@ async function upsertRemote(job: AutomationJob): Promise<void> {
     schedule: row.schedule,
     country_code: row.country_code,
     city: row.city,
-    payload: row.payload,
+    payload: asJson(row.payload),
     last_run_at: row.last_run_at,
     last_run_count: row.last_run_count,
     last_run_summary: row.last_run_summary,

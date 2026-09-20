@@ -23,6 +23,7 @@ import { Linking } from 'react-native';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 import { touchUserLastSeen } from '@/lib/user-activity';
 
 import {
@@ -376,8 +377,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : 'deleted';
           if (!isAccountAccessAllowedForSession(access)) {
             // Différer signOut hors du callback auth pour éviter un verrou mort.
+            const client = supabase;
             setTimeout(() => {
-              void supabase.auth.signOut();
+              void client?.auth.signOut();
             }, 0);
             setUser(ANONYMOUS_USER);
             setIsLoading(false);
@@ -800,11 +802,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         p_last_name: metadata.last_name,
 
-        p_phone: metadata.phone_number,
+        p_phone: undefinedIfNull(metadata.phone_number),
 
         p_user_role: metadata.user_role,
 
-        p_qr_token: qrCodeToken,
+        p_qr_token: undefinedIfNull(qrCodeToken),
 
       });
 
@@ -930,9 +932,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.rpc('ensure_user_profile', {
       p_first_name: typeof md.first_name === 'string' ? md.first_name : 'Membre',
       p_last_name: typeof md.last_name === 'string' ? md.last_name : 'THE LOOP',
-      p_phone: typeof md.phone_number === 'string' ? md.phone_number : null,
+      p_phone: typeof md.phone_number === 'string' ? md.phone_number : undefined,
       p_user_role: typeof md.user_role === 'string' ? md.user_role : 'member',
-      p_qr_token: typeof md.qr_code_token === 'string' ? md.qr_code_token : null,
+      p_qr_token: typeof md.qr_code_token === 'string' ? md.qr_code_token : undefined,
     });
     if (error) console.warn('[Auth] ensure_user_profile:', error.message);
   }, []);
@@ -1631,17 +1633,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (newPassword.trim().length < 8) {
       throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
     }
-    let sessionData = await supabase.auth.getSession();
-    if (!sessionData.data.session) {
+    let activeSession = (await supabase.auth.getSession()).data.session;
+    if (!activeSession) {
       const refreshed = await supabase.auth.refreshSession();
-      sessionData = { data: refreshed.data, error: refreshed.error };
+      activeSession = refreshed.data.session;
     }
-    if (!sessionData.data.session) {
+    if (!activeSession) {
       throw new Error(
         'Lien expiré ou session perdue. Ouvrez le dernier e-mail reçu sur ce téléphone, puis réessayez.',
       );
     }
-    const activeSession = sessionData.data.session;
     const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
     if (error) {
       throw new Error(error.message || 'Impossible d’enregistrer le nouveau mot de passe.');

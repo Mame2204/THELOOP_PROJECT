@@ -1,9 +1,10 @@
 # THE LOOP — Smoke test complet (à cocher)
 
-> **Màj :** 18 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
-> **App mobile :** build **44** (TestFlight + Play internal — **à publier**)  
-> **Admin web :** `https://admin.theloop-app.com` (deploy post-fix tirage · paliers · retraits)  
-> **Serveur :** `https://api.theloop-app.com` (cron push, paiements)
+> **Màj :** 20 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
+> **App mobile :** build **48** (TestFlight + Play internal)  
+> **Admin web :** `https://admin.theloop-app.com`  
+> **Serveur :** `https://api.theloop-app.com` (cron push, paiements)  
+> **Qualité code :** `mobile npm run typecheck` = 0 erreur · 131 tests Jest verts
 
 ---
 
@@ -48,8 +49,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## 0 — Avant de commencer
 
 ### Environnement
-- [ x ] **📱** Build **40** installé (TestFlight)
-- [ x ] **🤖** Build **40** installé (Play internal)
+- [ ] **📱** Build **48** installé (TestFlight)
+- [ ] **🤖** Build **48** installé (Play internal)
 - [ x ] **💻** Admin-web accessible
 - [ x ] **⏳** Redeploy admin-web + Render faits (si tests push planifiés § H)
 
@@ -584,21 +585,25 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 ## Notes de session
 
 ```
-Date : 19 sept. 2026
+Date : 20 sept. 2026
 Testeur :
-Build iPhone : 45 à tester
-Build Android : 45 à tester
-Admin-web à jour : deploy build 45 (tirage inbox+push · parrainage partenaire)
+Build iPhone : 48 à tester
+Build Android : 48 à tester
+Admin-web à jour : oui
 Serveur Render à jour : oui
-Validé build 44/45 prep : paliers éditer/archiver · parrainage admin seuils
-Retest build 45 : voir liste ci-dessous
+TypeScript mobile : 0 erreur (lot CountryCode + permissions + écrans admin)
 ```
 
-### Tests à refaire (build 45 + admin-web déployé)
+### Tests prioritaires avant prochain build EAS (points `[ k ]`)
 
-1. **Cloche admin** — soumission partenaire + demande retrait événement → push **et** inbox super admin.
+> **Correctifs code livrés (sept. 2026)** — retest manuel requis avant **un seul** build :
+> retraits (cancel/approve + cache catalogue), cloche admin (session SPOT + seed inbox push),
+> tirage (titre « Nouveau privilège », refresh octrois fiche, push admin-web await).
+
+1. **Cloche admin** — soumission partenaire + demande retrait → push **et** inbox super admin.
 2. **Modération spots/outils** — soumission partenaire visible admin mobile + admin-web.
 3. **Tirage** — gagnant : push + cloche « Nouveau privilège » · fiche contenu **déverrouillée**.
 4. **Privilège contenu** — Prime sans octroi : cadenas · gagnant tirage : accès.
 5. **Parrainage partenaire** — écran sans bloc récompense Prime (code + filleuls OK).
-6. **Retrait** — approuver retrait · annuler retrait pending (régression).
+6. **Retrait** — approuver retrait catalogue · **annuler** retrait pending (partenaire).
+7. **Push planifié** — voir aussi `07-Smoke-Push.md` (cron Render, pas de doublon).

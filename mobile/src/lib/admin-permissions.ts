@@ -1,16 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import type { RootStackParamList } from '@/navigation/types';
+import type { AdminPanelParamList, RootStackParamList } from '@/navigation/types';
+
+export type AdminPermissionRoute = keyof RootStackParamList | keyof AdminPanelParamList;
 
 export interface AdminPermissionDef {
-  id: AdminPermissionId;
+  id: string;
   label: string;
   description: string;
-  route?: keyof RootStackParamList;
+  route?: AdminPermissionRoute;
   /** Groupe d'affichage dans l'écran Permission */
   group: AdminPermissionGroupId;
   /** Module parent — sous-onglet ou entrée Paramètres */
-  parentId?: AdminPermissionId;
+  parentId?: string;
   /** Non proposé aux admins délégués (super admin uniquement) */
   superAdminOnly?: boolean;
 }
@@ -243,7 +245,7 @@ export function hasAdminSubPermission(
   return list.includes(subId);
 }
 
-export function permissionForRoute(route: keyof RootStackParamList): AdminPermissionId | null {
+export function permissionForRoute(route: AdminPermissionRoute): AdminPermissionId | null {
   const match = ADMIN_PERMISSION_CATALOG.find((p) => p.route === route);
   return match?.id ?? null;
 }

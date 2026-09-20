@@ -20,6 +20,11 @@ import {
 } from '@/lib/partner-validation-direct';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { getSupabasePublic } from '@/lib/supabase-public';
+import { asDbInsert, asDbUpdate, undefinedIfNull } from '@/lib/supabase-types';
+import type { Database } from '@/types/database.types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+type DbSupabaseClient = SupabaseClient<Database>;
 
 export const BENEFIT_REDEMPTION_TIMEOUT_MS = 10 * 60 * 1000;
 export const BENEFIT_REDEMPTION_TIMEOUT_MINUTES = BENEFIT_REDEMPTION_TIMEOUT_MS / (60 * 1000);
@@ -88,11 +93,11 @@ async function pushRedemptionToRemote(
       p_partner_name: entry.partnerName,
       p_partner_code: entry.partnerCode,
       p_expires_at: entry.expiresAt,
-      p_content_id: entry.contentId,
-      p_content_type: entry.contentType,
-      p_content_title: entry.contentTitle,
-      p_benefit_title: extras?.benefitTitle ?? null,
-      p_benefit_description: extras?.benefitDescription ?? null,
+      p_content_id: undefinedIfNull(entry.contentId),
+      p_content_type: undefinedIfNull(entry.contentType),
+      p_content_title: undefinedIfNull(entry.contentTitle),
+      p_benefit_title: undefinedIfNull(extras?.benefitTitle ?? null),
+      p_benefit_description: undefinedIfNull(extras?.benefitDescription ?? null),
       p_grant_status: 'pending_validation',
     });
     if (!rpcError && rpcId) {
@@ -108,16 +113,16 @@ async function pushRedemptionToRemote(
   }
 
   const tryInsert = async (
-    client: NonNullable<ReturnType<typeof getSupabasePublic>> | NonNullable<typeof supabase>,
+    client: DbSupabaseClient,
     row: Record<string, unknown>,
   ): Promise<{ ok: boolean; error?: string }> => {
-    const { error } = await client.from('benefit_redemptions').insert(row);
+    const { error } = await client.from('benefit_redemptions').insert(asDbInsert('benefit_redemptions', row));
     if (!error) return { ok: true };
     const fallbackRow = { ...row };
     delete fallbackRow.content_id;
     delete fallbackRow.content_type;
     delete fallbackRow.content_title;
-    const retry = await client.from('benefit_redemptions').insert(fallbackRow);
+    const retry = await client.from('benefit_redemptions').insert(asDbInsert('benefit_redemptions', fallbackRow));
     if (retry.error) {
       console.warn('[Redemption] insert remote:', retry.error.message);
       return { ok: false, error: retry.error.message };
@@ -127,7 +132,7 @@ async function pushRedemptionToRemote(
 
   const publicClient = getSupabasePublic();
   if (publicClient) {
-    const res = await tryInsert(publicClient, remoteRow);
+    const res = await tryInsert(publicClient as DbSupabaseClient, remoteRow);
     if (res.ok) {
       markNetworkReachable();
       return res;
@@ -296,7 +301,7 @@ async function syncRemoteStatus(ids: string[], status: BenefitRedemptionStatus, 
 
   await supabase
     .from('benefit_redemptions')
-    .update(payload)
+    .update(asDbUpdate('benefit_redemptions', payload))
     .in('local_id', ids);
 }
 
@@ -1148,7 +1153,7 @@ export async function countPartnerValidationMetrics(
       const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
       await ensurePartnerSupabaseSession();
       const { data, error } = await supabase.rpc('count_my_partner_validation_metrics', {
-        p_since: since ? since.toISOString() : null,
+        p_since: since ? since.toISOString() : undefined,
       });
       if (!error && data && typeof data === 'object') {
         const row = data as { validations?: number; unique_members?: number };

@@ -38,7 +38,7 @@ export async function supplementPartnerEventsFromCatalog(
   const { data, error } = await supabase
     .from('events')
     .select(
-      'id, title, description, start_date, end_date, custom_location_name, organizer_name, country_code, banner_url, updated_at, created_at',
+      'id, title, description, start_date, end_date, custom_location_name, organizer_name, country_code, banner_url, created_at',
     )
     .in('id', missingIds)
     .eq('content_status', 'published')
@@ -80,7 +80,7 @@ export async function supplementPartnerEventsFromCatalog(
       countryCode: String(row.country_code ?? 'GN'),
       publishedEventId: catalogId,
       createdAt: row.created_at ? String(row.created_at) : now,
-      updatedAt: row.updated_at ? String(row.updated_at) : now,
+      updatedAt: row.created_at ? String(row.created_at) : now,
     });
   }
 
@@ -105,7 +105,7 @@ export async function supplementPartnerSpotsFromCatalog(
   const [estRes, toolRes] = await Promise.all([
     supabase
       .from('establishments')
-      .select('id, name, description, country_code, updated_at, created_at')
+      .select('id, name, description, country_code, created_at')
       .in('id', missingIds)
       .eq('content_status', 'published')
       .eq('is_active', true),
@@ -149,7 +149,7 @@ export async function supplementPartnerSpotsFromCatalog(
       publishedEstablishmentId: catalogId,
       publishedToolId: null,
       createdAt: row.created_at ? String(row.created_at) : now,
-      updatedAt: row.updated_at ? String(row.updated_at) : now,
+      updatedAt: row.created_at ? String(row.created_at) : now,
     });
   }
 

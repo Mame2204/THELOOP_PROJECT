@@ -8,6 +8,7 @@ import { resolvePartnerUserIdForSync } from '@/lib/partner-user-resolve';
 import type { StagingEvent, StagingSpot } from '@/lib/partner-staging-store';
 import { syncEstablishmentOpeningHours } from '@/lib/establishment-schedules-sync';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
@@ -64,7 +65,7 @@ export async function syncPartnerSpotSubmission(spot: StagingSpot): Promise<{ ok
     p_local_id: spot.id,
     p_partner_user_id: partnerUserId,
     p_partner_name: spot.partnerName,
-    p_payload: spotToPayload(spot),
+    p_payload: asJson(spotToPayload(spot)),
     p_status: spot.status,
   });
 
@@ -181,7 +182,7 @@ export async function syncPartnerEventSubmission(event: StagingEvent): Promise<{
     p_partner_user_id: partnerUserId,
     p_partner_name: event.partnerName,
     p_master_user_id: masterUserId,
-    p_payload: eventToPayload(event),
+    p_payload: asJson(eventToPayload(event)),
     p_status: event.status,
   });
 

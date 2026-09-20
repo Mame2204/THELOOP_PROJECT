@@ -5,6 +5,7 @@ import { inferCountryCodeFromPhone } from '@/lib/otp-auth';
 import { buildAuthLoginEmailCandidates } from '@/lib/auth-login';
 import { DEV_MEMBER_PASSWORD } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asDbUpdate, callRpc } from '@/lib/supabase-types';
 import { upsertRegistryUser } from '@/lib/user-registry-store';
 import { setPhoneDeactivated } from '@/lib/deactivated-users-store';
 import { initiatePasswordReset } from '@/lib/password-reset-store';
@@ -144,7 +145,7 @@ export async function listAdminInvites(countryCode?: string): Promise<AdminUserI
       for (const row of data) {
         const inv: AdminUserInvite = {
           id: row.id,
-          phoneNumber: row.phone_number,
+          phoneNumber: row.phone_number ?? 'non_renseigne',
           email: row.email,
           userRole: mapDbRole(row.user_role),
           firstName: row.first_name,
@@ -498,7 +499,7 @@ export async function updateUserRole(
   // Ne jamais patcher subscription_status / subscription_expires_at :
   // absents du schéma distant (cache PostgREST) sur certains projets.
   // Le retrait PASS / abonnement passe par revokeAllActivePassesForUser + registre local.
-  const { error } = await supabase.from('users').update(dbPatch).eq('id', userId);
+  const { error } = await supabase.from('users').update(asDbUpdate('users', dbPatch)).eq('id', userId);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
@@ -639,7 +640,7 @@ export async function updateAdminUserProfile(
     dbPatch.partner_can_manage_tools = patch.partnerContentScopes.tools;
   }
 
-  const { error } = await supabase.from('users').update(dbPatch).eq('id', userId);
+  const { error } = await supabase.from('users').update(asDbUpdate('users', dbPatch)).eq('id', userId);
   if (error) return { ok: false, error: error.message };
 
   let authSyncWarning: string | undefined;
@@ -659,7 +660,7 @@ async function syncAuthUserEmailAfterProfileSave(
 ): Promise<string | undefined> {
   if (!supabase) return 'Synchronisation Auth indisponible.';
 
-  const { error: rpcError } = await supabase.rpc('admin_sync_auth_user_email', {
+  const { error: rpcError } = await callRpc(supabase, 'admin_sync_auth_user_email', {
     p_user_id: userId,
     p_email: email,
   });

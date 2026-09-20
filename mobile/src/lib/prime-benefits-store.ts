@@ -33,6 +33,7 @@ import {
   userQualifiesForPrimeEntitlements,
 } from '@/lib/role-benefit-eligibility';
 import { EXTERNAL_PARTNER_ID } from '@/lib/partner-directory-store';
+import type { PartnerValidationCode } from '@/lib/partner-validation-code-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { User } from '@/types';
 
@@ -677,9 +678,9 @@ export async function listBenefitGrantRecipientTargets(
     if (!grantCountryCode) return true;
     return userMatchesBenefitCountry(
       {
-        countryCode: u.countryCode,
+        countryCode: u.countryCode ?? DEFAULT_COUNTRY_CODE,
         interestCountryCode: u.interestCountryCode ?? null,
-        phoneNumber: u.phoneNumber,
+        phoneNumber: u.phoneNumber ?? null,
       },
       grantCountryCode,
     );
@@ -786,7 +787,7 @@ async function notifyBenefitGrantTarget(
       });
     } else {
       await appendUserNotification(target.userId, {
-        title: 'Nouvel avantage',
+        title: 'Nouveau privilège',
         message,
         audience: 'individual',
       });
@@ -796,7 +797,7 @@ async function notifyBenefitGrantTarget(
 
   if (target.phone) {
     await distributeNotification({
-      title: 'Nouvel avantage',
+      title: 'Nouveau privilège',
       message,
       audience: 'individual',
       targetPhone: target.phone,
@@ -806,7 +807,7 @@ async function notifyBenefitGrantTarget(
 
   if (target.userId) {
     await appendUserNotification(target.userId, {
-      title: 'Nouvel avantage',
+      title: 'Nouveau privilège',
       message,
       audience: 'individual',
     });
@@ -842,6 +843,9 @@ async function pushCreatedBenefitNotifications(benefits: PrimeBenefit[]): Promis
         : `Vous avez reçu ${meta.length} avantages : ${meta.map((g) => formatBenefitNotificationLine(g)).join(' · ')}.`;
     await notifyBenefitGrantTarget({ userId, phone }, meta, message);
   }
+
+  const { emitHomeRefresh } = await import('@/lib/home-refresh');
+  emitHomeRefresh('benefit-grants');
 }
 
 async function executeGrant(input: {
@@ -1546,7 +1550,7 @@ export async function requestBenefitValidation(
   };
 
   let partnerId = offeringPartnerId;
-  let partnerCode: { code: string };
+  let partnerCode: PartnerValidationCode;
   try {
     const resolved = await Promise.race([
       resolvePartner(),

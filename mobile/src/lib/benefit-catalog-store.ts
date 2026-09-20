@@ -10,6 +10,7 @@ import { normalizePartnerName } from '@/lib/partner-name-utils';
 import { loadCachedJson, saveCachedJson } from '@/lib/remote-settings-sync';
 import { resolvePartnerUserIdForSync } from '@/lib/partner-user-resolve';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asDbInsert, asDbUpdate, asJson } from '@/lib/supabase-types';
 import { fetchSupabasePages } from '@/lib/supabase-list';
 import { resolveContentBenefitLookupIds } from '@/lib/content-benefits-index';
 import { peekContentSnapshot } from '@/lib/content-store';
@@ -175,7 +176,7 @@ function itemToRow(item: BenefitCatalogItem) {
     validity_ends_at: item.validityEndsAt ?? null,
     validity_starts_on_activation: item.validityStartsOnActivation !== false,
     is_active: item.isActive,
-    offering_partners: item.offeringPartners,
+    offering_partners: asJson(item.offeringPartners),
     benefit_kind: item.benefitKind,
     quantity_per_grant: item.quantityPerGrant,
     max_uses_per_grant: item.maxUsesPerGrant,
@@ -276,13 +277,13 @@ async function upsertRemoteItem(item: BenefitCatalogItem): Promise<{ ok: boolean
   const offeringPartners = await resolveOfferingPartnerUserIds(item.offeringPartners ?? []);
   const row = itemToRow({ ...item, offeringPartners });
 
-  const { error: rpcError } = await supabase.rpc('admin_upsert_benefit_catalog', { p_row: row });
+  const { error: rpcError } = await supabase.rpc('admin_upsert_benefit_catalog', { p_row: asJson(row) });
   if (!rpcError) return { ok: true };
   if (!/accès réservé|access denied|permission/i.test(rpcError.message)) {
     console.warn('[BenefitCatalog] RPC upsert:', rpcError.message);
   }
 
-  const { error } = await supabase.from('benefit_catalog').upsert(row, { onConflict: 'local_id' });
+  const { error } = await supabase.from('benefit_catalog').upsert(asDbInsert('benefit_catalog', row), { onConflict: 'local_id' });
   if (!error) return { ok: true };
 
   if (!/row-level security|permission|policy/i.test(error.message)) {
@@ -294,14 +295,14 @@ async function upsertRemoteItem(item: BenefitCatalogItem): Promise<{ ok: boolean
     .eq('local_id', row.local_id)
     .maybeSingle();
   if (existing?.id) {
-    const { error: updateError } = await supabase.from('benefit_catalog').update(row).eq('id', existing.id);
+    const { error: updateError } = await supabase.from('benefit_catalog').update(asDbUpdate('benefit_catalog', row)).eq('id', existing.id);
     if (updateError) {
       console.warn('[BenefitCatalog] update:', updateError.message);
       return { ok: false, error: updateError.message };
     }
     return { ok: true };
   }
-  const { error: insertError } = await supabase.from('benefit_catalog').insert(row);
+  const { error: insertError } = await supabase.from('benefit_catalog').insert(asDbInsert('benefit_catalog', row));
   if (insertError) {
     console.warn('[BenefitCatalog] insert:', insertError.message);
     return { ok: false, error: insertError.message };

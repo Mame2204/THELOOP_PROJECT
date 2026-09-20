@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { ContentStatus } from '@/lib/admin-types';
+import type { AdminContentItem, ContentStatus } from '@/lib/admin-types';
 import { CONTENT_STATUS_LABELS, adminContentActionsFor } from '@/lib/admin-types';
 import { CONTENT_ORIGIN_LABELS } from '@/lib/content-origin';
 import { buildTeamAdminContentList, markContentArchived, setContentStatus } from '@/lib/admin-content-store';
@@ -25,6 +25,10 @@ type Tab = 'all' | 'events' | 'spots' | 'tools';
 type Filter = 'all' | ContentStatus;
 
 const FILTERS: Filter[] = ['all', 'draft', 'published', 'deactivated', 'archived'];
+
+function isCatalogContentKind(kind: AdminContentItem['kind']): kind is 'event' | 'spot' {
+  return kind === 'event' || kind === 'spot';
+}
 
 export function AdminLoopContentScreen({ navigation }: Props) {
   const { role } = useAuthContext();
@@ -220,6 +224,7 @@ export function AdminLoopContentScreen({ navigation }: Props) {
 
       {filtered.map((item) => {
         const actions = adminContentActionsFor(item.contentStatus);
+        const catalogKind = isCatalogContentKind(item.kind) ? item.kind : null;
         return (
           <View key={item.id} style={adminCardStyle(shell)}>
             <View style={styles.cardTop}>
@@ -241,12 +246,12 @@ export function AdminLoopContentScreen({ navigation }: Props) {
 
             <View style={styles.actions}>
               <AdminActionIcon action="preview" color={ADMIN_THEME.accent} onPress={() => previewItem(item)} />
-              {actions.canEdit ? (
+              {actions.canEdit && catalogKind ? (
                 <AdminActionIcon
                   action="edit"
                   color={ADMIN_THEME.accent}
                   onPress={() => navigateRoot(navigation, 'PartnerSubmission', {
-                    type: item.kind,
+                    type: catalogKind,
                     id: item.id,
                     asAdmin: true,
                     contentChannel: item.contentOrigin === 'admin' ? 'admin' : 'loop',
@@ -254,22 +259,22 @@ export function AdminLoopContentScreen({ navigation }: Props) {
                   })}
                 />
               ) : null}
-              {actions.canPublish ? (
-                <AdminActionIcon action="publish" onPress={() => void changeStatus(item.id, item.kind, 'published')} />
+              {actions.canPublish && catalogKind ? (
+                <AdminActionIcon action="publish" onPress={() => void changeStatus(item.id, catalogKind, 'published')} />
               ) : null}
-              {actions.canDeactivate ? (
-                <AdminActionIcon action="deactivate" onPress={() => void changeStatus(item.id, item.kind, 'deactivated')} />
+              {actions.canDeactivate && catalogKind ? (
+                <AdminActionIcon action="deactivate" onPress={() => void changeStatus(item.id, catalogKind, 'deactivated')} />
               ) : null}
-              {actions.canMoveToDraft ? (
-                <AdminActionIcon action="draft" onPress={() => void changeStatus(item.id, item.kind, 'draft')} />
+              {actions.canMoveToDraft && catalogKind ? (
+                <AdminActionIcon action="draft" onPress={() => void changeStatus(item.id, catalogKind, 'draft')} />
               ) : null}
-              {actions.canArchive ? (
-                <AdminActionIcon action="archive" onPress={() => void archiveItem(item.id, item.kind, item.title)} />
+              {actions.canArchive && catalogKind ? (
+                <AdminActionIcon action="archive" onPress={() => void archiveItem(item.id, catalogKind, item.title)} />
               ) : null}
-              {actions.canDelete && (item.kind === 'event' || item.kind === 'spot') ? (
+              {actions.canDelete && catalogKind ? (
                 <AdminActionIcon
                   action="delete"
-                  onPress={() => void deleteContentItem(item.id, item.kind, item.title, item.source)}
+                  onPress={() => void deleteContentItem(item.id, catalogKind, item.title, item.source)}
                 />
               ) : null}
             </View>

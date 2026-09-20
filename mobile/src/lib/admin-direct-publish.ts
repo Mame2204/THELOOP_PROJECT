@@ -2,6 +2,7 @@ import { syncEstablishmentOpeningHours } from '@/lib/establishment-schedules-syn
 import { isNetworkOnline } from '@/lib/offline-store';
 import type { ContentOrigin } from '@/lib/content-origin';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 export interface AdminDirectPublishResult {
   ok: boolean;
@@ -67,6 +68,7 @@ export interface AdminToolDirectInput {
   logoUrl?: string | null;
   coverImageUrl?: string | null;
   galleryImages?: string[];
+  categories?: string[];
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   ctaUrl?: string | null;
@@ -175,7 +177,7 @@ export async function createAdminEventDirect(input: AdminEventDirectInput): Prom
   if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'events' };
 
   const { data, error } = await supabase.rpc('admin_create_event_direct', {
-    p_payload: eventPayload(input),
+    p_payload: asJson(eventPayload(input)),
   });
 
   if (error) {
@@ -191,7 +193,7 @@ export async function createAdminEstablishmentDirect(input: AdminSpotDirectInput
   if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'establishments' };
 
   const { data, error } = await supabase.rpc('admin_create_establishment_direct', {
-    p_payload: spotPayload(input),
+    p_payload: asJson(spotPayload(input)),
   });
 
   if (error) {
@@ -212,7 +214,7 @@ export async function createAdminToolDirect(input: AdminToolDirectInput): Promis
   if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'tools' };
 
   const { data, error } = await supabase.rpc('admin_create_tool_direct', {
-    p_payload: toolPayload(input),
+    p_payload: asJson(toolPayload(input)),
   });
 
   if (error) {
