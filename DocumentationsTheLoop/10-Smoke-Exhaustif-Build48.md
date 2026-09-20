@@ -159,7 +159,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 
 ### Stack détail contenu
-- [ ] **📱** `EventDetailScreen` — depuis Agenda / Accueil / Favoris
+- [x] **📱** `EventDetailScreen` — depuis Agenda / Accueil / Favoris *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** `SpotDetailScreen` — depuis Spots / Accueil
 - [ ] **🤖** Idem
