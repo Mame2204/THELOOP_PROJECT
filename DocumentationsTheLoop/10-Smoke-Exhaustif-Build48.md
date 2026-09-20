@@ -99,7 +99,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 > Pas de bottom nav · pile Auth uniquement.
 
 ### `AuthScreen` — modes
-- [ ] **📱** Mode **login** — écran initial · champs e-mail / MDP
+- [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** Mode **signup** — formulaire inscription (si gate ON)
 - [ ] **🤖** Idem
@@ -129,7 +129,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 
 ### Bloqué sans connexion
-- [ ] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil
+- [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** Pas fiches détail catalogue
 - [ ] **🤖** Idem
