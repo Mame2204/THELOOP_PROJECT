@@ -150,6 +150,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [x] **📱** `FavorisScreen` — via **bottom nav** (pas menu profil) *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [x] **📱** `ProfilScreen` — infos · code parrain · liens compte *(20 sept. 2026 · build 48 · compte membre perso)*
+- [x] **📱** Profil · CTA PASS : jamais eu de PASS → **Découvrir Prime** seul ; déjà eu un PASS → **Mon PASS** seul *(build 48 · règle prévue)*
 - [ ] **🤖** Idem
 - [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
