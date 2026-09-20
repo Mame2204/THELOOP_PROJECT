@@ -21,6 +21,7 @@ export interface EventEditorForm {
   organizerName: string;
   entryPrice: string;
   isInvitationOnly: boolean;
+  isLoopX: boolean;
   contentStatus: ContentStatus;
   countryCode: string;
 }
@@ -157,6 +158,7 @@ export function emptyEventForm(countryCode: string): EventEditorForm {
     organizerName: '',
     entryPrice: '',
     isInvitationOnly: false,
+    isLoopX: false,
     contentStatus: 'draft',
     countryCode,
   };
@@ -201,7 +203,7 @@ export async function loadEventForEdit(id: string): Promise<EventEditorForm | nu
   const { data, error } = await supabase
     .from('events')
     .select(
-      'title, description, start_date, end_date, custom_location_name, banner_url, website_url, instagram_url, facebook_url, category_slugs, content_status, country_code, organizer_name, ticket_price, is_invitation_only, is_free',
+      'title, description, start_date, end_date, custom_location_name, banner_url, website_url, instagram_url, facebook_url, category_slugs, content_status, country_code, organizer_name, ticket_price, is_invitation_only, is_free, is_loop_x',
     )
     .eq('id', id)
     .maybeSingle();
@@ -228,6 +230,7 @@ export async function loadEventForEdit(id: string): Promise<EventEditorForm | nu
         ? ''
         : String(data.ticket_price),
     isInvitationOnly: Boolean(data.is_invitation_only),
+    isLoopX: Boolean(data.is_loop_x),
     contentStatus: (data.content_status as ContentStatus) ?? 'draft',
     countryCode: String(data.country_code ?? 'GN'),
   };
@@ -312,7 +315,15 @@ export async function createEvent(form: EventEditorForm): Promise<EditorResult> 
 
   const { data, error } = await supabase.rpc('admin_create_event_direct', { p_payload: payload });
   if (error) return { ok: false, error: error.message };
-  return { ok: true, id: data ? String(data) : undefined };
+  const eventId = data ? String(data) : undefined;
+  if (eventId && form.isLoopX) {
+    const { error: loopError } = await supabase
+      .from('events')
+      .update({ is_loop_x: true })
+      .eq('id', eventId);
+    if (loopError) return { ok: false, error: loopError.message };
+  }
+  return { ok: true, id: eventId };
 }
 
 export async function createSpot(form: SpotEditorForm): Promise<EditorResult> {
@@ -354,6 +365,7 @@ export async function updateEvent(id: string, form: EventEditorForm): Promise<Ed
       is_free: !form.isInvitationOnly && entryPrice == null,
       ticket_price: form.isInvitationOnly || entryPrice == null ? null : entryPrice,
       country_code: form.countryCode,
+      is_loop_x: form.isLoopX,
     })
     .eq('id', id);
 

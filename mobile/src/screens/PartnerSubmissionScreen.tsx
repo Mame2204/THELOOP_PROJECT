@@ -190,6 +190,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   const isAdminMode = Boolean(asAdmin) && role === 'ADMIN';
   const contentChannel: ContentChannel = resolveContentChannel({ asAdmin, contentChannel: contentChannelParam });
   const isLoopChannel = contentChannel === 'loop';
+  const canMarkLoopX = type === 'event' && (isAdminMode || isLoopChannel);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -213,6 +214,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
   const [entryPrice, setEntryPrice] = useState('');
   const [isFree, setIsFree] = useState(false);
   const [isInvitationOnly, setIsInvitationOnly] = useState(false);
+  const [isLoopX, setIsLoopX] = useState(false);
   const [currency, setCurrency] = useState('GNF');
   const [infoUrl, setInfoUrl] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
@@ -434,6 +436,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
           const loadedFree = !loadedInvitation && loaded.entryPrice == null;
           setIsInvitationOnly(loadedInvitation);
           setIsFree(loadedFree);
+          setIsLoopX(loaded.isLoopX === true);
           setCurrency(loaded.currency);
           if (loadedFree || loadedInvitation) {
             setInfoUrl(loaded.infoUrl ?? loaded.websiteUrl ?? '');
@@ -552,6 +555,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
     const itemFree = !itemInvitation && item.entryPrice == null;
     setIsInvitationOnly(itemInvitation);
     setIsFree(itemFree);
+    setIsLoopX(item.isLoopX === true);
     setCurrency(item.currency);
     if (itemFree || itemInvitation) {
       setInfoUrl(item.infoUrl ?? item.websiteUrl ?? '');
@@ -777,6 +781,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
           spotId: venueMode === 'existing' ? selectedSpotId : null,
           entryPrice: isFree || isInvitationOnly ? null : (entryPrice.trim() ? Number(entryPrice) : null),
           isInvitationOnly,
+          isLoopX: canMarkLoopX ? isLoopX : undefined,
           currency: currency.trim() || 'GNF',
           infoUrl: infoUrl.trim() || null,
           instagramUrl: instagramUrl.trim() || null,
@@ -834,6 +839,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
             spotId: payload.spotId,
             entryPrice: payload.entryPrice,
             isInvitationOnly: payload.isInvitationOnly,
+            isLoopX: payload.isLoopX,
             infoUrl: payload.infoUrl,
             websiteUrl: payload.websiteUrl,
             instagramUrl: payload.instagramUrl,
@@ -1581,6 +1587,23 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
             />
           </View>
 
+          {canMarkLoopX ? (
+            <View style={styles.freeRow}>
+              <View style={styles.loopXLabelWrap}>
+                <Text style={[styles.freeLabel, { color: shell.pageTitle }]}>Événement LoopX</Text>
+                <Text style={[styles.hint, { color: shell.pageKicker, marginTop: 2 }]}>
+                  Réservé aux membres Loop Prime
+                </Text>
+              </View>
+              <Switch
+                value={isLoopX}
+                onValueChange={setIsLoopX}
+                trackColor={{ false: shell.filterInactiveBorder, true: selectAccent }}
+                thumbColor="#fff"
+              />
+            </View>
+          ) : null}
+
           {!isFree && !isInvitationOnly ? (
             <>
               <FieldLabel>Tarif d'entrée (GNF)</FieldLabel>
@@ -1992,6 +2015,7 @@ const styles = StyleSheet.create({
   readOnlyBannerText: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
   readOnlyForm: { opacity: 0.55 },
   freeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, marginBottom: 8 },
+  loopXLabelWrap: { flex: 1, marginRight: 12 },
   freeLabel: { fontSize: 14, fontWeight: '600' },
   actionBar: { marginTop: 16, gap: 12 },
   save: { paddingVertical: 16, minHeight: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

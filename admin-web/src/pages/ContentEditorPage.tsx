@@ -304,6 +304,14 @@ export function ContentEditorPage() {
                 />
                 Sur invitation uniquement
               </label>
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={eventForm.isLoopX}
+                  onChange={(e) => setEventForm((f) => ({ ...f, isLoopX: e.target.checked }))}
+                />
+                Événement LoopX (Loop Prime)
+              </label>
               {statusSelect(eventForm.contentStatus, (v) =>
                 setEventForm((f) => ({ ...f, contentStatus: v })),
               )}
