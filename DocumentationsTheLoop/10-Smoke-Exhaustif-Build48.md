@@ -46,10 +46,11 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U23** (PASS → octroi manuel · retest après PR #7) |
+| **Prochain test** | **⏸ Build 49+** — merge PR #7 puis retests ci-dessous |
 | **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
 | **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel) · PACK A5-3 (U18–U22)** |
-| **Reporté build 48** | LoopX · contenu prime · Android |
+| **Reporté build 48** | LoopX · contenu prime · Android · **A5-U23–U25 · Phase 1 · retests bugs A5** |
+| **Règle session** | Bug identifié → **pas de retest sur build 48** · attendre prochain build (PR #7) |
 
 ---
 
@@ -864,9 +865,11 @@ A5 bugs smoke build 48 :
   - Gestion PASS : octroi manuel KO (recherche cache local) · liste « PASS accordés » mélange achats Prime · fix PR #7
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
 A5-U4 délégué TEAMS : FAIL partiel (écran vide ou onglet Admin sans lignes — retest après PR #7)
-PACK A5-3 : partiel (U18–U22 · reste U23–U25)
+PACK A5-3 : partiel (U18–U22 · U23–U25 ⏸ build 49+)
 A5-U22 : PASS (Users → changer rôle / suspendre · persisté)
-Prochain test unitaire : A5-U23 (PASS → octroi manuel)
+A5-U23 : FAIL build 48 · ⏸ retest build 49+ (PR #7)
+Stratégie : smoke build 48 **en pause** sur items bugués · reprise après merge PR #7 + build iOS 49
+Retests build 49+ : A5-U23 octroi PASS · TEAMS Par admin · Partenariats focus · Utilisateurs 60j · Notifs partenaire · Insights KPI · A5-U4 délégué TEAMS · Phase 1 (7)
 Build Android :
 Branch / commit :
 
