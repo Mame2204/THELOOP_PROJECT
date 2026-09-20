@@ -7,6 +7,7 @@ import {
   markLoopBackendUnreachable,
   shouldSkipLoopBackendFetch,
 } from '@/lib/loop-backend-api';
+import { getNotificationPreferences } from '@/lib/notification-preferences-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 type NotificationsModule = typeof import('expo-notifications');
@@ -80,6 +81,11 @@ export async function ensureAndroidNotificationChannel(): Promise<void> {
  */
 export async function registerForPushNotifications(userId: string): Promise<string | null> {
   if (!userId || userId === 'anonymous') return null;
+  const prefs = await getNotificationPreferences();
+  if (!prefs.pushEnabled) {
+    await unregisterPushTokenForDevice();
+    return null;
+  }
   if (!Device.isDevice) {
     console.warn('[Push] Simulateur / émulateur : pas de token push réel.');
     return null;
