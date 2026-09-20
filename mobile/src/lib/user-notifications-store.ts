@@ -357,7 +357,10 @@ async function selectUserNotificationsRemote(
   if (!(await canUseRemoteNotifications()) || !supabase) return [];
 
   const queryUserId = await ensureNotificationAuthSession(userId);
-  if (!queryUserId || queryUserId !== userId) return [];
+  if (!queryUserId || queryUserId !== userId) {
+    const local = await loadAll();
+    return local.filter((n) => n.userId === userId);
+  }
 
   const full = await supabase
     .from('user_notifications')
@@ -710,7 +713,7 @@ function pruneRecentAppends(now: number): void {
 export function appendUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null },
+  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
 ): Promise<UserNotification> {
   const now = Date.now();
   pruneRecentAppends(now);
@@ -728,7 +731,7 @@ export function appendUserNotification(
 async function createUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null },
+  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
 ): Promise<UserNotification> {
   const sentAt = new Date().toISOString();
   let id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -758,7 +761,7 @@ async function createUserNotification(
   await saveAll(withoutDup);
 
   // Alerte OS (arrière-plan / app fermée) — en plus de l’inbox.
-  if (/^[0-9a-f-]{36}$/i.test(userId)) {
+  if (!options?.skipOsDelivery && /^[0-9a-f-]{36}$/i.test(userId)) {
     void import('@/lib/push-notifications').then(async (m) => {
       await m.requestExpoPushDelivery({
         userIds: [userId],

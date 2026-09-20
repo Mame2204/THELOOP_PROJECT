@@ -358,7 +358,7 @@ export function PartnerContentScreen({ navigation }: Props) {
                             void cancelPartnerContentWithdrawal(withdrawalKind(type, isTool), item.id).then(
                               (res) => {
                                 if (!res.ok) Alert.alert('Erreur', res.error ?? 'Annulation impossible.');
-                                else void run(true);
+                                else void run(false);
                               },
                             );
                           },

@@ -1,6 +1,7 @@
 import {
   appendUserNotification,
   deliverPushToAdminUserIds,
+  invalidateNotificationListCache,
   notifyAdminUsers,
 } from '@/lib/user-notifications-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
@@ -99,6 +100,19 @@ async function notifyAdminsForPartnerSubmission(params: {
     });
     if (!error) {
       await deliverPushToAdminUserIds(adminIds, title, message, 'admin');
+      invalidateNotificationListCache();
+      const adminIdList = Array.isArray(adminIds)
+        ? adminIds.map((id) => String(id)).filter((id) => UUID_RE.test(id))
+        : [];
+      const { data: sessionData } = await supabase.auth.getSession();
+      const currentAdminId = sessionData.session?.user?.id?.trim();
+      if (currentAdminId && adminIdList.includes(currentAdminId)) {
+        await appendUserNotification(currentAdminId, {
+          title,
+          message,
+          audience: 'admin',
+        });
+      }
       return;
     }
     if (!error.message.includes('Could not find the function')) {

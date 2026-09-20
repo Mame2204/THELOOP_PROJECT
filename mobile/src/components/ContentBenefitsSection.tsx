@@ -339,7 +339,7 @@ export function ContentBenefitsSection({
             return userQualifiesForRole(r, user!);
           }));
 
-      const unlocked = hasIndividualGrant || roleUnlocked;
+      const unlocked = hasIndividualGrant || roleUnlocked || Boolean(pendingValidation);
 
       next.push({
         item,
@@ -364,7 +364,7 @@ export function ContentBenefitsSection({
 
     void (async () => {
       try {
-        const next = await buildLines(false);
+        const next = await buildLines(true);
         if (!cancelled) setLines(next);
       } catch (err) {
         console.warn('[ContentBenefits]', err instanceof Error ? err.message : err);
@@ -383,7 +383,7 @@ export function ContentBenefitsSection({
         void syncUserRoleBenefitEntitlements(user)
           .then(async () => {
             if (cancelled) return;
-            const refreshed = await buildLines(false);
+            const refreshed = await buildLines(true);
             if (!cancelled) setLines(refreshed);
           })
           .catch(() => undefined);
@@ -398,7 +398,7 @@ export function ContentBenefitsSection({
   useEffect(() => {
     if (!passPurchaseEnabled) return;
     const unsubHome = subscribeHomeRefresh((reason) => {
-      if (reason !== 'benefit-catalog') return;
+      if (reason !== 'benefit-catalog' && reason !== 'benefit-grants') return;
       void buildLines(true).then(setLines).catch(() => undefined);
     });
     return unsubHome;

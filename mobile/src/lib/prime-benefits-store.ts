@@ -787,7 +787,7 @@ async function notifyBenefitGrantTarget(
       });
     } else {
       await appendUserNotification(target.userId, {
-        title: 'Nouvel avantage',
+        title: 'Nouveau privilège',
         message,
         audience: 'individual',
       });
@@ -797,7 +797,7 @@ async function notifyBenefitGrantTarget(
 
   if (target.phone) {
     await distributeNotification({
-      title: 'Nouvel avantage',
+      title: 'Nouveau privilège',
       message,
       audience: 'individual',
       targetPhone: target.phone,
@@ -807,7 +807,7 @@ async function notifyBenefitGrantTarget(
 
   if (target.userId) {
     await appendUserNotification(target.userId, {
-      title: 'Nouvel avantage',
+      title: 'Nouveau privilège',
       message,
       audience: 'individual',
     });
@@ -843,6 +843,9 @@ async function pushCreatedBenefitNotifications(benefits: PrimeBenefit[]): Promis
         : `Vous avez reçu ${meta.length} avantages : ${meta.map((g) => formatBenefitNotificationLine(g)).join(' · ')}.`;
     await notifyBenefitGrantTarget({ userId, phone }, meta, message);
   }
+
+  const { emitHomeRefresh } = await import('@/lib/home-refresh');
+  emitHomeRefresh('benefit-grants');
 }
 
 async function executeGrant(input: {

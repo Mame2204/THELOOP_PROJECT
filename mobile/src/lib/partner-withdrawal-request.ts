@@ -1,5 +1,7 @@
 import { deleteAdminContent } from '@/lib/admin-content-delete';
-import { invalidateContentCache } from '@/lib/content-store';
+import { clearPersistedContentCache, invalidateContentCache } from '@/lib/content-store';
+import { emitHomeRefresh } from '@/lib/home-refresh';
+import { invalidatePartnerCatalogIdsCache } from '@/lib/partner-catalog-ids';
 import {
   notifyAdminWithdrawalRequest,
   notifyPartnerWithdrawalDecision,
@@ -171,6 +173,7 @@ export async function requestPartnerContentWithdrawal(
     await patchStagingSubmissionStatus(kind, localId.trim(), 'withdrawal_requested');
   }
 
+  invalidatePartnerCatalogIdsCache();
   return { ok: true };
 }
 
@@ -206,7 +209,15 @@ export async function cancelPartnerContentWithdrawal(
   }
 
   invalidateContentCache();
+  invalidatePartnerCatalogIdsCache();
   return { ok: true };
+}
+
+async function refreshPublicCatalogAfterWithdrawal(): Promise<void> {
+  invalidateContentCache();
+  invalidatePartnerCatalogIdsCache();
+  await clearPersistedContentCache();
+  emitHomeRefresh('admin-content-status');
 }
 
 export async function countWithdrawalRequests(countryCode?: string): Promise<number> {
@@ -255,7 +266,7 @@ export async function approvePartnerWithdrawalRequest(
       }
     }
     await purgeWithdrawalSubmissionLocal(kind, localIds);
-    invalidateContentCache();
+    await refreshPublicCatalogAfterWithdrawal();
     const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
     if (partnerUserId) {
       await notifyPartnerWithdrawalDecision({
@@ -283,7 +294,7 @@ export async function approvePartnerWithdrawalRequest(
   }
 
   await purgeWithdrawalSubmissionLocal(kind, localIds);
-  invalidateContentCache();
+  await refreshPublicCatalogAfterWithdrawal();
 
   const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
   if (partnerUserId) {

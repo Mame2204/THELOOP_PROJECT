@@ -208,7 +208,13 @@ export function AdminModerationScreen({ route, navigation }: Props) {
                 Alert.alert('Erreur', res.error ?? 'Retrait impossible.');
                 return;
               }
+              const { clearPersistedContentCache } = await import('@/lib/content-store');
+              const { emitHomeRefresh } = await import('@/lib/home-refresh');
+              const { invalidatePartnerCatalogIdsCache } = await import('@/lib/partner-catalog-ids');
               invalidateContentCache();
+              invalidatePartnerCatalogIdsCache();
+              await clearPersistedContentCache();
+              emitHomeRefresh('admin-content-status');
               await Promise.all([load(), refresh()]);
               Alert.alert('Retrait effectué', 'Le contenu n’est plus visible publiquement.');
             });

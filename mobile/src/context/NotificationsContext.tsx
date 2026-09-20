@@ -11,6 +11,7 @@ import {
 import { AppState, type AppStateStatus } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import {
+  appendUserNotification,
   countUnreadNotifications,
   invalidateNotificationListCache,
   subscribeUserNotifications,
@@ -170,8 +171,27 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let remove: (() => void) | undefined;
     let cancelled = false;
-    // Recharge depuis la base : ne jamais réinsérer la notif ici (appendUserNotification renvoie un push).
-    void addNotificationReceivedListener(() => {
+    void addNotificationReceivedListener((notification) => {
+      if (userId && isAuthenticated(role) && userId !== 'anonymous') {
+        const content = notification.request.content;
+        const title = content.title?.trim();
+        const message = (content.body ?? '').trim();
+        const audienceRaw = content.data?.audience;
+        const audience =
+          audienceRaw === 'admin' ||
+          audienceRaw === 'partner' ||
+          audienceRaw === 'individual' ||
+          audienceRaw === 'everyone'
+            ? audienceRaw
+            : ('individual' as const);
+        if (title && message) {
+          void appendUserNotification(
+            userId,
+            { title, message, audience },
+            { skipOsDelivery: true },
+          ).catch(() => undefined);
+        }
+      }
       refreshFromPush();
     }).then((sub) => {
       if (cancelled) {
@@ -184,7 +204,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       remove?.();
     };
-  }, [refreshFromPush]);
+  }, [refreshFromPush, userId, role]);
 
   const value = useMemo(
     () => ({

@@ -294,7 +294,7 @@ export async function addNotificationResponseListener(
 }
 
 export async function addNotificationReceivedListener(
-  listener: () => void,
+  listener: (notification: import('expo-notifications').Notification) => void,
 ): Promise<{ remove: () => void } | null> {
   try {
     const Notifications = await getNotifications();
