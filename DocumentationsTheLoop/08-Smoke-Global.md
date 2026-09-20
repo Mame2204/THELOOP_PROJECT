@@ -594,7 +594,11 @@ Serveur Render à jour : oui
 TypeScript mobile : 0 erreur (lot CountryCode + permissions + écrans admin)
 ```
 
-### Tests prioritaires build 48 (points `[ k ]` + régressions connues)
+### Tests prioritaires avant prochain build EAS (points `[ k ]`)
+
+> **Correctifs code livrés (sept. 2026)** — retest manuel requis avant **un seul** build :
+> retraits (cancel/approve + cache catalogue), cloche admin (session SPOT + seed inbox push),
+> tirage (titre « Nouveau privilège », refresh octrois fiche, push admin-web await).
 
 1. **Cloche admin** — soumission partenaire + demande retrait → push **et** inbox super admin.
 2. **Modération spots/outils** — soumission partenaire visible admin mobile + admin-web.
