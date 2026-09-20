@@ -652,6 +652,7 @@ Compte membre iOS : compte perso
 Compte Prime iOS : carte membre Prime (thème violet/indigo)
 A2 contenu prime invisible : PASS (build 48)
 A2 CreatorCornerDetail (Singulier) : PASS (build 48)
+A2 FragmentDetail (Fragment) : PASS (build 48)
 Build Android :
 Branch / commit :
 
