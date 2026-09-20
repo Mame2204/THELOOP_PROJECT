@@ -32,6 +32,7 @@ Il répond notamment aux questions suivantes :
 | 6 | [06-Roles-Permissions-Navigation.md](./06-Roles-Permissions-Navigation.md) | [Word/06-Roles-Permissions-Navigation.docx](./Word/06-Roles-Permissions-Navigation.docx) |
 | 7 | [07-Smoke-Push.md](./07-Smoke-Push.md) | — |
 | 8 | [08-Smoke-Global.md](./08-Smoke-Global.md) | — |
+| 9 | [09-Smoke-Retest-Build48.md](./09-Smoke-Retest-Build48.md) | — |
 
 **Document unique Word (tout en un) :** [Word/THE_LOOP_Documentation_Complete.docx](./Word/THE_LOOP_Documentation_Complete.docx)
 
