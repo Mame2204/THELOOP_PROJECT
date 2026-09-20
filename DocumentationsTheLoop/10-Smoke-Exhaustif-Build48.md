@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U18** |
+| **Prochain test** | **A5-U22** (Users → changer rôle / suspendre) |
 | **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel)** |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel) · PACK A5-3 (U18–U21)** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -497,7 +497,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [ ] |
 | Demandes | `AdminDemandesScreen` | [x] FAIL partiel | [ ] |
 | Privilèges THE LOOP | `AdminPrimeBenefitsScreen` | [x] PASS | [ ] |
-| Privilèges TEAMS | `AdminStaffBenefitsScreen` | [x] PASS partiel | [ ] |
+| Privilèges TEAMS | `AdminStaffBenefitsScreen` | [x] FAIL partiel | [ ] |
 | Tirage au sort | `AdminBenefitDrawScreen` | [x] PASS | [ ] |
 | Gestion PASS | `AdminPassManagementScreen` | [x] PASS | [ ] |
 | Compta PASS | `AdminComptaScreen` | [x] PASS | [ ] |
@@ -506,7 +506,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Hub Demandes (sous-écrans)
 - [x] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter *(20 sept. 2026 · build 48 · **FAIL partiel** · noms « . » au 1er affichage · OK après pull refresh · cache-first)*
 - [ ] **🤖** Idem
-- [ ] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser
+- [x] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser *(20 sept. 2026 · build 48 · **PACK A5-3 OK** · U18 approuver · U19 refuser+motif · U20 retrait approuvé · U21 retrait refusé)*
 - [ ] **🤖** Idem
 - [ ] **📱** `AdminSuggestionsScreen` — idées communauté
 - [ ] **🤖** Idem
@@ -549,10 +549,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 
 ### Actions admin critiques
-- [ ] **📱** Modération — approuver événement → Agenda public
-- [ ] **📱** Modération — refuser + motif · modale au-dessus clavier
-- [ ] **📱** Modération — approuver retrait catalogue
-- [ ] **📱** Modération — refuser retrait · notif partenaire
+- [x] **📱** Modération — approuver événement → Agenda public *(20 sept. 2026 · build 48 · A5-U18 PASS)*
+- [x] **📱** Modération — refuser + motif · modale au-dessus clavier *(20 sept. 2026 · build 48 · A5-U19 PASS)*
+- [x] **📱** Modération — approuver retrait catalogue *(20 sept. 2026 · build 48 · A5-U20 PASS)*
+- [x] **📱** Modération — refuser retrait · notif partenaire *(20 sept. 2026 · build 48 · A5-U21 PASS)*
 - [ ] **📱** Users — changer rôle · suspendre
 - [ ] **📱** PASS — octroi manuel · prix Guinée
 - [ ] **📱** Tirage — lancer · historique · notif gagnant
@@ -859,10 +859,12 @@ A5 bugs smoke build 48 :
   - Partenariats : cartes « . » jusqu’au refresh (cache sans refetch au focus)
   - THE LOOP hub : KPI contenu parfois 0 au 1er focus (race catalogue · TTL 90s)
   - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · onglet **Admin** vide si aucun privilège catalogue lié à contenu publié
+  - TEAMS super admin : onglet **Par admin** vide (build 48) malgré admin délégué existant · fix PR #7 (fetch Supabase + UI sans blocage delegateOverrides)
   - TEAMS compte **délégué** : **pas** d’onglet « Par admin » (réservé super admin) · seulement onglet **Admin** (pack pays) · **vide build 48** si pack vide / permission `staff_benefits_team` / catalogue — **FAIL partiel** · fix PR #7
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
 A5-U4 délégué TEAMS : FAIL partiel (écran vide ou onglet Admin sans lignes — retest après PR #7)
-Prochain test unitaire : A5-U18 (modération approuver event partenaire)
+PACK A5-3 : PASS (U18–U21 modération approuver/refuser/retraits)
+Prochain test unitaire : A5-U22 (Users → changer rôle / suspendre)
 Build Android :
 Branch / commit :
 
