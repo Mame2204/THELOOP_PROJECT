@@ -220,21 +220,21 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 
 ### Écrans Prime (reprendre A2 +)
-- [ ] **📱** `AccueilScreen` — contenu Prime / hero
-- [ ] **📱** `AgendaScreen` — événements LoopX
-- [ ] **📱** `SpotsScreen` — spots exclusifs
-- [ ] **📱** `PrimeScreen` — statut PASS actif
+- [x] **📱** `AccueilScreen` — contenu Prime / hero *(20 sept. 2026 · build 48 · compte carte membre Prime · navigation OK · thème violet)*
+- [x] **📱** `AgendaScreen` — événements LoopX *(20 sept. 2026 · build 48 · navigation OK · LoopX contenu **BLOCKED** cf. A3.2)*
+- [x] **📱** `SpotsScreen` — spots exclusifs *(20 sept. 2026 · build 48 · navigation OK · spots prime **BLOCKED** cf. A3.3)*
+- [x] **📱** `PrimeScreen` — statut PASS actif *(20 sept. 2026 · build 48 · **N/A statut** — statut PASS = **Profil / Mon PASS / Abonnement** ; `PrimeScreen` = **boutique achat** « Choisissez votre PASS » via « Acheter un autre PASS »)*
 - [x] **📱** `AbonnementScreen` — détail abonnement *(20 sept. 2026 · build 48 · compte carte membre Prime · **PASS en cours** + **1 en attente** · relais auto à expiration)*
 - [ ] **🤖** Idem pour chaque écran ci-dessus
 
 ### Privilèges & fiches
-- [x] **📱** Fiche event/spot avec privilège → section privilège **visible** sur fiche *(20 sept. 2026 · build 48 · compte carte membre Prime · à préciser : cadenas vs « Utiliser chez le partenaire »)*
+- [x] **📱** Fiche event/spot avec privilège → **Utiliser chez le partenaire** *(20 sept. 2026 · build 48 · compte carte membre Prime · parcours complet : cadenas → octroi → utilisation → **quota atteint**)*
 - [ ] **🤖** Idem
-- [ ] **📱** Privilège sans octroi → cadenas
+- [x] **📱** Privilège sans octroi → cadenas *(20 sept. 2026 · build 48 · état initial observé avant octroi)*
 - [ ] **🤖** Idem
-- [ ] **📱** Privilège octroyé (tirage / admin) → déverrouillé
+- [x] **📱** Privilège octroyé (tirage / admin) → déverrouillé *(20 sept. 2026 · build 48 · déverrouillé après octroi · puis consommé)*
 - [ ] **🤖** Idem
-- [ ] **📱** `MyBenefitsScreen` — liste privilèges actifs
+- [x] **📱** `MyBenefitsScreen` — liste privilèges actifs *(20 sept. 2026 · build 48 · **BLOCKED / N/A** — écran « Mes privilèges » sans entrée UI visible dans l’app · privilèges consultés sur **fiche détail**)*
 - [ ] **🤖** Idem
 
 ---
@@ -665,7 +665,10 @@ A3.4 contenu prime accessible : FAIL/BLOCKED (build 48 — non exposé Agenda/Sp
 A3 AbonnementScreen : PASS (build 48 — PASS en cours + 1 en attente)
 A3 Profil/Mon PASS : PASS (build 48 — idem en cours + en attente)
 A3 Favoris Profil : écart mobile (bottom nav seulement, pas Profil)
-A3 fiche privilège : PASS partiel (section visible — état cadenas/Utiliser à confirmer)
+A3 fiche privilège : PASS (cadenas → octroi → utilisation → quota atteint)
+A3 écrans Accueil/Agenda/Spots/Outils : PASS navigation (build 48)
+A3 PrimeScreen : N/A statut (Mon PASS = Abonnement · PrimeScreen = boutique)
+A3 MyBenefitsScreen : BLOCKED/N/A (pas d’entrée menu build 48)
 Build Android :
 Branch / commit :
 
