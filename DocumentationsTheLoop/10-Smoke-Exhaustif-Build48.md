@@ -103,7 +103,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [ ] **📱** Mode **signup** — formulaire inscription (si gate ON)
 - [ ] **🤖** Idem
-- [ ] **📱** Gate signup OFF → pas d’onglet inscription
+- [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** Mode **activate** — activation compte invité
 - [ ] **🤖** Idem
