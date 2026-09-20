@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import { isLoopBackendConfigured } from '@/lib/loop-backend-api';
+import { ensurePartnerSupabaseSession } from '@/lib/partner-spot-auth';
 import { distributeNotification } from '@/lib/user-notifications-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { NotificationAudience } from '@/lib/notification-audience';
@@ -88,7 +89,6 @@ function campaignToRow(entry: AdminNotification, createdBy: string | null): Push
 async function persistPushCampaignRemote(entry: AdminNotification): Promise<void> {
   if (!isSupabaseConfigured() || !supabase || !isUuid(entry.id)) return;
 
-  const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
   await ensurePartnerSupabaseSession();
 
   const createdBy = await resolveCreatedBy();
@@ -142,7 +142,6 @@ function sortCampaigns(list: AdminNotification[]): AdminNotification[] {
 async function fetchRemotePushCampaigns(): Promise<AdminNotification[] | null> {
   if (!isSupabaseConfigured() || !supabase) return null;
   try {
-    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
     await ensurePartnerSupabaseSession();
     const { data, error } = await supabase
       .from('admin_push_campaigns')
@@ -416,7 +415,6 @@ export async function cancelPushCampaign(id: string): Promise<boolean> {
   if (idx < 0) return false;
 
   if (isSupabaseConfigured() && supabase) {
-    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
     await ensurePartnerSupabaseSession();
     const now = new Date().toISOString();
     const { data, error } = await supabase
@@ -443,7 +441,6 @@ export async function deletePushCampaign(id: string): Promise<{ ok: boolean; err
   }
 
   if (isSupabaseConfigured() && supabase) {
-    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
     await ensurePartnerSupabaseSession();
     const { data, error } = await supabase
       .from('admin_push_campaigns')

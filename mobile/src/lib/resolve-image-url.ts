@@ -102,12 +102,30 @@ export function resolveRemoteImageUrl(raw: string | null | undefined): string | 
   return preferHttpsUrl(encodeSpaces(url));
 }
 
+/** Suffixe des miniatures générées à l'envoi, à côté de l'original. */
+export const THUMBNAIL_SUFFIX = '_thumb';
+
+/**
+ * Variante réduite d'une image de notre Storage.
+ * Renvoie null hors de notre bucket : une URL externe n'a pas de miniature.
+ */
+export function toThumbnailUrl(url: string): string | null {
+  if (!url.includes(`/storage/v1/object/public/${CONTENT_MEDIA_BUCKET}/`)) return null;
+  const match = url.match(/^(.*?)(\.jpe?g)(\?.*)?$/i);
+  if (!match) return null;
+  const [, base, ext, query = ''] = match;
+  if (base.endsWith(THUMBNAIL_SUFFIX)) return null;
+  return `${base}${THUMBNAIL_SUFFIX}${ext}${query}`;
+}
+
 export interface ResolveImageCandidatesOptions {
   /** Android seulement : retenter en HTTP si HTTPS échoue. */
   allowHttpFallback?: boolean;
   /** iOS : tenter d'abord Supabase render/image (spots, logos Storage). */
   useSupabaseRender?: boolean;
   renderWidth?: number;
+  /** Tente la miniature avant l'original — repli automatique si elle n'existe pas. */
+  preferThumbnail?: boolean;
 }
 
 /** Variantes de chargement — ordre optimisé par plateforme. */
@@ -122,6 +140,13 @@ export function resolveRemoteImageCandidates(
 
   const httpsUrl = preferHttpsUrl(primary);
   const candidates: string[] = [];
+
+  // Les images d'avant la mise en place des miniatures n'en ont pas : le repli
+  // sur l'original est assuré par la liste de candidats de RemoteImage.
+  if (options.preferThumbnail) {
+    const thumb = toThumbnailUrl(httpsUrl);
+    if (thumb) candidates.push(thumb);
+  }
 
   // Prefer transform CDN (plus petit) avant l’original — réduit fortement l’egress Storage.
   if (options.useSupabaseRender) {

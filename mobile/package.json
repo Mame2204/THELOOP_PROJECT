@@ -11,6 +11,8 @@
     "web": "expo start --web",
     "test": "jest",
     "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit",
+    "types:db": "supabase gen types typescript --project-id eeyhtulpixvftvhppinz --schema public > src/types/database.types.ts",
     "eas:build:android:preview": "eas build --platform android --profile preview",
     "eas:build:ios:preview": "eas build --platform ios --profile preview",
     "eas:build:preview:all": "eas build --platform all --profile preview",

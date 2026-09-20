@@ -1,40 +1,62 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+jest.mock('@/lib/partner-spot-auth', () => ({
+  ensurePartnerSupabaseSession: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('@/lib/user-notifications-store', () => ({
+  distributeNotification: jest.fn().mockResolvedValue(0),
+}));
+
+jest.mock('expo-crypto', () => ({
+  randomUUID: jest.fn(() => 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'),
+}));
+
+jest.mock('@/lib/supabase', () => {
+  const mockLimit = jest.fn().mockResolvedValue({ data: [], error: null });
+  const mockOrder = jest.fn(() => ({ limit: mockLimit }));
+  const mockFrom = jest.fn(() => ({
+    select: jest.fn(() => ({ order: mockOrder })),
+  }));
+
+  return {
+    isSupabaseConfigured: jest.fn(() => true),
+    supabase: {
+      auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) },
+      from: mockFrom,
+    },
+    __mockFrom: mockFrom,
+    __mockLimit: mockLimit,
+  };
+});
+
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { listAdminNotifications } from '@/lib/admin-notifications-store';
+
+type SupabaseTestMock = {
+  isSupabaseConfigured: jest.Mock;
+  supabase: NonNullable<typeof supabase>;
+  __mockFrom: jest.Mock;
+  __mockLimit: jest.Mock;
+};
+
+function supabaseMock(): SupabaseTestMock {
+  return jest.requireMock('@/lib/supabase') as SupabaseTestMock;
+}
+
 describe('admin-notifications-store', () => {
-  let listAdminNotifications: typeof import('@/lib/admin-notifications-store').listAdminNotifications;
-  let mockOrder: jest.Mock;
-  let mockFrom: jest.Mock;
-
   beforeEach(async () => {
-    jest.resetModules();
     await AsyncStorage.clear();
+    const mock = supabaseMock();
+    mock.isSupabaseConfigured.mockReturnValue(true);
+    mock.__mockFrom.mockClear();
+    mock.__mockLimit.mockReset();
+    mock.__mockLimit.mockResolvedValue({ data: [], error: null });
+  });
 
-    mockOrder = jest.fn().mockResolvedValue({ data: [], error: null });
-    mockFrom = jest.fn(() => ({
-      select: jest.fn(() => ({ order: mockOrder })),
-    }));
-
-    jest.doMock('@/lib/partner-spot-auth', () => ({
-      ensurePartnerSupabaseSession: jest.fn().mockResolvedValue(undefined),
-    }));
-
-    jest.doMock('@/lib/user-notifications-store', () => ({
-      distributeNotification: jest.fn().mockResolvedValue(0),
-    }));
-
-    jest.doMock('expo-crypto', () => ({
-      randomUUID: jest.fn(() => 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'),
-    }));
-
-    jest.doMock('@/lib/supabase', () => ({
-      isSupabaseConfigured: () => true,
-      supabase: {
-        auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) },
-        from: mockFrom,
-      },
-    }));
-
-    ({ listAdminNotifications } = require('@/lib/admin-notifications-store'));
+  it('initialise Supabase mocké pour les appels distants', () => {
+    expect(isSupabaseConfigured()).toBe(true);
+    expect(supabase).not.toBeNull();
   });
 
   it('synchronise le cache local quand Supabase renvoie une liste vide', async () => {
@@ -62,14 +84,14 @@ describe('admin-notifications-store', () => {
 
     const list = await listAdminNotifications('GN');
 
-    expect(mockFrom).toHaveBeenCalledWith('admin_push_campaigns');
+    expect(supabaseMock().__mockFrom).toHaveBeenCalledWith('admin_push_campaigns');
     expect(list).toEqual([]);
     const cached = await AsyncStorage.getItem('loop_admin_notifications_v3');
     expect(JSON.parse(cached ?? '[]')).toEqual([]);
   });
 
   it('remplace le cache local par les campagnes distantes', async () => {
-    mockOrder.mockResolvedValue({
+    supabaseMock().__mockLimit.mockResolvedValue({
       data: [
         {
           id: '22222222-2222-2222-2222-222222222222',
@@ -101,8 +123,6 @@ describe('admin-notifications-store', () => {
   });
 
   it('retombe sur le cache local si Supabase est indisponible', async () => {
-    mockOrder.mockResolvedValue({ data: null, error: { message: 'network' } });
-
     await AsyncStorage.setItem(
       'loop_admin_notifications_v3',
       JSON.stringify([
@@ -125,9 +145,40 @@ describe('admin-notifications-store', () => {
       ]),
     );
 
-    const list = await listAdminNotifications('GN');
-    expect(mockFrom).not.toHaveBeenCalled();
+    const list = await listAdminNotifications('GN', { forceRemote: false });
+    expect(supabaseMock().__mockFrom).not.toHaveBeenCalled();
     expect(list).toHaveLength(1);
     expect(list[0].title).toBe('Cache local');
+  });
+
+  it('retombe sur le cache local quand la requête distante échoue', async () => {
+    supabaseMock().__mockLimit.mockResolvedValue({ data: null, error: { message: 'network' } });
+
+    await AsyncStorage.setItem(
+      'loop_admin_notifications_v3',
+      JSON.stringify([
+        {
+          id: '44444444-4444-4444-4444-444444444444',
+          title: 'Cache offline',
+          message: 'Offline',
+          audience: 'all',
+          targetPhone: null,
+          favoriteEventCategories: [],
+          favoriteSpotCategories: [],
+          favoriteToolCategories: [],
+          countryCode: 'GN',
+          scheduledAt: null,
+          sentAt: null,
+          status: 'draft',
+          recipientCount: 0,
+          createdAt: '2026-03-01T00:00:00.000Z',
+        },
+      ]),
+    );
+
+    const list = await listAdminNotifications('GN');
+    expect(supabaseMock().__mockFrom).toHaveBeenCalledWith('admin_push_campaigns');
+    expect(list).toHaveLength(1);
+    expect(list[0].title).toBe('Cache offline');
   });
 });

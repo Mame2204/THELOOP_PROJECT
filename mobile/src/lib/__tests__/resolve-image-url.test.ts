@@ -1,4 +1,10 @@
-import { resolveRemoteImageUrl, resolveRemoteImageCandidates, resolveRemoteImageUrls } from '@/lib/resolve-image-url';
+import {
+  resolveRemoteImageUrl,
+  resolveRemoteImageCandidates,
+  resolveRemoteImageUrls,
+  toThumbnailUrl,
+  THUMBNAIL_SUFFIX,
+} from '@/lib/resolve-image-url';
 
 describe('resolveRemoteImageUrl', () => {
   const originalEnv = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -80,6 +86,27 @@ describe('resolveRemoteImageCandidates', () => {
       useSupabaseRender: false,
     });
     expect(candidates).toEqual([direct]);
+  });
+
+  it('preferThumbnail : miniature avant l’original pour le Storage interne', () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://eeyhtulpixvftvhppinz.supabase.co';
+    const direct =
+      'https://eeyhtulpixvftvhppinz.supabase.co/storage/v1/object/public/content-media/events/a.jpg';
+    const thumb = `${direct.replace('.jpg', `${THUMBNAIL_SUFFIX}.jpg`)}`;
+    expect(toThumbnailUrl(direct)).toBe(thumb);
+    expect(resolveRemoteImageCandidates(direct, {
+      allowHttpFallback: false,
+      useSupabaseRender: false,
+      preferThumbnail: true,
+    })).toEqual([thumb, direct]);
+  });
+
+  it('preferThumbnail : ignore les URLs externes', () => {
+    const external = 'https://images.unsplash.com/photo-1.jpg';
+    expect(toThumbnailUrl(external)).toBeNull();
+    expect(
+      resolveRemoteImageCandidates(external, { preferThumbnail: true, allowHttpFallback: false }),
+    ).toEqual([external]);
   });
 });
 

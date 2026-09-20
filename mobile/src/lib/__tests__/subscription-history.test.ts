@@ -14,7 +14,7 @@ function pass(overrides: Partial<SubscriptionRecord> = {}): SubscriptionRecord {
     type: 'prime',
     status: 'active',
     startedAt: '2026-08-06T00:00:00.000Z',
-    expiresAt: '2026-09-06T00:00:00.000Z',
+    expiresAt: '2027-09-06T00:00:00.000Z',
     label: 'PASS mensuel',
     billingPeriod: 'monthly',
     amountGnf: 850_000,

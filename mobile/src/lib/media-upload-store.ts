@@ -15,6 +15,12 @@ const ASPECT_EPSILON = 0.03;
 const UPLOAD_MAX_WIDTH = 1280;
 const UPLOAD_JPEG_QUALITY = 0.72;
 
+// Miniature servie aux vignettes (bande de la galerie détail, logos du ruban).
+// Sans elle, un carré de 64 points téléchargeait l'original de 1280 px.
+const THUMBNAIL_WIDTH = 256;
+const THUMBNAIL_JPEG_QUALITY = 0.6;
+const THUMBNAIL_SUFFIX = '_thumb';
+
 function decodeBase64ToArrayBuffer(base64: string): ArrayBuffer {
   const binary = globalThis.atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -289,8 +295,37 @@ export async function uploadContentImage(
     throw new Error(error.message);
   }
 
+  await uploadThumbnail(preparedUri, path);
+
   const { data } = supabase.storage.from('content-media').getPublicUrl(path);
   return data.publicUrl;
+}
+
+/**
+ * Dépose la miniature à côté de l'original, sous le même nom suffixé.
+ * L'affichage la déduit de l'URL principale : aucune colonne à stocker.
+ * Un échec n'est pas bloquant, l'affichage retombe alors sur l'original.
+ */
+async function uploadThumbnail(preparedUri: string, originalPath: string): Promise<void> {
+  if (!supabase) return;
+
+  try {
+    const thumb = await manipulateAsync(preparedUri, [{ resize: { width: THUMBNAIL_WIDTH } }], {
+      compress: THUMBNAIL_JPEG_QUALITY,
+      format: SaveFormat.JPEG,
+    });
+
+    const buffer = await readLocalImageAsArrayBuffer(normalizeLocalFileUri(thumb.uri));
+    if (!buffer.byteLength) return;
+
+    const thumbPath = originalPath.replace(/\.jpg$/i, `${THUMBNAIL_SUFFIX}.jpg`);
+    await supabase.storage.from('content-media').upload(thumbPath, buffer, {
+      contentType: 'image/jpeg',
+      upsert: true,
+    });
+  } catch {
+    /* non bloquant */
+  }
 }
 
 export async function pickAndUploadContentImage(

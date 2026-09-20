@@ -98,6 +98,7 @@ export function DetailPhotoGallery({
                 uri={url}
                 style={[styles.thumb, index === activeIndex && styles.thumbActive]}
                 resizeMode="cover"
+                renderWidth={192}
               />
             </Pressable>
           ))}

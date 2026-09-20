@@ -13,6 +13,8 @@ import { resolveRemoteImageCandidates } from '@/lib/resolve-image-url';
 
 const DEFAULT_RENDER_WIDTH = 800;
 const MAX_RENDER_WIDTH = 900;
+// Au-delà, la miniature générée à l'envoi serait visiblement floue.
+const THUMBNAIL_MAX_RENDER_WIDTH = 320;
 
 interface RemoteImageProps {
   uri: string | null | undefined;
@@ -81,8 +83,9 @@ export function RemoteImage({
       allowHttpFallback: Platform.OS === 'android',
       useSupabaseRender: transformEnabled,
       renderWidth: cappedWidth,
+      preferThumbnail: (renderWidth ?? DEFAULT_RENDER_WIDTH) <= THUMBNAIL_MAX_RENDER_WIDTH,
     });
-  }, [uri, cappedWidth]);
+  }, [uri, cappedWidth, renderWidth]);
 
   const displayUri = candidates[candidateIndex] ?? null;
   const flatStyle = StyleSheet.flatten(style) ?? {};
