@@ -151,7 +151,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [ ] **📱** `ProfilScreen` — infos · code parrain · liens compte
 - [ ] **🤖** Idem
-- [ ] **📱** Pas onglet Pro · pas onglet Admin
+- [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** Pas filtre LoopX / Loop Prime
 - [ ] **🤖** Idem
@@ -565,7 +565,7 @@ Liens Param. → pages satellites :
 
 ## C2 — Auth transversal
 
-- [ ] **📱** Login → Accueil · logout → Auth bloqué
+- [x] **📱** Login → Accueil · logout → Auth bloqué *(login membre OK · build 58 · 20 sept. 2026)*
 - [ ] **🤖** Idem
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
