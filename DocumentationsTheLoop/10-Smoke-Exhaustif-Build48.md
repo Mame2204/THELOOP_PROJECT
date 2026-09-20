@@ -169,7 +169,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** `LoopWalksListScreen` + `LoopWalkDetailScreen` — parcours *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerPublicScreen` — depuis parcours
+- [x] **📱** `PartnerPublicScreen` — depuis parcours *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 
 ### Compte & services
@@ -654,6 +654,7 @@ A2 contenu prime invisible : PASS (build 48)
 A2 CreatorCornerDetail (Singulier) : PASS (build 48)
 A2 FragmentDetail (Fragment) : PASS (build 48)
 A2 LoopWalks list + detail : PASS (build 48)
+A2 PartnerPublicScreen : PASS (build 48)
 Build Android :
 Branch / commit :
 
