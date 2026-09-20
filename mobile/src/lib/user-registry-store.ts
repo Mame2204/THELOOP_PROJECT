@@ -186,6 +186,72 @@ export async function listDelegatedRegistryUsersForCountry(
   );
 }
 
+const PASS_GRANT_EXCLUDED_ROLES = new Set(['admin', 'super_admin', 'partner', 'tool_partner']);
+
+function isPassGrantTargetUser(user: RegistryUser): boolean {
+  const dbRole = (user.userRole ?? '').toLowerCase();
+  return user.role !== 'ADMIN' && !PASS_GRANT_EXCLUDED_ROLES.has(dbRole);
+}
+
+function matchesPassGrantSearch(user: RegistryUser, query: string): boolean {
+  const tokens = query
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (tokens.length === 0) return false;
+
+  const hay = [user.firstName, user.lastName, user.email, user.phoneNumber, user.referralCode]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  const phoneDigits = user.phoneNumber ? normalizePhone(user.phoneNumber).replace(/\D/g, '') : '';
+  const queryDigits = query.replace(/\D/g, '');
+
+  if (queryDigits.length >= 4 && phoneDigits.includes(queryDigits)) return true;
+  return tokens.every((token) => hay.includes(token));
+}
+
+/** Recherche membres éligibles à un octroi PASS (Supabase en priorité, aligné écran Utilisateurs). */
+export async function searchRegistryUsersForPassGrant(
+  query: string,
+  countryCode?: CountryCode,
+  limit = 8,
+): Promise<RegistryUser[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    const safe = q.replace(/[%_,]/g, ' ').slice(0, 80);
+    let dbQuery = supabase
+      .from('users')
+      .select(
+        'id, email, phone_number, first_name, last_name, user_role, birth_date, referral_code, referred_by_code, country_code, interest_country_code, city, prime_role_locked, is_active',
+      )
+      .eq('is_active', true)
+      .not('user_role', 'in', '(admin,super_admin,partner,tool_partner)')
+      .or(
+        `email.ilike.%${safe}%,first_name.ilike.%${safe}%,last_name.ilike.%${safe}%,phone_number.ilike.%${safe}%`,
+      )
+      .order('email')
+      .limit(limit);
+
+    if (countryCode) {
+      dbQuery = dbQuery.or(`country_code.eq.${countryCode},country_code.is.null`);
+    }
+
+    const { data, error } = await dbQuery;
+    if (!error && data) {
+      return data
+        .map((row) => mapDbUserRow(row as Record<string, unknown>))
+        .filter(isPassGrantTargetUser);
+    }
+  }
+
+  const registry = await listRegistryUsers(true);
+  return registry.filter(isPassGrantTargetUser).filter((u) => matchesPassGrantSearch(u, q)).slice(0, limit);
+}
+
 export async function findRegistryUserById(userId: string): Promise<RegistryUser | null> {
   const users = await loadRegistry();
   return users.find((u) => u.id === userId) ?? null;
