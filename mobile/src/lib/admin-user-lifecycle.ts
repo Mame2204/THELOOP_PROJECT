@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asDbUpdate } from '@/lib/supabase-types';
 import { setPhoneDeactivated } from '@/lib/deactivated-users-store';
 import type { AccountAccessStatus } from '@/lib/account-access';
 
@@ -163,7 +164,7 @@ export async function setUserAccountStatus(
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase.from('users').update(patch).eq('id', userId);
+  const { error } = await supabase.from('users').update(asDbUpdate('users', patch)).eq('id', userId);
   if (error) return { ok: false, error: error.message };
   if (phone) await setPhoneDeactivated(phone, !isActive);
   return {

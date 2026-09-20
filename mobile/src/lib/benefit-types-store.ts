@@ -6,6 +6,7 @@ import {
 } from '@/lib/remote-settings-sync';
 import { BENEFIT_KIND_LABELS, type BenefitKind } from '@/lib/benefit-catalog-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 export interface BenefitTypeDefinition {
   id: string;
@@ -143,7 +144,7 @@ async function persist(config: BenefitTypesConfig): Promise<BenefitTypesConfig> 
   if (isSupabaseConfigured() && supabase) {
     const { error: rpcError } = await supabase.rpc('admin_set_app_setting', {
       p_key: REMOTE_KEY,
-      p_value: next,
+      p_value: asJson(next),
     });
     if (rpcError) {
       console.warn('[BenefitTypes] RPC:', rpcError.message);

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 export type PrelaunchMode = 'text' | 'countdown';
 
@@ -110,14 +111,14 @@ async function persistRemote(gates: AppGates): Promise<{ synced: boolean; error?
 
   const { error: rpcError } = await supabase.rpc('admin_set_app_setting', {
     p_key: REMOTE_KEY,
-    p_value: gates,
+    p_value: asJson(gates),
   });
   if (!rpcError) return { synced: true };
 
   const { error: upsertError } = await supabase.from('app_settings').upsert(
     {
       key: REMOTE_KEY,
-      value: gates,
+      value: asJson(gates),
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'key' },

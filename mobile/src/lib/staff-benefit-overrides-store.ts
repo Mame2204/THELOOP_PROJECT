@@ -8,6 +8,7 @@ import {
 import type { RoleBenefitEntitlementEntry } from '@/lib/role-benefit-entitlements-store';
 import { getStaffTeamPackForCountry } from '@/lib/staff-team-pack-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 import type { User } from '@/types';
 import type { CountryCode } from '@/lib/countries';
 
@@ -41,7 +42,7 @@ async function fetchRemoteOverride(userId: string): Promise<StaffBenefitOverride
     {
       userId: String(data.user_id),
       revokedCatalogIds: data.revoked_catalog_ids as string[],
-      extra: data.extra as RoleBenefitEntitlementEntry[],
+      extra: data.extra as unknown as RoleBenefitEntitlementEntry[],
       enabledCatalogIds: data.enabled_catalog_ids as string[],
       updatedAt: String(data.updated_at),
       updatedBy: data.updated_by ? String(data.updated_by) : null,
@@ -55,7 +56,7 @@ async function pushRemoteOverride(overrides: StaffBenefitOverrides): Promise<voi
   const { error } = await supabase.from('staff_benefit_overrides').upsert({
     user_id: overrides.userId,
     revoked_catalog_ids: overrides.revokedCatalogIds,
-    extra: overrides.extra,
+    extra: asJson(overrides.extra),
     enabled_catalog_ids: overrides.enabledCatalogIds,
     updated_at: overrides.updatedAt,
     updated_by: overrides.updatedBy ?? null,

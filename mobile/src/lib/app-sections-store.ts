@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { countryCacheKey, countryRemoteKey, resolveCountryCode } from '@/lib/country-settings-keys';
 import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 
 export interface AccueilBlocksConfig {
   hero: boolean;
@@ -96,7 +97,7 @@ async function fetchAppSectionsRemote(
       await AsyncStorage.setItem(cache, JSON.stringify(merged));
       await supabase.from('app_settings').upsert({
         key: remote,
-        value: merged,
+        value: asJson(merged),
         updated_at: new Date().toISOString(),
       });
       await notifySectionsChanged(previous, merged);
@@ -169,7 +170,7 @@ async function migrateLegacyGn(cacheKey: string): Promise<AppSectionsConfig | nu
     if (isSupabaseConfigured() && supabase) {
       await supabase.from('app_settings').upsert({
         key: countryRemoteKey(REMOTE_BASE, DEFAULT_COUNTRY_CODE),
-        value: merged,
+        value: asJson(merged),
         updated_at: new Date().toISOString(),
       });
     }
@@ -233,7 +234,7 @@ export async function saveAppSections(
   if (isSupabaseConfigured() && supabase) {
     const { error } = await supabase.from('app_settings').upsert({
       key: remote,
-      value: next,
+      value: asJson(next),
       updated_at: new Date().toISOString(),
     });
     if (error) console.warn('[AppSections] upsert:', error.message);

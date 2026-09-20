@@ -33,6 +33,7 @@ import {
 
 import { isNetworkOnline } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson, undefinedIfNull } from '@/lib/supabase-types';
 
 import { syncUserDbRoleIfNeeded } from '@/lib/user-role-sync';
 
@@ -106,13 +107,13 @@ function buildPassPurchaseRpcPayload(entry: SubscriptionRecord, targetUserId: st
     p_pass_kind: entry.passKind ?? 'custom',
     p_status: mapPassGrantCloudStatus(entry),
     p_started_at: entry.startedAt,
-    p_expires_at: entry.expiresAt,
+    p_expires_at: undefinedIfNull(entry.expiresAt),
     p_local_id: entry.id,
-    p_amount_gnf: entry.amountGnf ?? null,
-    p_payment_method: entry.paymentMethod ?? null,
-    p_paid_at: entry.paidAt ?? null,
-    p_billing_period: entry.billingPeriod ?? null,
-    p_scheduled_start_at: entry.scheduledStartAt ?? null,
+    p_amount_gnf: undefinedIfNull(entry.amountGnf ?? null),
+    p_payment_method: undefinedIfNull(entry.paymentMethod ?? null),
+    p_paid_at: undefinedIfNull(entry.paidAt ?? null),
+    p_billing_period: undefinedIfNull(entry.billingPeriod ?? null),
+    p_scheduled_start_at: undefinedIfNull(entry.scheduledStartAt ?? null),
   };
 }
 
@@ -129,17 +130,17 @@ function buildPassGrantAdminRpcPayload(entry: SubscriptionRecord, targetUserId: 
     p_pass_kind: entry.passKind ?? 'custom',
     p_status: mapPassGrantCloudStatus(entry),
     p_started_at: entry.startedAt,
-    p_expires_at: entry.expiresAt,
-    p_granted_by: grantedByUuid,
-    p_grant_note: grantNote,
+    p_expires_at: undefinedIfNull(entry.expiresAt),
+    p_granted_by: undefinedIfNull(grantedByUuid),
+    p_grant_note: undefinedIfNull(grantNote),
     p_local_id: entry.id,
-    p_amount_gnf: entry.amountGnf ?? null,
-    p_payment_method: entry.paymentMethod ?? null,
-    p_paid_at: entry.paidAt ?? null,
-    p_billing_period: entry.billingPeriod ?? null,
-    p_scheduled_start_at: entry.scheduledStartAt ?? null,
-    p_frozen_pass_snapshot: entry.frozenPassSnapshot ?? null,
-    p_role_freeze_intermediate_id: entry.roleFreezeIntermediateId ?? null,
+    p_amount_gnf: undefinedIfNull(entry.amountGnf ?? null),
+    p_payment_method: undefinedIfNull(entry.paymentMethod ?? null),
+    p_paid_at: undefinedIfNull(entry.paidAt ?? null),
+    p_billing_period: undefinedIfNull(entry.billingPeriod ?? null),
+    p_scheduled_start_at: undefinedIfNull(entry.scheduledStartAt ?? null),
+    p_frozen_pass_snapshot: entry.frozenPassSnapshot != null ? asJson(entry.frozenPassSnapshot) : undefined,
+    p_role_freeze_intermediate_id: undefinedIfNull(entry.roleFreezeIntermediateId ?? null),
   };
 }
 
@@ -154,8 +155,8 @@ async function bulkUpdatePassGrantsInSupabase(
     p_user_id: targetUserId,
     p_new_status: newStatus,
     p_match_statuses: matchStatuses,
-    p_exclude_catalog_id: options?.excludeCatalogId ?? null,
-    p_only_catalog_id: options?.onlyCatalogId ?? null,
+    p_exclude_catalog_id: undefinedIfNull(options?.excludeCatalogId ?? null),
+    p_only_catalog_id: undefinedIfNull(options?.onlyCatalogId ?? null),
     p_only_unexpired: options?.onlyUnexpired ?? false,
   });
   if (error) console.warn('[PassGrant] bulk update:', error.message);

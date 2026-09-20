@@ -116,7 +116,7 @@ async function withdrawRemoteSubmissions(
     const { error } = await supabase.rpc('admin_withdraw_partner_content', {
       p_kind: rpcKind,
       p_catalog_id: catalogUuid,
-      p_local_id: null,
+      p_local_id: undefined,
     });
     if (!error) return;
     if (!/does not exist|could not find|schema cache/i.test(error.message)) {
@@ -127,7 +127,7 @@ async function withdrawRemoteSubmissions(
   for (const localId of localIds) {
     const { error } = await supabase.rpc('admin_withdraw_partner_content', {
       p_kind: rpcKind,
-      p_catalog_id: null,
+      p_catalog_id: undefined,
       p_local_id: localId,
     });
     if (error && !/does not exist|could not find|schema cache/i.test(error.message)) {

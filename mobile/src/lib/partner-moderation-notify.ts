@@ -5,6 +5,7 @@ import {
   notifyAdminUsers,
 } from '@/lib/user-notifications-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -43,12 +44,12 @@ async function notifyPartnerUser(params: {
 
   if (isSupabaseConfigured() && supabase) {
     const { data: partnerIds, error } = await supabase.rpc('notify_partner_user', {
-      p_partner_user_id: resolvedPartnerId,
+      p_partner_user_id: undefinedIfNull(resolvedPartnerId),
       p_title: title,
       p_message: message,
       p_audience: 'partner',
-      p_local_id: params.localId?.trim() || null,
-      p_submission_kind: params.submissionKind ?? null,
+      p_local_id: undefinedIfNull(params.localId?.trim() || null),
+      p_submission_kind: undefinedIfNull(params.submissionKind ?? null),
     });
     if (!error) {
       await deliverPushToAdminUserIds(partnerIds, title, message, 'partner');
@@ -93,10 +94,10 @@ async function notifyAdminsForPartnerSubmission(params: {
       p_kind: params.kind,
       p_title: params.title,
       p_partner_name: params.partnerName,
-      p_country_code: countryCode,
-      p_local_id: params.localId?.trim() || null,
+      p_country_code: undefinedIfNull(countryCode),
+      p_local_id: undefinedIfNull(params.localId?.trim() || null),
       p_notif_title: title,
-      p_message_override: params.messageOverride?.trim() || null,
+      p_message_override: undefinedIfNull(params.messageOverride?.trim() || null),
     });
     if (!error) {
       await deliverPushToAdminUserIds(adminIds, title, message, 'admin');

@@ -1,6 +1,7 @@
 import { inferCountryCodeFromPhone } from '@/lib/countries';
 import { deliverPushToAdminUserIds, notifyAdminUsers } from '@/lib/user-notifications-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 import { normalizePhone } from '@/lib/otp-auth';
 
 export type PartnerActivityType =
@@ -73,7 +74,7 @@ export async function submitPartnershipRequest(
     p_email: email,
     p_phone: phone,
     p_country_code: countryCode,
-    p_admin_notes: projectNote || null,
+    p_admin_notes: undefinedIfNull(projectNote || null),
   };
 
   const { data: rpcId, error: rpcError } = await supabase.rpc('submit_partnership_request', rpcPayload);

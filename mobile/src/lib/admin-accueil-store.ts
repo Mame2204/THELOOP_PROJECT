@@ -25,6 +25,7 @@ import type { LoopWalk, LoopWalkStep } from '@/lib/loop-walks-store';
 import { invalidateLoopWalksCache } from '@/lib/loop-walks-store';
 import { hydrateScoped, invalidateScope, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asDbInsert, asDbUpdate, asJson } from '@/lib/supabase-types';
 
 const DEMO_POLLS_ADMIN = 'loop_admin_home_polls_v1';
 const DEMO_WALKS_ADMIN = 'loop_walks_demo_v5';
@@ -421,7 +422,7 @@ export async function upsertAdminHomePoll(input: {
   if (isSupabaseConfigured() && supabase) {
     const payload = {
       question: input.question.trim(),
-      options,
+      options: asJson(options),
       week_key: weekKey,
       is_active: activate,
       country_code: input.countryCode,
@@ -433,7 +434,7 @@ export async function upsertAdminHomePoll(input: {
     if (input.id) {
       const { data, error } = await supabase
         .from('home_polls')
-        .update(payload)
+        .update(asDbUpdate('home_polls', payload))
         .eq('id', input.id)
         .select('id, question, options, week_key, is_active, country_code, period_start, period_end, created_at')
         .single();
@@ -459,7 +460,7 @@ export async function upsertAdminHomePoll(input: {
 
     const { data, error } = await supabase
       .from('home_polls')
-      .insert(payload)
+      .insert(asDbInsert('home_polls', payload))
       .select('id, question, options, week_key, is_active, country_code, period_start, period_end, created_at')
       .single();
     if (error || !data) {
@@ -703,7 +704,7 @@ export async function upsertAdminLoopWalk(input: {
       category_label: categoryLabel,
       summary: input.summary?.trim() || null,
       description: input.description?.trim() || null,
-      steps: stepsJson,
+      steps: asJson(stepsJson),
       price_type: priceType,
       price_label: priceLabel,
       contact_phone: contactPhone,
@@ -718,7 +719,7 @@ export async function upsertAdminLoopWalk(input: {
     if (input.id) {
       const { data, error } = await supabase
         .from('loop_walks')
-        .update(payload)
+        .update(asDbUpdate('loop_walks', payload))
         .eq('id', input.id)
         .select(LOOP_WALK_SELECT)
         .single();
@@ -732,7 +733,7 @@ export async function upsertAdminLoopWalk(input: {
 
     const { data, error } = await supabase
       .from('loop_walks')
-      .insert({
+      .insert(asDbInsert('loop_walks', {
         ...payload,
         slug: `${slugBase}-${Date.now().toString(36).slice(-4)}`,
         is_published: true,
@@ -740,7 +741,7 @@ export async function upsertAdminLoopWalk(input: {
         sort_order: 99,
         partner_ids: [],
         star_count: 3,
-      })
+      }))
       .select(LOOP_WALK_SELECT)
       .single();
     if (error || !data) {
@@ -968,7 +969,7 @@ export async function upsertAdminCreatorCorner(input: {
       journey: null,
       advice: coreQuote,
       favorite_pick: null,
-      useful_links: usefulLinks,
+      useful_links: asJson(usefulLinks),
       period_label: input.periodLabel?.trim() || null,
       period_start: periodStart,
       period_end: periodEnd,
@@ -986,13 +987,13 @@ export async function upsertAdminCreatorCorner(input: {
     };
 
     if (input.id) {
-      const { error } = await supabase.from('creator_corner_features').update(payload).eq('id', input.id);
+      const { error } = await supabase.from('creator_corner_features').update(asDbUpdate('creator_corner_features', payload)).eq('id', input.id);
       if (error) {
         console.warn('[AdminAccueil] corner update:', error.message);
         return null;
       }
     } else {
-      const { error } = await supabase.from('creator_corner_features').insert(payload);
+      const { error } = await supabase.from('creator_corner_features').insert(asDbInsert('creator_corner_features', payload));
       if (error) {
         console.warn('[AdminAccueil] corner insert:', error.message);
         return null;
@@ -1366,14 +1367,14 @@ export async function upsertAdminHomePartnerLogo(input: {
       source: 'manual',
     };
     if (input.id) {
-      const { error } = await supabase.from('home_partner_logos').update(payload).eq('id', input.id);
+      const { error } = await supabase.from('home_partner_logos').update(asDbUpdate('home_partner_logos', payload)).eq('id', input.id);
       if (error) {
         // Colonne `source` absente sur anciens schémas
         if (/source/i.test(error.message)) {
           const { source: _s, ...withoutSource } = payload;
           const { error: retryError } = await supabase
             .from('home_partner_logos')
-            .update(withoutSource)
+            .update(asDbUpdate('home_partner_logos', withoutSource))
             .eq('id', input.id);
           if (retryError) {
             console.warn('[AdminAccueil] logo update:', retryError.message);
@@ -1387,11 +1388,11 @@ export async function upsertAdminHomePartnerLogo(input: {
     } else {
       const list = await listAdminHomePartnerLogos(input.countryCode, { force: true });
       const insertPayload: Record<string, unknown> = { ...payload, sort_order: list.length + 1 };
-      const { error } = await supabase.from('home_partner_logos').insert(insertPayload);
+      const { error } = await supabase.from('home_partner_logos').insert(asDbInsert('home_partner_logos', insertPayload));
       if (error) {
         if (/source/i.test(error.message)) {
           const { source: _s, ...withoutSource } = insertPayload;
-          const { error: retryError } = await supabase.from('home_partner_logos').insert(withoutSource);
+          const { error: retryError } = await supabase.from('home_partner_logos').insert(asDbInsert('home_partner_logos', withoutSource));
           if (retryError) {
             console.warn('[AdminAccueil] logo insert:', retryError.message);
             return null;

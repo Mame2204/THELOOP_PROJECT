@@ -18,6 +18,7 @@ import {
   type PrimeBenefit,
 } from '@/lib/prime-benefits-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asJson } from '@/lib/supabase-types';
 import { listAutomationGrantableCatalog, type GrantableCatalogEntry } from '@/lib/admin-automation-benefits';
 import { userMatchesBenefitCountry } from '@/lib/role-benefit-eligibility';
 import {
@@ -401,7 +402,7 @@ async function syncDrawRemote(record: BenefitDrawRecord): Promise<void> {
     custom_note: record.customNote,
     drawn_by: /^[0-9a-f-]{36}$/i.test(record.drawnBy) ? record.drawnBy : null,
     drawn_at: record.drawnAt,
-    winners: record.winners,
+    winners: asJson(record.winners),
   });
 }
 

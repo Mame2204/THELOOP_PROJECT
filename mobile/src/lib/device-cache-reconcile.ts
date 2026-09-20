@@ -8,6 +8,7 @@ import { invalidateAppSectionsCache } from '@/lib/app-sections-store';
 import { clearAllScopedMemory, invalidateScope, scopedStorageKey } from '@/lib/swr-cache';
 import { isNetworkOnline, markNetworkReachable } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import type { DbTableName } from '@/lib/supabase-types';
 
 type SupabaseCountQuery = ReturnType<ReturnType<NonNullable<typeof supabase>['from']>['select']>;
 
@@ -56,7 +57,7 @@ async function headCount(
 ): Promise<number | null> {
   if (!supabase) return null;
   try {
-    let query = supabase.from(table).select('id', { count: 'exact', head: true }) as SupabaseCountQuery;
+    let query = supabase.from(table as DbTableName).select('id', { count: 'exact', head: true }) as SupabaseCountQuery;
     if (applyFilter) query = applyFilter(query);
     const { count, error } = await query;
     if (error) {

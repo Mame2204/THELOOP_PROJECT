@@ -4,6 +4,7 @@ import { normalizePartnerName } from '@/lib/partner-name-utils';
 import { isNetworkOnline, readLocalCache, writeLocalCache } from '@/lib/offline-store';
 import { listPartnerDirectory } from '@/lib/partner-directory-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 
 const KEY = 'loop_partner_validation_codes_v1';
 
@@ -220,8 +221,8 @@ async function ensureRemoteCode(
   const { data, error } = await supabase.rpc('ensure_partner_validation_code', {
     p_partner_key: partnerKey,
     p_partner_name: partnerName,
-    p_establishment_id: establishmentId ?? null,
-    p_user_id: userId && isUuid(userId) ? userId : null,
+    p_establishment_id: undefinedIfNull(establishmentId ?? null),
+    p_user_id: undefinedIfNull(userId && isUuid(userId) ? userId : null),
   });
   if (!error && data) {
     const row = Array.isArray(data) ? data[0] : data;

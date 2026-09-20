@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { pickCurrentAccueilItem } from '@/lib/accueil-scheduling';
 import { asArray, hydrateScoped, invalidateScope, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { asDbInsert, undefinedIfNull } from '@/lib/supabase-types';
 
 const LEGACY_DEVICE_KEY = 'loop_poll_device_id';
 const PHONE_ID_KEY = 'loop_poll_phone_id';
@@ -328,7 +329,7 @@ async function loadRemoteBundle(
 
   const { data: resultsData, error: resultsError } = await supabase.rpc('get_home_poll_results', {
     p_poll_id: poll.id,
-    p_phone_id: isLoggedInVoter(voter) ? null : (voter.phoneId?.trim() || null),
+    p_phone_id: isLoggedInVoter(voter) ? undefined : undefinedIfNull(voter.phoneId?.trim() || null),
   });
 
   if (resultsError) {
@@ -449,7 +450,7 @@ export async function voteHomePoll(
       payload.voter_phone = phoneId;
     }
 
-    const { error } = await supabase.from('home_poll_votes').insert(payload);
+    const { error } = await supabase.from('home_poll_votes').insert(asDbInsert('home_poll_votes', payload));
     if (error && !error.message.toLowerCase().includes('duplicate') && error.code !== '23505') {
       console.warn('[HomePoll] vote:', error.message);
     }

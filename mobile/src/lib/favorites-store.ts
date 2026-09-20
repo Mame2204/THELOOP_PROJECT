@@ -323,6 +323,6 @@ export async function resolveMissingFavoriteTools(
   return (data ?? []).map((row) => {
     const id = String(row.id);
     const slug = slugMaps.idToSlug.get(id) ?? id;
-    return mapDbToolToHomeLocation(row, slug);
+    return mapDbToolToHomeLocation(row as import('@/lib/content-mappers').DbToolRow, slug);
   });
 }

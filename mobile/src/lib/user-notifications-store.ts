@@ -10,6 +10,7 @@ import { isToolLocation } from '@/lib/location-kind-utils';
 import { listRegistryUsers, type RegistryUser } from '@/lib/user-registry-store';
 import { normalizePhone } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 import { resolveAuthUserPhone } from '@/lib/partner-auth-profile';
 import type { Event, EventCategory, LocationSubCategory, UserRole } from '@/types';
 
@@ -158,7 +159,7 @@ async function notifyUserViaRpc(
     p_title: input.title,
     p_message: input.message,
     p_audience: input.audience,
-    p_recipient_phone: recipientPhone ?? null,
+    p_recipient_phone: undefinedIfNull(recipientPhone ?? null),
   });
   if (error) {
     if (isNotificationsSchemaError(error.message)) {
@@ -834,8 +835,8 @@ export async function notifyAdminUsers(input: {
       p_title: title,
       p_message: message,
       p_audience: 'admin',
-      p_country_code: country,
-      p_campaign_id: null,
+      p_country_code: undefinedIfNull(country),
+      p_campaign_id: undefined,
     });
     if (!error) {
       await deliverPushToAdminUserIds(data, title, message, 'admin');
@@ -1306,8 +1307,8 @@ export async function distributeNotification(input: {
       p_title: title,
       p_message: message,
       p_audience: input.audience === 'all' ? 'everyone' : input.audience,
-      p_country_code: input.countryCode ?? null,
-      p_campaign_id: campaignId,
+      p_country_code: undefinedIfNull(input.countryCode ?? null),
+      p_campaign_id: undefinedIfNull(campaignId),
     });
     if (!error && Array.isArray(data)) {
       await deliverPushToAdminUserIds(data, title, message, input.audience);

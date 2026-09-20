@@ -101,20 +101,29 @@ async function resolveSubmissionLocalId(
   const catalogId = catalogIdFromSyntheticLocalId(localId, kind);
   if (!catalogId) return localId;
 
-  const table = remoteTable(kind);
-  const pubCol =
-    kind === 'event'
-      ? 'published_event_id'
-      : kind === 'tool'
-        ? 'published_tool_id'
-        : 'published_establishment_id';
+  const statusFilter = ['approved', 'withdrawal_requested'] as const;
 
-  const { data, error } = await supabase
-    .from(table)
-    .select('local_id')
-    .eq(pubCol, catalogId)
-    .in('status', ['approved', 'withdrawal_requested'])
-    .maybeSingle();
+  const { data, error } =
+    kind === 'event'
+      ? await supabase
+          .from('partner_event_submissions')
+          .select('local_id')
+          .eq('published_event_id', catalogId)
+          .in('status', [...statusFilter])
+          .maybeSingle()
+      : kind === 'tool'
+        ? await supabase
+            .from('partner_spot_submissions')
+            .select('local_id')
+            .eq('published_tool_id', catalogId)
+            .in('status', [...statusFilter])
+            .maybeSingle()
+        : await supabase
+            .from('partner_spot_submissions')
+            .select('local_id')
+            .eq('published_establishment_id', catalogId)
+            .in('status', [...statusFilter])
+            .maybeSingle();
 
   if (error || !data?.local_id) return localId;
   return String(data.local_id);

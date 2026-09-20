@@ -1,6 +1,7 @@
 import { isNetworkOnline, markNetworkReachable } from '@/lib/offline-store';
 import type { PrimeBenefit } from '@/lib/prime-benefits-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { undefinedIfNull } from '@/lib/supabase-types';
 import { getSupabasePublic } from '@/lib/supabase-public';
 
 function isUuid(value: string): boolean {
@@ -93,16 +94,16 @@ export async function syncPrimeBenefitToRemote(benefit: PrimeBenefit): Promise<v
     p_user_id: benefit.userId,
     p_title: benefit.title,
     p_description: benefit.description,
-    p_partner_name: benefit.partnerName,
+    p_partner_name: benefit.partnerName ?? '',
     p_status: benefit.status,
     p_granted_at: benefit.grantedAt,
     p_expires_at: benefit.expiresAt,
-    p_used_at: benefit.usedAt,
+    p_used_at: benefit.usedAt ?? '',
     p_grant_audience: benefit.grantAudience,
-    p_grant_country_code: benefit.grantCountryCode ?? null,
-    p_grant_city: benefit.grantCity ?? null,
-    p_catalog_local_id: catalogLocal,
-    p_role_entitlement: remoteRoleEntitlement(benefit.roleEntitlement ?? null),
+    p_grant_country_code: undefinedIfNull(benefit.grantCountryCode ?? null),
+    p_grant_city: undefinedIfNull(benefit.grantCity ?? null),
+    p_catalog_local_id: undefinedIfNull(catalogLocal),
+    p_role_entitlement: undefinedIfNull(remoteRoleEntitlement(benefit.roleEntitlement ?? null)),
   });
 
   if (error) console.warn('[BenefitsSync] upsert:', error.message);
