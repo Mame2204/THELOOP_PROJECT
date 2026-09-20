@@ -210,11 +210,11 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ### Spécificités rôle
 - [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
 - [ ] **🤖** Idem
-- [ ] **📱** Filtre **LoopX** (Agenda) visible
+- [x] **📱** Filtre **LoopX** (Agenda) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
-- [ ] **📱** Filtre **Loop Prime** (Spots) visible
+- [x] **📱** Filtre **Loop Prime** (Spots) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu prochain build)*
 - [ ] **🤖** Idem
-- [ ] **📱** Contenu `visibility: prime` accessible
+- [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
 - [ ] **📱** Favoris via menu profil (pas seulement bottom nav)
 - [ ] **🤖** Idem
@@ -657,6 +657,11 @@ A2 FragmentDetail (Fragment) : PASS (build 48)
 A2 LoopWalks list + detail : PASS (build 48)
 A2 PartnerPublicScreen : PASS (build 48)
 A2 EditProfilScreen : PASS (build 48)
+A1 sans compte (Auth seul · pas fiches détail) : PASS (build 48)
+A2 membre : suite en pause (PassPayment · MyBenefits · reste A2)
+A3.2 LoopX (Agenda) : BLOCKED (build 48 — PR #4)
+A3.3 Loop Prime (Spots) : BLOCKED (build 48)
+A3.4 contenu prime accessible : FAIL/BLOCKED (build 48 — non exposé Agenda/Spots)
 Build Android :
 Branch / commit :
 
