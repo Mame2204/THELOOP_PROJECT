@@ -40,7 +40,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ## Phase 0 — Prérequis
 
 ### Environnement
-- [x] **📱** Build cible installé — **build 58** · lancement OK *(20 sept. 2026)*
+- [x] **📱** Build cible installé — **build 48** · lancement OK *(20 sept. 2026)*
 - [ ] **🤖** Idem Android
 - [ ] **💻** Admin-web déployé
 - [ ] **⏳** Serveur Render à jour (push planifiés)
@@ -99,11 +99,11 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 > Pas de bottom nav · pile Auth uniquement.
 
 ### `AuthScreen` — modes
-- [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 58)*
+- [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
 - [ ] **📱** Mode **signup** — formulaire inscription (si gate ON)
 - [ ] **🤖** Idem
-- [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 58)*
+- [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
 - [ ] **📱** Mode **activate** — activation compte invité
 - [ ] **🤖** Idem
@@ -129,7 +129,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 
 ### Bloqué sans connexion
-- [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 58)*
+- [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
 - [ ] **📱** Pas fiches détail catalogue
 - [ ] **🤖** Idem
@@ -139,29 +139,29 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ## A2 — Membre gratuit (`member`)
 
 ### Bottom nav
-- [x] **📱** `AccueilScreen` — hero · sondage · parcours · singulier · fragment *(20 sept. 2026 · build 58)*
+- [x] **📱** `AccueilScreen` — hero · sondage · parcours · singulier · fragment *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [x] **📱** `AgendaScreen` — liste événements · filtres · pull refresh *(20 sept. 2026 · build 58)*
+- [x] **📱** `AgendaScreen` — liste événements · filtres · pull refresh *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [x] **📱** `SpotsScreen` — liste spots · catégories *(20 sept. 2026 · build 58 · pas Loop Prime)*
+- [x] **📱** `SpotsScreen` — liste spots · catégories *(20 sept. 2026 · build 48 · pas Loop Prime)*
 - [ ] **🤖** Idem
-- [x] **📱** `OutilsScreen` — liste outils *(20 sept. 2026 · build 58)*
+- [x] **📱** `OutilsScreen` — liste outils *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [x] **📱** `FavorisScreen` — via **bottom nav** (pas menu profil) *(20 sept. 2026 · build 58 · compte membre perso)*
+- [x] **📱** `FavorisScreen` — via **bottom nav** (pas menu profil) *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
-- [x] **📱** `ProfilScreen` — infos · code parrain · liens compte *(20 sept. 2026 · build 58 · compte membre perso)*
+- [x] **📱** `ProfilScreen` — infos · code parrain · liens compte *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
-- [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 58)*
+- [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [x] **📱** Pas filtre LoopX / Loop Prime *(Agenda · build 58 · 20 sept. 2026)*
+- [x] **📱** Pas filtre LoopX / Loop Prime *(Agenda · build 48 · 20 sept. 2026)*
 - [ ] **🤖** Idem
-- [ ] **📱** Contenu `prime` invisible / cadenas
+- [x] **📱** Contenu `prime` invisible / cadenas *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 
 ### Stack détail contenu
-- [x] **📱** `EventDetailScreen` — depuis Agenda / Accueil / Favoris *(20 sept. 2026 · build 58)*
+- [x] **📱** `EventDetailScreen` — depuis Agenda / Accueil / Favoris *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
-- [x] **📱** `SpotDetailScreen` — depuis Spots / Accueil *(20 sept. 2026 · build 58)*
+- [x] **📱** `SpotDetailScreen` — depuis Spots / Accueil *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
 - [ ] **📱** `CreatorCornerDetailScreen` — Le Singulier
 - [ ] **🤖** Idem
@@ -177,7 +177,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [ ] **📱** `SettingsScreen` — paramètres app
 - [ ] **🤖** Idem
-- [x] **📱** `NotificationsScreen` — cloche header · inbox *(20 sept. 2026 · build 58)*
+- [x] **📱** `NotificationsScreen` — cloche header · inbox *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
 - [ ] **📱** `ReferralScreen` — parrainage · code · compteur filleuls
 - [ ] **🤖** Idem
@@ -193,7 +193,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 
 ### Interactions
-- [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 58)*
+- [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 48)*
 - [ ] **🤖** Idem
 - [ ] **📱** Tentative favori sans compte → modal Auth
 - [ ] **🤖** Idem
@@ -207,7 +207,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ## A3 — Loop Prime (`prime` + PASS actif)
 
 ### Spécificités rôle
-- [x] **📱** Thème sombre & or *(build 58 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
+- [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
 - [ ] **🤖** Idem
 - [ ] **📱** Filtre **LoopX** (Agenda) visible
 - [ ] **🤖** Idem
@@ -565,7 +565,7 @@ Liens Param. → pages satellites :
 
 ## C2 — Auth transversal
 
-- [x] **📱** Login → Accueil · logout → Auth bloqué *(login + logout membre OK · build 58 · 20 sept. 2026)*
+- [x] **📱** Login → Accueil · logout → Auth bloqué *(login + logout membre OK · build 48 · 20 sept. 2026)*
 - [ ] **🤖** Idem
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
@@ -647,7 +647,10 @@ Smoke Playwright prod — navigation + chargement (sans mutations destructives).
 ```
 Date : 20 sept. 2026
 Testeur :
-Build iPhone : 58 — lancement OK
+Build iPhone : 48 — lancement OK
+Compte membre iOS : compte perso
+Compte Prime iOS : carte membre Prime (thème violet/indigo)
+A2 contenu prime invisible : PASS (build 48)
 Build Android :
 Branch / commit :
 
