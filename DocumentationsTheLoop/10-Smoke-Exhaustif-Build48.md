@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U23** (PASS → octroi manuel) |
+| **Prochain test** | **A5-U23** (PASS → octroi manuel · retest après PR #7) |
 | **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
 | **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel) · PACK A5-3 (U18–U22)** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
@@ -554,7 +554,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Modération — approuver retrait catalogue *(20 sept. 2026 · build 48 · A5-U20 PASS)*
 - [x] **📱** Modération — refuser retrait · notif partenaire *(20 sept. 2026 · build 48 · A5-U21 PASS)*
 - [x] **📱** Users — changer rôle · suspendre *(20 sept. 2026 · build 48 · A5-U22 PASS)*
-- [ ] **📱** PASS — octroi manuel · prix Guinée
+- [ ] **📱** PASS — octroi manuel · prix Guinée *(20 sept. 2026 · build 48 · **A5-U23 FAIL** · membre introuvable recherche · bouton grisé · fix PR #7 recherche Supabase)*
 - [ ] **📱** Tirage — lancer · historique · notif gagnant
 - [ ] **📱** Push immédiat audience Tous
 - [ ] **📱** Push planifié · annuler
@@ -861,6 +861,7 @@ A5 bugs smoke build 48 :
   - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · onglet **Admin** vide si aucun privilège catalogue lié à contenu publié
   - TEAMS super admin : onglet **Par admin** vide (build 48) malgré admin délégué existant · fix PR #7 (fetch Supabase + UI sans blocage delegateOverrides)
   - TEAMS compte **délégué** : **pas** d’onglet « Par admin » (réservé super admin) · seulement onglet **Admin** (pack pays) · **vide build 48** si pack vide / permission `staff_benefits_team` / catalogue — **FAIL partiel** · fix PR #7
+  - Gestion PASS : octroi manuel KO (recherche cache local) · liste « PASS accordés » mélange achats Prime · fix PR #7
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
 A5-U4 délégué TEAMS : FAIL partiel (écran vide ou onglet Admin sans lignes — retest après PR #7)
 PACK A5-3 : partiel (U18–U22 · reste U23–U25)
