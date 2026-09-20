@@ -207,7 +207,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ## A3 — Loop Prime (`prime` + PASS actif)
 
 ### Spécificités rôle
-- [ ] **📱** Thème sombre & or
+- [x] **📱** Thème sombre & or *(build 58 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
 - [ ] **🤖** Idem
 - [ ] **📱** Filtre **LoopX** (Agenda) visible
 - [ ] **🤖** Idem
