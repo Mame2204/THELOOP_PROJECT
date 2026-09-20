@@ -198,7 +198,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** Tentative favori sans compte → page connexion Auth *(20 sept. 2026 · build 48 · pile Auth sans compte)*
 - [ ] **🤖** Idem
-- [ ] **📱** Recherche inline (Agenda / Spots)
+- [x] **📱** Recherche inline (Agenda / Spots) *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [ ] **📱** Profil → contact `contact@theloop-app.com`
 - [ ] **🤖** Idem
