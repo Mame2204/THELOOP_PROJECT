@@ -177,7 +177,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [ ] **📱** `SettingsScreen` — paramètres app
 - [ ] **🤖** Idem
-- [ ] **📱** `NotificationsScreen` — cloche header · inbox
+- [x] **📱** `NotificationsScreen` — cloche header · inbox *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** `ReferralScreen` — parrainage · code · compteur filleuls
 - [ ] **🤖** Idem
