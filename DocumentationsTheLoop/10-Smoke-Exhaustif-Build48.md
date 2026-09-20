@@ -139,7 +139,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 ## A2 — Membre gratuit (`member`)
 
 ### Bottom nav
-- [ ] **📱** `AccueilScreen` — hero · sondage · parcours · singulier · fragment
+- [x] **📱** `AccueilScreen` — hero · sondage · parcours · singulier · fragment *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** `AgendaScreen` — liste événements · filtres · pull refresh
 - [ ] **🤖** Idem
