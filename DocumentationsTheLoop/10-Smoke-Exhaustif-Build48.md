@@ -37,6 +37,181 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 ---
 
+## Guide session iOS build 48 — tests unitaires & packs
+
+> **Objectif :** reprendre le smoke **une brique à la fois** ou **pack par pack**, sans relire toute la checklist.  
+> **Format de réponse :** `A4-U3 PASS` · `A4-U3 FAIL: motif` · ou `PACK A4-1 OK` (tout le pack d’un coup).
+
+### Position actuelle
+
+| Élément | Valeur |
+|---------|--------|
+| **Prochain test** | **A4-U1** |
+| **Compte** | `contact@lavenue.gn` (partenaire) |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 |
+| **Reporté build 48** | LoopX · contenu prime · Android |
+
+---
+
+### Déjà fait (ne pas refaire)
+
+| Bloc | Statut |
+|------|--------|
+| A1 sans compte | ✅ |
+| A2 membre (nav · fiches · compte · interactions) | ✅ |
+| A2 PassPayment / MyBenefits | ⏸ voir **A2-U1 / A2-U2** |
+| A3 Prime (thème · Mon PASS · privilèges · nav) | ✅ |
+| A3 LoopX / spots prime / contenu prime | 🔒 BLOCKED prochain build |
+
+---
+
+### A2 — Reste membre (optionnel · 2 unités)
+
+| ID | Action | Compte | Attendu |
+|----|--------|--------|---------|
+| **A2-U1** | Profil → Découvrir Prime → forfait → **PassPayment** (sans payer si tu veux) | membre perso | Écran paiement s’ouvre · montant · moyens affichés |
+| **A2-U2** | Chercher entrée **Mes privilèges** | membre perso | **N/A attendu** — pas de menu · noter si trouvé via notif |
+
+---
+
+### A4 — Partenaire
+
+#### PACK A4-1 — Connexion & shell *(~3 min · enchaînable)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U1** | Se déconnecter → se connecter **`contact@lavenue.gn`** | Login OK · Accueil partenaire |
+| **A4-U2** | Regarder le thème global | **Teal / gris pro** (pas violet Prime · pas clair membre) |
+| **A4-U3** | Bottom nav | **Accueil · Agenda · Spots · Outils · Favoris · Pro · Profil** — **pas** Stats en barre |
+| **A4-U4** | Onglet **Pro** | Hub **PartnerProScreen** · tuiles modules visibles |
+
+#### PACK A4-2 — Hub Pro lecture seule *(~5 min)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U5** | Pro → **Mes contenus** | Listes publié / en attente / rejeté |
+| **A4-U6** | Pro → **Performances** | `PartnerStatsScreen` s’ouvre |
+| **A4-U7** | Pro → **À la une** | `PartnerFeaturedScreen` |
+| **A4-U8** | Pro → **Privilèges offerts** | `PartnerBenefitsScreen` |
+| **A4-U9** | Pro → **Récompenses** | `PartnerRewardsScreen` |
+
+#### PACK A4-3 — Soumissions création *(~10 min · enchaîner U10→U12)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U10** | Mes contenus → **Nouvel événement** → remplir minimum → soumettre | Statut **pending** · visible en attente |
+| **A4-U11** | Idem **spot** | pending |
+| **A4-U12** | Idem **outil** | pending |
+
+#### PACK A4-4 — Soumissions cycle de vie *(~10 min)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U13** | Modifier une soumission **pending** | Sauvegarde OK |
+| **A4-U14** | **Annuler** une soumission pending | Disparaît ou statut annulé |
+| **A4-U15** | Liste contenus **publiés** | Events/spots publiés visibles |
+| **A4-U16** | Ouvrir un **rejeté** (si dispo) · lire motif · **resoumettre** | Motif affiché · resoumission OK |
+| **A4-U17** | Créer/modifier event avec **intervenant sans titre** | Pas de crash · validation OK |
+
+#### PACK A4-5 — Retraits *(~8 min · lie Phase 1 #2–#3)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U18** | Sur contenu **publié** → demander **retrait** | Demande pending |
+| **A4-U19** | **Annuler** le retrait pending | Contenu reste publié / visible Mon contenu |
+| **A4-U20** | *(plus tard, après modération admin)* notif approve / refuse | Push ou cloche inbox |
+
+#### PACK A4-6 — Validation privilèges *(~8 min)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U21** | Pro → validation par **code** `CODE-XXXXX` | `PartnerValidationCodeScreen` · saisie OK |
+| **A4-U22** | Pro → **scan QR** membre | `PartnerBenefitScanScreen` caméra / permission |
+| **A4-U23** | Après scan → **accepter / refuser** | `PartnerBenefitConfirmScreen` |
+| **A4-U24** | Vérifier notif **privilège à valider** dans Pro | Badge ou entrée visible |
+
+#### PACK A4-7 — Catalogue public *(~3 min)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A4-U25** | Parcourir Accueil / Agenda / Spots / Outils / Profil | Comme membre · thème partenaire |
+| **A4-U26** | **Favoris** (bottom nav) | Liste favoris partenaire OK |
+
+---
+
+### A5 — Admin mobile
+
+> Compte : **`admin@theloop.gn`** · enchaîner les packs dans l’ordre.
+
+#### PACK A5-1 — Accès & shell *(~3 min)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A5-U1** | Login admin | Onglet **Administration** visible |
+| **A5-U2** | Thème | **Bordeaux** super admin |
+| **A5-U3** | `AdminWorkspaceScreen` | Sidebar modules |
+| **A5-U4** | *(si compte délégué dispo)* modules masqués selon droits | Sinon skip |
+
+#### PACK A5-2 — Sidebar tour *(~15 min · 1 module = 1 réponse)*
+
+| ID | Module | Attendu |
+|----|--------|---------|
+| **A5-U5** | Insights | Écran charge |
+| **A5-U6** | Accueil admin | Écran charge |
+| **A5-U7** | Onglets & Espace Pro | Écran charge |
+| **A5-U8** | Hub THE LOOP | Écran charge |
+| **A5-U9** | Contenu | Liste events/spots |
+| **A5-U10** | Utilisateurs | Liste users |
+| **A5-U11** | Demandes | Hub partenariats / modération / idées |
+| **A5-U12** | Privilèges THE LOOP | Catalogue |
+| **A5-U13** | Privilèges TEAMS | Overrides staff |
+| **A5-U14** | Tirage au sort | Pool · historique |
+| **A5-U15** | Gestion PASS | Octroi · catalogue |
+| **A5-U16** | Compta PASS | Écran charge |
+| **A5-U17** | Paramètres | Sous-menus accessibles |
+
+#### PACK A5-3 — Actions critiques *(1 action = 1 unité · ~20 min)*
+
+| ID | Action | Attendu |
+|----|--------|---------|
+| **A5-U18** | Modération → **approuver** événement partenaire (U10) | Visible Agenda public |
+| **A5-U19** | Modération → **refuser** + motif | Modale au-dessus clavier · partenaire voit motif |
+| **A5-U20** | Modération → **approuver retrait** | Contenu disparaît catalogue |
+| **A5-U21** | Modération → **refuser retrait** | Notif partenaire |
+| **A5-U22** | Users → changer rôle / suspendre | Persisté |
+| **A5-U23** | PASS → octroi manuel | Membre voit PASS |
+| **A5-U24** | Tirage → lancer · notif gagnant | Push « Nouveau privilège » |
+| **A5-U25** | Push immédiat audience Tous | Reçu sur device test |
+
+---
+
+### Phase 1 — Retests bloquants *(croisés mobile + admin)*
+
+| ID | Scénario | Qui teste | Prérequis |
+|----|----------|-----------|-----------|
+| **P1-U1** | Soumission partenaire → admin push + cloche | A4-U10 puis admin | Compte admin |
+| **P1-U2** | Partenaire annule retrait pending | A4-U19 | U18 fait avant |
+| **P1-U3** | Admin approuve retrait → disparaît app | A5-U20 | U18 fait |
+| **P1-U4** | Tirage → push gagnant + fiche déverrouillée | A5-U24 | Compte Prime |
+| **P1-U5** | Tirage membre non-Prime → pas « réservé Prime » | Tirage + membre | Compte membre |
+| **P1-U6** | Privilège lié · Prime sans octroi = cadenas | Fiche contenu | Compte Prime |
+| **P1-U7** | Event + intervenant sans titre → validation | A4-U17 + modération | Partenaire + admin |
+
+---
+
+### Ordre recommandé (tu peux t’arrêter après chaque pack)
+
+```
+A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
+  → A5-1 → A5-2 → A5-3
+  → P1-U1 … P1-U7
+  → A2-U1 · A2-U2 (optionnel)
+```
+
+**Reprise :** envoie juste l’ID (`A4-U6 PASS`) — je coche la checklist principale + le journal.
+
+---
+
 ## Phase 0 — Prérequis
 
 ### Environnement
@@ -669,6 +844,7 @@ A3 fiche privilège : PASS (cadenas → octroi → utilisation → quota atteint
 A3 écrans Accueil/Agenda/Spots/Outils : PASS navigation (build 48)
 A3 PrimeScreen : N/A statut (Mon PASS = Abonnement · PrimeScreen = boutique)
 A3 MyBenefitsScreen : BLOCKED/N/A (pas d’entrée menu build 48)
+Prochain test unitaire : A4-U1 (connexion partenaire)
 Build Android :
 Branch / commit :
 
