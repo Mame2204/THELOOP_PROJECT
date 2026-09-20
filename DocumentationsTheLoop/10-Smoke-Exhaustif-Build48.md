@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A4-U5** |
+| **Prochain test** | **A4-U10** |
 | **Compte** | `contact@lavenue.gn` (partenaire) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1** |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1 · A4-2** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -421,15 +421,15 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** `PartnerProScreen` (tab Pro) — hub modules *(20 sept. 2026 · build 48 · A4-U1/U3/U4 PASS · login partenaire · bottom nav avec Pro · hub tuiles OK)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerContentScreen` — Mes contenus (publié / pending / rejeté)
+- [x] **📱** `PartnerContentScreen` — Mes contenus (publié / pending / rejeté) *(20 sept. 2026 · build 48 · A4-U5 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerStatsScreen` — Performances (depuis Pro, pas bottom nav)
+- [x] **📱** `PartnerStatsScreen` — Performances (depuis Pro, pas bottom nav) *(20 sept. 2026 · build 48 · A4-U6 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerFeaturedScreen` — À la une
+- [x] **📱** `PartnerFeaturedScreen` — À la une *(20 sept. 2026 · build 48 · A4-U7 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerBenefitsScreen` — Privilèges offerts
+- [x] **📱** `PartnerBenefitsScreen` — Privilèges offerts *(20 sept. 2026 · build 48 · A4-U8 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerRewardsScreen` — Récompenses THE LOOP
+- [x] **📱** `PartnerRewardsScreen` — Récompenses THE LOOP *(20 sept. 2026 · build 48 · A4-U9 PASS)*
 - [ ] **🤖** Idem
 
 ### Soumissions & modération
@@ -845,7 +845,8 @@ A3 écrans Accueil/Agenda/Spots/Outils : PASS navigation (build 48)
 A3 PrimeScreen : N/A statut (Mon PASS = Abonnement · PrimeScreen = boutique)
 A3 MyBenefitsScreen : BLOCKED/N/A (pas d’entrée menu build 48)
 PACK A4-1 : PASS (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
-Prochain test unitaire : A4-U5 (Mes contenus)
+PACK A4-2 : PASS (U5 Mes contenus · U6 Stats · U7 À la une · U8 Privilèges · U9 Récompenses)
+Prochain test unitaire : A4-U10 (soumettre événement)
 Build Android :
 Branch / commit :
 
