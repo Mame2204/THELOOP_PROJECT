@@ -145,7 +145,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 - [x] **📱** `SpotsScreen` — liste spots · catégories *(20 sept. 2026 · build 58 · pas Loop Prime)*
 - [ ] **🤖** Idem
-- [ ] **📱** `OutilsScreen` — liste outils
+- [x] **📱** `OutilsScreen` — liste outils *(20 sept. 2026 · build 58)*
 - [ ] **🤖** Idem
 - [ ] **📱** `FavorisScreen` — via **bottom nav** (pas menu profil)
 - [ ] **🤖** Idem
