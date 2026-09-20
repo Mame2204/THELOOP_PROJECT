@@ -1,5 +1,7 @@
 # THE LOOP — Smoke test complet (à cocher)
 
+> **⚠️ Document legacy** — pour les cycles QA actuels, utiliser **[10-Smoke-Exhaustif-Build48.md](./10-Smoke-Exhaustif-Build48.md)** (73 écrans mobile + admin-web complet).
+
 > **Màj :** 20 sept. 2026 · Coche `- [ ]` → `- [x]` au fur et à mesure  
 > **App mobile :** build **48** (TestFlight + Play internal)  
 > **Admin web :** `https://admin.theloop-app.com`  
