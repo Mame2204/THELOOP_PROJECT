@@ -224,7 +224,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **📱** `AgendaScreen` — événements LoopX
 - [ ] **📱** `SpotsScreen` — spots exclusifs
 - [ ] **📱** `PrimeScreen` — statut PASS actif
-- [ ] **📱** `AbonnementScreen` — détail abonnement
+- [x] **📱** `AbonnementScreen` — détail abonnement *(20 sept. 2026 · build 48 · compte carte membre Prime · **PASS en cours** + **1 en attente** · relais auto à expiration)*
 - [ ] **🤖** Idem pour chaque écran ci-dessus
 
 ### Privilèges & fiches
@@ -662,6 +662,7 @@ A2 membre : suite en pause (PassPayment · MyBenefits · reste A2)
 A3.2 LoopX (Agenda) : BLOCKED (build 48 — PR #4)
 A3.3 Loop Prime (Spots) : BLOCKED (build 48)
 A3.4 contenu prime accessible : FAIL/BLOCKED (build 48 — non exposé Agenda/Spots)
+A3 AbonnementScreen : PASS (build 48 — PASS en cours + 1 en attente)
 Build Android :
 Branch / commit :
 
