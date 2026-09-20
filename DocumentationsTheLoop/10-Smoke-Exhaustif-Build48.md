@@ -173,7 +173,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **🤖** Idem
 
 ### Compte & services
-- [ ] **📱** `EditProfilScreen` — modifier nom / photo
+- [x] **📱** `EditProfilScreen` — modifier nom / photo *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [ ] **📱** `SettingsScreen` — paramètres app
 - [ ] **🤖** Idem
@@ -655,6 +655,7 @@ A2 CreatorCornerDetail (Singulier) : PASS (build 48)
 A2 FragmentDetail (Fragment) : PASS (build 48)
 A2 LoopWalks list + detail : PASS (build 48)
 A2 PartnerPublicScreen : PASS (build 48)
+A2 EditProfilScreen : PASS (build 48)
 Build Android :
 Branch / commit :
 
