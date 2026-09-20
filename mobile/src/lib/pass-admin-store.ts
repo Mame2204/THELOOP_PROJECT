@@ -6,7 +6,7 @@ import {
 
 } from '@/lib/pass-activation-messages-store';
 
-import { type CountryCode } from '@/lib/countries';
+import { asCountryCode, type CountryCode } from '@/lib/countries';
 import { resolveCountryCode } from '@/lib/country-settings-keys';
 
 import {
@@ -425,7 +425,7 @@ async function applyPrimeGrantToMember(
 
       record: entry,
 
-      countryCode: countryCode ?? target.countryCode ?? undefined,
+      countryCode: countryCode ?? asCountryCode(target.countryCode),
 
     });
 
@@ -458,7 +458,7 @@ export async function grantPassFromCatalog(
   note?: string | null,
   countryCode?: CountryCode,
 ): Promise<SubscriptionRecord> {
-  const cc = countryCode ?? (await findRegistryUserById(targetUserId))?.countryCode;
+  const cc = countryCode ?? resolveCountryCode((await findRegistryUserById(targetUserId))?.countryCode);
   const catalog = await getPassCatalogEntry(catalogId, cc);
   // Tout PASS catalogue actif est octroyable (Heritage + pass créés)
   if (!catalog || catalog.status !== 'active') {
@@ -792,7 +792,7 @@ async function listGrantedPassesFromCloud(): Promise<GrantedPassRow[] | null> {
       : userId.slice(0, 8);
     let catalogLabel = String(row.label);
     const catalogId = String(row.pass_catalog_id);
-    const catalog = await getPassCatalogEntry(catalogId, registry?.countryCode);
+    const catalog = await getPassCatalogEntry(catalogId, resolveCountryCode(registry?.countryCode));
     if (catalog) catalogLabel = catalog.label;
 
     results.push({
@@ -840,7 +840,7 @@ export async function listActiveGrantedPasses(): Promise<GrantedPassRow[]> {
 
       let catalogLabel = pass.label;
       if (pass.passCatalogId) {
-        const catalog = await getPassCatalogEntry(pass.passCatalogId, user.countryCode);
+        const catalog = await getPassCatalogEntry(pass.passCatalogId, resolveCountryCode(user.countryCode));
         if (catalog) catalogLabel = catalog.label;
       }
 

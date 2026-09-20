@@ -538,8 +538,8 @@ Quand tu n’es **pas** connecté, tu n’es pas « visiteur » qui parcourt l�
 - [ x ] **🤖** Idem
 - [ x ] **📱** Nouveau filleul inscrit → compteur parrain +1
 - [ x ] **🤖** Idem
-- [ ] **📱** 10 filleuls / an → mois Prime parrain (si seuil atteint en test)
-- [ ] **🤖** Idem
+- [ ] **📱** 10 filleuls / an → mois Prime parrain *(test manuel : nécessite 10 filleuls validés sur un compte parrain en environnement de test — non automatisable en CI)*
+- [ ] **🤖** Idem *(même scénario que 📱)*
 
 ---
 

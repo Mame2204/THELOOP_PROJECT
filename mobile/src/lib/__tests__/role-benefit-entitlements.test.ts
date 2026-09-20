@@ -4,6 +4,7 @@ describe('mergeRoleEntitlementConfigs', () => {
   const local = {
     member: [{ catalogId: 'cat-a' }],
     prime: [],
+    partner: [],
     admin: [],
     updatedAt: '2026-01-01T00:00:00.000Z',
     updatedBy: null,
@@ -17,6 +18,7 @@ describe('mergeRoleEntitlementConfigs', () => {
     const remote = {
       member: [],
       prime: [{ catalogId: 'cat-b' }],
+      partner: [],
       admin: [],
       updatedAt: '2026-06-01T00:00:00.000Z',
       updatedBy: 'admin',
@@ -28,6 +30,7 @@ describe('mergeRoleEntitlementConfigs', () => {
     const remote = {
       member: [{ catalogId: 'old' }],
       prime: [],
+      partner: [],
       admin: [],
       updatedAt: '2025-01-01T00:00:00.000Z',
       updatedBy: null,

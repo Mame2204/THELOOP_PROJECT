@@ -74,6 +74,19 @@ export const PHONE_DIAL_COUNTRIES: PhoneDialCountry[] = [
 export const DEFAULT_COUNTRY_CODE: CountryCode = 'GN';
 
 const BY_CODE = new Map(LOOP_COUNTRIES.map((c) => [c.code, c]));
+
+/** Valide une chaîne DB / API avant passage aux stores typés CountryCode. */
+export function asCountryCode(value: string | null | undefined): CountryCode | undefined {
+  if (!value) return undefined;
+  return BY_CODE.has(value as CountryCode) ? (value as CountryCode) : undefined;
+}
+
+export function countryCodeOrDefault(
+  value: string | null | undefined,
+  fallback: CountryCode = DEFAULT_COUNTRY_CODE,
+): CountryCode {
+  return asCountryCode(value) ?? fallback;
+}
 const BY_DIAL_CODE = new Map(PHONE_DIAL_COUNTRIES.map((c) => [c.code, c]));
 const BY_CALLING = [...PHONE_DIAL_COUNTRIES].sort((a, b) => b.callingCode.length - a.callingCode.length);
 

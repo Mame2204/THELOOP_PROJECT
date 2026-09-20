@@ -1,6 +1,8 @@
 import { isNetworkOnline, markNetworkReachable, readLocalCache, writeLocalCache, clearLocalCache } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
+type SupabasePublishedQuery = ReturnType<ReturnType<NonNullable<typeof supabase>['from']>['select']>;
+
 export const CONTENT_CATALOG_FINGERPRINT_KEY = 'loop_content_catalog_fingerprint_v1';
 
 type TableSlice = { n: number; rev: string | null };
@@ -12,14 +14,14 @@ export function buildFingerprintToken(events: TableSlice, spots: TableSlice, too
 async function tableSlice(
   table: 'events' | 'establishments' | 'tools',
   revColumn: 'created_at' | 'updated_at',
-  applyExtra?: (q: ReturnType<NonNullable<typeof supabase>['from']>) => ReturnType<NonNullable<typeof supabase>['from']>,
+  applyExtra?: (q: SupabasePublishedQuery) => SupabasePublishedQuery,
 ): Promise<TableSlice | null> {
   if (!supabase) return null;
   let base = supabase
     .from(table)
     .select(revColumn, { count: 'exact' })
     .eq('is_active', true)
-    .eq('content_status', 'published');
+    .eq('content_status', 'published') as SupabasePublishedQuery;
   if (applyExtra) base = applyExtra(base);
   const { count, data, error } = await base.order(revColumn, { ascending: false }).limit(1);
   if (error) {

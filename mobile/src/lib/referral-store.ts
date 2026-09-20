@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { asCountryCode } from '@/lib/countries';
 import { extendSubscriptionByMonths } from '@/lib/prime-plans';
 import { loadReferralSettings } from '@/lib/referral-config-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
@@ -417,7 +418,7 @@ export async function applyPendingPrimeRewards(user: User): Promise<User | null>
     firstName: user.firstName,
     passLabel: `PASS Parrainage (${totalMonths} mois offerts)`,
     passType: 'referral',
-    countryCode: user.countryCode ?? undefined,
+    countryCode: asCountryCode(user.countryCode),
   });
 
   return {

@@ -1,10 +1,8 @@
-import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
+import { asCountryCode, DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
 
-/** Code pays normalisé (2 lettres). */
+/** Code pays normalisé (catalogue Loop). */
 export function resolveCountryCode(code?: string | null): CountryCode {
-  const c = code?.trim().toUpperCase().slice(0, 2);
-  if (c && c.length === 2) return c as CountryCode;
-  return DEFAULT_COUNTRY_CODE;
+  return asCountryCode(code?.trim().toUpperCase().slice(0, 2)) ?? DEFAULT_COUNTRY_CODE;
 }
 
 /** Clé AsyncStorage par pays. */

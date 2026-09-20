@@ -11,7 +11,7 @@ import { AppState } from 'react-native';
 
 
 import { useViewingCountry } from '@/context/ViewingCountryContext';
-import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
+import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
 import { applyCategoryVisibilityToContent } from '@/lib/category-visibility';
 import {
   getActiveEventCategoryFilter,
@@ -91,7 +91,7 @@ interface ContentContextValue {
 
   /** Pays actif pour le filtrage du catalogue. */
 
-  activeCountryCode: string;
+  activeCountryCode: CountryCode;
 
 
 

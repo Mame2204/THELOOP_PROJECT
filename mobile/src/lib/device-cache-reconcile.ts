@@ -9,6 +9,8 @@ import { clearAllScopedMemory, invalidateScope, scopedStorageKey } from '@/lib/s
 import { isNetworkOnline, markNetworkReachable } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
+type SupabaseCountQuery = ReturnType<ReturnType<NonNullable<typeof supabase>['from']>['select']>;
+
 const ACCUEIL_SCOPES = ['GN', 'SN', '__ALL__'] as const;
 
 const DEMO_ACCUEIL_KEYS = [
@@ -50,11 +52,11 @@ const PUBLIC_CACHE_PREFIXES = [
 
 async function headCount(
   table: string,
-  applyFilter?: (q: ReturnType<NonNullable<typeof supabase>['from']>) => ReturnType<NonNullable<typeof supabase>['from']>,
+  applyFilter?: (q: SupabaseCountQuery) => SupabaseCountQuery,
 ): Promise<number | null> {
   if (!supabase) return null;
   try {
-    let query = supabase.from(table).select('id', { count: 'exact', head: true });
+    let query = supabase.from(table).select('id', { count: 'exact', head: true }) as SupabaseCountQuery;
     if (applyFilter) query = applyFilter(query);
     const { count, error } = await query;
     if (error) {
