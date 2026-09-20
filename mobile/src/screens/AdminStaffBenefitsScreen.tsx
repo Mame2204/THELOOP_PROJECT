@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -19,7 +20,7 @@ import {
   type BenefitCatalogItem,
 } from '@/lib/benefit-catalog-store';
 import { resolveCountryCode } from '@/lib/admin-country';
-import { isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
+import { isAdminAccount, isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
 import { syncUserRoleBenefitEntitlements } from '@/lib/prime-benefits-store';
 import {
   catalogEntryFromItem,
@@ -142,9 +143,18 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
     }
   }, [countryCode, user]);
 
-  useEffect(() => {
-    if (role === 'ADMIN') void load();
-  }, [role, load, tick]);
+  useFocusLoad(
+    async (force) => {
+      if (!user || !isAdminAccount(user)) return;
+      await load();
+      if (force) setTick((t) => t + 1);
+    },
+    {
+      enabled: Boolean(user && isAdminAccount(user)),
+      resetKey: `${countryCode}:${tick}`,
+      ttlMs: 45_000,
+    },
+  );
 
   useEffect(() => {
     if (!selectedDelegateId) {
@@ -419,30 +429,37 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
             placeholder="Rechercher…"
             placeholderTextColor={shell.pageKicker}
           />
-          {filteredCatalog.map((item) => {
-            const enabled = teamDraft.some((e) => e.catalogId === item.id);
-            return (
-              <View
-                key={`t-${item.id}`}
-                style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
-              >
-                <View style={{ flex: 1, paddingRight: 12 }}>
-                  <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
-                  <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
-                    {item.offeringPartners.map((p) => p.displayName).join(' · ')}
-                  </Text>
+          {filteredCatalog.length === 0 ? (
+            <Text style={[styles.hint, { color: shell.pageKicker }]}>
+              Aucun privilège assignable pour {countryLabel} — le catalogue actif doit être lié à un
+              contenu publié (événement, spot ou outil). Vérifiez Privilèges THE LOOP puis actualisez.
+            </Text>
+          ) : (
+            filteredCatalog.map((item) => {
+              const enabled = teamDraft.some((e) => e.catalogId === item.id);
+              return (
+                <View
+                  key={`t-${item.id}`}
+                  style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
+                >
+                  <View style={{ flex: 1, paddingRight: 12 }}>
+                    <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
+                    <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
+                      {item.offeringPartners.map((p) => p.displayName).join(' · ')}
+                    </Text>
+                  </View>
+                  <TogglePill
+                    value={enabled}
+                    onChange={(next) => void handleTeamToggle(item.id, next)}
+                    activeLabel="Oui"
+                    inactiveLabel="Non"
+                    activeColor={shell.tabIndicator}
+                    shell={shell}
+                  />
                 </View>
-                <TogglePill
-                  value={enabled}
-                  onChange={(next) => void handleTeamToggle(item.id, next)}
-                  activeLabel="Oui"
-                  inactiveLabel="Non"
-                  activeColor={shell.tabIndicator}
-                  shell={shell}
-                />
-              </View>
-            );
-          })}
+              );
+            })
+          )}
         </>
       ) : null}
     </KeyboardAwareFormScroll>

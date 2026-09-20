@@ -52,6 +52,7 @@ async function notifyPartnerUser(params: {
       p_submission_kind: undefinedIfNull(params.submissionKind ?? null),
     });
     if (!error) {
+      invalidateNotificationListCache();
       await deliverPushToAdminUserIds(partnerIds, title, message, 'partner');
       return;
     }

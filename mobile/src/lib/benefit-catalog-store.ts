@@ -13,7 +13,7 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { asDbInsert, asDbUpdate, asJson } from '@/lib/supabase-types';
 import { fetchSupabasePages } from '@/lib/supabase-list';
 import { resolveContentBenefitLookupIds } from '@/lib/content-benefits-index';
-import { peekContentSnapshot } from '@/lib/content-store';
+import { loadContentSnapshot, peekContentSnapshot } from '@/lib/content-store';
 import { isSpotLocation, isToolLocation } from '@/lib/location-kind-utils';
 import { catalogForCountry } from '@/lib/staff-benefit-utils';
 import type { CountryCode } from '@/lib/countries';
@@ -732,7 +732,10 @@ export function offeringMatchesPublishedContent(
 export async function loadPublishedContentIndexFromSnapshot(
   countryCode?: CountryCode,
 ): Promise<PublishedContentIndex> {
-  const snapshot = await peekContentSnapshot();
+  let snapshot = await peekContentSnapshot();
+  if (snapshot.events.length === 0 && snapshot.locations.length === 0) {
+    snapshot = await loadContentSnapshot(true);
+  }
   const cc = countryCode?.toUpperCase().slice(0, 2);
   const events = new Set<string>();
   const spots = new Set<string>();
