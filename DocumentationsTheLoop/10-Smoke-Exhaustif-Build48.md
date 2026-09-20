@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U22** (Users → changer rôle / suspendre) |
+| **Prochain test** | **A5-U23** (PASS → octroi manuel) |
 | **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel) · PACK A5-3 (U18–U21)** |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel) · PACK A5-3 (U18–U22)** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -553,7 +553,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Modération — refuser + motif · modale au-dessus clavier *(20 sept. 2026 · build 48 · A5-U19 PASS)*
 - [x] **📱** Modération — approuver retrait catalogue *(20 sept. 2026 · build 48 · A5-U20 PASS)*
 - [x] **📱** Modération — refuser retrait · notif partenaire *(20 sept. 2026 · build 48 · A5-U21 PASS)*
-- [ ] **📱** Users — changer rôle · suspendre
+- [x] **📱** Users — changer rôle · suspendre *(20 sept. 2026 · build 48 · A5-U22 PASS)*
 - [ ] **📱** PASS — octroi manuel · prix Guinée
 - [ ] **📱** Tirage — lancer · historique · notif gagnant
 - [ ] **📱** Push immédiat audience Tous
@@ -863,8 +863,9 @@ A5 bugs smoke build 48 :
   - TEAMS compte **délégué** : **pas** d’onglet « Par admin » (réservé super admin) · seulement onglet **Admin** (pack pays) · **vide build 48** si pack vide / permission `staff_benefits_team` / catalogue — **FAIL partiel** · fix PR #7
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
 A5-U4 délégué TEAMS : FAIL partiel (écran vide ou onglet Admin sans lignes — retest après PR #7)
-PACK A5-3 : PASS (U18–U21 modération approuver/refuser/retraits)
-Prochain test unitaire : A5-U22 (Users → changer rôle / suspendre)
+PACK A5-3 : partiel (U18–U22 · reste U23–U25)
+A5-U22 : PASS (Users → changer rôle / suspendre · persisté)
+Prochain test unitaire : A5-U23 (PASS → octroi manuel)
 Build Android :
 Branch / commit :
 
