@@ -565,7 +565,7 @@ Liens Param. → pages satellites :
 
 ## C2 — Auth transversal
 
-- [x] **📱** Login → Accueil · logout → Auth bloqué *(login membre OK · build 58 · 20 sept. 2026)*
+- [x] **📱** Login → Accueil · logout → Auth bloqué *(login + logout membre OK · build 58 · 20 sept. 2026)*
 - [ ] **🤖** Idem
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
