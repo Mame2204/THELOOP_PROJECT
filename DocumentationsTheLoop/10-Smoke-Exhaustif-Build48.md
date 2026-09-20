@@ -858,8 +858,10 @@ A5 bugs smoke build 48 :
   - Utilisateurs : filtre « Sans activité » incohérent · seuil 30j → souhait 60j (2 mois)
   - Partenariats : cartes « . » jusqu’au refresh (cache sans refetch au focus)
   - THE LOOP hub : KPI contenu parfois 0 au 1er focus (race catalogue · TTL 90s)
-  - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · Par admin = admins délégués du pays
+  - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · onglet **Admin** vide si aucun privilège catalogue lié à contenu publié
+  - TEAMS compte **délégué** : **pas** d’onglet « Par admin » (réservé super admin) · seulement onglet **Admin** (pack pays) · **vide build 48** si pack vide / permission `staff_benefits_team` / catalogue — **FAIL partiel** · fix PR #7
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
+A5-U4 délégué TEAMS : FAIL partiel (écran vide ou onglet Admin sans lignes — retest après PR #7)
 Prochain test unitaire : A5-U18 (modération approuver event partenaire)
 Build Android :
 Branch / commit :
