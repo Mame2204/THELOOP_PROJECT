@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A4-U18** |
+| **Prochain test** | **A4-U21** |
 | **Compte** | `contact@lavenue.gn` (partenaire) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1 · A4-2 · A4-3 · A4-4** |
+| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · **PACK A4-1 → A4-5** |
 | **Reporté build 48** | LoopX · contenu prime · Android |
 
 ---
@@ -451,9 +451,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 
 ### Retraits
-- [ ] **📱** Demander retrait contenu publié
+- [x] **📱** Demander retrait contenu publié *(20 sept. 2026 · build 48 · A4-U18 PASS)*
 - [ ] **🤖** Idem
-- [ ] **📱** **Annuler** retrait pending (Phase 1)
+- [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
 - [ ] **🤖** Idem
 - [ ] **📱** Notif approve / refuse retrait
 - [ ] **🤖** Idem
@@ -848,7 +848,8 @@ PACK A4-1 : PASS (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
 PACK A4-2 : PASS (U5 Mes contenus · U6 Stats · U7 À la une · U8 Privilèges · U9 Récompenses)
 PACK A4-3 : PASS (U10 event · U11 spot · U12 outil → pending)
 PACK A4-4 : PASS (U13–U17 · U14 partiel · U15 badge Publié · motif rejet = liste)
-Prochain test unitaire : A4-U18 (demander retrait sur contenu publié)
+PACK A4-5 : PASS (U18 demander retrait · U19 annuler retrait pending)
+Prochain test unitaire : A4-U21 (validation privilège par code)
 Build Android :
 Branch / commit :
 
