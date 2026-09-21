@@ -46,10 +46,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **🤖 A2 membre** (`membre@theloop.gn` · nav · fiches · compte) |
+| **Prochain test** | **🤖 PACK A4-1** partenaire (`contact@lavenue.gn` · U1–U4) |
 | **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | **A1 ✅** · en cours A2 → A4 → A5-1 |
+| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel)** · en cours A4 → A5-1 |
 | **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** (iOS + Android) |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
@@ -317,30 +317,31 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Bottom nav
 - [x] **📱** `AccueilScreen` — hero · sondage · parcours · singulier · fragment *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `AgendaScreen` — liste événements · filtres · pull refresh *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `SpotsScreen` — liste spots · catégories *(20 sept. 2026 · build 48 · pas Loop Prime)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `OutilsScreen` — liste outils *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `FavorisScreen` — via **bottom nav** (pas menu profil) *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `ProfilScreen` — infos · code parrain · liens compte *(20 sept. 2026 · build 48 · compte membre perso)*
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Profil · CTA PASS : jamais eu de PASS → **Découvrir Prime** seul ; déjà eu un PASS → **Mon PASS** seul *(build 48 · règle prévue)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(🔒 prochain build — hors build 48 Android)*
 - [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Pas filtre LoopX / Loop Prime *(Agenda · build 48 · 20 sept. 2026)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Contenu `prime` invisible / cadenas *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 
 ### Stack détail contenu
 - [x] **📱** `EventDetailScreen` — depuis Agenda / Accueil / Favoris *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `SpotDetailScreen` — depuis Spots / Accueil *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `CreatorCornerDetailScreen` — Le Singulier *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [x] **📱** `FragmentDetailScreen` — Le Fragment *(20 sept. 2026 · build 48 · compte membre perso)*
@@ -372,7 +373,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Interactions
 - [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Tentative favori sans compte → page connexion Auth *(20 sept. 2026 · build 48 · pile Auth sans compte)*
 - [ ] **🤖** Idem
 - [x] **📱** Recherche inline (Agenda / Spots) *(20 sept. 2026 · build 48 · compte membre perso)*
@@ -872,7 +873,8 @@ A5-U23 : FAIL build 48 · ⏸ retest build 49+ (PR #7)
 Stratégie iOS : smoke **en pause** sur items bugués · reprise build 49+ (PR #7)
 Android build 48 : installé OK · smoke allégé = **A1 → A2 → A4 → A5-1** (miroir iOS) · ⏸ U23–U25 · Phase 1 · LoopX
 A1 🤖 : PASS (pile Auth · login · pas de nav catalogue)
-Ordre Android : A2 membre → A4 partenaire (PACK A4-1…) → A5-1 admin shell · noter `🤖 PASS/FAIL`
+A2 🤖 : PASS partiel (nav · fiches · favoris · Profil OK · **CTA PASS Profil → prochain build**)
+Ordre Android : PACK A4-1 partenaire → … → A5-1 admin shell · noter `🤖 PASS/FAIL`
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
