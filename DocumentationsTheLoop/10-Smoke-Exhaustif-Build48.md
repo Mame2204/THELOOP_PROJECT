@@ -46,10 +46,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **🤖 A1 sans compte** (build 48 Android — même build que iOS) |
+| **Prochain test** | **🤖 A2 membre** (`membre@theloop.gn` · nav · fiches · compte) |
 | **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | Installé OK *(20 sept. 2026)* · smoke allégé en cours |
+| **🤖 Android build 48** | **A1 ✅** · en cours A2 → A4 → A5-1 |
 | **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** (iOS + Android) |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
@@ -277,11 +277,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### `AuthScreen` — modes
 - [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [ ] **📱** Mode **signup** — formulaire inscription (si gate ON)
 - [ ] **🤖** Idem
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [ ] **📱** Mode **activate** — activation compte invité
 - [ ] **🤖** Idem
 - [ ] **📱** Mode **reset** — mot de passe oublié
@@ -307,9 +307,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Bloqué sans connexion
 - [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS · pile Auth seule)*
 - [x] **📱** Pas fiches détail catalogue *(20 sept. 2026 · build 48 · pile Auth seule)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 
 ---
 
@@ -871,7 +871,8 @@ A5-U22 : PASS (Users → changer rôle / suspendre · persisté)
 A5-U23 : FAIL build 48 · ⏸ retest build 49+ (PR #7)
 Stratégie iOS : smoke **en pause** sur items bugués · reprise build 49+ (PR #7)
 Android build 48 : installé OK · smoke allégé = **A1 → A2 → A4 → A5-1** (miroir iOS) · ⏸ U23–U25 · Phase 1 · LoopX
-Ordre Android : A1 sans compte → A2 membre → A4 partenaire (PACK A4-1…) → A5-1 admin shell · noter `🤖 PASS/FAIL`
+A1 🤖 : PASS (pile Auth · login · pas de nav catalogue)
+Ordre Android : A2 membre → A4 partenaire (PACK A4-1…) → A5-1 admin shell · noter `🤖 PASS/FAIL`
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
