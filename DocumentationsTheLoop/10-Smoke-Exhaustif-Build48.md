@@ -46,10 +46,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **🤖 PACK A4-1** partenaire (`contact@lavenue.gn` · U1–U4) |
+| **Prochain test** | **🤖 PACK A4-2** partenaire (U5–U9 · hub Pro lecture seule) |
 | **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel)** · en cours A4 → A5-1 |
+| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · PACK A4-1 ✅** · en cours A4-2 → A5-1 |
 | **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** (iOS + Android) |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
@@ -421,9 +421,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Bottom nav & hub Pro
 - [x] **📱** Thème teal partenaire *(20 sept. 2026 · build 48 · contact@lavenue.gn · A4-U2 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-1 OK · A4-U2)*
 - [x] **📱** `PartnerProScreen` (tab Pro) — hub modules *(20 sept. 2026 · build 48 · A4-U1/U3/U4 PASS · login partenaire · bottom nav avec Pro · hub tuiles OK)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-1 OK · A4-U1/U3/U4)*
 - [x] **📱** `PartnerContentScreen` — Mes contenus (publié / pending / rejeté) *(20 sept. 2026 · build 48 · A4-U5 PASS)*
 - [ ] **🤖** Idem
 - [x] **📱** `PartnerStatsScreen` — Performances (depuis Pro, pas bottom nav) *(20 sept. 2026 · build 48 · A4-U6 PASS)*
@@ -874,7 +874,8 @@ Stratégie iOS : smoke **en pause** sur items bugués · reprise build 49+ (PR #
 Android build 48 : installé OK · smoke allégé = **A1 → A2 → A4 → A5-1** (miroir iOS) · ⏸ U23–U25 · Phase 1 · LoopX
 A1 🤖 : PASS (pile Auth · login · pas de nav catalogue)
 A2 🤖 : PASS partiel (nav · fiches · favoris · Profil OK · **CTA PASS Profil → prochain build**)
-Ordre Android : PACK A4-1 partenaire → … → A5-1 admin shell · noter `🤖 PASS/FAIL`
+PACK A4-1 🤖 : OK (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
+Ordre Android : PACK A4-2 → A4-3… → A5-1 admin shell · noter `🤖 PASS/FAIL`
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
