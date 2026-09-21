@@ -425,15 +425,15 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `PartnerProScreen` (tab Pro) — hub modules *(20 sept. 2026 · build 48 · A4-U1/U3/U4 PASS · login partenaire · bottom nav avec Pro · hub tuiles OK)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-1 OK · A4-U1/U3/U4)*
 - [x] **📱** `PartnerContentScreen` — Mes contenus (publié / pending / rejeté) *(20 sept. 2026 · build 48 · A4-U5 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-2 · A4-U5 PASS)*
 - [x] **📱** `PartnerStatsScreen` — Performances (depuis Pro, pas bottom nav) *(20 sept. 2026 · build 48 · A4-U6 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-2 · A4-U6 PASS · onglet **Tous** inclut refusés — **by design** · filtre « Refusé » dispo)*
 - [x] **📱** `PartnerFeaturedScreen` — À la une *(20 sept. 2026 · build 48 · A4-U7 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-2 · A4-U7 PASS)*
 - [x] **📱** `PartnerBenefitsScreen` — Privilèges offerts *(20 sept. 2026 · build 48 · A4-U8 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-2 · A4-U8 PASS)*
 - [x] **📱** `PartnerRewardsScreen` — Récompenses THE LOOP *(20 sept. 2026 · build 48 · A4-U9 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(21 sept. 2026 · build 48 · PACK A4-2 · A4-U9 **FAIL partiel** · « Mes récompenses » vide malgré privilège validé · paliers ≠ validation catalogue · voir note)*
 
 ### Soumissions & modération
 - [x] **📱** `PartnerSubmissionScreen` — créer **événement** → pending *(20 sept. 2026 · build 48 · A4-U10 PASS)*
@@ -875,7 +875,8 @@ Android build 48 : installé OK · smoke allégé = **A1 → A2 → A4 → A5-1*
 A1 🤖 : PASS (pile Auth · login · pas de nav catalogue)
 A2 🤖 : PASS partiel (nav · fiches · favoris · Profil OK · **CTA PASS Profil → prochain build**)
 PACK A4-1 🤖 : OK (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
-Ordre Android : PACK A4-2 → A4-3… → A5-1 admin shell · noter `🤖 PASS/FAIL`
+PACK A4-2 🤖 : OK partiel (U5–U8 PASS · U6 refusés dans « Tous » = normal · U9 récompenses vide = palier non atteint ou confusion validation membre vs offre catalogue)
+Ordre Android : PACK A4-3 → … → A5-1 admin shell · noter `🤖 PASS/FAIL`
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
