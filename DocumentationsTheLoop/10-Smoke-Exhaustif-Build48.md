@@ -46,10 +46,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **🤖 PACK A4-2** partenaire (U5–U9 · hub Pro lecture seule) |
+| **Prochain test** | **🤖 PACK A4-3** partenaire (U10–U12 · soumissions création) |
 | **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · PACK A4-1 ✅** · en cours A4-2 → A5-1 |
+| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · A4-1 ✅ · A4-2 ✅ (partiel)** · en cours A4-3 → A5-1 |
 | **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** (iOS + Android) |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
