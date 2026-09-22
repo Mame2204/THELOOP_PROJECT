@@ -50,7 +50,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
 | **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · A4-1 ✅ · A4-2 ✅ (partiel)** · en cours A4-3 → A5-1 |
-| **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** (iOS + Android) |
+| **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** · **A4-6 validation privilège (🤖/retest paliers)** — prérequis : contenu publié **avec privilège lié** |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
 ---
@@ -876,7 +876,8 @@ A1 🤖 : PASS (pile Auth · login · pas de nav catalogue)
 A2 🤖 : PASS partiel (nav · fiches · favoris · Profil OK · **CTA PASS Profil → prochain build**)
 PACK A4-1 🤖 : OK (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
 PACK A4-2 🤖 : OK partiel (U5–U8 PASS · U6 refusés dans « Tous » = normal · U9 récompenses vide = palier non atteint ou confusion validation membre vs offre catalogue)
-Ordre Android : PACK A4-3 → … → A5-1 admin shell · noter `🤖 PASS/FAIL`
+⏸ Validation privilège / paliers / récompenses (A4-6 · U21–U24 · test palier admin) : **plus tard** — pas de contenu avec privilège lié en session
+Ordre Android : PACK A4-3 → A4-4… → A5-1 · **sauter A4-6** jusqu’à contenu + privilège · noter `🤖 PASS/FAIL`
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
