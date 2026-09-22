@@ -861,6 +861,13 @@ A5 bugs smoke build 48 :
   - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · Par admin = admins délégués du pays
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
 Prochain test unitaire : A5-U18 (modération approuver event partenaire)
+Admin-web (22 sept. 2026) :
+  - B0 Session & shell : PASS (login → dashboard · pays Guinée)
+  - B1 Navigation : PASS routes auto · FAIL manuel téléphone partenaire (notif modération boucle · build 48)
+  - B2 Demandes : hub 3 onglets — **Modération** = valider/refuser soumissions Android (priorité smoke)
+  - Sync web→mobile : pending après approbation web → pull-to-refresh ou build 49 (refresh au focus/notif)
+  - Login : retrait ligne debug « Console web — API … » (admin-web · PR fix-notif-loops)
+Build Android (22 sept. 2026) : build 48 · parcours allégé A1→A2→A4→A5-1 ~85 % · 3 soumissions pending pour modération B2
 Build Android :
 Branch / commit :
 
