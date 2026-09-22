@@ -224,9 +224,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **⏳** Serveur Render à jour (push planifiés)
 
 ### Qualité code
-- [ ] `cd mobile && npm run typecheck` → 0 erreur
-- [ ] `cd mobile && npm test` → 131 tests verts
-- [ ] `cd admin-web && npm run build` → OK
+- [x] `cd mobile && npm run typecheck` → 0 erreur *(22 sept. 2026 · agent)*
+- [x] `cd mobile && npm test` → 131 tests verts *(22 sept. 2026 · agent)*
+- [x] `cd admin-web && npm run build` → OK *(22 sept. 2026 · agent · branche PR #7)*
 
 ### Migrations Supabase
 - [ ] `20260916_admin_push_campaign_failed_status.sql`
@@ -868,7 +868,8 @@ A5 bugs smoke build 48 :
   - THE LOOP hub : KPI contenu parfois 0 au 1er focus (race catalogue · TTL 90s)
   - TEAMS : super admin = 3 onglets (Super admin / Par admin / Admin pack) · Par admin = admins délégués du pays
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
-Prochain test unitaire : A5-U18 (modération approuver event partenaire)
+Prochain test device : **build 49** — A5-U19 · B2 refus · notifs modération
+Prochain test agent : admin-web B3 Paramètres · B4+ (sans mutations destructives)
 Admin-web (22 sept. 2026) :
   - B0 Session & shell : PASS (login → dashboard · pays Guinée)
   - B1 Navigation : PASS routes auto · FAIL manuel téléphone partenaire (notif modération boucle · build 48 · surtout **Refuser**)
