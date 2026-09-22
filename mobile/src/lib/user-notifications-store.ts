@@ -436,6 +436,28 @@ export function subscribeUserNotifications(listener: NotificationListener): () =
   return () => notificationListeners.delete(listener);
 }
 
+const partnerModerationRefreshListeners = new Set<NotificationListener>();
+
+/** Rafraîchir Mon contenu partenaire après push modération (sans écouter toute l’inbox). */
+export function subscribePartnerModerationRefresh(listener: NotificationListener): () => void {
+  partnerModerationRefreshListeners.add(listener);
+  return () => partnerModerationRefreshListeners.delete(listener);
+}
+
+export function emitPartnerModerationRefresh(): void {
+  for (const listener of partnerModerationRefreshListeners) listener();
+}
+
+export function isPartnerModerationPushTitle(title: string): boolean {
+  const t = title.trim().toLowerCase();
+  return (
+    t.includes('validé')
+    || t.includes('refusé')
+    || t.includes('retiré')
+    || t.startsWith('retrait refusé')
+  );
+}
+
 /** Rafale d'écritures (octroi multiple, sync) → un seul rechargement abonné. */
 const EMIT_COALESCE_MS = 300;
 let emitTimer: ReturnType<typeof setTimeout> | null = null;
@@ -714,7 +736,13 @@ function pruneRecentAppends(now: number): void {
 export function appendUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
+  options?: {
+    recipientPhone?: string | null;
+    /** Push déjà reçu côté OS : ne pas ré-insérer en base (évite boucle push ↔ inbox). */
+    skipOsDelivery?: boolean;
+    /** Id serveur déjà connu (payload push). */
+    remoteId?: string | null;
+  },
 ): Promise<UserNotification> {
   const now = Date.now();
   pruneRecentAppends(now);
@@ -732,19 +760,24 @@ export function appendUserNotification(
 async function createUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
+  options?: {
+    recipientPhone?: string | null;
+    skipOsDelivery?: boolean;
+    remoteId?: string | null;
+  },
 ): Promise<UserNotification> {
   const sentAt = new Date().toISOString();
-  let id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  let id =
+    options?.remoteId?.trim() && /^[0-9a-f-]{36}$/i.test(options.remoteId.trim())
+      ? options.remoteId.trim()
+      : `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const recipientPhone = await resolveRecipientPhone(userId, options?.recipientPhone);
 
-  const remoteId = await persistNotificationRemote(
-    userId,
-    input,
-    sentAt,
-    recipientPhone,
-  );
-  if (remoteId) id = remoteId;
+  // Echo d’un push serveur : cache local uniquement (build 48 incl.).
+  if (!options?.skipOsDelivery) {
+    const remoteId = await persistNotificationRemote(userId, input, sentAt, recipientPhone);
+    if (remoteId) id = remoteId;
+  }
 
   const all = await loadAll();
   const entry: UserNotification = {

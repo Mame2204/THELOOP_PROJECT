@@ -12,7 +12,9 @@ import { AppState, type AppStateStatus } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import {
   countUnreadNotifications,
+  emitPartnerModerationRefresh,
   invalidateNotificationListCache,
+  isPartnerModerationPushTitle,
   subscribeUserNotifications,
 } from '@/lib/user-notifications-store';
 import {
@@ -170,10 +172,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let remove: (() => void) | undefined;
     let cancelled = false;
-    void addNotificationReceivedListener(() => {
+    void addNotificationReceivedListener((notification) => {
       // Inbox déjà persistée côté serveur (RPC notify_* / campagnes).
       // Ne pas ré-insérer ici : doublons + boucle emit → refresh → push local → reçu → …
       invalidateNotificationListCache();
+      const pushTitle = notification.request.content.title?.trim() ?? '';
+      if (pushTitle && isPartnerModerationPushTitle(pushTitle)) {
+        emitPartnerModerationRefresh();
+      }
       refreshFromPush();
     }).then((sub) => {
       if (cancelled) {

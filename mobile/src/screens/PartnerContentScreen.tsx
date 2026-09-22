@@ -24,7 +24,7 @@ import { PARTNER_PUBLICATION_NOTICE } from '@/lib/legal-content-store';
 import { navigateRoot } from '@/lib/navigation-utils';
 import { slugify } from '@/lib/content-mappers';
 import { resolvePartnerWorkspaceContext } from '@/lib/partner-spot-auth';
-import { subscribeUserNotifications } from '@/lib/user-notifications-store';
+import { subscribePartnerModerationRefresh } from '@/lib/user-notifications-store';
 import { useCategoryLabels } from '@/context/CategoryLabelsContext';
 import { usePartnerContentScopes } from '@/hooks/usePartnerContentScopes';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -196,7 +196,7 @@ export function PartnerContentScreen({ navigation }: Props) {
 
   useEffect(() => {
     if (role !== 'PARTNER' || !user) return;
-    return subscribeUserNotifications(() => {
+    return subscribePartnerModerationRefresh(() => {
       schedulePartnerContentRefresh();
     });
   }, [role, user, schedulePartnerContentRefresh]);
