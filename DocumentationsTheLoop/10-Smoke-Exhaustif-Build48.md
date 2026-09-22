@@ -46,10 +46,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **🤖 PACK A4-3** partenaire (U10–U12 · soumissions création) |
+| **Prochain test** | **🤖 PACK A4-4** partenaire (U13–U17 · cycle de vie soumissions) |
 | **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · A4-1 ✅ · A4-2 ✅ (partiel)** · en cours A4-3 → A5-1 |
+| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · A4-1 ✅ · A4-2 ✅ · A4-3 ✅ (partiel)** · en cours A4-4 → A5-1 |
 | **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** · **A4-6 validation privilège (🤖/retest paliers)** — prérequis : contenu publié **avec privilège lié** |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
@@ -437,11 +437,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Soumissions & modération
 - [x] **📱** `PartnerSubmissionScreen` — créer **événement** → pending *(20 sept. 2026 · build 48 · A4-U10 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · PACK A4-3 · pending OK · **FAIL** aperçu image noir Android)*
 - [x] **📱** Soumettre **spot** → pending *(20 sept. 2026 · build 48 · A4-U11 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · PACK A4-3 · pending OK)*
 - [x] **📱** Soumettre **outil** → pending *(20 sept. 2026 · build 48 · A4-U12 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · PACK A4-3 · pending OK)*
 - [x] **📱** Modifier soumission pending *(20 sept. 2026 · build 48 · A4-U13 PASS)*
 - [ ] **🤖** Idem
 - [x] **📱** Annuler soumission pending *(20 sept. 2026 · build 48 · A4-U14 PASS partiel · user incertain sur effet visible)*
@@ -877,7 +877,28 @@ A2 🤖 : PASS partiel (nav · fiches · favoris · Profil OK · **CTA PASS Prof
 PACK A4-1 🤖 : OK (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
 PACK A4-2 🤖 : OK partiel (U5–U8 PASS · U6 refusés dans « Tous » = normal · U9 récompenses vide = palier non atteint ou confusion validation membre vs offre catalogue)
 ⏸ Validation privilège / paliers / récompenses (A4-6 · U21–U24 · test palier admin) : **plus tard** — pas de contenu avec privilège lié en session
-Ordre Android : PACK A4-3 → A4-4… → A5-1 · **sauter A4-6** jusqu’à contenu + privilège · noter `🤖 PASS/FAIL`
+PACK A4-3 🤖 : OK partiel (U10–U12 pending OK · **FAIL** images soumission noires · **FAIL** notif acceptation partenaire en boucle · fix PR #7 notifs)
+Ordre Android : PACK A4-4 → A4-5 → A4-7 · **sauter A4-6** · A5-1 shell · noter `🤖 PASS/FAIL`
+
+### Plan tests build 48 (recommandé — sans build 49)
+
+**Continuer maintenant (Android 🤖 ou admin-web 💻)**  
+| ID | Test | Compte |
+|----|------|--------|
+| A4-4 | Modifier / annuler pending · liste publiés / rejeté | partenaire |
+| A4-5 | Retrait publié · annuler retrait pending | partenaire |
+| A4-7 | Parcours public + favoris partenaire | partenaire |
+| A5-1 | Shell admin bordeaux · sidebar (sans retests bugs) | super admin |
+| B0–B2 | Admin-web session · Demandes · modération (si 💻 dispo) | super admin |
+
+**⏸ Reporter build 49+ (PR #7 / contenu / prérequis)**  
+| Bloc | Motif |
+|------|--------|
+| A4-6 | Pas de contenu avec privilège lié |
+| A5-U23–U25 · Phase 1 | Bugs connus + push/tirage/octroi |
+| Retests A5 | TEAMS · octroi PASS · partenariats cache · notifs boucle |
+| A3 LoopX / prime | PR #4 / prochain build |
+| A2-U1/U2 PassPayment | Optionnel |
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
