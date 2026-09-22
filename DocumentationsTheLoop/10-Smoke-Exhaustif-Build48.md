@@ -46,11 +46,11 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **🤖 PACK A4-4** partenaire (U13–U17 · cycle de vie soumissions) |
-| **Compte** | Déconnecté → pile Auth · puis `membre@theloop.gn` / partenaire / admin selon pack |
+| **Prochain test** | **💻 Partie B admin-web** (ou 🤖 A4-4/A4-5 après modération admin des 3 pending) |
+| **Compte** | `admin@theloop.gn` (web) · partenaire pour reprise A4-4/5 |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | **A1 ✅ · A2 ✅ (partiel) · A4-1 ✅ · A4-2 ✅ · A4-3 ✅ (partiel)** · en cours A4-4 → A5-1 |
-| **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** · **A4-6 validation privilège (🤖/retest paliers)** — prérequis : contenu publié **avec privilège lié** |
+| **🤖 Android build 48** | **A1–A2 · A4-1→3 · A4-4 partiel · A4-7 ✅ · A5-1 ✅** · smoke allégé **terminé** (reste A4-4/5/6 après admin) |
+| **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** · **A4-4 U15–U17 · A4-5** (🤖) — prérequis : **contenu publié** (modération admin) · **A4-6** — privilège lié |
 | **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
 
 ---
@@ -443,21 +443,21 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Soumettre **outil** → pending *(20 sept. 2026 · build 48 · A4-U12 PASS)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · PACK A4-3 · pending OK)*
 - [x] **📱** Modifier soumission pending *(20 sept. 2026 · build 48 · A4-U13 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · A4-U13 PASS)*
 - [x] **📱** Annuler soumission pending *(20 sept. 2026 · build 48 · A4-U14 PASS partiel · user incertain sur effet visible)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · A4-U14 PASS)*
 - [x] **📱** Événement · spot existant (liste publiés) *(20 sept. 2026 · build 48 · A4-U15 PASS · badge **Publié** dans Mes contenus · pas d’onglet séparé)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(⏸ **N/A** — rien en **Publié** tant que modération admin · normal)*
 - [x] **📱** Voir rejet + motif · resoumettre *(20 sept. 2026 · build 48 · A4-U16 PASS · **motif dans la liste** pas dans l’écran détail · resoumission OK)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(⏸ reporté avec A4-4 complet)*
 - [x] **📱** Intervenant sans titre (régression speakers) *(20 sept. 2026 · build 48 · A4-U17 PASS)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(⏸ reporté)*
 
 ### Retraits
 - [x] **📱** Demander retrait contenu publié *(20 sept. 2026 · build 48 · A4-U18 PASS)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · reprendre après modération admin)*
 - [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(⏸ idem A4-5)*
 - [ ] **📱** Notif approve / refuse retrait
 - [ ] **🤖** Idem
 
@@ -472,9 +472,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Catalogue & favoris
 - [x] **📱** Onglets Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48 · A4-U25 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **A4-7 PASS**)*
 - [x] **📱** `FavorisScreen` — favoris partenaire *(20 sept. 2026 · build 48 · A4-U26 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **A4-7 PASS**)*
 
 ---
 
