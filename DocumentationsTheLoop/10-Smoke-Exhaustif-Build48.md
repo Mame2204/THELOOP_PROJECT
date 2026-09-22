@@ -482,11 +482,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Accès Control Tower
 - [x] **📱** Onglet **Administration** (`AdminWorkspaceScreen`) *(20 sept. 2026 · build 48 · A5-U1/U3 PASS · admin@theloop.gn super admin)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **A5-1 PASS**)*
 - [x] **📱** Thème bordeaux (super) ou gris bleu (délégué) *(20 sept. 2026 · build 48 · A5-U2 PASS · thème **bordeaux** super admin)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **A5-1 PASS**)*
 - [x] **📱** Sidebar — modules masqués selon permissions *(20 sept. 2026 · build 48 · A5-U4 **SKIP** session super admin · compte délégué dispo — retest dédié plus tard)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **A5-1 PASS** · U4 skip super admin)*
 
 ### Sidebar — panneaux principaux
 
@@ -878,7 +878,11 @@ PACK A4-1 🤖 : OK (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
 PACK A4-2 🤖 : OK partiel (U5–U8 PASS · U6 refusés dans « Tous » = normal · U9 récompenses vide = palier non atteint ou confusion validation membre vs offre catalogue)
 ⏸ Validation privilège / paliers / récompenses (A4-6 · U21–U24 · test palier admin) : **plus tard** — pas de contenu avec privilège lié en session
 PACK A4-3 🤖 : OK partiel (U10–U12 pending OK · **FAIL** images soumission noires · **FAIL** notif acceptation partenaire en boucle · fix PR #7 notifs)
-Ordre Android : PACK A4-4 → A4-5 → A4-7 · **sauter A4-6** · A5-1 shell · noter `🤖 PASS/FAIL`
+PACK A4-4 🤖 : partiel (U13 modifier · U14 annuler OK · U15–U17 ⏸ pas publié sans modération admin)
+A4-5 🤖 : ⏸ N/A (retrait = contenu publié requis)
+A4-7 🤖 : PASS (U25/U26)
+A5-1 🤖 : PASS (shell admin bordeaux · sidebar)
+Android smoke allégé build 48 : **bouclé** — reprise A4-4/5/6 après modération admin (iOS déjà fait ou admin-web)
 
 ### Plan tests build 48 (recommandé — sans build 49)
 
@@ -899,6 +903,7 @@ Ordre Android : PACK A4-4 → A4-5 → A4-7 · **sauter A4-6** · A5-1 shell · 
 | Retests A5 | TEAMS · octroi PASS · partenariats cache · notifs boucle |
 | A3 LoopX / prime | PR #4 / prochain build |
 | A2-U1/U2 PassPayment | Optionnel |
+
 Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
 Build Android : **48** (même que iOS)
 Branch / commit :
