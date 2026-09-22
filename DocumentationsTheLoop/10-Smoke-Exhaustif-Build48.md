@@ -42,14 +42,17 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 > **Objectif :** reprendre le smoke **une brique à la fois** ou **pack par pack**, sans relire toute la checklist.  
 > **Format de réponse :** `A4-U3 PASS` · `A4-U3 FAIL: motif` · ou `PACK A4-1 OK` (tout le pack d’un coup).
 
-### Position actuelle
+### Position actuelle *(pilotée agent · pas le testeur device)*
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **A5-U18** |
-| **Compte** | `admin@theloop.gn` (super admin · session actuelle) |
-| **Déjà terminé** | A1 · A2 (sauf U1–U2) · A3 · A4 · **PACK A5-1 · A5-2 (partiel)** |
-| **Reporté build 48** | LoopX · contenu prime · Android |
+| **Prochain bloc device** | **⏸ build 49** — A5-U19 / B2 refus · notif modération · sync (PR #7) |
+| **Prochain bloc agent** | **B3–B9 admin-web** · Phase 0 typecheck/tests · doc cohérence |
+| **Compte référence** | `admin@theloop.gn` · partenaire `contact@lavenue.gn` |
+| **Déjà terminé (device)** | A1 · A2 · A3 · **A4 iPhone** · **A5-1 + A5-2 partiel iPhone** · **A4 allégé Android** · **B0 + B2 valider 💻** |
+| **Reporté build 48/49** | LoopX · prime · A5-U19–U21 modération mobile · B2 refus 💻 · octroi PASS (A5-U23 FAIL → PR #7) |
+
+> Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal. Les retours device restent optionnels (`A5-U22 PASS`, etc.).
 
 ---
 
@@ -620,9 +623,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **💻** Rejeter avec motif
 
 ### Onglet Modération
+
+> **Build 48** : valider OK · refuser / notif partenaire → reporter **build 49** (PR #7).  
+> **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
+
 - [x] **💻🤖✓** Chargement soumissions pending
-- [ ] **💻** Filtres event / spot / tool
-- [ ] **💻** **Valider** spot → visible app · notif partenaire
+- [ ] **💻** Filtres event / spot / tool *(UI présente — retest build 49)*
+- [x] **💻** **Valider** → publié mobile *(build 48 · 22 sept.)*
+- [ ] **💻** **Valider** spot → visible app · notif partenaire *(reprise build 49)*
 - [ ] **💻** **Valider** événement (intervenant sans titre) → Agenda
 - [ ] **💻** **Refuser** + motif → absent catalogue
 - [ ] **💻** Section **Demandes de retrait** — liste pending
