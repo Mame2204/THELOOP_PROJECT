@@ -863,7 +863,8 @@ A5 bugs smoke build 48 :
 Prochain test unitaire : A5-U18 (modération approuver event partenaire)
 Admin-web (22 sept. 2026) :
   - B0 Session & shell : PASS (login → dashboard · pays Guinée)
-  - B1 Navigation : PASS routes auto · FAIL manuel téléphone partenaire (notif modération boucle · build 48)
+  - B1 Navigation : PASS routes auto · FAIL manuel téléphone partenaire (notif modération boucle · build 48 · surtout **Refuser**)
+  - Modération : **Valider** OK (publié mobile) · **Refuser** bloqué par boucle push build 48 → PR #7 / build 49
   - B2 Demandes : hub 3 onglets — **Modération** = valider/refuser soumissions Android (priorité smoke)
   - Sync web→mobile : pending après approbation web → pull-to-refresh ou build 49 (refresh au focus/notif)
   - Login : retrait ligne debug « Console web — API … » (admin-web · PR fix-notif-loops)
