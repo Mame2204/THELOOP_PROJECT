@@ -416,6 +416,10 @@ export function AuthScreen({ navigation, route }: Props) {
         Alert.alert('E-mail requis', emailCheck.message);
         return;
       }
+      if (!firstName.trim() || !lastName.trim()) {
+        Alert.alert('Identité', 'Indiquez votre prénom et votre nom.');
+        return;
+      }
       const pwdError = validateSignupPassword(signupPassword, confirmPassword);
       if (pwdError) {
         Alert.alert('Mot de passe', pwdError);
@@ -448,10 +452,19 @@ export function AuthScreen({ navigation, route }: Props) {
 
         // Compte déjà préparé par l'admin (e-mail d'invitation) → finaliser via Edge Function
         if (emailStatus === 'already_registered' || emailStatus === 'pending_confirmation') {
+          const normalizedPhone = phone.trim()
+            ? normalizeInternationalPhone(phone, phoneDialCode)
+            : null;
           const activated = await activateInvitedMemberAccount({
             email: emailCheck.email,
             password: signupPassword,
             inviteId: invite.id,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            birthDate: birthDate.trim() || null,
+            city: city.trim() || invite.city?.trim() || null,
+            countryCode: invite.countryCode ?? accountCountry,
+            phoneNumber: normalizedPhone,
           });
 
           if (activated.ok) {
@@ -487,11 +500,8 @@ export function AuthScreen({ navigation, route }: Props) {
               Alert.alert(
                 'Activation impossible',
                 activated.error ??
-                  'Ouvrez le lien reçu par e-mail ou demandez à l\'équipe de renvoyer l\'invitation.',
-                [
-                  { text: 'Renvoyer le lien', onPress: () => void handleResendInviteLink(emailCheck.email) },
-                  { text: 'OK', style: 'cancel' },
-                ],
+                  'Demandez à l\'équipe THE LOOP de renvoyer l\'invitation, puis réessayez ici.',
+                [{ text: 'OK', style: 'cancel' }],
               );
               return;
             }
@@ -530,11 +540,8 @@ export function AuthScreen({ navigation, route }: Props) {
         } else if (isSignUpEmailAlreadyUsedError(err) || (err instanceof Error && /déjà|already/i.test(err.message))) {
           Alert.alert(
             'Compte déjà préparé',
-            'Un compte existe déjà pour cet e-mail. Ouvrez le lien reçu par e-mail ou renvoyez-en un.',
-            [
-              { text: 'Renvoyer le lien', onPress: () => void handleResendInviteLink(emailCheck.email) },
-              { text: 'OK', style: 'cancel' },
-            ],
+            'Un compte existe déjà pour cet e-mail. Réessayez avec le même e-mail et votre mot de passe, ou demandez à l\'admin de renvoyer l\'invitation.',
+            [{ text: 'OK', style: 'cancel' }],
           );
         } else if (applyEmailRateLimit(err)) {
           Alert.alert('Limite THE LOOP', resolveAuthEmailErrorMessage(err, 'Activation impossible pour le moment.'));
@@ -896,9 +903,41 @@ export function AuthScreen({ navigation, route }: Props) {
         <View style={formCardStyle}>
           <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>Activer mon compte</Text>
           <Text style={[styles.cardSubtitle, { color: shell.pageKicker }]}>
-            Saisissez l'e-mail communiqué par l'administrateur, puis choisissez votre mot de passe.
-            {'\n\n'}Si vous avez reçu un e-mail d'invitation, vous pouvez aussi ouvrir directement le lien qu'il contient.
+            Vous avez reçu une invitation THE LOOP. Saisissez le même e-mail que dans le message, complétez
+            votre profil et choisissez votre mot de passe — le tout dans l’application, sans lien magique.
           </Text>
+
+          <View style={styles.nameRow}>
+            <View style={styles.nameCol}>
+              <FieldLabel required color={shell.pageKicker}>Prénom</FieldLabel>
+              <TextInput
+                style={inputStyle}
+                placeholder="Prénom"
+                placeholderTextColor={shell.pageKicker}
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+            <View style={styles.nameCol}>
+              <FieldLabel required color={shell.pageKicker}>Nom</FieldLabel>
+              <TextInput
+                style={inputStyle}
+                placeholder="Nom"
+                placeholderTextColor={shell.pageKicker}
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
+          </View>
+
+          <CountrySelectField
+            value={accountCountry}
+            onChange={handleAccountCountryChange}
+            shell={shell}
+            label="Pays du compte"
+            countries={enabledCountries}
+            readOnly={enabledCountries.length <= 1}
+          />
 
           <FieldLabel required color={shell.pageKicker}>E-mail</FieldLabel>
           <TextInput
@@ -949,6 +988,16 @@ export function AuthScreen({ navigation, route }: Props) {
             countryCode={accountCountry}
             optional
             placeholder="Commune et quartier — privilèges ciblés"
+          />
+
+          <FieldLabel color={shell.pageKicker}>Date de naissance</FieldLabel>
+          <DateTimeField
+            value={birthDate}
+            onChange={setBirthDate}
+            placeholder="Optionnel — offres anniversaire"
+            dateOnly
+            flat
+            maximumDate={new Date()}
           />
 
           <Pressable

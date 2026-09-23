@@ -403,6 +403,12 @@ export async function activateInvitedMemberAccount(input: {
   email: string;
   password: string;
   inviteId: string;
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string | null;
+  city?: string | null;
+  countryCode?: string;
+  phoneNumber?: string | null;
 }): Promise<{ ok: boolean; error?: string; needsSignUp?: boolean; accountAlreadyActive?: boolean }> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: false, error: 'Supabase requis.' };
@@ -424,6 +430,12 @@ export async function activateInvitedMemberAccount(input: {
         email: emailCheck.email,
         password: input.password,
         inviteId: input.inviteId,
+        firstName: input.firstName?.trim() || null,
+        lastName: input.lastName?.trim() || null,
+        birthDate: input.birthDate?.trim() || null,
+        city: input.city?.trim() || null,
+        countryCode: input.countryCode?.trim() || null,
+        phoneNumber: input.phoneNumber?.trim() || null,
       }),
     });
     const body = (await response.json().catch(() => ({}))) as {
