@@ -47,7 +47,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **198 / 368** cases cochées ≈ **54 %** *(+migrations Supabase Phase 0 · 23 sept.)* |
-| **Prochain test** | **Retest octroi individuel** (migration `20260935` appliquée Supabase · 23 sept.) · **📱 A4 set_password** post-deploy Render |
+| **Prochain test** | **Retest octroi individuel** (migrations `20260935` + `20260936` + **build mobile** avec correctifs partenaire) · **📱 A4 set_password** post-deploy Render |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -238,6 +238,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260919_event_speakers_default_empty_title.sql` *(23 sept. 2026 · OK)*
 - [x] `20260925_admin_benefit_draws_draw_city.sql` — tirage `draw_city` *(23 sept. 2026 · OK)*
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
+- [ ] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) + correctifs app mobile *(à appliquer Supabase + **nouveau build**)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*

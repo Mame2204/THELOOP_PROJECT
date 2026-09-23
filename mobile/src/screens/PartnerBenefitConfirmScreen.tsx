@@ -255,6 +255,7 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
         redemptionId: item.redemption.id,
         benefitId: item.benefit.id,
         memberUserId,
+        partnerCode: item.redemption.partnerCode,
       }));
       const cancelled = await applyPartnerBenefitValidationRemote(
         partnerCode,
@@ -305,6 +306,7 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
         redemptionId: item.redemption.id,
         benefitId: item.benefit.id,
         memberUserId,
+        partnerCode: item.redemption.partnerCode,
       }));
       const partnerHint = { partnerId, partnerName, establishmentId };
 
@@ -348,6 +350,7 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
             redemptionId: item.redemption.id,
             benefitId: item.benefit.id,
             memberUserId,
+            partnerCode: item.redemption.partnerCode,
           })),
         ).catch(() => undefined);
         void notifyPartnerBenefitOutcomeViaBackend(

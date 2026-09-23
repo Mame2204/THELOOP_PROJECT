@@ -1606,7 +1606,10 @@ export async function requestBenefitValidation(
   const updated = all[idx];
   await saveAll(all);
 
-  // 2) Créer / re-pousser la demande (locale + remote pour le scan partenaire)
+  // 2) Aligner le statut octroi côté serveur avant la redemption (octroi individuel admin déjà en base)
+  await persistAndSync(all, [updated], { awaitRemote: true }).catch(() => undefined);
+
+  // 3) Créer / re-pousser la demande (locale + remote pour le scan partenaire)
   const { redemption, remoteOk } = await createBenefitRedemption({
     benefitId: activatedWithPartner.id,
     userId: sessionUserId,
@@ -1631,8 +1634,6 @@ export async function requestBenefitValidation(
     remoteOk,
   });
 
-  // 3) Sync grant pending vers Supabase (pour le JOIN RPC partenaire) — ne bloque pas le succès
-  void persistAndSync(all, [updated], { awaitRemote: true }).catch(() => undefined);
   markNetworkReachable();
 
   try {
