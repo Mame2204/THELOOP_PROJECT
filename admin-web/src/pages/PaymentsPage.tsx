@@ -173,8 +173,9 @@ export function PaymentsPage() {
           <>
             {analytics.stuckPending > 0 ? (
               <p className="error-text" style={{ marginBottom: 12 }}>
-                <strong>{analytics.stuckPending}</strong> paiement(s) Djomy confirmé(s) bloqué(s) (&gt;
-                5 min sans PASS) — le cron tente une réconciliation ; vérifiez la liste ci-dessous.
+                <strong>{analytics.stuckPending}</strong> paiement(s) avec débit Djomy confirmé, PASS
+                encore en attente (&gt; 5 min) — le cron réconcilie automatiquement ; resync manuel si
+                besoin dans la liste ci-dessous.
               </p>
             ) : null}
 

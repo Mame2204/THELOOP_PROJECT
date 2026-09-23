@@ -28,6 +28,37 @@ export function isDjomyInFlightStatus(status: string | undefined): boolean {
   );
 }
 
+/** Commande sans débit confirmé — ne doit pas compter comme « bloquée PASS ». */
+export function isTerminalWithoutPass(intent: Pick<PaymentIntentRow, 'status' | 'djomy_status'>): boolean {
+  if (intent.status === 'cancelled' || intent.status === 'failed') return true;
+  return isDjomyAbandonedStatus(intent.djomy_status ?? undefined);
+}
+
+/** Débit Djomy confirmé mais PASS pas encore activé. */
+export function isPaidButPassPending(
+  intent: Pick<PaymentIntentRow, 'status' | 'fulfillment_status' | 'djomy_status'>,
+): boolean {
+  if (intent.fulfillment_status !== 'pending') return false;
+  if (intent.status === 'paid') return true;
+  return isDjomyPaidStatus(intent.djomy_status ?? undefined);
+}
+
+/** Intent payé côté Djomy, PASS pending, sans activité depuis &gt; 5 min (analytics + cron). */
+export function isStuckPendingFulfillment(
+  intent: Pick<
+    PaymentIntentRow,
+    'status' | 'fulfillment_status' | 'djomy_status' | 'djomy_transaction_id' | 'updated_at'
+  >,
+  updatedBeforeIso: string,
+): boolean {
+  const tx = intent.djomy_transaction_id?.trim() ?? '';
+  if (!tx || tx.startsWith('sandbox-force-')) return false;
+  if (!intent.updated_at || intent.updated_at >= updatedBeforeIso) return false;
+  if (!isPaidButPassPending(intent)) return false;
+  if (isTerminalWithoutPass(intent)) return false;
+  return true;
+}
+
 export function buildReconcileSummary(
   before: Pick<PaymentIntentRow, 'status' | 'fulfillment_status' | 'djomy_status'>,
   after: Pick<

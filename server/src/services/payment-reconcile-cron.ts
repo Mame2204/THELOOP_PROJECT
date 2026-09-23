@@ -7,8 +7,8 @@ import {
 } from './reconcile-payment-intent.js';
 import { notifyAdminsPaymentAlert } from './payment-admin-alerts.js';
 import {
-  isDjomyAbandonedStatus,
-  isDjomyPaidStatus,
+  isPaidButPassPending,
+  isTerminalWithoutPass,
 } from './reconcile-payment-summary.js';
 
 export interface PaymentReconcileCronResult {
@@ -18,17 +18,6 @@ export interface PaymentReconcileCronResult {
 }
 
 const STUCK_MIN_AGE_MS = 5 * 60 * 1000;
-
-function isTerminalWithoutPass(intent: PaymentIntentRow): boolean {
-  if (intent.status === 'cancelled' || intent.status === 'failed') return true;
-  return isDjomyAbandonedStatus(intent.djomy_status ?? undefined);
-}
-
-function isPaidButPassPending(intent: PaymentIntentRow): boolean {
-  if (intent.fulfillment_status !== 'pending') return false;
-  if (intent.status === 'paid') return true;
-  return isDjomyPaidStatus(intent.djomy_status ?? undefined);
-}
 
 /** Réconcilie les intents payés Djomy mais PASS non activé (webhook/poll raté). */
 export async function runStuckPaymentReconciliation(
