@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **205 / 369** cases cochées ≈ **56 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
+| **Avancement smoke** | **205 / 371** cases cochées ≈ **55 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
 | **Prochain test** | **💻 B6 suite** (Accueil blocs · Loop hub · transfert) · **📱🤖 reporté build 49+** : octroi individuel · slider **À la une** Accueil (`20260937` + app) · **📱 A4 set_password** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
