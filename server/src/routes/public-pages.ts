@@ -165,10 +165,14 @@ function paymentPage(variant: PageVariant): string {
         e.preventDefault();
         var isAndroid = /Android/i.test(navigator.userAgent);
         try {
+          // Lien custom scheme d’abord (évite certains crash intent:// au cold start).
+          window.location.href = deepLink;
           if (isAndroid) {
-            window.location.href = androidIntent;
-          } else {
-            window.location.href = deepLink;
+            window.setTimeout(function () {
+              try {
+                window.location.href = androidIntent;
+              } catch (err2) { /* ignore */ }
+            }, 600);
           }
         } catch (err) { /* ignore */ }
       });

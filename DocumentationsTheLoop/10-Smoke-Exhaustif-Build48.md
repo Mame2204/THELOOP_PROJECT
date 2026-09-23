@@ -49,8 +49,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Prochain bloc device** | **⏸ build 49** — A5-U19 / B2 refus · notif modération · sync (PR #7) |
 | **Prochain bloc agent** | **B3–B9 admin-web** · Phase 0 typecheck/tests · doc cohérence |
 | **Compte référence** | `admin@theloop.gn` · partenaire `contact@lavenue.gn` |
-| **Déjà terminé (device)** | A1 · A2 · A3 · **A4 iPhone** · **A5-1 + A5-2 partiel iPhone** · **A4 allégé Android** · **B0 + B2 valider 💻** |
-| **Reporté build 48/49** | LoopX · prime · A5-U19–U21 modération mobile · B2 refus 💻 · octroi PASS (A5-U23 FAIL → PR #7) |
+| **Déjà terminé (device)** | A1 · A2 · A3 **📱** · **A3 Prime 🤖 partiel** · **A4 iPhone** · **A5-1 + A5-2 partiel iPhone** · **A4 allégé Android** · **B0 + B2 valider 💻** |
+| **Reporté build 48/49** | LoopX · prime · A5-U19–U21 modération mobile · B2 refus 💻 · octroi PASS (A5-U23 FAIL → PR #7) · **A3 Prime 🤖 paiement MTN** (crash retour · fix PR android-payment-return) |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal. Les retours device restent optionnels (`A5-U22 PASS`, etc.).
 
@@ -387,7 +387,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Spécificités rôle
 - [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **violet/indigo** — pas or · OK mobile actuel)*
 - [x] **📱** Filtre **LoopX** (Agenda) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
 - [x] **📱** Filtre **Loop Prime** (Spots) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu prochain build)*
@@ -395,15 +395,22 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
 - [x] **📱** Favoris via menu profil (pas seulement bottom nav) *(20 sept. 2026 · build 48 · compte carte membre Prime · **écart mobile** — aucune entrée Favoris dans Profil · accès via **bottom nav** comme membre · spec PWA = menu profil Prime)*
-- [ ] **🤖** Idem
+- [x] **🤖** **PASS écart** *(22 sept. 2026 · build 48 · **pas de favoris via Profil** · favoris via nav — conforme mobile)*
 
 ### Écrans Prime (reprendre A2 +)
 - [x] **📱** `AccueilScreen` — contenu Prime / hero *(20 sept. 2026 · build 48 · compte carte membre Prime · navigation OK · thème violet)*
+- [x] **🤖** Accueil · blocs hero/sections *(22 sept. 2026 · build 48 · Prime Android)*
 - [x] **📱** `AgendaScreen` — événements LoopX *(20 sept. 2026 · build 48 · navigation OK · LoopX contenu **BLOCKED** cf. A3.2)*
+- [x] **🤖** Agenda / événements *(22 sept. 2026 · build 48 · nav OK)*
 - [x] **📱** `SpotsScreen` — spots exclusifs *(20 sept. 2026 · build 48 · navigation OK · spots prime **BLOCKED** cf. A3.3)*
+- [x] **🤖** Spots *(22 sept. 2026 · build 48)*
+- [x] **🤖** `OutilsScreen` *(22 sept. 2026 · build 48 · Prime Android)*
+- [x] **🤖** `FavorisScreen` · `ProfilScreen` *(22 sept. 2026 · build 48)*
 - [x] **📱** `PrimeScreen` — statut PASS actif *(20 sept. 2026 · build 48 · **N/A statut** — statut PASS = **Profil / Mon PASS / Abonnement** ; `PrimeScreen` = **boutique achat** « Choisissez votre PASS » via « Acheter un autre PASS »)*
 - [x] **📱** `AbonnementScreen` — détail abonnement *(20 sept. 2026 · build 48 · compte carte membre Prime · **PASS en cours** + **1 en attente** · relais auto à expiration)*
-- [ ] **🤖** Idem pour chaque écran ci-dessus
+- [x] **🤖** Mon PASS — **en cours** + **en attente** *(22 sept. 2026 · build 48)*
+- [x] **🤖** `EditProfilScreen` · `SettingsScreen` · déconnexion *(22 sept. 2026 · build 48)*
+- [x] **🤖** Profil — Nous contacter · numéro / e-mail / site · **Nous rejoindre** *(22 sept. 2026 · build 48)*
 
 ### Privilèges & fiches
 - [x] **📱** Fiche event/spot avec privilège → **Utiliser chez le partenaire** *(20 sept. 2026 · build 48 · compte carte membre Prime · parcours complet : cadenas → octroi → utilisation → **quota atteint**)*
@@ -879,6 +886,15 @@ Admin-web (22 sept. 2026) :
   - Sync web→mobile : pending après approbation web → pull-to-refresh ou build 49 (refresh au focus/notif)
   - Login : retrait ligne debug « Console web — API … » (admin-web · PR fix-notif-loops)
 Build Android (22 sept. 2026) : build 48 · parcours allégé A1→A2→A4→A5-1 ~85 % · 3 soumissions pending pour modération B2
+A3 Prime Android (22 sept. 2026 · build 48 · prime@theloop.gn) :
+  - Thème violet/indigo (pas or) · Accueil blocs · Agenda · Spots · Outils · Favoris · Profil : PASS
+  - Mon PASS en cours + en attente · Modifier profil · Paramètres · Déconnexion : PASS
+  - Nous contacter · infos tel/mail/site · Nous rejoindre : PASS
+  - Pas favoris via Profil : PASS (écart mobile vs spec PWA · nav OK)
+Build Android (23 sept. 2026 · build 48 · paiement PASS MTN) :
+  - **FAIL** : Djomy OK · MTN payé · « Ouvrir THE LOOP » → **arrêt systématique** · Mon PASS / cloche vides côté app
+  - Admin + Djomy : achat **OK quelques min après** (cron reconcile ~5 min) · statut intent **`redirected`** dès ouverture portail (normal, y compris si annulation avant débit)
+  - **Fix** : `PaymentReturnHandler` + intent pending AsyncStorage · `openAuthSessionAsync` + deep link · page succès Android `theloop://` avant `intent://` · **retest build 49**
 Build Android :
 Branch / commit :
 

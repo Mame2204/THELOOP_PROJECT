@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Linking from 'expo-linking';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FormTextInput } from '@/components/FormTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
@@ -36,6 +37,10 @@ import {
 } from '@/lib/subscription-history';
 import { isPassPurchaseUiEnabled } from '@/lib/pass-purchase-ui';
 import { subscribePaymentReturn } from '@/lib/payment-return-events';
+import {
+  clearPendingPaymentIntent,
+  savePendingPaymentIntent,
+} from '@/lib/payment-pending-store';
 import { useAppGates } from '@/context/AppGatesContext';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -134,7 +139,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const finishAfterFulfillment = useCallback(async () => {
     if (!user?.id || fulfillmentHandledRef.current) return;
     fulfillmentHandledRef.current = true;
+    pendingIntentIdRef.current = null;
     const outcome = await syncPassAfterDjomyPayment(user.id, user.firstName);
+    await clearPendingPaymentIntent();
     if (outcome.activated) {
       await refreshUserSession();
     }
@@ -315,17 +322,29 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         }
         setLastSandboxIntentId(payment.paymentIntentId);
         pendingIntentIdRef.current = payment.paymentIntentId;
+        await savePendingPaymentIntent(payment.paymentIntentId, user.id);
 
-        // Polling dès l’ouverture du portail (webhook / reconcile pendant Soutra).
+        const paymentReturnUrl =
+          Linking.createURL('payment/complete') || 'theloop://payment/complete';
+
+        // Polling dès l’ouverture du portail (webhook / reconcile pendant paiement).
         const waitPromise = waitForDjomyFulfillment(payment.paymentIntentId);
         void waitPromise
           .then(() => WebBrowser.dismissBrowser())
           .catch(() => undefined);
 
-        await WebBrowser.openBrowserAsync(payment.paymentUrl, {
-          presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-        });
-        pendingIntentIdRef.current = null;
+        const browserResult = await WebBrowser.openAuthSessionAsync(
+          payment.paymentUrl,
+          paymentReturnUrl,
+        );
+        void WebBrowser.dismissBrowser().catch(() => undefined);
+
+        if (browserResult.type === 'cancel') {
+          if (!(await tryLateFulfillmentCheck(payment.paymentIntentId))) {
+            await clearPendingPaymentIntent();
+            pendingIntentIdRef.current = null;
+          }
+        }
 
         try {
           await waitPromise;
