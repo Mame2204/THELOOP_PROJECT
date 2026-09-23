@@ -9,10 +9,7 @@ import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { formatDateFr } from '@/lib/date-utils';
 import { getProfileAccent } from '@/lib/profile-accent';
-import {
-  PASS_PAYMENT_PROVIDER_LABEL,
-  processPassPayment,
-} from '@/lib/pass-payment-service';
+import { processPassPayment } from '@/lib/pass-payment-service';
 import {
   isDjomyPaymentConfigured,
   waitForDjomyFulfillment,
@@ -206,8 +203,8 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   function offerSandboxForce(reason: string): Promise<boolean> {
     return new Promise((resolve) => {
       Alert.alert(
-        'Portail Djomy non validé',
-        `${reason}\n\nLe sandbox Djomy refuse souvent OTP / vrai numéro. Forcer le succès côté serveur pour tester l'activation PASS ?`,
+        'Paiement test non validé',
+        `${reason}\n\nEn environnement test, le portail refuse parfois OTP ou numéro réel. Forcer le succès côté serveur pour tester l'activation PASS ?`,
         [
           { text: 'Annuler', style: 'cancel', onPress: () => resolve(false) },
           { text: 'Forcer succès sandbox', onPress: () => resolve(true) },
@@ -477,8 +474,8 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const sandboxHint = sandboxPayerHint('all');
   const payerPlaceholder = isSandboxMode ? `Ex. ${sandboxHint.display}` : 'Ex. 620 00 00 01';
   const payerHint = isSandboxMode
-    ? `${sandboxHint.tip} Choisissez le mode de paiement sur le portail Djomy (Orange Money indisponible en sandbox).`
-    : 'Numéro ou compte payeur — même identifiant sur le portail Djomy. Le mode de paiement se choisit sur Djomy.';
+    ? `${sandboxHint.tip} Orange Money est indisponible en test — choisissez un autre moyen sur l’écran suivant.`
+    : 'Utilisez le même numéro ou compte que sur l’écran de paiement (Mobile Money, PayCard, carte…).';
 
   return (
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
@@ -493,12 +490,12 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           ]}
         >
           <Text style={[styles.sandboxTitle, { color: djomyReady ? '#065f46' : '#92400e' }]}>
-            {djomyReady ? 'Environnement de test Djomy' : 'Mode simulation'}
+            {djomyReady ? 'Paiement en environnement test' : 'Mode simulation'}
           </Text>
           <Text style={[styles.sandboxBody, { color: djomyReady ? '#047857' : '#78350f' }]}>
             {djomyReady
-              ? `Montants sandbox ≤ 10 000 GNF (Soutra/PayCard). Orange Money échoue toujours en sandbox — utilisez PayCard, Soutra ou Carte.`
-              : 'Paiement simulé localement. Configurez EXPO_PUBLIC_PAYMENT_API_URL + le serveur Djomy pour un vrai parcours.'}
+              ? `Montants test ≤ 10 000 GNF. Orange Money est indisponible en test — utilisez PayCard, Soutra ou carte.`
+              : 'Paiement simulé localement. Configurez le serveur de paiement pour un parcours réel.'}
           </Text>
         </View>
       ) : null}
@@ -519,11 +516,10 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       </View>
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
-        Vous serez redirigé vers le portail sécurisé {PASS_PAYMENT_PROVIDER_LABEL} pour choisir votre mode de paiement
-        (Orange Money, Soutra, PayCard, carte…).
+        Vous choisirez Orange Money, Soutra, PayCard ou carte sur le portail de paiement sécurisé.
       </Text>
 
-      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Identifiant payeur</Text>
+      <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Numéro de paiement</Text>
       <FormTextInput
         shell={shell}
         accentColor={accent.accent}
@@ -540,7 +536,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       {step === 'processing' ? (
         <Text style={[styles.processing, { color: shell.pageKicker }]}>
           {isDjomyPaymentConfigured()
-            ? 'Ouverture du portail Djomy…'
+            ? 'Ouverture du portail de paiement…'
             : 'Traitement du paiement test…'}
         </Text>
       ) : null}
@@ -551,11 +547,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         disabled={loading || amountGnf == null}
       >
         <Text style={styles.btnText}>
-          {loading
-            ? 'Paiement en cours…'
-            : isDjomyPaymentConfigured()
-              ? `Continuer sur Djomy — ${displayPrice}`
-              : `Payer ${displayPrice}`}
+          {loading ? 'Paiement en cours…' : 'Ouvrir le paiement'}
         </Text>
       </Pressable>
 

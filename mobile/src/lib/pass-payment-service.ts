@@ -35,7 +35,7 @@ export async function processPassPayment(request: PassPaymentRequest): Promise<P
   }
 
   if (!request.payerPhone?.trim()) {
-    return { status: 'failed', message: 'Indiquez le numéro du payeur (requis par Djomy).' };
+    return { status: 'failed', message: 'Indiquez le numéro ou compte utilisé pour le paiement mobile.' };
   }
 
   if (isDjomyPaymentConfigured()) {
@@ -51,7 +51,7 @@ export async function processPassPayment(request: PassPaymentRequest): Promise<P
         paymentIntentId: created.paymentIntentId,
         chargedAmountGnf: created.amountGnf,
         sandboxMode: created.sandboxMode,
-        message: 'Redirection vers le portail Djomy…',
+        message: 'Redirection vers le portail de paiement…',
       };
     } catch (err) {
       return {
@@ -76,8 +76,6 @@ export async function processPassPayment(request: PassPaymentRequest): Promise<P
     status: 'success',
     transactionId: txId,
     providerReference: `SANDBOX-${txId}`,
-    message: 'Paiement test validé — configurez EXPO_PUBLIC_PAYMENT_API_URL pour Djomy.',
+    message: 'Paiement test validé — configurez EXPO_PUBLIC_PAYMENT_API_URL pour le serveur de paiement.',
   };
 }
-
-export const PASS_PAYMENT_PROVIDER_LABEL = 'Djomy';
