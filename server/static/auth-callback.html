@@ -74,10 +74,12 @@
     </div>
   </div>
 
+  <script>window.__PREBOOT_SESSION__ = null;</script>
   <script>
     (function () {
       var supabaseUrl = window.__SUPABASE_URL__;
       var anon = window.__SUPABASE_ANON__;
+      var prebootSession = window.__PREBOOT_SESSION__;
       var PLAY_STORE = 'https://play.google.com/store/apps/details?id=gn.theloop.app';
       var WEB_HOME = 'https://www.theloop-app.com/';
 
@@ -312,13 +314,28 @@
         });
       }
 
+      if (prebootSession && prebootSession.verifyError) {
+        title.textContent = 'Lien invalide ou expiré';
+        message.textContent = prebootSession.verifyError;
+        return;
+      }
+      if (prebootSession && prebootSession.accessToken && prebootSession.refreshToken) {
+        var pk = (prebootSession.kind || 'invite').toLowerCase();
+        var pps =
+          'type=' + pk
+          + '&access_token=' + encodeURIComponent(prebootSession.accessToken)
+          + '&refresh_token=' + encodeURIComponent(prebootSession.refreshToken);
+        beginSession(prebootSession.accessToken, prebootSession.refreshToken, pk, pps);
+        return;
+      }
+
       var stuckGuard = window.setTimeout(function () {
         if (title.textContent === 'Chargement…') {
           title.textContent = 'Lien incomplet ou expiré';
           message.textContent =
-            'Aucune information de validation dans ce lien. Demandez un nouvel e-mail d\\'invitation, ou ouvrez le lien dans Safari / Chrome (pas uniquement l\\'aperçu du mail).';
+            'Ouvrez le lien dans Safari ou Chrome (icône ⋯ du mail → « Ouvrir dans le navigateur »). Si le problème continue, demandez un nouvel e-mail d\\'invitation.';
         }
-      }, 15000);
+      }, 8000);
 
       function clearStuckGuard() {
         window.clearTimeout(stuckGuard);
