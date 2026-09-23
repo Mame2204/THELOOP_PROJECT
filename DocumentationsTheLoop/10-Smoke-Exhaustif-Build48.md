@@ -331,7 +331,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `ProfilScreen` — infos · code parrain · liens compte *(20 sept. 2026 · build 48 · compte membre perso)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Profil · CTA PASS : jamais eu de PASS → **Découvrir Prime** seul ; déjà eu un PASS → **Mon PASS** seul *(build 48 · règle prévue)*
-- [ ] **🤖** Idem *(🔒 prochain build — hors build 48 Android)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · membre + Prime)*
 - [x] **📱** Pas onglet Pro · pas onglet Admin *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Pas filtre LoopX / Loop Prime *(Agenda · build 48 · 20 sept. 2026)*
@@ -357,18 +357,18 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `EditProfilScreen` — modifier nom / photo *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [x] **📱** `SettingsScreen` — paramètres app *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · membre + Prime)*
 - [x] **📱** `NotificationsScreen` — cloche header · inbox *(20 sept. 2026 · build 48)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · réception notifs OK · membre + Prime)*
 - [x] **📱** `ReferralScreen` — parrainage · code · compteur filleuls *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · code + compteur filleuls · membre + Prime)*
 - [x] **📱** `SuggestionScreen` — envoyer idée *(20 sept. 2026 · build 48 · compte membre perso)*
 - [ ] **🤖** Idem
 - [x] **📱** `PrimeScreen` — boutique PASS · forfaits + prix · bouton paiement *(20 sept. 2026 · build 48 · gate achat PASS ON · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · **📱🤖** boutique visible · achat OK)*
 - [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
-- [ ] **🤖** Idem
-- [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · iPhone OM OK · **🤖 MTN** payé · PASS + notif membre · délai cron ~5 min · retour app crash → PR #9)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · en cours + en attente · membre achat MTN)*
+- [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · **📱🤖** OM / MTN · PASS + notif cloche · cron ~5 min · retour app Android PR #9)*
 - [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(23 sept. 2026 · build 48 · **PASS** en file + **notif cloche** · sync différée cron · abandon 1ʳᵉ tentative = ligne sans débit)*
 - [ ] **📱** `MyBenefitsScreen` — Mes privilèges *(si entrée UI / notif)*
 - [ ] **🤖** Idem
@@ -409,6 +409,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** `OutilsScreen` *(22 sept. 2026 · build 48 · Prime Android)*
 - [x] **🤖** `FavorisScreen` · `ProfilScreen` *(22 sept. 2026 · build 48)*
 - [x] **📱** `PrimeScreen` — statut PASS actif *(20 sept. 2026 · build 48 · **N/A statut** — statut PASS = **Profil / Mon PASS / Abonnement** ; `PrimeScreen` = **boutique achat** « Choisissez votre PASS » via « Acheter un autre PASS »)*
+- [x] **🤖** `PrimeScreen` — boutique PASS *(23 sept. 2026 · build 48 · aligné 📱)*
 - [x] **📱** `AbonnementScreen` — détail abonnement *(20 sept. 2026 · build 48 · compte carte membre Prime · **PASS en cours** + **1 en attente** · relais auto à expiration)*
 - [x] **🤖** Mon PASS — **en cours** + **en attente** *(22 sept. 2026 · build 48)*
 - [x] **🤖** `EditProfilScreen` · `SettingsScreen` · déconnexion *(22 sept. 2026 · build 48)*
@@ -778,8 +779,10 @@ Liens Param. → pages satellites :
 
 ## C4 — Parrainage
 
-- [ ] **📱** Code parrain visible profil
-- [ ] **🤖** Idem
+- [x] **📱** Code parrain visible profil *(20 sept. 2026 · build 48 · ReferralScreen)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · membre + Prime)*
+- [x] **📱** Compteur filleuls visible *(23 sept. 2026 · build 48 · pas test +1 filleul)*
+- [x] **🤖** Idem *(23 sept. 2026 · membre + Prime)*
 - [ ] **📱** Nouveau filleul → compteur +1
 - [ ] **🤖** Idem
 - [ ] **📱** 10 filleuls / an → mois Prime *(test long sandbox)*
@@ -894,6 +897,9 @@ Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
   - Maintenance + pré-lancement ON · **bypass 4 taps** — **PASS**
 Serveur (23 sept. 2026) :
   - **Fix cron** : plus d’alerte « Paiement bloqué » toutes les 5 min sur intent **abandon** (reconcile d’abord · alerte seulement si Djomy payé · dedup DB)
+A2 compte & services (23 sept. 2026 · build 48 · **📱🤖**) :
+  - Paramètres · cloche/notifs · parrainage (code + compteur filleuls membre/Prime) · boutique PASS · paiement PASS · Mon PASS — **PASS**
+  - **SuggestionScreen** (envoyer idée) — **⏸** à tester
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
