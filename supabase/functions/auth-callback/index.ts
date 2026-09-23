@@ -134,11 +134,11 @@ const HTML = `<!DOCTYPE html>
         var androidIntent = 'intent://auth/callback#' + (sessionState.paramString || '')
           + '#Intent;scheme=theloop;package=gn.theloop.app;end';
         try {
+          window.location.href = deepLink;
           if (isAndroid) {
-            window.location.href = androidIntent;
-            setTimeout(function () { window.location.href = deepLink; }, 700);
-          } else {
-            window.location.href = deepLink;
+            window.setTimeout(function () {
+              try { window.location.href = androidIntent; } catch (e2) { /* ignore */ }
+            }, 600);
           }
         } catch (e) { /* ignore */ }
         appFallback.style.display = 'block';

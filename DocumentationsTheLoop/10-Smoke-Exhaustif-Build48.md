@@ -280,16 +280,16 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### `AuthScreen` — modes
 - [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
-- [ ] **📱** Mode **signup** — formulaire inscription (si gate ON)
-- [ ] **🤖** Idem
+- [x] **📱** Mode **signup** — formulaire inscription (si gate ON) *(23 sept. 2026 · build 48)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48)*
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [ ] **📱** Mode **activate** — activation compte invité
 - [ ] **🤖** Idem
-- [ ] **📱** Mode **reset** — mot de passe oublié
-- [ ] **🤖** Idem
-- [ ] **📱** Mode **set_password** — lien recovery e-mail
-- [ ] **🤖** Idem
+- [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
+- [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
+- [ ] **📱** Mode **set_password** — lien recovery → **in-app** *(iOS à confirmer)*
+- [ ] **🤖** Mode **set_password** — lien recovery *(23 sept. 2026 · **PARTIEL** : page HTTPS auth-callback · choix app/web · pas d’ouverture auto app · fix deep link Android auth-callback)*
 - [ ] **📱** Lien **Pro ? Rejoindre THE LOOP →**
 - [ ] **🤖** Idem
 - [ ] **📱** CGU / Politique confidentialité (modales)
@@ -355,7 +355,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Compte & services
 - [x] **📱** `EditProfilScreen` — modifier nom / photo *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · **changement mot de passe** profil OK)*
 - [x] **📱** `SettingsScreen` — paramètres app *(20 sept. 2026 · build 48 · compte membre perso)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · membre + Prime)*
 - [x] **📱** `NotificationsScreen` — cloche header · inbox *(20 sept. 2026 · build 48)*
@@ -763,8 +763,10 @@ Liens Param. → pages satellites :
 - [ ] **🤖** Idem
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
-- [ ] **📱** Mot de passe oublié → mail → set_password in-app
-- [ ] **🤖** Idem
+- [x] **📱** Mot de passe oublié → **e-mail reçu** *(23 sept. 2026 · build 48)*
+- [x] **🤖** Idem *(23 sept. 2026)*
+- [ ] **📱** Lien e-mail → **set_password in-app** (sans page HTML intermédiaire)
+- [ ] **🤖** Idem *(PARTIEL · page HTTPS · bouton « Ouvrir l’app » · deploy auth-callback)*
 - [ ] **💻** Invitation admin-web → activation · bon rôle
 - [ ] **📱** Partenaire invité → connexion → Espace Pro
 - [ ] **🤖** Idem
@@ -900,6 +902,9 @@ Serveur (23 sept. 2026) :
 A2 compte & services (23 sept. 2026 · build 48 · **📱🤖**) :
   - Paramètres · cloche/notifs · parrainage (code + compteur filleuls membre/Prime) · boutique PASS · paiement PASS · Mon PASS — **PASS**
   - **SuggestionScreen** (envoyer idée) — **⏸** à tester
+Auth MDP (23 sept. 2026 · build 48) :
+  - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
+  - **Oubli MDP** : e-mail OK · **🤖** lien → page HTML auth-callback (normal) · **set_password in-app** — retest après deploy **auth-callback**
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
