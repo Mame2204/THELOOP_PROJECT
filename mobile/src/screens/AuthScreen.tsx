@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GuineaLocationPicker } from '@/components/GuineaLocationPicker';
@@ -47,6 +47,7 @@ import {
 } from '@/lib/auth-login';
 import { getLegalContent, type LegalContentKey } from '@/lib/legal-content-store';
 import { COMMUNITY_PARTNERSHIP_CTA } from '@/lib/community-copy';
+import { extractAuthParams } from '@/lib/auth-deep-link';
 import { subscribeAuthFlowEvent } from '@/lib/auth-flow-events';
 import { resetToAccueil } from '@/lib/navigation-utils';
 import type { RootStackParamList } from '@/navigation/types';
@@ -126,6 +127,15 @@ export function AuthScreen({ navigation, route }: Props) {
       if (event === 'password_recovery') {
         setMode('set_password');
         setSignupStep('form');
+      }
+      if (event === 'goto_login') {
+        setMode('login');
+        setSignupStep('form');
+        void Linking.getInitialURL().then((url) => {
+          if (!url?.includes('auth/login')) return;
+          const fromUrl = extractAuthParams(url).email;
+          if (fromUrl) setEmail(normalizeEmail(fromUrl));
+        });
       }
     });
   }, []);

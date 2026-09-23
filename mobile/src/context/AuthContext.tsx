@@ -57,6 +57,7 @@ import {
   validateSignupEmail,
 } from '@/lib/email-auth';
 import { completeAuthSessionFromUrl, describeAuthUrlParams, extractAuthParams } from '@/lib/auth-deep-link';
+import { checkAdminInviteActivationEligibility } from '@/lib/admin-invite-store';
 import { emitAuthFlowEvent } from '@/lib/auth-flow-events';
 import {
   getAuthEmailRedirectUrl,
@@ -574,32 +575,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logAuthRedirectConfig();
 
     const handleDeepLink = async (url: string | null) => {
-      if (!url || !url.includes('auth/callback')) return;
+      if (!url) return;
+
+      if (url.includes('auth/login')) {
+        endPasswordRecovery();
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          /* session partielle — on continue vers Connexion */
+        }
+        emitAuthFlowEvent('goto_login');
+        if (__DEV__) console.log('[Auth] deep link connexion (post-activation web)');
+        return;
+      }
+
+      if (!url.includes('auth/callback')) return;
       const paramHint = describeAuthUrlParams(url);
       if (__DEV__) {
         console.log('[Auth] deep link reçu:', url.split('#')[0].split('?')[0], '|', paramHint);
       }
-      const linkParams = extractAuthParams(url);
-      const linkType = (linkParams.type ?? '').toLowerCase();
-      if (
-        linkParams.token_hash
-        || linkType === 'recovery'
-        || linkType === 'invite'
-      ) {
-        beginPasswordRecovery();
-      }
       const result = await completeAuthSessionFromUrl(url);
       if (result.ok && supabase) {
-        if (result.kind === 'recovery' || result.kind === 'invite') {
-          beginPasswordRecovery();
-        }
         const { data } = await supabase.auth.getSession();
         if (data.session) {
-          await applySessionRef.current(data.session);
-          if (result.kind === 'recovery' || result.kind === 'invite') {
-            if (__DEV__) console.log('[Auth] recovery/invite — saisie nouveau mot de passe');
+          if (result.kind === 'invite') {
+            const email = data.session.user.email ?? '';
+            const eligibility = email
+              ? await checkAdminInviteActivationEligibility(email)
+              : 'no_pending_invite';
+            if (eligibility !== 'eligible') {
+              endPasswordRecovery();
+              try {
+                await supabase.auth.signOut();
+              } catch {
+                /* ignore */
+              }
+              emitAuthFlowEvent('goto_login');
+              if (__DEV__) {
+                console.log('[Auth] invite déjà activée — écran Connexion', eligibility);
+              }
+              return;
+            }
+            beginPasswordRecovery();
+            await applySessionRef.current(data.session);
+            if (__DEV__) console.log('[Auth] invite — saisie nouveau mot de passe');
             return;
           }
+          if (result.kind === 'recovery') {
+            beginPasswordRecovery();
+            await applySessionRef.current(data.session);
+            if (__DEV__) console.log('[Auth] recovery — saisie nouveau mot de passe');
+            return;
+          }
+          await applySessionRef.current(data.session);
           await syncAuthUserProfileRef.current(data.session.user);
           await fulfillPendingWelcomeRef.current(data.session.user);
           if (__DEV__) console.log('[Auth] connecté via lien e-mail');
@@ -631,7 +659,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.remove();
       appStateSub?.remove();
     };
-  }, [beginPasswordRecovery]);
+  }, [beginPasswordRecovery, endPasswordRecovery]);
 
 
 

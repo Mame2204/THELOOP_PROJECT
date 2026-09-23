@@ -33,6 +33,7 @@
     .modal h2 { margin:0; font-size:1.15rem; }
     .modal p { margin:12px 0 0; font-size:.9rem; }
     .modal .btn { margin-top:16px; }
+    .success-panel { margin-top:20px; display:none; text-align:center; }
   </style>
 </head>
 <body>
@@ -61,6 +62,12 @@
     <p class="hint" id="appFallback" style="display:none">
       L'app ne s'est pas ouverte ? <button type="button" class="btn ghost" id="fallbackWeb" style="display:inline;padding:0;margin:0;">Continuer sur le web</button>
     </p>
+
+    <div id="successPanel" class="success-panel">
+      <button type="button" class="btn" id="successOpenApp">Ouvrir THE LOOP (connexion)</button>
+      <a class="btn secondary" id="successInstall" href="https://www.theloop-app.com/">Télécharger l'application</a>
+      <p class="hint">THE LOOP est une application mobile. Utilisez votre e-mail et le mot de passe que vous venez de définir.</p>
+    </div>
   </main>
 
   <div id="installOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="installTitle">
@@ -124,9 +131,13 @@
       var installBtn = document.getElementById('installBtn');
       var openAppAfter = document.getElementById('openAppAfter');
       var installLater = document.getElementById('installLater');
+      var successPanel = document.getElementById('successPanel');
+      var successOpenApp = document.getElementById('successOpenApp');
+      var successInstall = document.getElementById('successInstall');
 
-      var sessionState = { accessToken: '', refreshToken: '', kind: 'invite', paramString: '', deepLink: '' };
+      var sessionState = { accessToken: '', refreshToken: '', kind: 'invite', paramString: '', deepLink: '', memberEmail: '' };
       var usedWebPath = false;
+      var webActivationComplete = false;
 
       function readParams() {
         var merged = new URLSearchParams();
@@ -177,7 +188,35 @@
         return paramString ? 'theloop://auth/callback#' + paramString : 'theloop://auth/callback';
       }
 
+      function buildLoginDeepLink() {
+        var link = 'theloop://auth/login';
+        if (sessionState.memberEmail) {
+          link += '?email=' + encodeURIComponent(sessionState.memberEmail);
+        }
+        return link;
+      }
+
+      function openMobileLogin() {
+        var deepLink = buildLoginDeepLink();
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        var androidIntent = 'intent://auth/login'
+          + (sessionState.memberEmail ? '?email=' + encodeURIComponent(sessionState.memberEmail) : '')
+          + '#Intent;scheme=theloop;package=gn.theloop.app;end';
+        try {
+          window.location.href = deepLink;
+          if (isAndroid) {
+            window.setTimeout(function () {
+              try { window.location.href = androidIntent; } catch (e2) { /* ignore */ }
+            }, 600);
+          }
+        } catch (e) { /* ignore */ }
+      }
+
       function openNativeApp() {
+        if (webActivationComplete) {
+          openMobileLogin();
+          return;
+        }
         var deepLink = sessionState.deepLink;
         var isAndroid = /Android/i.test(navigator.userAgent);
         var androidIntent = 'intent://auth/callback#' + (sessionState.paramString || '')
@@ -193,19 +232,24 @@
         appFallback.style.display = 'block';
       }
 
-      function configureInstallLinks() {
+      function configureStoreLink(anchorEl) {
+        if (!anchorEl) return;
         var isAndroid = /Android/i.test(navigator.userAgent);
         var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isAndroid) {
-          installBtn.href = PLAY_STORE;
-          installBtn.textContent = 'Installer sur Google Play';
+          anchorEl.href = PLAY_STORE;
+          anchorEl.textContent = 'Installer sur Google Play';
         } else if (isIOS) {
-          installBtn.href = WEB_HOME;
-          installBtn.textContent = 'Obtenir THE LOOP (iPhone)';
+          anchorEl.href = WEB_HOME;
+          anchorEl.textContent = 'Obtenir THE LOOP (App Store)';
         } else {
-          installBtn.href = WEB_HOME;
-          installBtn.textContent = 'Télécharger THE LOOP';
+          anchorEl.href = WEB_HOME;
+          anchorEl.textContent = 'Télécharger THE LOOP';
         }
+      }
+
+      function configureInstallLinks() {
+        configureStoreLink(installBtn);
       }
 
       function showInstallModal() {
@@ -217,10 +261,18 @@
         installOverlay.classList.remove('open');
       }
 
-      function markInviteActivated(accessToken) {
+      function fetchMemberEmail(accessToken) {
         return fetch(supabaseUrl + '/auth/v1/user', {
           headers: { 'Authorization': 'Bearer ' + accessToken, 'apikey': anon }
         }).then(function (res) { return res.json(); }).then(function (user) {
+          if (user && user.email) sessionState.memberEmail = user.email;
+          return user;
+        });
+      }
+
+      function markInviteActivated(accessToken) {
+        return fetchMemberEmail(accessToken).then(function (user) {
+          if (!user) return;
           var meta = user.user_metadata || {};
           var inviteId = meta.admin_invite_id;
           var email = user.email;
@@ -250,10 +302,28 @@
         choiceEl.style.display = 'none';
         pwdForm.style.display = 'block';
         appFallback.style.display = 'none';
+        if (successPanel) successPanel.style.display = 'none';
         title.textContent = 'Nouveau mot de passe';
-        message.textContent = 'Choisissez votre mot de passe ci-dessous. Vous pourrez ensuite installer ou ouvrir THE LOOP.';
+        message.textContent = 'Choisissez votre mot de passe ci-dessous. Ensuite, ouvrez THE LOOP sur votre téléphone pour vous connecter.';
         errEl.style.display = 'none';
         okEl.style.display = 'none';
+      }
+
+      function showWebActivationSuccess() {
+        webActivationComplete = true;
+        sessionState.accessToken = '';
+        sessionState.refreshToken = '';
+        sessionState.paramString = '';
+        sessionState.deepLink = '';
+        choiceEl.style.display = 'none';
+        pwdForm.style.display = 'none';
+        appFallback.style.display = 'none';
+        hideInstallModal();
+        title.textContent = 'Compte activé';
+        message.textContent =
+          "Votre mot de passe est enregistré. THE LOOP est une application mobile : connectez-vous dans l'app avec votre e-mail et ce mot de passe.";
+        configureStoreLink(successInstall);
+        if (successPanel) successPanel.style.display = 'block';
       }
 
       function beginSession(accessToken, refreshToken, kind, paramString) {
@@ -268,7 +338,11 @@
       btnApp.addEventListener('click', openNativeApp);
       btnWeb.addEventListener('click', showWebForm);
       fallbackWeb.addEventListener('click', showWebForm);
-      backToChoice.addEventListener('click', showChoiceScreen);
+      backToChoice.addEventListener('click', function () {
+        if (webActivationComplete) return;
+        showChoiceScreen();
+      });
+      if (successOpenApp) successOpenApp.addEventListener('click', openMobileLogin);
       openAppAfter.addEventListener('click', function () {
         hideInstallModal();
         openNativeApp();
@@ -293,16 +367,16 @@
           if (!res.ok) return res.json().then(function (j) { throw new Error(authError(j)); });
           return markInviteActivated(sessionState.accessToken);
         }).then(function () {
+          if (usedWebPath) {
+            showWebActivationSuccess();
+            return;
+          }
           pwdForm.style.display = 'none';
           title.textContent = 'Compte prêt';
           message.textContent = sessionState.kind === 'invite'
             ? 'Votre invitation est activée.'
             : 'Votre mot de passe a été mis à jour.';
-          if (usedWebPath) {
-            showInstallModal();
-          } else {
-            openNativeApp();
-          }
+          openNativeApp();
         }).catch(function (err) {
           showErr(err.message || 'Enregistrement impossible.');
         });
