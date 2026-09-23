@@ -332,6 +332,11 @@ export function AccueilPage() {
 
       {tab === 'featured' && canHero ? (
         <>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Accueil mobile : contenu publié + visuel (bannière événement / spot, logo outil) · outils
+            « validés THE LOOP » · date d’événement recommandée pour l’agenda · resync app ~1 min après
+            changement (migration empreinte catalogue).
+          </p>
           <div className="tabs" style={{ marginBottom: 12 }}>
             <button
               type="button"
