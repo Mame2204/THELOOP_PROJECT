@@ -134,6 +134,9 @@ Deno.serve(async (req) => {
       );
     }
 
+    const profileFirst =
+      (invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
+    const profileLast = (invite.last_name ?? '').trim() || 'THE LOOP';
     const { error: updateErr } = await admin.auth.admin.updateUserById(authUser.id, {
       password,
       email_confirm: true,
@@ -142,6 +145,9 @@ Deno.serve(async (req) => {
         pending_welcome: true,
         invited_by_admin: true,
         admin_invite_id: invite.id ?? null,
+        first_name: profileFirst,
+        last_name: profileLast,
+        user_role: invite.user_role ?? authUser.user_metadata?.user_role ?? 'member',
       },
     });
     if (updateErr) {
@@ -158,9 +164,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const profileFirst =
-      (invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
-    const profileLast = (invite.last_name ?? '').trim() || 'THE LOOP';
     await admin
       .from('users')
       .update({

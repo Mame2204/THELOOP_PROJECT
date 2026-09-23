@@ -548,9 +548,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!active) return;
             void (async () => {
               await runApply(session);
-              if (session?.user && !passwordRecoveryPendingRef.current) {
-                await fulfillPendingWelcomeRef.current(session.user);
-              }
+              // Bienvenue : géré par completeAuthenticatedSignIn (évite double envoi).
             })();
           }, 0);
           return;
@@ -987,6 +985,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (welcomeDoneIdsRef.current.has(authUser.id)) return;
     welcomeDoneIdsRef.current.add(authUser.id);
 
+    try {
+      await supabase.auth.updateUser({
+        data: { pending_welcome: null, referral_code: null },
+      });
+    } catch {
+      welcomeDoneIdsRef.current.delete(authUser.id);
+      return;
+    }
+
     const current = await loadUserAfterAuth(authUser);
     if (!current) {
       welcomeDoneIdsRef.current.delete(authUser.id);
@@ -1016,10 +1023,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         /* ignore */
       }
     }
-
-    await supabase.auth.updateUser({
-      data: { pending_welcome: null, referral_code: null },
-    });
   }, [loadUserAfterAuth]);
 
   fulfillPendingWelcomeRef.current = fulfillPendingWelcome;
@@ -1574,6 +1577,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       setUser(user);
       throw error;
+    }
+
+    if (supabase) {
+      const { error: metaErr } = await supabase.auth.updateUser({
+        data: {
+          first_name: firstName || null,
+          last_name: lastName || null,
+          phone_number: phoneNumber,
+        },
+      });
+      if (metaErr) {
+        console.warn('[Auth] sync profil → user_metadata:', metaErr.message);
+      }
     }
 
   }, [user, setDemoUser]);
