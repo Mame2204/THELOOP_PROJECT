@@ -12,6 +12,10 @@ import {
 import { formatWhen, statusBadge } from '../lib/format';
 import { billingPeriodLabel, paymentMethodLabel } from '../lib/payment-labels';
 import { canReconcilePaymentIntent, reconcileDisabledReason } from '../lib/payment-reconcile';
+import {
+  paymentIntentStatusLabel,
+  resyncHintForIntent,
+} from '../lib/payment-intent-display';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { Link } from 'react-router-dom';
 
@@ -304,6 +308,7 @@ export function PaymentsPage() {
               <th>Frais</th>
               <th>Net</th>
               <th>Statut</th>
+              <th>Vérifié Djomy</th>
               <th>Créé</th>
               <th></th>
             </tr>
@@ -383,16 +388,19 @@ export function PaymentsPage() {
                 <td>{p.feeGnf != null ? `${p.feeGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
                 <td>{p.netGnf != null ? `${p.netGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
                 <td>
-                  <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
+                  <span className={`badge ${statusBadge(p.status)}`}>
+                    {paymentIntentStatusLabel(p.status)}
+                  </span>
                   <div className="meta">
-                    {p.fulfillmentStatus} · Djomy {p.djomyStatus ?? '—'}
-                    {p.lastCheckedAt ? (
-                      <>
-                        <br />
-                        Vérifié {formatWhen(p.lastCheckedAt)}
-                      </>
-                    ) : null}
+                    PASS {p.fulfillmentStatus} · Djomy {p.djomyStatus ?? '—'}
                   </div>
+                </td>
+                <td>
+                  {p.lastCheckedAt ? (
+                    formatWhen(p.lastCheckedAt)
+                  ) : (
+                    <span className="meta">Jamais (cliquez Resync)</span>
+                  )}
                 </td>
                 <td>{formatWhen(p.createdAt)}</td>
                 <td>
@@ -414,8 +422,8 @@ export function PaymentsPage() {
                       >
                         Resync Djomy
                       </button>
-                      <div className="meta" style={{ marginTop: 4, maxWidth: 120 }}>
-                        Payé côté Djomy mais PASS non activé
+                      <div className="meta" style={{ marginTop: 4, maxWidth: 200 }}>
+                        {resyncHintForIntent(p)}
                       </div>
                     </>
                   ) : (

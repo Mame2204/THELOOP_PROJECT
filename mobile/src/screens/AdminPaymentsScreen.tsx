@@ -19,6 +19,7 @@ import {
   type AdminPaymentSummary,
 } from '@/lib/admin-payments-store';
 import { formatDateFr } from '@/lib/date-utils';
+import { resyncHintForIntent } from '@/lib/payment-intent-display';
 import { formatGnf } from '@/lib/djomy-fees';
 import { primePlanLabel, type PrimeBillingPeriod } from '@/lib/prime-plans';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -391,6 +392,9 @@ export function AdminPaymentsScreen({ navigation }: Props) {
             <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
               Tx Djomy : {intent.djomyTransactionId ?? '—'}
             </Text>
+            <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={2}>
+              Vérifié Djomy : {formatDateTimeFr(intent.lastCheckedAt)}
+            </Text>
 
             {expanded ? (
               <View style={styles.detail}>
@@ -430,15 +434,20 @@ export function AdminPaymentsScreen({ navigation }: Props) {
                 </Text>
 
                 {canReconcilePaymentIntent(intent) ? (
-                  <Pressable
-                    style={[styles.resyncBtn, { borderColor: ADMIN_THEME.accent, opacity: busyId === intent.id ? 0.6 : 1 }]}
-                    disabled={busyId === intent.id}
-                    onPress={() => void handleReconcile(intent)}
-                  >
-                    <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 12 }}>
-                      {busyId === intent.id ? 'Resync…' : 'Resynchroniser avec Djomy'}
+                  <>
+                    <Pressable
+                      style={[styles.resyncBtn, { borderColor: ADMIN_THEME.accent, opacity: busyId === intent.id ? 0.6 : 1 }]}
+                      disabled={busyId === intent.id}
+                      onPress={() => void handleReconcile(intent)}
+                    >
+                      <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 12 }}>
+                        {busyId === intent.id ? 'Resync…' : 'Resynchroniser avec Djomy'}
+                      </Text>
+                    </Pressable>
+                    <Text style={[styles.tapHint, { color: shell.pageKicker, marginTop: 6 }]}>
+                      {resyncHintForIntent(intent)}
                     </Text>
-                  </Pressable>
+                  </>
                 ) : (
                   <Text style={[styles.tapHint, { color: shell.pageKicker, marginTop: 8 }]}>
                     {reconcileDisabledReason(intent) ?? 'Resync non nécessaire'}
