@@ -87,6 +87,7 @@ export function UsersPage() {
     userRole: 'member' as UserRoleDb,
   });
   const [inviteMsg, setInviteMsg] = useState<string | null>(null);
+  const [inviteActivationLink, setInviteActivationLink] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
     setError(null);
@@ -220,6 +221,7 @@ export function UsersPage() {
     if (!profile) return;
     setBusy(true);
     setInviteMsg(null);
+    setInviteActivationLink(null);
     const res = await createUserInvite({
       ...inviteForm,
       countryCode,
@@ -240,6 +242,9 @@ export function UsersPage() {
     setInviteMsg(
       `${mailKind} à ${sentEmail}. Vérifiez aussi les spams / Promotions (expéditeur Supabase).`,
     );
+    if (res.activationLink) {
+      setInviteActivationLink(res.activationLink);
+    }
     setInviteForm({
       email: '',
       firstName: '',
@@ -906,7 +911,33 @@ export function UsersPage() {
             Envoyer l’invitation
           </button>
           {inviteMsg ? (
-            <p className={inviteMsg.includes('envoyée') ? 'muted' : 'error'}>{inviteMsg}</p>
+            <p className={inviteMsg.includes('envoyé') ? 'muted' : 'error'}>{inviteMsg}</p>
+          ) : null}
+          {inviteActivationLink ? (
+            <div className="card" style={{ marginTop: 16, textAlign: 'left' }}>
+              <p className="brand-kicker">Lien d’activation (secours)</p>
+              <p className="meta" style={{ marginTop: 8 }}>
+                Si le bouton du mail affiche « Chargement… », copiez ce lien et ouvrez-le dans{' '}
+                <strong>Safari</strong> ou <strong>Chrome</strong> (pas l’aperçu du mail).
+              </p>
+              <textarea
+                readOnly
+                value={inviteActivationLink}
+                rows={3}
+                style={{ width: '100%', marginTop: 8, fontSize: 12 }}
+              />
+              <button
+                type="button"
+                className="btn small"
+                style={{ marginTop: 8 }}
+                onClick={() => {
+                  void navigator.clipboard.writeText(inviteActivationLink);
+                  setInviteMsg('Lien d’activation copié dans le presse-papiers.');
+                }}
+              >
+                Copier le lien
+              </button>
+            </div>
           ) : null}
         </form>
       ) : null}

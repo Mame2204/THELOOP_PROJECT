@@ -378,6 +378,7 @@ export async function createUserInvite(input: {
   inviteId?: string;
   email?: string;
   mailMode?: string;
+  activationLink?: string | null;
   error?: string;
   retryAfterSeconds?: number;
 }> {
@@ -498,7 +499,7 @@ export async function createUserInvite(input: {
     });
   }
 
-  return { ok: true, inviteId, email, mailMode: mail.mode };
+  return { ok: true, inviteId, email, mailMode: mail.mode, activationLink: mail.activationLink ?? null };
 }
 
 export async function sendInviteEmail(input: {
@@ -510,7 +511,13 @@ export async function sendInviteEmail(input: {
   countryCode?: string;
   phoneNumber?: string | null;
   city?: string | null;
-}): Promise<{ ok: boolean; mode?: string; error?: string; retryAfterSeconds?: number }> {
+}): Promise<{
+  ok: boolean;
+  mode?: string;
+  activationLink?: string | null;
+  error?: string;
+  retryAfterSeconds?: number;
+}> {
   const token = await getAccessToken();
   if (!token) return { ok: false, error: 'Session expirée.' };
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '');
@@ -542,6 +549,7 @@ export async function sendInviteEmail(input: {
     const body = (await response.json().catch(() => ({}))) as {
       error?: string;
       mode?: string;
+      activationLink?: string | null;
       retry_after_seconds?: number | null;
     };
     if (!response.ok) {
@@ -559,7 +567,7 @@ export async function sendInviteEmail(input: {
         retryAfterSeconds: parsed.retryAfterSeconds,
       };
     }
-    return { ok: true, mode: body.mode ?? 'invite' };
+    return { ok: true, mode: body.mode ?? 'invite', activationLink: body.activationLink ?? null };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Envoi impossible.' };
   }

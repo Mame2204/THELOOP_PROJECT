@@ -153,7 +153,27 @@ Deno.serve(async (req) => {
     const redirectTo =
       (body.redirectTo ?? '').trim() ||
       Deno.env.get('AUTH_REDIRECT_URL') ||
-      'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
+      'https://api.theloop-app.com/auth/callback';
+
+    const activationBase = redirectTo.replace(/\/$/, '').includes('/auth/callback')
+      ? redirectTo.replace(/\/$/, '')
+      : 'https://api.theloop-app.com/auth/callback';
+
+    async function buildActivationLink(type: 'invite' | 'recovery'): Promise<string | null> {
+      const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
+        type,
+        email,
+        options: { redirectTo: activationBase },
+      });
+      if (linkErr) {
+        console.warn('[admin-send-invite] generateLink:', linkErr.message);
+        return null;
+      }
+      const hashed = linkData?.properties?.hashed_token;
+      if (!hashed || typeof hashed !== 'string') return null;
+      const otpType = type === 'recovery' ? 'recovery' : 'invite';
+      return `${activationBase}?token_hash=${encodeURIComponent(hashed)}&type=${otpType}`;
+    }
 
     const { data: existingProfile } = await adminClient
       .from('users')
@@ -274,7 +294,8 @@ Deno.serve(async (req) => {
           .update({ otp_sent_at: new Date().toISOString() })
           .eq('id', body.inviteId);
       }
-      return new Response(JSON.stringify({ ok: true, mode: 'recovery_resent' }), {
+      const activationLink = await buildActivationLink('recovery');
+      return new Response(JSON.stringify({ ok: true, mode: 'recovery_resent', activationLink }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -286,8 +307,14 @@ Deno.serve(async (req) => {
         .eq('id', body.inviteId);
     }
 
+    const activationLink = await buildActivationLink('invite');
     return new Response(
-      JSON.stringify({ ok: true, mode: 'invite', userId: invited.user?.id ?? null }),
+      JSON.stringify({
+        ok: true,
+        mode: 'invite',
+        userId: invited.user?.id ?? null,
+        activationLink,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {

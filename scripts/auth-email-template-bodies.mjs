@@ -1,8 +1,10 @@
 /** Corps HTML des e-mails Auth Supabase (invite / confirmation / recovery). */
 
-export const inviteActionHref = '{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=invite';
-export const signupActionHref = '{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=signup';
-export const recoveryActionHref = '{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=recovery';
+/** URL fixe API Render — ne pas utiliser {{ .SiteURL }} (souvent Edge / Storage Supabase). */
+const API_AUTH_CALLBACK = 'https://api.theloop-app.com/auth/callback';
+export const inviteActionHref = `${API_AUTH_CALLBACK}?token_hash={{ .TokenHash }}&type=invite`;
+export const signupActionHref = `${API_AUTH_CALLBACK}?token_hash={{ .TokenHash }}&type=signup`;
+export const recoveryActionHref = `${API_AUTH_CALLBACK}?token_hash={{ .TokenHash }}&type=recovery`;
 
 export function loopEmailHtml({ title, body, buttonLabel, footer, actionHref }) {
   return `<!DOCTYPE html>
