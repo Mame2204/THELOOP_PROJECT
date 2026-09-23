@@ -6,7 +6,13 @@ export const inviteActionHref = `${API_AUTH_CALLBACK}?token_hash={{ .TokenHash }
 export const signupActionHref = `${API_AUTH_CALLBACK}?token_hash={{ .TokenHash }}&type=signup`;
 export const recoveryActionHref = `${API_AUTH_CALLBACK}?token_hash={{ .TokenHash }}&type=recovery`;
 
-export function loopEmailHtml({ title, body, buttonLabel, footer, actionHref }) {
+export function loopEmailHtml({ title, body, buttonLabel, footer, actionHref, alternateHint, showCopyLink = false }) {
+  const copyLinkBlock = showCopyLink
+    ? `<p style="margin:16px 0 0;font-size:11px;line-height:1.45;color:#9ca3af;word-break:break-all;">Si le bouton ne répond pas, copiez ce lien dans Safari ou Chrome : ${actionHref}</p>`
+    : '';
+  const alternateBlock = alternateHint
+    ? `<p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:#636e72;">${alternateHint}</p>`
+    : '';
   return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
@@ -19,7 +25,8 @@ export function loopEmailHtml({ title, body, buttonLabel, footer, actionHref }) 
           <h1 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#0a0a0a;line-height:1.3;">${title}</h1>
           <p style="margin:0 0 24px;font-size:15px;line-height:1.55;color:#636e72;">${body}</p>
           <a href="${actionHref}" style="display:inline-block;padding:14px 22px;background:#0a0a0a;color:#ffffff;text-decoration:none;border-radius:12px;font-weight:700;font-size:15px;">${buttonLabel}</a>
-          <p style="margin:16px 0 0;font-size:11px;line-height:1.45;color:#9ca3af;word-break:break-all;">Si le bouton ne répond pas, copiez ce lien dans Safari ou Chrome : ${actionHref}</p>
+          ${copyLinkBlock}
+          ${alternateBlock}
           <p style="margin:24px 0 0;font-size:12px;line-height:1.5;color:#9ca3af;">${footer}</p>
         </td></tr>
       </table>
@@ -33,11 +40,14 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
   const inviteHtml = loopEmailHtml({
     title: 'Invitation THE LOOP',
     body:
-      "Vous avez été invité(e) à rejoindre THE LOOP. Touchez le bouton ci-dessous sur votre téléphone : si l'application est installée, elle s'ouvrira ; sinon, vous choisirez votre mot de passe sur une page web sécurisée, puis pourrez installer THE LOOP.",
+      "Vous avez été invité(e) à rejoindre THE LOOP. Sur votre téléphone, touchez le bouton ci-dessous (de préférence en ouvrant ce message dans Safari ou Chrome, pas dans l’aperçu du mail).",
     buttonLabel: 'Activer mon compte',
     actionHref: inviteActionHref,
+    showCopyLink: false,
+    alternateHint:
+      "<strong>Le bouton ne marche pas ?</strong> Installez THE LOOP, ouvrez l’application, allez sur <strong>Connexion</strong>, puis touchez <strong>« Activer un compte invité par l’équipe »</strong>. Saisissez <strong>exactement la même adresse e-mail</strong> que celle de cette invitation et choisissez votre mot de passe.",
     footer:
-      "Sur le web : après avoir choisi votre mot de passe, installez THE LOOP pour accéder à l'agenda et à vos privilèges. Connectez-vous avec cet e-mail.",
+      "THE LOOP est une application mobile : après activation, connectez-vous dans l’app avec cet e-mail et le mot de passe que vous aurez choisi.",
   });
 
   const confirmationHtml = loopEmailHtml({
@@ -55,6 +65,7 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
       "Vous avez demandé à réinitialiser votre mot de passe THE LOOP. Touchez le bouton : l'app s'ouvrira si elle est installée, sinon vous pourrez choisir un nouveau mot de passe sur le web.",
     buttonLabel: 'Choisir un mot de passe',
     actionHref: recoveryActionHref,
+    showCopyLink: true,
     footer:
       "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail — votre mot de passe actuel reste inchangé.",
   });

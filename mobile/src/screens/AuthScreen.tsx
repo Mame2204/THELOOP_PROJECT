@@ -40,6 +40,7 @@ import {
   findPendingInviteByEmail,
   activateInvitedMemberAccount,
 } from '@/lib/admin-invite-store';
+import { resolveInviteDisplayName } from '@/lib/invite-default-names';
 import { accountExistsForEmail } from '@/lib/email-account';
 import {
   isWrongPasswordLoginError,
@@ -501,11 +502,16 @@ export function AuthScreen({ navigation, route }: Props) {
         const normalizedPhone = phone.trim()
           ? normalizeInternationalPhone(phone, phoneDialCode)
           : null;
+        const displayName = resolveInviteDisplayName({
+          firstName: invite.firstName ?? (firstName.trim() || null),
+          lastName: invite.lastName ?? (lastName.trim() || null),
+          userRole: invite.userRole,
+        });
         await signUpMember({
           email: invite.email ?? emailCheck.email,
           password: signupPassword,
-          firstName: invite.firstName ?? (firstName.trim() || 'Membre'),
-          lastName: invite.lastName ?? (lastName.trim() || 'THE LOOP'),
+          firstName: displayName.firstName,
+          lastName: displayName.lastName,
           phoneNumber: normalizedPhone,
           countryCode: invite.countryCode ?? accountCountry,
           phoneDialCode,

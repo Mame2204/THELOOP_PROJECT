@@ -47,7 +47,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **205 / 371** cases cochées ≈ **55 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
-| **Prochain test** | **💻 B4 Users** — redeploy `admin-send-invite` puis retest **Inviter** + waitlist · **💻 B6 suite** · **📱 A4 set_password** (oubli MDP toujours KO) · build 49+ octroi / à la une |
+| **Prochain test** | **📱 A4 set_password** (oubli MDP) · **💻 B4 waitlist** · build **49+** (deep link connexion post-invite · octroi · à la une mobile) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -242,6 +242,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
+- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -291,7 +292,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · build 48)*
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
-- [ ] **📱** Mode **activate** — activation compte invité
+- [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
 - [ ] **🤖** Idem
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
@@ -689,8 +690,8 @@ Liens Param. → pages satellites :
 ### Users
 - [ ] **💻** Pagination · recherche
 - [ ] **💻** Éditer profil · rôle · suspendre
-- [ ] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **FAIL** « Invalid session » · fix `admin-send-invite` JWT · **redeploy Edge Function** + retest)*
-- [ ] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **FAIL** même erreur session · idem fix)*
+- [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
+- [ ] **💻** **Waitlist** → statut `invited` *(non retesté · même pipeline que Inviter)*
 
 ### PASS
 - [ ] **💻** Prix Guinée · enregistrer
@@ -783,7 +784,7 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026 · même UX que iOS)*
 - [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app**
 - [ ] **🤖** Idem *(retest post-deploy auth-callback)*
-- [ ] **💻** Invitation admin-web → activation · bon rôle
+- [x] **💻** Invitation admin-web → activation · bon rôle *(23 sept. 2026 · **PASS** mail + **PASS** activate in-app · rôle membre · prénom défaut selon rôle après migration `20260939`)*
 - [ ] **📱** Partenaire invité → connexion → Espace Pro
 - [ ] **🤖** Idem
 
@@ -916,8 +917,8 @@ Android (23 sept. 2026 · build 48 · suite) :
   - **Double tap** logo Auth → code établissement — **PASS**
   - **Déconnexion** — **PASS**
 Admin-web B4 Users (23 sept. 2026 · testeur) :
-  - **FAIL 💻** : onglet Inviter + waitlist « Inviter » → **Invalid session** (Edge Function `admin-send-invite` · JWT validé avec mauvaise clé si `SUPABASE_ANON_KEY` absent)
-  - **Fix code** : validation JWT via **service role** + refresh session admin-web · **redeploy** `supabase functions deploy admin-send-invite`
+  - **PASS 💻** (soir) : Inviter · e-mail · activation **web** + **in-app** (« Activer un compte invité par l’équipe ») · deploy Edge 4/4 · Render auth-callback
+  - **À faire** : `configure-auth-invite-email.cmd` (nouveau texte sans lien URL en clair) · migration `20260939` · waitlist non retestée
   - **Oubli MDP** : toujours **KO** (mobile · voir A4 set_password)
 Admin-web B6 Contenu (23 sept. 2026 · testeur) :
   - **PASS 💻** : filtres events / spots / outils / marché · création event / spot / outil

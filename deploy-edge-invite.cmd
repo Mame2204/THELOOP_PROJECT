@@ -1,6 +1,6 @@
 @echo off
 setlocal
-echo === Deploiement Edge Functions invitation (auth-callback + admin-send-invite) ===
+echo === Deploiement Edge Functions invitation (auth-callback + admin-send-invite + member-activate-invite) ===
 echo.
 echo 1. Ouvrez https://supabase.com/dashboard/account/tokens
 echo 2. Creez un token (nom : the-loop-deploy)
