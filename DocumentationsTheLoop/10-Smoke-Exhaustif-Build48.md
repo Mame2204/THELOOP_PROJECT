@@ -47,7 +47,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **205 / 371** cases cochées ≈ **55 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
-| **Prochain test** | **💻 B6 suite** (Accueil blocs · Loop hub · transfert) · **📱🤖 reporté build 49+** : octroi individuel · slider **À la une** Accueil (`20260937` + app) · **📱 A4 set_password** |
+| **Prochain test** | **💻 B4 Users** — redeploy `admin-send-invite` puis retest **Inviter** + waitlist · **💻 B6 suite** · **📱 A4 set_password** (oubli MDP toujours KO) · build 49+ octroi / à la une |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -913,6 +913,10 @@ Admin-web (23 sept. 2026 · paiements + gates) :
 Android (23 sept. 2026 · build 48 · suite) :
   - **Double tap** logo Auth → code établissement — **PASS**
   - **Déconnexion** — **PASS**
+Admin-web B4 Users (23 sept. 2026 · testeur) :
+  - **FAIL 💻** : onglet Inviter + waitlist « Inviter » → **Invalid session** (Edge Function `admin-send-invite` · JWT validé avec mauvaise clé si `SUPABASE_ANON_KEY` absent)
+  - **Fix code** : validation JWT via **service role** + refresh session admin-web · **redeploy** `supabase functions deploy admin-send-invite`
+  - **Oubli MDP** : toujours **KO** (mobile · voir A4 set_password)
 Admin-web B6 Contenu (23 sept. 2026 · testeur) :
   - **PASS 💻** : filtres events / spots / outils / marché · création event / spot / outil
   - **PASS 💻** : « À la une » (coché admin-web) — effet **immédiat web**
