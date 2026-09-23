@@ -10,6 +10,7 @@ import { partnerValidationRouter } from './routes/partner-validation.js';
 import { partnerBenefitOffersRouter } from './routes/partner-benefit-offers.js';
 import { partnerSpotSessionRouter } from './routes/partner-spot-session.js';
 import { paymentsRouter } from './routes/payments.js';
+import { authCallbackPageRouter } from './routes/auth-callback-page.js';
 import { publicPagesRouter } from './routes/public-pages.js';
 import { webhookRouter } from './routes/webhook.js';
 import { cronRouter } from './routes/cron.js';
@@ -93,6 +94,7 @@ app.get('/health', async (_req, res) => {
   });
 });
 
+app.use(authCallbackPageRouter);
 app.use(publicPagesRouter);
 app.use('/api', paymentsRouter);
 app.use('/api', partnerValidationRouter);

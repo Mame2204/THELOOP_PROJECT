@@ -288,18 +288,18 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [x] **📱** Mode **set_password** — lien recovery → page HTTPS **auth-callback** (choix app / web) *(23 sept. 2026 · build 48 · **pas d’ouverture auto app** · normal)*
-- [x] **🤖** Idem *(23 sept. 2026 · aligné iOS)*
+- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(fix api.theloop-app.com/auth/callback · deploy Render + nouvel e-mail reset)*
+- [ ] **🤖** Idem *(cause : ancienne URL Storage Supabase en text/plain)*
 - [ ] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(retest post-deploy auth-callback)*
 - [ ] **🤖** Idem
-- [ ] **📱** Lien **Pro ? Rejoindre THE LOOP →**
-- [x] **🤖** Idem *(23 sept. 2026 · build 48 · navigation OK)*
+- [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
+- [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** CGU / Politique confidentialité (modales) *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026)*
 
 ### Stack Auth (routes autorisées)
-- [ ] **📱** `PartnerApplyScreen` — demande partenariat · alerte duplicate si pending
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerApplyScreen` — demande partenariat *(23 sept. 2026 · build 48 · inbox super admin OK)*
+- [x] **🤖** Idem *(23 sept. 2026)*
 - [ ] **📱** `PartnerValidationCodeScreen` — double tap logo → code établissement
 - [ ] **🤖** Idem
 - [ ] **📱** `PartnerBenefitScanScreen` — scan QR après code valide
@@ -909,7 +909,8 @@ A2 compte & services (23 sept. 2026 · build 48 · **📱🤖**) :
 Auth MDP (23 sept. 2026 · build 48) :
   - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
   - **Oubli MDP** : e-mail OK · lien → **page auth-callback 📱🤖** (normal · pas d’auto-app) · **CGU / Politique 📱🤖 PASS**
-  - **Pro ? Rejoindre THE LOOP** — **🤖 PASS** · **set_password in-app** (bouton app) — retest deploy **auth-callback**
+  - **Pro ? Rejoindre THE LOOP** + **PartnerApply** — **PASS 📱🤖** (demande reçue super admin)
+  - **Recovery HTML balises visibles** — fix **api.theloop-app.com/auth/callback** (deploy Render) · renvoyer e-mail reset
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —

@@ -3,11 +3,14 @@ import * as Linking from 'expo-linking';
 
 export const THELOOP_AUTH_CALLBACK = 'theloop://auth/callback';
 
-const DEFAULT_MEMBER_AUTH_CALLBACK_URL =
+/** Évite Storage Supabase (text/plain → balises visibles). Même hôte que paiement /payment/success. */
+const DEFAULT_MEMBER_AUTH_CALLBACK_URL = 'https://api.theloop-app.com/auth/callback';
+
+const SUPABASE_EDGE_AUTH_CALLBACK_URL =
   'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
 
 function getSupabaseHttpsAuthCallbackUrl(): string | null {
-  return DEFAULT_MEMBER_AUTH_CALLBACK_URL;
+  return DEFAULT_MEMBER_AUTH_CALLBACK_URL || SUPABASE_EDGE_AUTH_CALLBACK_URL;
 }
 
 /** Expo Go ou client store (environnement de test sans build natif). */

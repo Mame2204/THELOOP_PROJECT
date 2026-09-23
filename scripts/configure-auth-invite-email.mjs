@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const projectRef = 'eeyhtulpixvftvhppinz';
-const callbackUrl = `https://${projectRef}.supabase.co/functions/v1/auth-callback`;
+const callbackUrl = 'https://api.theloop-app.com/auth/callback';
+const edgeCallbackUrl = `https://${projectRef}.supabase.co/functions/v1/auth-callback`;
 const legacyCallbackUrl = 'https://admin.theloop-app.com/auth-callback.html';
 
 function readToken() {
@@ -87,6 +88,7 @@ const body = {
   site_url: callbackUrl,
   uri_allow_list: [
     callbackUrl,
+    edgeCallbackUrl,
     legacyCallbackUrl,
     'theloop://auth/callback',
     'theloop://**',
