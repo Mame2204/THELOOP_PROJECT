@@ -223,8 +223,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Environnement
 - [x] **📱** Build cible installé — **build 48** · lancement OK *(20 sept. 2026)*
 - [x] **🤖** Idem Android — **build 48** · installé · lancement OK *(20 sept. 2026)*
-- [ ] **💻** Admin-web déployé
-- [ ] **⏳** Serveur Render à jour (push planifiés)
+- [x] **💻** Admin-web déployé *(23 sept. 2026 · https://admin.theloop-app.com accessible · workflow « Deploy admin-web » vert sur `main`)*
+- [x] **⏳** Serveur Render à jour *(23 sept. 2026 · `https://api.theloop-app.com/health` → 200 · invite mail → web OK · **≠** obligation d’exécuter les `.cmd` ops)*
+
+> **Comment cocher Phase 0 (général)** : pas de procédure magique — tu confirmes que tu peux **utiliser** l’admin, que l’**API** répond, et que ton **build 48** tourne. Les scripts `test-auth-invite-urls.cmd` / `deploy-edge-invite.cmd` sont **optionnels** (vérif infra / redeploy Edge), **pas** une case du smoke invite.
 
 ### Qualité code
 - [x] `cd mobile && npm run typecheck` → 0 erreur *(22 sept. 2026 · agent)*
@@ -239,7 +241,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260925_admin_benefit_draws_draw_city.sql` — tirage `draw_city` *(23 sept. 2026 · OK)*
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
-- [ ] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **à appliquer Supabase** · puis build **49+**)*
+- [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*

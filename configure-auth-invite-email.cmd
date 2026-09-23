@@ -10,8 +10,7 @@ if "%SUPABASE_ACCESS_TOKEN%"=="" (
   pause
   exit /b 1
 )
-set "NODE_DIR=%~dp0.tools\node"
 cd /d "%~dp0"
-"%NODE_DIR%\node.exe" scripts\configure-auth-invite-email.mjs
+call "%~dp0run-with-project-node.cmd" scripts\configure-auth-invite-email.mjs
 pause
 endlocal
