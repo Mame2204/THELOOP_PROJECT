@@ -86,6 +86,32 @@ const HTML = `<!DOCTYPE html>
   <script>window.__PREBOOT_SESSION__ = null;</script>
   <script>
     (function () {
+      var p = window.__PREBOOT_SESSION__;
+      if (!p) return;
+      var t = document.getElementById('title');
+      var m = document.getElementById('message');
+      if (!t || !m) return;
+      if (p.verifyError) {
+        t.textContent = 'Lien invalide ou expiré';
+        m.textContent = p.verifyError;
+        return;
+      }
+      if (p.accessToken && p.refreshToken) {
+        t.textContent = 'Activer votre compte';
+        m.textContent =
+          'THE LOOP est installée ? Touchez « Ouvrir l\\\\'application ». Sinon « Continuer sur le web » pour choisir votre mot de passe.';
+        var c = document.getElementById('choice');
+        if (c) c.style.display = 'block';
+      }
+    })();
+  </script>
+  <noscript>
+    <p class="hint" style="margin-top:16px">
+      JavaScript est requis pour choisir votre mot de passe. Ouvrez ce lien dans <strong>Safari</strong> ou <strong>Chrome</strong> (pas l’aperçu du mail).
+    </p>
+  </noscript>
+  <script>
+    (function () {
       var supabaseUrl = window.__SUPABASE_URL__;
       var anon = window.__SUPABASE_ANON__;
       var prebootSession = window.__PREBOOT_SESSION__;
