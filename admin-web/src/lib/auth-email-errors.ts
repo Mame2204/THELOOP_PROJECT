@@ -27,6 +27,12 @@ export function parseInviteEmailError(body: {
   if (!raw) return { message: 'Envoi impossible.' };
 
   const lower = raw.toLowerCase();
+  if (lower.includes('invalid session') || lower.includes('session expirée')) {
+    return {
+      message:
+        'Session expirée — déconnectez-vous puis reconnectez-vous sur admin-web, et réessayez l’invitation.',
+    };
+  }
   if (
     lower.includes('over_email_send_rate_limit')
     || lower.includes('security purposes')

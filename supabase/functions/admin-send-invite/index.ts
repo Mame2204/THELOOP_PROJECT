@@ -99,23 +99,31 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userClient = createClient(supabaseUrl, anonKey || serviceKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-    const { data: userData, error: userErr } = await userClient.auth.getUser(token);
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: 'Invalid session' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
+    // Valider le JWT admin via service role (fiable même si SUPABASE_ANON_KEY edge est absent / obsolète).
+    let authUser = (await adminClient.auth.getUser(token)).data.user ?? null;
+    if (!authUser && anonKey) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
       });
+      authUser = (await userClient.auth.getUser()).data.user ?? null;
+    }
+    if (!authUser) {
+      return new Response(
+        JSON.stringify({ error: 'Session expirée — reconnectez-vous sur admin-web puis réessayez.' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
-    const adminClient = createClient(supabaseUrl, serviceKey);
     const { data: profile } = await adminClient
       .from('users')
       .select('user_role, is_active')
-      .eq('id', userData.user.id)
+      .eq('id', authUser.id)
       .maybeSingle();
 
     if (!profile?.is_active) {

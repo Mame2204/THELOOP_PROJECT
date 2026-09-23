@@ -687,8 +687,8 @@ Liens Param. → pages satellites :
 ### Users
 - [ ] **💻** Pagination · recherche
 - [ ] **💻** Éditer profil · rôle · suspendre
-- [ ] **💻** **Inviter** → e-mail reçu
-- [ ] **💻** **Waitlist** → statut `invited`
+- [ ] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **FAIL** « Invalid session » · fix `admin-send-invite` JWT · **redeploy Edge Function** + retest)*
+- [ ] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **FAIL** même erreur session · idem fix)*
 
 ### PASS
 - [ ] **💻** Prix Guinée · enregistrer

@@ -10,19 +10,12 @@ if (!url || !anon) {
 export const supabase = createClient(url ?? '', anon ?? '');
 
 export async function getAccessToken(): Promise<string | null> {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) return null;
-  const session = data.session;
-  if (!session) return null;
-
-  const nowSec = Math.floor(Date.now() / 1000);
-  const expiresAt = session.expires_at ?? 0;
-  if (expiresAt - nowSec < 300) {
-    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-    if (!refreshError && refreshed.session?.access_token) {
-      return refreshed.session.access_token;
-    }
+  const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+  if (!refreshError && refreshed.session?.access_token) {
+    return refreshed.session.access_token;
   }
 
-  return session.access_token;
+  const { data, error } = await supabase.auth.getSession();
+  if (error) return null;
+  return data.session?.access_token ?? null;
 }
