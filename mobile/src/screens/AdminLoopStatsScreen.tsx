@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAdminCountry } from '@/context/AdminCountryContext';
@@ -7,6 +7,7 @@ import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import { AdminTabMenu } from '@/components/admin/AdminTabMenu';
+import { AdminListPager, ADMIN_LIST_PAGE_SIZE } from '@/components/admin/AdminListPager';
 import { isTeamContentOrigin } from '@/lib/content-origin';
 import { matchesAdminCountry } from '@/lib/admin-country';
 import { isToolLocation } from '@/lib/location-kind-utils';
@@ -53,6 +54,7 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [section, setSection] = useState<ContentSection>('all');
   const [metric, setMetric] = useState<MetricTab>('all');
+  const [page, setPage] = useState(0);
 
   const items = useMemo(() => {
     const next: PerfItem[] = [];
@@ -94,6 +96,15 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
     else if (section === 'tools') list = list.filter((i) => i.kind === 'tool');
     return sortByMetric(list, metric);
   }, [items, section, metric]);
+
+  const paged = useMemo(() => {
+    const start = page * ADMIN_LIST_PAGE_SIZE;
+    return filtered.slice(start, start + ADMIN_LIST_PAGE_SIZE);
+  }, [filtered, page]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [section, metric, countryCode]);
 
   if (role !== 'ADMIN') {
     return (
@@ -162,9 +173,9 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
       {filtered.length === 0 ? (
         <Text style={[styles.empty, { color: shell.pageKicker }]}>Aucun contenu THE LOOP publié pour ce pays.</Text>
       ) : (
-        filtered.map((item, index) => (
+        paged.map((item, index) => (
           <View key={`${item.kind}-${item.id}`} style={adminCardStyle(shell)}>
-            <Text style={[styles.rank, { color: ADMIN_THEME.accent }]}>#{index + 1}</Text>
+            <Text style={[styles.rank, { color: ADMIN_THEME.accent }]}>#{page * ADMIN_LIST_PAGE_SIZE + index + 1}</Text>
             <Text style={[styles.title, { color: shell.pageTitle }]} numberOfLines={2}>{item.title}</Text>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>
               {item.kind === 'event'
@@ -174,6 +185,14 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
           </View>
         ))
       )}
+      <AdminListPager
+        page={page}
+        total={filtered.length}
+        pageSize={ADMIN_LIST_PAGE_SIZE}
+        onPageChange={setPage}
+        shell={shell}
+        label="contenus"
+      />
     </ScrollView>
   );
 }

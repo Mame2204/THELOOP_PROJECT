@@ -3,6 +3,11 @@ import type { TeamLoopPerfRow } from './team-loop-performance';
 /** Aligné `AdminLoopStatsScreen` (mobile) — onglets Favoris / Clics / Étoiles / Notes / Tous. */
 export type LoopPerfMetricTab = 'all' | 'favorites' | 'clicks' | 'stars' | 'ratings';
 
+/** Contenu agrégé ou filtré par type (mobile : Tous / Événements / Spots / Outils). */
+export type LoopPerfSectionTab = 'all' | 'events' | 'spots' | 'tools';
+
+export const LOOP_PERF_PAGE_SIZE = 20;
+
 /**
  * Formule « Tous » (Hub THE LOOP admin) :
  *   score = favoris + clics + (étoiles × 5)

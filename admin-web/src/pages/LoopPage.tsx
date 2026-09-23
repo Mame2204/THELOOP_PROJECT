@@ -23,7 +23,12 @@ import {
   type BenefitCatalogRow,
 } from '../lib/privileges';
 import { loadInsights, type InsightsBundle } from '../lib/insights';
-import { sortLoopPerfRows, type LoopPerfMetricTab } from '../lib/loop-perf-sort';
+import {
+  LOOP_PERF_PAGE_SIZE,
+  sortLoopPerfRows,
+  type LoopPerfMetricTab,
+  type LoopPerfSectionTab,
+} from '../lib/loop-perf-sort';
 import { loadTeamLoopPerformance, type TeamLoopPerfRow } from '../lib/team-loop-performance';
 
 type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
@@ -83,7 +88,10 @@ export function LoopPage() {
     spots: TeamLoopPerfRow[];
     tools: TeamLoopPerfRow[];
   } | null>(null);
+  const [perfSection, setPerfSection] = useState<LoopPerfSectionTab>('all');
   const [perfMetric, setPerfMetric] = useState<LoopPerfMetricTab>('all');
+  const [perfPage, setPerfPage] = useState(0);
+  const [benefitPage, setBenefitPage] = useState(0);
 
   const loadContent = useCallback(async () => {
     const res = await listCatalogContent(countryCode, [typeTab], {
@@ -145,14 +153,36 @@ export function LoopPage() {
     [benefits, benefitFilter],
   );
 
-  const sortedTeamPerf = useMemo(() => {
-    if (!teamPerfByKind) return null;
-    return {
-      events: sortLoopPerfRows(teamPerfByKind.events, perfMetric),
-      spots: sortLoopPerfRows(teamPerfByKind.spots, perfMetric),
-      tools: sortLoopPerfRows(teamPerfByKind.tools, perfMetric),
-    };
-  }, [teamPerfByKind, perfMetric]);
+  const perfListSorted = useMemo(() => {
+    if (!teamPerfByKind) return [];
+    if (perfSection === 'events') return sortLoopPerfRows(teamPerfByKind.events, perfMetric);
+    if (perfSection === 'spots') return sortLoopPerfRows(teamPerfByKind.spots, perfMetric);
+    if (perfSection === 'tools') return sortLoopPerfRows(teamPerfByKind.tools, perfMetric);
+    const merged = [
+      ...teamPerfByKind.events,
+      ...teamPerfByKind.spots,
+      ...teamPerfByKind.tools,
+    ];
+    return sortLoopPerfRows(merged, perfMetric);
+  }, [teamPerfByKind, perfSection, perfMetric]);
+
+  const perfListPage = useMemo(() => {
+    const start = perfPage * LOOP_PERF_PAGE_SIZE;
+    return perfListSorted.slice(start, start + LOOP_PERF_PAGE_SIZE);
+  }, [perfListSorted, perfPage]);
+
+  const pagedBenefits = useMemo(() => {
+    const start = benefitPage * CATALOG_PAGE_SIZE;
+    return filteredBenefits.slice(start, start + CATALOG_PAGE_SIZE);
+  }, [filteredBenefits, benefitPage]);
+
+  useEffect(() => {
+    setPerfPage(0);
+  }, [perfSection, perfMetric, countryCode]);
+
+  useEffect(() => {
+    setBenefitPage(0);
+  }, [benefitFilter, countryCode]);
 
   async function applyStatus(item: CatalogContentItem, status: ContentStatus) {
     setBusy(true);
@@ -311,7 +341,7 @@ export function LoopPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBenefits.map((b) => (
+                {pagedBenefits.map((b) => (
                   <tr key={b.localId}>
                     <td>
                       <strong>{b.title}</strong>
@@ -333,6 +363,13 @@ export function LoopPage() {
               </p>
             ) : null}
           </div>
+          <ListPager
+            page={benefitPage}
+            total={filteredBenefits.length}
+            pageSize={CATALOG_PAGE_SIZE}
+            onPageChange={setBenefitPage}
+            label="privilèges"
+          />
         </>
       ) : null}
 
@@ -345,7 +382,7 @@ export function LoopPage() {
         </>
       ) : null}
 
-      {tab === 'stats' && canStats && stats && sortedTeamPerf ? (
+      {tab === 'stats' && canStats && stats && teamPerfByKind ? (
         <>
           <div className="kpi-grid">
             <div className="card kpi-card">
@@ -363,9 +400,30 @@ export function LoopPage() {
           </div>
           <h3>Performances</h3>
           <p className="meta" style={{ marginBottom: 8 }}>
-            Contenus publiés par THE LOOP — même lignes détail que l’app mobile. Classement selon l’onglet ci-dessous
-            (par défaut « Tous » = favoris + clics + étoiles × 5).
+            Aligné app mobile : vue globale ou par type, puis tri favoris / clics / étoiles / notes.
           </p>
+          <nav className="tabs" style={{ marginBottom: 8 }}>
+            {(
+              [
+                ['all', 'Tous'],
+                ['events', 'Événements'],
+                ['spots', 'Spots'],
+                ['tools', 'Outils'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`tab ${perfSection === id ? 'active' : ''}`}
+                onClick={() => {
+                  setPerfSection(id);
+                  setPerfMetric('all');
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
           <nav className="tabs" style={{ marginBottom: 12 }}>
             {(
               [
@@ -386,9 +444,14 @@ export function LoopPage() {
               </button>
             ))}
           </nav>
-          <TopList title="Événements" rows={sortedTeamPerf.events} />
-          <TopList title="Spots" rows={sortedTeamPerf.spots} />
-          <TopList title="Outils" rows={sortedTeamPerf.tools} />
+          <PerfRankList rows={perfListPage} rankOffset={perfPage * LOOP_PERF_PAGE_SIZE} showKind={perfSection === 'all'} />
+          <ListPager
+            page={perfPage}
+            total={perfListSorted.length}
+            pageSize={LOOP_PERF_PAGE_SIZE}
+            onPageChange={setPerfPage}
+            label="contenus"
+          />
         </>
       ) : null}
     </section>
@@ -493,29 +556,50 @@ function ContentTable({
   );
 }
 
-function TopList({ title, rows }: { title: string; rows: TeamLoopPerfRow[] }) {
+const PERF_KIND_LABELS: Record<TeamLoopPerfRow['kind'], string> = {
+  event: 'Événement',
+  spot: 'Spot',
+  tool: 'Outil',
+};
+
+function PerfRankList({
+  rows,
+  rankOffset,
+  showKind,
+}: {
+  rows: TeamLoopPerfRow[];
+  rankOffset: number;
+  showKind: boolean;
+}) {
+  if (rows.length === 0) {
+    return (
+      <p className="muted" style={{ marginBottom: 12 }}>
+        Aucun contenu THE LOOP publié pour ce pays.
+      </p>
+    );
+  }
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <h4 style={{ margin: '0 0 8px' }}>{title}</h4>
-      {rows.length === 0 ? (
-        <p className="muted">Aucun contenu THE LOOP publié pour ce pays.</p>
-      ) : (
-        <ol className="top-list">
-          {rows.slice(0, 10).map((r, index) => (
-            <li key={`${r.kind}-${r.id}`}>
-              <div style={{ flex: 1 }}>
-                <span className="meta" style={{ marginRight: 6 }}>
-                  #{index + 1}
+      <ol className="top-list">
+        {rows.map((r, index) => (
+          <li key={`${r.kind}-${r.id}`}>
+            <div style={{ flex: 1 }}>
+              <span className="meta" style={{ marginRight: 6 }}>
+                #{rankOffset + index + 1}
+              </span>
+              {showKind ? (
+                <span className="badge" style={{ marginRight: 6 }}>
+                  {PERF_KIND_LABELS[r.kind]}
                 </span>
-                <span>{r.title}</span>
-                <div className="meta" style={{ marginTop: 4 }}>
-                  {r.displayLine}
-                </div>
+              ) : null}
+              <span>{r.title}</span>
+              <div className="meta" style={{ marginTop: 4 }}>
+                {r.displayLine}
               </div>
-            </li>
-          ))}
-        </ol>
-      )}
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

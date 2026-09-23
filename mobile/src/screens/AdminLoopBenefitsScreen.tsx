@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAdminCountry } from '@/context/AdminCountryContext';
@@ -6,6 +6,7 @@ import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { useAdminModuleAccess } from '@/hooks/useAdminModuleAccess';
 import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { AdminPageHeader, ADMIN_THEME } from '@/components/admin/AdminShell';
+import { AdminListPager, ADMIN_LIST_PAGE_SIZE } from '@/components/admin/AdminListPager';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import {
   BENEFIT_KIND_LABELS,
@@ -33,6 +34,7 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [refreshing, setRefreshing] = useState(false);
   const [detailItem, setDetailItem] = useState<BenefitCatalogItem | null>(null);
+  const [page, setPage] = useState(0);
 
   const refresh = useCallback(async () => {
     const [fresh, publishedIndex] = await Promise.all([
@@ -69,6 +71,15 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
     () => [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [items],
   );
+
+  const pagedItems = useMemo(() => {
+    const start = page * ADMIN_LIST_PAGE_SIZE;
+    return sortedItems.slice(start, start + ADMIN_LIST_PAGE_SIZE);
+  }, [sortedItems, page]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [statusFilter, countryCode]);
 
   if (role !== 'ADMIN' || isLoading) {
     if (role !== 'ADMIN') {
@@ -133,6 +144,7 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
               ]}
               onPress={() => {
                 setStatusFilter(f.id);
+                setPage(0);
                 void (async () => {
                   const publishedIndex = await loadPublishedContentIndexFromSnapshot(countryCode);
                   const cached = await peekBenefitCatalog();
@@ -160,7 +172,7 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
               : 'Aucun privilège THE LOOP enregistré pour ce pays.'}
           </Text>
         ) : (
-          sortedItems.map((item) => (
+          pagedItems.map((item) => (
             <Pressable
               key={item.id}
               style={[styles.card, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
@@ -188,6 +200,14 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
             </Pressable>
           ))
         )}
+        <AdminListPager
+          page={page}
+          total={sortedItems.length}
+          pageSize={ADMIN_LIST_PAGE_SIZE}
+          onPageChange={setPage}
+          shell={shell}
+          label="privilèges"
+        />
       </ScrollView>
 
       <Modal visible={Boolean(detailItem)} transparent animationType="fade" onRequestClose={() => setDetailItem(null)}>
