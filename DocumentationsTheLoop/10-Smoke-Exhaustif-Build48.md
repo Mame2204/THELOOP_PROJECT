@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **213 / 372** cases cochées ≈ **57 %** *(23 sept. soir · migration `20260939` OK)* |
+| **Avancement smoke** | **214 / 372** cases cochées ≈ **58 %** *(23 sept. soir · pipeline partenariats 📱🤖 OK)* |
 | **Prochain test (build 48)** | **set_password** recovery 📱🤖 · **activate** invité 🤖 · admin **B0/B2/B3** 💻 |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — checklist QA, pas un numéro de version app |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -60,11 +60,11 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |------|---------------|--------------------------------------|-----------------------------------|---------|
 | **Phase 0** — prérequis | **20** | 0 | 0 | **100 %** |
 | **Phase 1** — retests bloquants *(tableau 7 scénarios)* | 0 | **7** | 0 | **0 %** |
-| **Partie A** — mobile & auth | 166 | **2** | 69 | **70 %** |
+| **Partie A** — mobile & auth | 167 | **2** | 68 | **70 %** |
 | **Partie B** — admin-web | 14 | **2** | 54 | **20 %** |
 | **Partie C** — push & transversal | 12 | 0 | 13 | **48 %** |
 | **Partie D** — régression & parité | 1 | 0 | 19 | **5 %** |
-| **TOTAL checklist** | **213** | **≈ 11** *(voir liste)* | **≈ 159** | **57 %** |
+| **TOTAL checklist** | **214** | **≈ 11** *(voir liste)* | **≈ 158** | **58 %** |
 
 *Total cases = 372 lignes `- [ ]` / `- [x]` · hors cellules `[ ]` des tableaux B1 (comptées à part).*
 
@@ -77,7 +77,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | A2 Membre | 51 | 0 | 7 *(surtout 🤖 parité)* | 88 % |
 | A3 Prime | 30 | **2** *(octroi individuel 📱🤖)* | 3 | 86 % |
 | A4 Partenaire | 40 | 0 | 8 *(🤖 A4-4/5/6 · retraits)* | 83 % |
-| A5 Admin mobile | 14 | 0 | 44 *(sidebar · actions · 🤖)* | 24 % |
+| A5 Admin mobile | 15 | 0 | 43 *(sidebar · actions · 🤖)* | 26 % |
 
 ### Détail Partie B *(admin-web 💻)*
 
@@ -602,8 +602,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | Paramètres | `AdminSuperSettingsScreen` | [x] PASS | [ ] |
 
 ### Hub Demandes (sous-écrans)
-- [x] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter *(20 sept. 2026 · build 48 · **FAIL partiel** · noms « . » au 1er affichage · OK après pull refresh · cache-first)*
-- [ ] **🤖** Idem
+- [x] **📱** `AdminPartnershipsScreen` — partenariats pending / **approuver** / **rejeter** · alertes « inviter depuis Utilisateurs » *(23 sept. 2026 · build 48 · **PASS** · accept + refuse · pas d’e-mail auto — invitation manuelle)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · **PASS** · envoi demande · accept · refuse · alerte invitation e-mail)*
 - [x] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser *(20 sept. 2026 · build 48 · **PACK A5-3 OK** · U18 approuver · U19 refuser+motif · U20 retrait approuvé · U21 retrait refusé)*
 - [ ] **🤖** Idem
 - [ ] **📱** `AdminSuggestionsScreen` — idées communauté
@@ -1008,6 +1008,10 @@ Auth MDP (23 sept. 2026 · build 48) :
   - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
   - **Oubli MDP** : e-mail OK · lien → **page auth-callback 📱🤖** (normal · pas d’auto-app) · **CGU / Politique 📱🤖 PASS**
   - **Pro ? Rejoindre THE LOOP** + **PartnerApply** — **PASS 📱🤖** (demande reçue super admin)
+Partenariats admin mobile (23 sept. 2026 · build 48 · **📱🤖**) :
+  - **PASS** : soumission demande (Auth · iOS + Android) · admin **Approuver** / **Refuser** (iOS + Android)
+  - **PASS** : alertes post-validation (« inviter le contact depuis Utilisateurs · rôle Partenaire ») — **pas** d’envoi e-mail automatique à l’acceptation
+  - **Rappel produit** : e-mail d’invitation = action séparée **Utilisateurs → Inviter par e-mail**
   - **Recovery HTML balises visibles** — fix **api.theloop-app.com/auth/callback** (deploy Render) · **nouvel e-mail** reset (build 48 OK · build 49 = URL dans l’APK)
   - **🤖 Interactions** : favori sans compte · recherche barre · profil contact — **PASS** (23 sept.)
 Privilèges build 48 (23 sept. 2026 · retest testeur) :
