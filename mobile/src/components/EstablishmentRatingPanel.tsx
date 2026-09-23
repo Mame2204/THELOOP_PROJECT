@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-/** Visages 1 → 5 (du moins satisfait au plus satisfait). */
+/** Visages 1 → 5 (du moins satisfait au plus satisfait). Voir `MEMBER_ESTABLISHMENT_RATINGS_ENABLED`. */
 export const RATING_FACE_EMOJIS = ['😞', '😕', '😐', '🙂', '😍'] as const;
 
 const FAB_SIZE = 44;
