@@ -35,7 +35,11 @@ import {
 } from '@/lib/email-auth';
 import { isValidReferralCode } from '@/lib/referral-store';
 import { DEFAULT_COUNTRY_CODE, getCountryLabel, isValidInternationalPhone, normalizeInternationalPhone, type CountryCode, type PhoneDialCode } from '@/lib/countries';
-import { findPendingInviteByEmail, activateInvitedMemberAccount } from '@/lib/admin-invite-store';
+import {
+  checkAdminInviteActivationEligibility,
+  findPendingInviteByEmail,
+  activateInvitedMemberAccount,
+} from '@/lib/admin-invite-store';
 import { accountExistsForEmail } from '@/lib/email-account';
 import {
   isWrongPasswordLoginError,
@@ -406,6 +410,22 @@ export function AuthScreen({ navigation, route }: Props) {
         Alert.alert('Mot de passe', pwdError);
         return;
       }
+      const eligibility = await checkAdminInviteActivationEligibility(emailCheck.email);
+      if (eligibility === 'account_already_active') {
+        Alert.alert(
+          'Compte déjà actif',
+          'Ce compte est déjà activé. Connectez-vous avec votre mot de passe ou utilisez « Mot de passe oublié ».',
+          [
+            { text: 'Annuler', style: 'cancel' },
+            { text: 'Connexion', onPress: () => switchMode('login') },
+          ],
+        );
+        return;
+      }
+      if (eligibility === 'no_pending_invite') {
+        Alert.alert('Invitation introuvable', 'Aucune invitation admin en attente pour cet e-mail.');
+        return;
+      }
       const invite = await findPendingInviteByEmail(emailCheck.email);
       if (!invite) {
         Alert.alert('Invitation introuvable', 'Aucune invitation admin en attente pour cet e-mail.');
@@ -427,6 +447,19 @@ export function AuthScreen({ navigation, route }: Props) {
             await signIn(emailCheck.email, signupPassword);
             Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
             resetToAccueil(navigation);
+            return;
+          }
+
+          if (activated.accountAlreadyActive) {
+            Alert.alert(
+              'Compte déjà actif',
+              activated.error ??
+                'Ce compte est déjà activé. Connectez-vous avec votre mot de passe ou utilisez « Mot de passe oublié ».',
+              [
+                { text: 'Annuler', style: 'cancel' },
+                { text: 'Connexion', onPress: () => switchMode('login') },
+              ],
+            );
             return;
           }
 

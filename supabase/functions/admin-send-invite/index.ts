@@ -155,6 +155,33 @@ Deno.serve(async (req) => {
       Deno.env.get('AUTH_REDIRECT_URL') ||
       'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
 
+    const { data: existingProfile } = await adminClient
+      .from('users')
+      .select('id, account_status')
+      .ilike('email', email)
+      .maybeSingle();
+
+    const existingStatus = String(existingProfile?.account_status ?? '').trim().toLowerCase();
+    if (existingStatus && existingStatus !== 'invited' && existingStatus !== 'deleted') {
+      if (body.inviteId) {
+        await adminClient
+          .from('admin_user_invites')
+          .update({ activated_at: new Date().toISOString() })
+          .eq('id', body.inviteId)
+          .is('activated_at', null);
+      }
+      return new Response(
+        JSON.stringify({
+          error:
+            'Compte déjà actif pour cet e-mail. Utilisez « Reset MDP » depuis la fiche utilisateur.',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
     const metadata: Record<string, unknown> = {
       pending_welcome: true,
       invited_by_admin: true,
@@ -197,7 +224,27 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Compte déjà présent : renvoyer un e-mail de réinitialisation (même UX set_password)
+      if (existingStatus && existingStatus !== 'invited' && existingStatus !== 'deleted') {
+        if (body.inviteId) {
+          await adminClient
+            .from('admin_user_invites')
+            .update({ activated_at: new Date().toISOString() })
+            .eq('id', body.inviteId)
+            .is('activated_at', null);
+        }
+        return new Response(
+          JSON.stringify({
+            error:
+              'Compte déjà actif pour cet e-mail. Utilisez « Reset MDP » depuis la fiche utilisateur.',
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        );
+      }
+
+      // Compte Auth déjà présent (statut invited ou profil absent) : e-mail de réinitialisation
       const recoverRes = await fetch(`${supabaseUrl}/auth/v1/recover`, {
         method: 'POST',
         headers: {

@@ -97,6 +97,30 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { data: profile } = await admin
+      .from('users')
+      .select('account_status')
+      .ilike('email', email)
+      .maybeSingle();
+
+    const accountStatus = String(profile?.account_status ?? '').trim().toLowerCase();
+    if (accountStatus && accountStatus !== 'invited') {
+      if (invite.id) {
+        await admin.rpc('mark_admin_user_invite_activated', {
+          p_invite_id: invite.id,
+          p_email: email,
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          error: 'account_already_active',
+          message:
+            'Ce compte est déjà actif. Connectez-vous avec votre mot de passe ou utilisez « Mot de passe oublié ».',
+        }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const { error: updateErr } = await admin.auth.admin.updateUserById(authUser.id, {
       password,
       email_confirm: true,

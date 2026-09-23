@@ -176,6 +176,36 @@ export async function findPendingInviteByPhone(phone: string): Promise<AdminUser
   return invites.find((i) => !i.activatedAt && phonesEqual(i.phoneNumber, normalized)) ?? null;
 }
 
+export type AdminInviteActivationEligibility =
+  | 'eligible'
+  | 'no_pending_invite'
+  | 'account_already_active';
+
+/** Garde-fou serveur : pas d'activation si le compte public.users est déjà actif. */
+export async function checkAdminInviteActivationEligibility(
+  email: string,
+): Promise<AdminInviteActivationEligibility> {
+  const normalized = normalizeEmail(email);
+  if (!normalized) return 'no_pending_invite';
+
+  if (isSupabaseConfigured() && supabase) {
+    const { data, error } = await supabase.rpc('check_admin_invite_activation_eligibility', {
+      p_email: normalized,
+    });
+    if (!error && typeof data === 'string') {
+      if (data === 'eligible' || data === 'no_pending_invite' || data === 'account_already_active') {
+        return data;
+      }
+    }
+    if (error) {
+      console.warn('[admin-invite-store] check_admin_invite_activation_eligibility:', error.message);
+    }
+  }
+
+  const invite = await findPendingInviteByEmail(normalized);
+  return invite ? 'eligible' : 'no_pending_invite';
+}
+
 export async function findPendingInviteByEmail(email: string): Promise<AdminUserInvite | null> {
   const normalized = normalizeEmail(email);
   if (!normalized) return null;
@@ -373,7 +403,7 @@ export async function activateInvitedMemberAccount(input: {
   email: string;
   password: string;
   inviteId: string;
-}): Promise<{ ok: boolean; error?: string; needsSignUp?: boolean }> {
+}): Promise<{ ok: boolean; error?: string; needsSignUp?: boolean; accountAlreadyActive?: boolean }> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: false, error: 'Supabase requis.' };
   }
@@ -403,6 +433,15 @@ export async function activateInvitedMemberAccount(input: {
     };
     if (response.status === 404 && body.error === 'no_auth_user') {
       return { ok: false, needsSignUp: true };
+    }
+    if (response.status === 409 && body.error === 'account_already_active') {
+      return {
+        ok: false,
+        accountAlreadyActive: true,
+        error:
+          body.message ??
+          'Ce compte est déjà actif. Connectez-vous avec votre mot de passe ou utilisez « Mot de passe oublié ».',
+      };
     }
     if (!response.ok) {
       return { ok: false, error: body.error ?? body.message ?? `Erreur HTTP ${response.status}` };
