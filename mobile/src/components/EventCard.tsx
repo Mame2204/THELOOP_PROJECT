@@ -4,6 +4,7 @@ import { CatalogCoverScrim } from '@/components/DetailHeroScrim';
 import { FavoriteHeartButton } from '@/components/FavoriteHeartButton';
 import { CATALOG_CARD_IMAGE_HEIGHT } from '@/constants/layout';
 import { formatEventCardLocationDisplay } from '@/lib/content-location-utils';
+import { ContentPrivilegeBadge } from '@/components/ContentPrivilegeBadge';
 import { getEventCategoryStyle } from '@/lib/event-styles';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { useCategoryLabels } from '@/context/CategoryLabelsContext';
@@ -16,9 +17,18 @@ interface EventCardProps {
   onPress: () => void;
   onToggleFavorite: () => void;
   statusLabel?: 'Passé' | 'Aujourd\'hui' | null;
+  /** Au moins un privilège catalogue actif lié à cet événement. */
+  hasLinkedPrivilege?: boolean;
 }
 
-export function EventCard({ event, isFavorite, onPress, onToggleFavorite, statusLabel }: EventCardProps) {
+export function EventCard({
+  event,
+  isFavorite,
+  onPress,
+  onToggleFavorite,
+  statusLabel,
+  hasLinkedPrivilege = false,
+}: EventCardProps) {
   const { theme } = useMemberTheme();
   const { eventLabel, eventEmoji } = useCategoryLabels();
   const style = getEventCategoryStyle(event.category);
@@ -55,6 +65,9 @@ export function EventCard({ event, isFavorite, onPress, onToggleFavorite, status
                     {statusLabel}
                   </Text>
                 </View>
+              ) : null}
+              {hasLinkedPrivilege ? (
+                <ContentPrivilegeBadge variant="overlay" accent={theme.colors.accent} />
               ) : null}
             </View>
             <FavoriteHeartButton

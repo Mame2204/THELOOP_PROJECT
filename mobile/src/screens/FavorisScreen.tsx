@@ -12,6 +12,7 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAppGates } from '@/context/AppGatesContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
+import { useContentIdsWithBenefits } from '@/hooks/useContentIdsWithBenefits';
 import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { useScrollContentContainerStyle } from '@/hooks/useScrollContentContainerStyle';
 import {
@@ -55,6 +56,7 @@ export function FavorisScreen({ navigation }: Props) {
     toggleEventFavorite,
     toggleLocationFavorite,
   } = useFavorites();
+  const { hasBenefit } = useContentIdsWithBenefits();
 
   useFocusLoad(
     async () => {
@@ -207,6 +209,7 @@ export function FavorisScreen({ navigation }: Props) {
                 event={e}
                 isFavorite={isEventFavorite(e.id)}
                 statusLabel={getEventStatusLabel(e)}
+                hasLinkedPrivilege={hasBenefit(e.id, 'event')}
                 onPress={() => navigation.navigate('EventDetail', { slug: e.slug })}
                 onToggleFavorite={() => void toggleEventFavorite(e.id)}
               />
@@ -235,6 +238,7 @@ export function FavorisScreen({ navigation }: Props) {
             <SpotCard
               spot={loc}
               isFavorite={isLocationFavorite(loc.id)}
+              hasLinkedPrivilege={hasBenefit(loc.id, item.type === 'tool' ? 'tool' : 'spot')}
               onPress={() => navigation.navigate('SpotDetail', { slug: loc.slug })}
               onToggleFavorite={() =>
                 void toggleLocationFavorite(loc.id, { kind: item.type === 'tool' ? 'tool' : 'spot' })

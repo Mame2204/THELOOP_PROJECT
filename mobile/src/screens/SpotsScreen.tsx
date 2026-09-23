@@ -8,6 +8,7 @@ import { useContent } from '@/context/ContentContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
+import { useContentIdsWithBenefits } from '@/hooks/useContentIdsWithBenefits';
 import { useShuffleOnFocus } from '@/hooks/useShuffleOnFocus';
 import { filterLocationsByQuery } from '@/lib/search-utils';
 import { filterSpotsByActiveCategories } from '@/lib/category-visibility';
@@ -37,6 +38,7 @@ export function SpotsScreen({ navigation }: Props) {
 
   const openFavoritesSignup = usePromptFavoritesSignup();
   const shuffleSeed = useShuffleOnFocus();
+  const { hasBenefit } = useContentIdsWithBenefits();
 
   const { ready: categoriesReady, revision, activeSpotFilter, inactiveSpotFilter } = useCategoryLabels();
 
@@ -120,6 +122,7 @@ export function SpotsScreen({ navigation }: Props) {
         <SpotCard
           spot={item}
           isFavorite={isLocationFavorite(item.id)}
+          hasLinkedPrivilege={hasBenefit(item.id, 'spot')}
           onPress={() => navigation.navigate('SpotDetail', { slug: item.slug })}
           onToggleFavorite={() => onFavorite(item.id)}
         />

@@ -16,6 +16,8 @@ import { useAdminModuleAccess } from '@/hooks/useAdminModuleAccess';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
 import { AdminActionIcon } from '@/components/admin/AdminActionIcon';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
+import { ContentPrivilegeBadge } from '@/components/ContentPrivilegeBadge';
+import { useContentIdsWithBenefits } from '@/hooks/useContentIdsWithBenefits';
 import { PartnerSubmissionChoiceModal } from '@/components/PartnerSubmissionChoiceModal';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -35,6 +37,7 @@ export function AdminLoopContentScreen({ navigation }: Props) {
   const { shell } = useMemberTheme();
   const { allowed, isLoading, permissionLabel } = useAdminModuleAccess('content');
   const { refresh } = useContent();
+  const { hasBenefit } = useContentIdsWithBenefits({ enabled: role === 'ADMIN' });
   const [tab, setTab] = useState<Tab>('all');
   const [filter, setFilter] = useState<Filter>('all');
   const [items, setItems] = useState<Awaited<ReturnType<typeof buildTeamAdminContentList>>['events']>([]);
@@ -229,6 +232,9 @@ export function AdminLoopContentScreen({ navigation }: Props) {
           <View key={item.id} style={adminCardStyle(shell)}>
             <View style={styles.cardTop}>
               <Text style={[styles.cardTitle, { color: shell.pageTitle }]} numberOfLines={1}>{item.title}</Text>
+              {catalogKind && hasBenefit(item.id, toolIds.has(item.id) ? 'tool' : catalogKind === 'event' ? 'event' : 'spot') ? (
+                <ContentPrivilegeBadge variant="inline" accent={ADMIN_THEME.accent} />
+              ) : null}
               <View style={[styles.statusPill, { backgroundColor: statusColor(item.contentStatus) + '22' }]}>
                 <Text style={{ color: statusColor(item.contentStatus), fontSize: 9, fontWeight: '800' }}>
                   {CONTENT_STATUS_LABELS[item.contentStatus]}
