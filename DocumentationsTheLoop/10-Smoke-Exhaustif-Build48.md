@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **212 / 372** cases cochées ≈ **57 %** *(23 sept. soir)* |
+| **Avancement smoke** | **213 / 372** cases cochées ≈ **57 %** *(23 sept. soir · migration `20260939` OK)* |
 | **Prochain test (build 48)** | **set_password** recovery 📱🤖 · **activate** invité 🤖 · admin **B0/B2/B3** 💻 |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — checklist QA, pas un numéro de version app |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -58,13 +58,13 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Bloc | Cases cochées | En attente build 49+ *(non cochées)* | Reste à tester *(build 48 / web)* | % coché |
 |------|---------------|--------------------------------------|-----------------------------------|---------|
-| **Phase 0** — prérequis | 19 | 0 | 1 *(migration `20260939`)* | **95 %** |
+| **Phase 0** — prérequis | **20** | 0 | 0 | **100 %** |
 | **Phase 1** — retests bloquants *(tableau 7 scénarios)* | 0 | **7** | 0 | **0 %** |
 | **Partie A** — mobile & auth | 166 | **2** | 69 | **70 %** |
 | **Partie B** — admin-web | 14 | **2** | 54 | **20 %** |
 | **Partie C** — push & transversal | 12 | 0 | 13 | **48 %** |
 | **Partie D** — régression & parité | 1 | 0 | 19 | **5 %** |
-| **TOTAL checklist** | **212** | **≈ 11** *(voir liste)* | **≈ 156** | **57 %** |
+| **TOTAL checklist** | **213** | **≈ 11** *(voir liste)* | **≈ 159** | **57 %** |
 
 *Total cases = 372 lignes `- [ ]` / `- [x]` · hors cellules `[ ]` des tableaux B1 (comptées à part).*
 
@@ -106,7 +106,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - **Parité 🤖** : nombreuses lignes « Idem » Android (A2 fiches · A4 soumissions/retraits · A5 admin).
 - **Admin-web** : session 15 min · B3 gates · B5 campagnes push · B7 TEAMS · B9 admin délégué · actions clés B1 (Insights, Users actions, Privilèges…).
 - **Partie C–D** : push planifié · mailto support · parité iPhone/Android · régression rapide.
-- **Ops** : migration **`20260939`** Supabase + `configure-auth-invite-email.cmd` *(e-mail invite sans lien)*.
+- **Ops** : `configure-auth-invite-email.cmd` *(e-mail invite sans lien)* · redeploy Edge `member-activate-invite` si pas déjà fait après migration.
 
 ### Ce qui est **OK** sur build **48** *(rappel invite)*
 
@@ -299,7 +299,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
-- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
+- [x] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(23 sept. 2026 · **OK Supabase prod** · redeploy Edge `member-activate-invite` si changement post-migration)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -975,7 +975,8 @@ Android (23 sept. 2026 · build 48 · suite) :
   - **Déconnexion** — **PASS**
 Admin-web B4 Users (23 sept. 2026 · testeur) :
   - **PASS 💻** (soir) : Inviter · e-mail · activation **web** + **in-app** (« Activer un compte invité par l’équipe ») · deploy Edge 4/4 · Render auth-callback
-  - **À faire** : `configure-auth-invite-email.cmd` (nouveau texte sans lien URL en clair) · migration `20260939` · waitlist non retestée
+  - **À faire** : `configure-auth-invite-email.cmd` (nouveau texte sans lien URL en clair) · waitlist non retestée
+  - **Migration `20260939`** — **OK Supabase prod** *(23 sept. 2026 · testeur)*
   - **Oubli MDP** : toujours **KO** (mobile · voir A4 set_password)
 Admin-web B6 Contenu (23 sept. 2026 · testeur) :
   - **PASS 💻** : filtres events / spots / outils / marché · création event / spot / outil
@@ -1004,6 +1005,7 @@ Supabase prod (23 sept. 2026 · testeur) :
   - Migrations Phase 0 : **20260916** (push failed · support email) · **20260918** partner accept catalog · **20260919** speakers title · **20260925** draw_city — **OK**
   - **20260935** individual grant materialize — **OK**
   - **20260936** partner validation match — **OK** → retest octroi individuel après **build mobile 49+**
+  - **20260939** invite default names by role — **OK** *(23 sept. 2026)*
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
