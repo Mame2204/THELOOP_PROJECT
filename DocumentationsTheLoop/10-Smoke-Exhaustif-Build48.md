@@ -46,14 +46,71 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **205 / 371** cases cochées ≈ **55 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
-| **Prochain test** | **📱 A4 set_password** (oubli MDP) · **💻 B4 waitlist** · build **49+** (deep link connexion post-invite · octroi · à la une mobile) |
-| **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
+| **Avancement smoke** | **212 / 372** cases cochées ≈ **57 %** *(23 sept. soir)* |
+| **Prochain test (build 48)** | **set_password** recovery 📱🤖 · **activate** invité 🤖 · admin **B0/B2/B3** 💻 |
+| **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — checklist QA, pas un numéro de version app |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
-| **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
-| **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
-| **Reporté build 49+** | LoopX · octroi individuel · **Accueil slider À la une** (migration `20260937`) · événements sans date (fallback app) · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 |
-| **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
+| **Règle session** | Bug identifié → noter FAIL · fix PR · retest sur le **build indiqué** |
+
+> **Légende colonnes :** une **case cochée** = testée et OK sur le build indiqué (48 ou 49). **Attente build 49+** = case **non cochée** volontairement jusqu’au prochain binaire. **Reste à tester** = faisable sur **build 48** (ou web) sans attendre le 49.
+
+### Synthèse globale (4 colonnes)
+
+| Bloc | Cases cochées | En attente build 49+ *(non cochées)* | Reste à tester *(build 48 / web)* | % coché |
+|------|---------------|--------------------------------------|-----------------------------------|---------|
+| **Phase 0** — prérequis | 19 | 0 | 1 *(migration `20260939`)* | **95 %** |
+| **Phase 1** — retests bloquants *(tableau 7 scénarios)* | 0 | **7** | 0 | **0 %** |
+| **Partie A** — mobile & auth | 166 | **2** | 69 | **70 %** |
+| **Partie B** — admin-web | 14 | **2** | 54 | **20 %** |
+| **Partie C** — push & transversal | 12 | 0 | 13 | **48 %** |
+| **Partie D** — régression & parité | 1 | 0 | 19 | **5 %** |
+| **TOTAL checklist** | **212** | **≈ 11** *(voir liste)* | **≈ 156** | **57 %** |
+
+*Total cases = 372 lignes `- [ ]` / `- [x]` · hors cellules `[ ]` des tableaux B1 (comptées à part).*
+
+### Détail Partie A *(mobile)*
+
+| Section | Cochées | Attente 49+ | Reste (48) | % |
+|---------|---------|-------------|------------|---|
+| A0 System Gate | 6 | 0 | 0 | 100 % |
+| A1 Auth / invite / recovery | 25 | 0 | 7 *(🤖 activate · set_password recovery)* | 78 % |
+| A2 Membre | 51 | 0 | 7 *(surtout 🤖 parité)* | 88 % |
+| A3 Prime | 30 | **2** *(octroi individuel 📱🤖)* | 3 | 86 % |
+| A4 Partenaire | 40 | 0 | 8 *(🤖 A4-4/5/6 · retraits)* | 83 % |
+| A5 Admin mobile | 14 | 0 | 44 *(sidebar · actions · 🤖)* | 24 % |
+
+### Détail Partie B *(admin-web 💻)*
+
+| Section | Cochées | Attente 49+ | Reste (48) | % |
+|---------|---------|-------------|------------|---|
+| B0 Session | 2 | 0 | 3 | 40 % |
+| B1 Navigation *(cellules table)* | *(🤖✓ routes)* | — | actions clés par page | partiel |
+| B2 Demandes / modération | 4 | **2** *(valider spot · filtres · PR #7)* | 3 | 24 % |
+| B3 Paramètres | 0 | 0 | 5 | 0 % |
+| B4 Users · PASS · Paiements | 5 | 0 | 6 | 45 % |
+| B5 Push admin | 0 | 0 | 8 | 0 % |
+| B6 Contenu | 3 | 0 | 4 | 43 % |
+| B7–B9 Privilèges · TEAMS · délégué | 0 | 0 | 17 | 0 % |
+
+### Liste — **non cochées** · en attente **build 49+** *(priorité binaire)*
+
+1. **Phase 1** — les **7** retests bloquants (push partenaire · retraits · tirage · privilèges · modération sans titre).
+2. **A3** — **octroi individuel** (validation partenaire après scan) 📱 + 🤖 *(SQL OK · PR mobile)*.
+3. **B2** — **Valider** spot + notif partenaire · filtres modération *(PR #7)*.
+4. **A5-U23** — octroi PASS manuel admin mobile *(recherche membre · PR #7)* — case smoke dédiée.
+5. **Retests** *(souvent déjà cochées « BLOCKED » sur 48)* à **refaire sur 49** : LoopX / contenu prime Agenda·Spots · **slider Accueil « À la une »** 📱🤖 · formulaire **invite enrichi** (prénom/nom) · retour paiement Android **PR #9** · deep link **connexion post-invite**.
+
+### Liste — **reste à tester** *(build 48 ou web — sans attendre 49)*
+
+- **Auth** : `set_password` après mail recovery 📱🤖 · **activate** invité 🤖 · `PartnerLoginScreen` jeton SPOT.
+- **Parité 🤖** : nombreuses lignes « Idem » Android (A2 fiches · A4 soumissions/retraits · A5 admin).
+- **Admin-web** : session 15 min · B3 gates · B5 campagnes push · B7 TEAMS · B9 admin délégué · actions clés B1 (Insights, Users actions, Privilèges…).
+- **Partie C–D** : push planifié · mailto support · parité iPhone/Android · régression rapide.
+- **Ops** : migration **`20260939`** Supabase + `configure-auth-invite-email.cmd` *(e-mail invite sans lien)*.
+
+### Ce qui est **OK** sur build **48** *(rappel invite)*
+
+- Waitlist + **Inviter** 💻 · activation **in-app** 📱 · e-mail invite informatif *(après sync template)* · mot de passe oublié **e-mail reçu** 📱🤖 · Phase 0 env + gates.
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
 
@@ -690,7 +747,7 @@ Liens Param. → pages satellites :
 ### Users
 - [ ] **💻** Pagination · recherche
 - [ ] **💻** Éditer profil · rôle · suspendre
-- [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
+- [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · e-mail **informatif** sans lien · activation **in-app** « Activer un compte invité » · `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
 ### PASS
