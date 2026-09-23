@@ -1,6 +1,7 @@
 import type { BenefitCatalogItem } from '@/lib/benefit-catalog-store';
 import {
   catalogItemMatchesContentBenefit,
+  contentHasLinkedActiveBenefit,
   offeringMatchesContentBenefit,
   resolveContentBenefitLookupIds,
 } from '@/lib/content-benefits-index';
@@ -100,6 +101,20 @@ describe('offeringMatchesContentBenefit', () => {
         'event',
       ),
     ).toBe(true);
+  });
+});
+
+describe('contentHasLinkedActiveBenefit', () => {
+  const eventId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+
+  it('matche UUID et alias catalog-event', () => {
+    const ids = new Set([`catalog-event-${eventId}`]);
+    expect(contentHasLinkedActiveBenefit(ids, eventId, 'event')).toBe(true);
+    expect(contentHasLinkedActiveBenefit(ids, `catalog-event-${eventId}`, 'event')).toBe(true);
+  });
+
+  it('retourne false si l’index est vide', () => {
+    expect(contentHasLinkedActiveBenefit(new Set(), eventId, 'event')).toBe(false);
   });
 });
 

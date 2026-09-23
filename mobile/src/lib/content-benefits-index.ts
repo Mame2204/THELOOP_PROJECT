@@ -34,6 +34,16 @@ export function resolveContentBenefitLookupIds(
   return [...ids];
 }
 
+/** True si le contenu est référencé par au moins un privilège catalogue actif (index local). */
+export function contentHasLinkedActiveBenefit(
+  ids: Set<string>,
+  contentId: string,
+  contentType?: ContentBenefitContentType,
+): boolean {
+  if (!contentId.trim() || ids.size === 0) return false;
+  return resolveContentBenefitLookupIds(contentId, contentType).some((id) => ids.has(id));
+}
+
 export function offeringMatchesContentBenefit(
   offering: BenefitOfferingPartner,
   lookupIds: Set<string>,
@@ -81,8 +91,8 @@ export async function listContentIdsWithBenefits(): Promise<Set<string>> {
       const contentId = p.contentId?.trim();
       if (!contentId) continue;
       ids.add(contentId);
-      if (p.contentType === 'event') {
-        for (const alias of resolveContentBenefitLookupIds(contentId, 'event')) {
+      if (p.contentType === 'event' || p.contentType === 'spot' || p.contentType === 'tool') {
+        for (const alias of resolveContentBenefitLookupIds(contentId, p.contentType)) {
           ids.add(alias);
         }
       }

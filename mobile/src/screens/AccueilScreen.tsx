@@ -35,14 +35,13 @@ import {
   getAppSections,
   type AccueilBlocksConfig,
 } from '@/lib/app-sections-store';
-import { listContentIdsWithBenefits } from '@/lib/content-benefits-index';
+import { useContentIdsWithBenefits } from '@/hooks/useContentIdsWithBenefits';
 import { subscribeHomeRefresh } from '@/lib/home-refresh';
 import { listLoopWalks, type LoopWalk } from '@/lib/loop-walks-store';
 import { filterPublicWalks } from '@/lib/walk-public-visibility';
 import { countUserActiveBenefits } from '@/lib/prime-benefits-store';
 import { filterEventsByQuery, filterLocationsByQuery } from '@/lib/search-utils';
 import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
-import { isPassPurchaseUiEnabled } from '@/lib/pass-purchase-ui';
 import { isAuthenticated } from '@/types';
 import type { TabScreenProps } from '@/navigation/types';
 
@@ -64,8 +63,8 @@ function pickWelcomeLine(seed: string): string {
 export function AccueilScreen({ navigation }: Props) {
   const { user, role } = useAuthContext();
   const { gates } = useAppGates();
-  const showPrivilegeBadges = isPassPurchaseUiEnabled(gates);
   const { shell, theme } = useMemberTheme();
+  const { hasBenefit } = useContentIdsWithBenefits();
   const { isUnavailable, publicEvents, getHomeLocations, activeCountryCode, refresh: refreshContent } = useContent();
   const { isEventFavorite, isLocationFavorite, toggleEventFavorite, toggleLocationFavorite } =
     useFavorites();
@@ -75,7 +74,6 @@ export function AccueilScreen({ navigation }: Props) {
   const [activeBenefits, setActiveBenefits] = useState(0);
   const [heroCollapsed, setHeroCollapsed] = useState(false);
   const [blocks, setBlocks] = useState<AccueilBlocksConfig>(DEFAULT_SECTIONS.accueil);
-  const [benefitIds, setBenefitIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [walkCatalog, setWalkCatalog] = useState<LoopWalk[]>([]);
@@ -96,15 +94,13 @@ export function AccueilScreen({ navigation }: Props) {
 
   const reloadHome = useCallback(async (force = false) => {
     if (force) setWalksLoading(true);
-    const [sections, ids, walks, corner, chronique] = await Promise.all([
+    const [sections, walks, corner, chronique] = await Promise.all([
       getAppSections(activeCountryCode, { force }),
-      listContentIdsWithBenefits(),
       listLoopWalks(activeCountryCode, { force }),
       import('@/lib/creator-corner-store').then((m) => m.loadActiveCreatorCorner(activeCountryCode, { force })),
       import('@/lib/chronique-store').then((m) => m.loadActiveChronique(activeCountryCode, { force })),
     ]);
     setBlocks(sections?.accueil ?? DEFAULT_SECTIONS.accueil);
-    setBenefitIds(ids instanceof Set ? ids : new Set());
     const safeWalks = Array.isArray(walks) ? walks : [];
     setWalkCatalog(safeWalks);
     setWalkHits(
@@ -425,57 +421,42 @@ export function AccueilScreen({ navigation }: Props) {
                     <Text style={[styles.groupLabel, { color: c.accent }]}>Agenda</Text>
                   ) : null}
                   {searchResults.events.map((e) => (
-                    <View key={`e-${e.id}`} style={styles.cardWrap}>
-                      {showPrivilegeBadges && benefitIds.has(e.id) ? (
-                        <View style={[styles.benefitBadge, { backgroundColor: c.accent }]}>
-                          <Text style={styles.benefitBadgeText}>Privilèges</Text>
-                        </View>
-                      ) : null}
-                      <EventCard
-                        event={e}
-                        isFavorite={isEventFavorite(e.id)}
-                        onPress={() => navigation.navigate('EventDetail', { slug: e.slug })}
-                        onToggleFavorite={() => onFavoriteEvent(e.id)}
-                      />
-                    </View>
+                    <EventCard
+                      key={`e-${e.id}`}
+                      event={e}
+                      isFavorite={isEventFavorite(e.id)}
+                      hasLinkedPrivilege={hasBenefit(e.id, 'event')}
+                      onPress={() => navigation.navigate('EventDetail', { slug: e.slug })}
+                      onToggleFavorite={() => onFavoriteEvent(e.id)}
+                    />
                   ))}
 
                   {searchResults.spots.length > 0 ? (
                     <Text style={[styles.groupLabel, { color: c.accent }]}>Spots</Text>
                   ) : null}
                   {searchResults.spots.map((s) => (
-                    <View key={`s-${s.id}`} style={styles.cardWrap}>
-                      {showPrivilegeBadges && benefitIds.has(s.id) ? (
-                        <View style={[styles.benefitBadge, { backgroundColor: c.accent }]}>
-                          <Text style={styles.benefitBadgeText}>Privilèges</Text>
-                        </View>
-                      ) : null}
-                      <SpotCard
-                        spot={s}
-                        isFavorite={isLocationFavorite(s.id)}
-                        onPress={() => navigation.navigate('SpotDetail', { slug: s.slug })}
-                        onToggleFavorite={() => onFavoriteSpot(s.id)}
-                      />
-                    </View>
+                    <SpotCard
+                      key={`s-${s.id}`}
+                      spot={s}
+                      isFavorite={isLocationFavorite(s.id)}
+                      hasLinkedPrivilege={hasBenefit(s.id, 'spot')}
+                      onPress={() => navigation.navigate('SpotDetail', { slug: s.slug })}
+                      onToggleFavorite={() => onFavoriteSpot(s.id)}
+                    />
                   ))}
 
                   {searchResults.tools.length > 0 ? (
                     <Text style={[styles.groupLabel, { color: c.accent }]}>Outils</Text>
                   ) : null}
                   {searchResults.tools.map((t) => (
-                    <View key={`t-${t.id}`} style={styles.cardWrap}>
-                      {showPrivilegeBadges && benefitIds.has(t.id) ? (
-                        <View style={[styles.benefitBadge, { backgroundColor: c.accent }]}>
-                          <Text style={styles.benefitBadgeText}>Privilèges</Text>
-                        </View>
-                      ) : null}
-                      <SpotCard
-                        spot={t}
-                        isFavorite={isLocationFavorite(t.id)}
-                        onPress={() => navigation.navigate('SpotDetail', { slug: t.slug })}
-                        onToggleFavorite={() => onFavoriteSpot(t.id, 'tool')}
-                      />
-                    </View>
+                    <SpotCard
+                      key={`t-${t.id}`}
+                      spot={t}
+                      isFavorite={isLocationFavorite(t.id)}
+                      hasLinkedPrivilege={hasBenefit(t.id, 'tool')}
+                      onPress={() => navigation.navigate('SpotDetail', { slug: t.slug })}
+                      onToggleFavorite={() => onFavoriteSpot(t.id, 'tool')}
+                    />
                   ))}
 
                   {searchResults.walks.length > 0 ? (
@@ -677,20 +658,4 @@ const styles = StyleSheet.create({
   },
   hitTitle: { fontSize: 14, fontWeight: '700' },
   hitMeta: { marginTop: 4, fontSize: 12, lineHeight: 16 },
-  cardWrap: { position: 'relative' },
-  benefitBadge: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    zIndex: 4,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  benefitBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.4,
-  },
 });
