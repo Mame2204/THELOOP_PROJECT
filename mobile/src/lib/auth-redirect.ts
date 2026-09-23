@@ -2,6 +2,8 @@ import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 
 export const THELOOP_AUTH_CALLBACK = 'theloop://auth/callback';
+/** Après activation mot de passe sur le web — ouvre l’écran Connexion (pas set_password). */
+export const THELOOP_AUTH_LOGIN = 'theloop://auth/login';
 
 /** Évite Storage Supabase (text/plain → balises visibles). Même hôte que paiement /payment/success. */
 const DEFAULT_MEMBER_AUTH_CALLBACK_URL = 'https://api.theloop-app.com/auth/callback';
@@ -124,6 +126,7 @@ export function isUsingExpoGoAuthRedirect(): boolean {
 export function getSupabaseRedirectUrlChecklist(): string[] {
   const urls = new Set<string>([
     THELOOP_AUTH_CALLBACK,
+    THELOOP_AUTH_LOGIN,
     'theloop://**',
     'exp://**',
   ]);
