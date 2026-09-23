@@ -305,7 +305,8 @@ export async function loadToolForEdit(id: string): Promise<ToolEditorForm | null
 
 export async function createEvent(form: EventEditorForm): Promise<EditorResult> {
   const payload = eventRpcPayload(form);
-  payload.starts_at = fromLocalDatetime(toLocalDatetime(form.startsAt));
+  const localStart = toLocalDatetime(form.startsAt);
+  payload.starts_at = fromLocalDatetime(localStart || toLocalDatetime(new Date().toISOString()));
   if (form.endsAt.trim()) {
     payload.ends_at = fromLocalDatetime(toLocalDatetime(form.endsAt));
   }
@@ -339,7 +340,9 @@ export async function updateEvent(id: string, form: EventEditorForm): Promise<Ed
     .update({
       title: form.title.trim(),
       description: form.description.trim(),
-      start_date: fromLocalDatetime(toLocalDatetime(form.startsAt)),
+      start_date: fromLocalDatetime(
+        toLocalDatetime(form.startsAt) || toLocalDatetime(new Date().toISOString()),
+      ),
       end_date: form.endsAt.trim() ? fromLocalDatetime(toLocalDatetime(form.endsAt)) : null,
       custom_location_name: form.venueName.trim(),
       banner_url: form.coverImageUrl.trim() || null,
