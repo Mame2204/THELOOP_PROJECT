@@ -33,7 +33,7 @@ Cocher `- [ ]` → `- [x]`. Noter PASS/FAIL dans le **Journal** (fin de doc).
 | Prime | `prime@theloop.gn` | PASS actif |
 | Partenaire | `contact@lavenue.gn` | Espace Pro |
 
-Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1234`
+Jetons démo : VIP `INVIT-DEMO-2026` · OTP BL `1234` *(connexion partenaire = e-mail + MDP · plus de jeton SPOT)*
 
 ---
 
@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **213 / 372** cases cochées ≈ **57 %** *(23 sept. soir · migration `20260939` OK)* |
+| **Avancement smoke** | **214 / 370** cases cochées ≈ **58 %** *(23 sept. soir · migration `20260939` OK · retrait jeton SPOT)* |
 | **Prochain test (build 48)** | **set_password** recovery 📱🤖 · **activate** invité 🤖 · admin **B0/B2/B3** 💻 |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — checklist QA, pas un numéro de version app |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -60,20 +60,20 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |------|---------------|--------------------------------------|-----------------------------------|---------|
 | **Phase 0** — prérequis | **20** | 0 | 0 | **100 %** |
 | **Phase 1** — retests bloquants *(tableau 7 scénarios)* | 0 | **7** | 0 | **0 %** |
-| **Partie A** — mobile & auth | 166 | **2** | 69 | **70 %** |
+| **Partie A** — mobile & auth | 167 | **2** | 67 | **71 %** |
 | **Partie B** — admin-web | 14 | **2** | 54 | **20 %** |
 | **Partie C** — push & transversal | 12 | 0 | 13 | **48 %** |
 | **Partie D** — régression & parité | 1 | 0 | 19 | **5 %** |
-| **TOTAL checklist** | **213** | **≈ 11** *(voir liste)* | **≈ 159** | **57 %** |
+| **TOTAL checklist** | **214** | **≈ 11** *(voir liste)* | **≈ 156** | **58 %** |
 
-*Total cases = 372 lignes `- [ ]` / `- [x]` · hors cellules `[ ]` des tableaux B1 (comptées à part).*
+*Total cases = 370 lignes `- [ ]` / `- [x]` · hors cellules `[ ]` des tableaux B1 (comptées à part).*
 
 ### Détail Partie A *(mobile)*
 
 | Section | Cochées | Attente 49+ | Reste (48) | % |
 |---------|---------|-------------|------------|---|
 | A0 System Gate | 6 | 0 | 0 | 100 % |
-| A1 Auth / invite / recovery | 25 | 0 | 7 *(🤖 activate · set_password recovery)* | 78 % |
+| A1 Auth / invite / recovery | 26 | 0 | 5 *(set_password recovery · parité restante)* | 84 % |
 | A2 Membre | 51 | 0 | 7 *(surtout 🤖 parité)* | 88 % |
 | A3 Prime | 30 | **2** *(octroi individuel 📱🤖)* | 3 | 86 % |
 | A4 Partenaire | 40 | 0 | 8 *(🤖 A4-4/5/6 · retraits)* | 83 % |
@@ -102,7 +102,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 ### Liste — **reste à tester** *(build 48 ou web — sans attendre 49)*
 
-- **Auth** : `set_password` après mail recovery 📱🤖 · **activate** invité 🤖 · `PartnerLoginScreen` jeton SPOT.
+- **Auth** : `set_password` après mail recovery 📱🤖 *(oubli MDP étapes 2 web/app)*.
 - **Parité 🤖** : nombreuses lignes « Idem » Android (A2 fiches · A4 soumissions/retraits · A5 admin).
 - **Admin-web** : session 15 min · B3 gates · B5 campagnes push · B7 TEAMS · B9 admin délégué · actions clés B1 (Insights, Users actions, Privilèges…).
 - **Partie C–D** : push planifié · mailto support · parité iPhone/Android · régression rapide.
@@ -351,7 +351,6 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | **Oubli MDP — étape 1** | Auth → mot de passe oublié → mode **reset** | Tu **demandes** le mail | **reset** 📱/🤖 *(coché = mail reçu)* |
 | **Oubli MDP — étape 2 web** | Tu **ouvres le lien** du mail → page **`/auth/callback`** (navigateur) · choix app/web · **nouveau MDP sur le web** | Oui | **set_password** *(page recovery rendue)* |
 | **Oubli MDP — étape 2 app** | Même lien → **« J’ai THE LOOP — ouvrir l’application »** → écran Auth mode **set_password** dans l’app | Oui | **recovery → set_password in-app** |
-| **Partenaire Pro (jeton SPOT)** | Écran **`PartnerLoginScreen`** · code type **`SPOT-XXXX-YYYY`** (carte Pro · pas le MDP membre) | Optionnel (deep link) | **PartnerLogin** *(souvent non testé : les partenaires passent surtout par **e-mail + MDP** → voir **A4**)* |
 
 > **Ce qui est déjà validé en session (journal)** : oubli MDP → **mail OK** · lien → **page auth-callback s’affiche** 📱🤖.  
 > **Ce qui n’est pas encore coché dans la checklist** : saisie du **nouveau mot de passe** jusqu’au bout (web **ou** app) — d’où les 4 lignes **set_password** encore vides.
@@ -364,7 +363,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
-- [ ] **🤖** Idem *(même parcours que 📱 · cocher si tu as refait « Activer un compte invité » sur Android build 48)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · activation invité in-app OK)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
 - [ ] **📱** Mode **set_password** — **étape 2 oubli MDP (web)** : après le mail, sur **`api.theloop-app.com/auth/callback`**, formulaire nouveau MDP · boutons OK · pas de HTML brut *(≠ mode reset dans l’app · retest avec **nouvel** e-mail post-deploy Render)*
@@ -385,9 +384,6 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android)*
-- [ ] **📱** `PartnerLoginScreen` — connexion **jeton SPOT** (`SPOT-XXXX-YYYY` · ex. démo `SPOT-DEMO-2026`) · accès espace Pro **sans** e-mail membre *(écran présent dans l’app · peu d’entrée UI visible — test manuel / deep link ; **non bloquant** si partenaires utilisent `contact@…` + MDP en A4)*
-- [ ] **🤖** Idem
-
 ### Bloqué sans connexion
 - [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS · pile Auth seule)*

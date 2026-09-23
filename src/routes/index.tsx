@@ -16,7 +16,6 @@ import { AbonnementPage } from '@/pages/public/AbonnementPage';
 import { PrimePresentationPage } from '@/pages/prime/PrimePresentationPage';
 
 // Partners
-import { PartnerLoginPage } from '@/pages/partners/PartnerLoginPage';
 import { PartnerApplicationPage } from '@/pages/partners/PartnerApplicationPage';
 import { PartnerHubPage } from '@/pages/partners/PartnerHubPage';
 import { PartnerStatsPage } from '@/pages/partners/PartnerStatsPage';
@@ -95,12 +94,12 @@ export const router = createBrowserRouter([
       { path: 'black-loop', element: <Navigate to={PASS_PURCHASE_UI_ENABLED ? '/prime' : '/'} replace /> },
       { path: 'black-loop/repertoire', element: <Navigate to={PASS_PURCHASE_UI_ENABLED ? '/prime' : '/'} replace /> },
       { path: 'black-loop/conciergerie', element: <Navigate to={PASS_PURCHASE_UI_ENABLED ? '/prime' : '/'} replace /> },
-      { path: 'partenaires', element: <PartnerLoginPage /> },
+      { path: 'partenaires', element: <Navigate to="/" replace /> },
       { path: 'partenaires/demande', element: <PartnerApplicationPage /> },
       {
         path: 'espace-partenaire',
         element: (
-          <ProtectedRoute allowedRoles={['PARTNER', 'ADMIN']} redirectTo="/partenaires">
+          <ProtectedRoute allowedRoles={['PARTNER', 'ADMIN']} redirectTo="/">
             <PartnerHubPage />
           </ProtectedRoute>
         ),
@@ -108,7 +107,7 @@ export const router = createBrowserRouter([
       {
         path: 'espace-partenaire/stats',
         element: (
-          <ProtectedRoute allowedRoles={['PARTNER', 'ADMIN']} redirectTo="/partenaires">
+          <ProtectedRoute allowedRoles={['PARTNER', 'ADMIN']} redirectTo="/">
             <PartnerStatsPage />
           </ProtectedRoute>
         ),

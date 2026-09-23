@@ -22,7 +22,6 @@ import {
 } from '@/lib/demo-auth';
 import { activatePrimeInvitation } from '@/lib/admin-store';
 import type { PrimeActivationProfile, PrimePlan } from '@/types/prime';
-import { findActiveToken } from '@/lib/admin-store';
 import { generateQrCodeToken } from '@/lib/qr-token';
 import { findTestAccountByIdentifier } from '@/lib/test-accounts';
 import { DEV_MEMBER_PASSWORD, normalizePhone } from '@/lib/otp-auth';
@@ -47,7 +46,6 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithOtp: (identifier: string) => Promise<void>;
   signOut: () => Promise<void>;
-  signInWithPartnerToken: (token: string) => Promise<boolean>;
   signInDemo: () => Promise<void>;
   signInDemoAdmin: () => Promise<void>;
   signInDemoPartner: () => Promise<void>;
@@ -461,47 +459,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user?.role, setDemoUser]);
 
-  const signInWithPartnerToken = useCallback(async (token: string): Promise<boolean> => {
-    const normalized = token.trim().toUpperCase();
-
-    if (!isSupabaseConfigured() || !supabase) {
-      const token = findActiveToken(normalized);
-      if (token) {
-        setDemoUser({
-          ...DEMO_PARTNER_USER,
-          id: `partner-${token.id}`,
-          firstName: token.partnerName,
-          lastName: null,
-          fullName: token.partnerName,
-          company: token.partnerName,
-        });
-        return true;
-      }
-      return false;
-    }
-
-    const { data: tokenRows, error } = await supabase.rpc('validate_partner_spot_token', {
-      p_code: normalized,
-    });
-    const data = Array.isArray(tokenRows) ? tokenRows[0] : tokenRows;
-
-    if (error || !data) return false;
-
-    const partnerUser: User = {
-      ...ANONYMOUS_USER,
-      id: data.user_id ? String(data.user_id) : `partner-${data.token_id ?? normalized}`,
-      email: (data.linked_email as string) ?? null,
-      firstName: (data.partner_name as string) ?? null,
-      lastName: null,
-      fullName: data.partner_name as string,
-      company: (data.partner_name as string) ?? null,
-      userRole: 'partner',
-      role: 'PARTNER',
-    };
-    setUser(partnerUser);
-    return true;
-  }, [setDemoUser]);
-
   const updateProfile = useCallback(async (data: ProfileUpdateInput) => {
     if (!user || user.id === 'anonymous') return;
 
@@ -587,7 +544,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signInWithOtp,
       signOut,
-      signInWithPartnerToken,
       signInDemo,
       signInDemoAdmin,
       signInDemoPartner,
@@ -597,7 +553,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateProfile,
       simulatePrimeUpgrade,
     }),
-    [user, role, isLoading, signUpMember, signIn, signInWithOtp, signOut, signInWithPartnerToken, signInDemo, signInDemoAdmin, signInDemoPartner, signInDemoPrime, activatePrimeMembership, toggleDemoAuth, updateProfile, simulatePrimeUpgrade],
+    [user, role, isLoading, signUpMember, signIn, signInWithOtp, signOut, signInDemo, signInDemoAdmin, signInDemoPartner, signInDemoPrime, activatePrimeMembership, toggleDemoAuth, updateProfile, simulatePrimeUpgrade],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -159,7 +159,7 @@ isAuthenticated(role)                   // !== USER_ANONYMOUS
 ### Tokens et comptes démo
 | Type | Valeur |
 |------|--------|
-| Jeton partenaire | `SPOT-DEMO-2026` |
+| Partenaire (connexion) | `contact@lavenue.gn` · mot de passe démo (plus de connexion jeton SPOT) |
 | Jeton VIP | `INVIT-DEMO-2026` |
 | OTP activation BL | `1234` |
 | Membre free | `membre@theloop.gn` |

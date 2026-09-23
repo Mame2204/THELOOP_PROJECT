@@ -33,7 +33,7 @@ export function UserAccountMenu() {
   async function handleSignOut() {
     setOpen(false);
     await signOut();
-    navigate(isPartner ? '/partenaires' : '/');
+    navigate('/');
   }
 
   return (
@@ -107,13 +107,13 @@ export function UserAccountMenu() {
           )}
           {isPartner && (
             <Link
-              to="/partenaires"
+              to="/espace-partenaire"
               role="menuitem"
               onClick={() => setOpen(false)}
               className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-emerald-400 transition-colors hover:bg-neutral-900"
             >
               <span aria-hidden>🏢</span>
-              Connexion Pro
+              Espace Pro
             </Link>
           )}
           {PASS_PURCHASE_UI_ENABLED && isPrime && (

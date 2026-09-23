@@ -40,8 +40,8 @@ export function PartnerHubPage() {
 
         <p className="mt-6 text-center text-xs text-neutral-500">
           Besoin d&apos;aide ?{' '}
-          <Link to="/partenaires" className="font-semibold text-loop-gold hover:underline">
-            Portail partenaire
+          <Link to="/profil" className="font-semibold text-loop-gold hover:underline">
+            Mon profil
           </Link>
         </p>
       </div>
