@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAdminPermissions } from '@/context/AdminPermissionsContext';
@@ -41,7 +41,7 @@ export function AdminLoopScreen({ navigation }: Props) {
   const { allowed: canAccessLoop } = useAnyAdminModuleAccess(['loop_hub', 'content', 'featured', 'prime_benefits']);
   const { countryLabel, countryCode } = useAdminCountry();
   const { shell } = useMemberTheme();
-  const { publicEvents, primeEvents, getHomeLocations } = useAdminCatalog();
+  const { publicEvents, primeEvents, getHomeLocations, isLoading: catalogLoading } = useAdminCatalog();
   const PRO_ACCENT = ADMIN_THEME.accent;
 
   const [eventCount, setEventCount] = useState(0);
@@ -92,6 +92,11 @@ export function AdminLoopScreen({ navigation }: Props) {
       resetKey: countryCode,
     },
   );
+
+  useEffect(() => {
+    if (catalogLoading) return;
+    void run(true);
+  }, [catalogLoading, publicEvents.length, primeEvents.length, countryCode, run]);
 
   const openBenefitScan = useCallback(() => {
     if (!validationCode) return;

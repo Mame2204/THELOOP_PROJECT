@@ -210,7 +210,7 @@ export function PrimeScreen({ navigation }: Props) {
           style={[styles.btn, { backgroundColor: accent.accent }]}
           onPress={handleContinue}
         >
-          <Text style={styles.btnText}>Continuer vers le paiement</Text>
+          <Text style={styles.btnText}>Passer au paiement</Text>
         </Pressable>
       ) : (
         <Text style={[styles.note, { color: shell.pageKicker }]}>

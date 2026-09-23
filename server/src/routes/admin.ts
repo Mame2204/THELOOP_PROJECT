@@ -7,6 +7,7 @@ import {
   loadPaymentIntentForUser,
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
+import { buildReconcileSummary } from '../services/reconcile-payment-summary.js';
 import { deliverPushToUserIds } from '../services/push-delivery.js';
 import { computePaymentAnalytics } from '../services/payment-analytics.js';
 import { buildPaymentIntentsCsv } from '../services/payment-export.js';
@@ -130,6 +131,7 @@ adminRouter.post('/admin/sync-user-email', requireSupabaseAuth, requireAdmin, as
 adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, async (req, res) => {
   try {
     const status = String(req.query.status ?? '').trim();
+    const bucket = String(req.query.bucket ?? '').trim();
     const fulfillment = String(req.query.fulfillment ?? '').trim();
     const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
       .trim()
@@ -211,6 +213,19 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
     }, 0);
 
     if (status) listQ = listQ.eq('status', status);
+    if (bucket === 'abandoned') {
+      listQ = listQ.or(
+        'status.in.(cancelled,failed),and(status.eq.redirected,djomy_status.ilike.redirected),and(status.eq.redirected,djomy_status.ilike.expired)',
+      );
+    } else if (bucket === 'in_progress') {
+      listQ = listQ
+        .in('status', ['created', 'redirected'])
+        .eq('fulfillment_status', 'pending')
+        .not('djomy_status', 'ilike', 'redirected')
+        .not('djomy_status', 'ilike', 'expired');
+    } else if (bucket === 'paid') {
+      listQ = listQ.or('status.eq.paid,fulfillment_status.eq.fulfilled');
+    }
     if (fulfillment) listQ = listQ.eq('fulfillment_status', fulfillment);
 
     const { data, error, count } = await listQ.range(offset, offset + limit - 1);
@@ -395,8 +410,11 @@ adminRouter.post(
       const refreshed =
         (await loadPaymentIntentForUser(updated.id, updated.user_id)) ?? updated;
 
+      const summary = buildReconcileSummary(intent, refreshed);
+
       res.json({
         ok: true,
+        summary,
         intent: {
           id: refreshed.id,
           status: refreshed.status,
@@ -405,6 +423,7 @@ adminRouter.post(
           djomyStatus: refreshed.djomy_status ?? null,
           djomyPaidAmount: refreshed.djomy_paid_amount,
           paidAt: refreshed.paid_at,
+          lastCheckedAt: refreshed.last_checked_at ?? null,
         },
       });
     } catch (err) {

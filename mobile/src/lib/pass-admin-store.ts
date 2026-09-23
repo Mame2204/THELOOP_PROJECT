@@ -765,24 +765,33 @@ export async function revokeBonusPass(targetUserId: string, passId: string): Pro
 
 
 
+function isCloudAdminGrantRow(row: Record<string, unknown>): boolean {
+  if (row.granted_by) return true;
+  const payment = row.payment_method ? String(row.payment_method).trim() : '';
+  const amount = row.amount_gnf != null ? Number(row.amount_gnf) : 0;
+  if (payment || amount > 0) return false;
+  const kind = String(row.pass_kind ?? '').toLowerCase();
+  return kind === 'heritage' || kind === 'bonus' || kind === 'custom';
+}
+
 async function listGrantedPassesFromCloud(): Promise<GrantedPassRow[] | null> {
   if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return null;
 
   const { data, error } = await supabase
     .from('user_pass_grants')
     .select(
-      'user_id, pass_catalog_id, label, pass_kind, status, started_at, expires_at, granted_by, grant_note, local_id',
+      'user_id, pass_catalog_id, label, pass_kind, status, started_at, expires_at, granted_by, grant_note, local_id, amount_gnf, payment_method, paid_at',
     )
     .eq('status', 'active')
     .order('started_at', { ascending: false })
-    .limit(15);
+    .limit(30);
 
   if (error) return null;
 
   const users = await listRegistryUsers();
   const results: GrantedPassRow[] = [];
 
-  for (const row of data ?? []) {
+  for (const row of (data ?? []).filter((r) => isCloudAdminGrantRow(r as Record<string, unknown>))) {
     const userId = String(row.user_id);
     const passId = String(row.local_id ?? row.pass_catalog_id);
     const registry = users.find((u) => u.id === userId);
@@ -811,14 +820,17 @@ async function listGrantedPassesFromCloud(): Promise<GrantedPassRow[] | null> {
         passCatalogId: catalogId,
         grantedBy: row.granted_by ? String(row.granted_by) : null,
         grantNote: row.grant_note ? String(row.grant_note) : null,
-        amountGnf: 0,
-        paidAt: null,
+        amountGnf: row.amount_gnf != null ? Number(row.amount_gnf) : 0,
+        paidAt: row.paid_at ? String(row.paid_at) : null,
+        paymentMethod: row.payment_method
+          ? (String(row.payment_method) as SubscriptionRecord['paymentMethod'])
+          : undefined,
       },
       catalogLabel,
     });
   }
 
-  return results.sort((a, b) => b.pass.startedAt.localeCompare(a.pass.startedAt));
+  return results.sort((a, b) => b.pass.startedAt.localeCompare(a.pass.startedAt)).slice(0, 15);
 }
 
 export async function listActiveGrantedPasses(): Promise<GrantedPassRow[]> {

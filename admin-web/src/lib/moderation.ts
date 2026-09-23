@@ -1,3 +1,4 @@
+import { deliverPushToUsers } from './api';
 import { supabase } from './supabase';
 
 export type StagingKind = 'event' | 'spot' | 'tool';
@@ -22,36 +23,64 @@ export interface StagingQueueItem {
   subCategory?: string | null;
 }
 
-async function notifyPartner(params: {
-  partnerUserId: string;
-  kind: StagingKind;
-  title: string;
-  approve: boolean;
-  reason?: string | null;
-}): Promise<void> {
-  if (!params.partnerUserId) return;
+async function notifyPartnerDecision(
+  item: StagingQueueItem,
+  approve: boolean,
+  reason?: string | null,
+): Promise<void> {
+  const partnerUserId = item.partnerUserId?.trim();
+  if (!partnerUserId) return;
   const kindLabel =
-    params.kind === 'event' ? 'Événement' : params.kind === 'tool' ? 'Outil' : 'Spot';
-  const title = params.approve ? `${kindLabel} validé` : `${kindLabel} refusé`;
-  const message = params.approve
-    ? `Votre soumission « ${params.title} » a été approuvée par THE LOOP et est maintenant visible dans l'application.`
-    : `Votre soumission « ${params.title} » n'a pas été retenue.${
-        params.reason?.trim()
-          ? `\n\nMotif : ${params.reason.trim()}`
+    item.kind === 'event' ? 'Événement' : item.kind === 'tool' ? 'Outil' : 'Spot';
+  const title = approve ? `${kindLabel} validé` : `${kindLabel} refusé`;
+  const message = approve
+    ? `Votre soumission « ${item.title} » a été approuvée par THE LOOP et est maintenant visible dans l'application.`
+    : `Votre soumission « ${item.title} » n'a pas été retenue.${
+        reason?.trim()
+          ? `\n\nMotif : ${reason.trim()}`
           : '\n\nVous pouvez modifier et resoumettre votre contenu depuis Mon contenu.'
       }`;
 
-  const { error } = await supabase.from('user_notifications').insert({
-    user_id: params.partnerUserId,
-    title,
-    message,
-    audience: 'partner',
-    sent_at: new Date().toISOString(),
+  const submissionKind = item.kind === 'event' ? 'event' : item.kind === 'tool' ? 'tool' : 'spot';
+
+  const { data: partnerIds, error } = await supabase.rpc('notify_partner_user', {
+    p_partner_user_id: partnerUserId,
+    p_title: title,
+    p_message: message,
+    p_audience: 'partner',
+    p_local_id: item.localId,
+    p_submission_kind: submissionKind,
   });
+
   if (error) {
-    // Best-effort — ne bloque pas la modération
-    console.warn('[moderation] notify:', error.message);
+    const { error: insertError } = await supabase.from('user_notifications').insert({
+      user_id: partnerUserId,
+      title,
+      message,
+      audience: 'partner',
+      sent_at: new Date().toISOString(),
+    });
+    if (insertError) {
+      console.warn('[moderation] notify:', insertError.message);
+    }
+    void deliverPushToUsers({
+      userIds: [partnerUserId],
+      title,
+      body: message,
+      data: { audience: 'partner' },
+    });
+    return;
   }
+
+  const ids = Array.isArray(partnerIds)
+    ? partnerIds.map((id) => String(id)).filter((id) => /^[0-9a-f-]{36}$/i.test(id))
+    : [partnerUserId];
+  void deliverPushToUsers({
+    userIds: ids.length ? ids : [partnerUserId],
+    title,
+    body: message,
+    data: { audience: 'partner' },
+  });
 }
 
 export async function listPendingStaging(
@@ -146,12 +175,7 @@ export async function approveStagingItem(
     if (error) return { ok: false, error: error.message };
   }
 
-  await notifyPartner({
-    partnerUserId: item.partnerUserId,
-    kind: item.kind,
-    title: item.title,
-    approve: true,
-  });
+  await notifyPartnerDecision(item, true);
   return { ok: true };
 }
 
@@ -171,12 +195,6 @@ export async function rejectStagingItem(
 
   if (error) return { ok: false, error: error.message };
 
-  await notifyPartner({
-    partnerUserId: item.partnerUserId,
-    kind: item.kind,
-    title: item.title,
-    approve: false,
-    reason: motif,
-  });
+  await notifyPartnerDecision(item, false, motif);
   return { ok: true };
 }

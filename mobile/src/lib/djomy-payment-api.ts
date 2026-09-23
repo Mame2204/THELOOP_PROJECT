@@ -68,37 +68,37 @@ export function sandboxPayerHint(method: string): { local: string; display: stri
       return {
         local: DJOMY_SANDBOX_TEST.paycard.account,
         display: DJOMY_SANDBOX_TEST.paycard.display,
-        tip: `Même payeur sur Djomy : ${DJOMY_SANDBOX_TEST.paycard.display}, puis OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`,
+        tip: `Sur le portail : ${DJOMY_SANDBOX_TEST.paycard.display}, puis OTP ${DJOMY_SANDBOX_TEST.paycard.otp}.`,
       };
     case 'soutra_money':
       return {
         local: DJOMY_SANDBOX_TEST.soutra.account,
         display: DJOMY_SANDBOX_TEST.soutra.display,
-        tip: `Même payeur sur Djomy : ${DJOMY_SANDBOX_TEST.soutra.display}, puis PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
+        tip: `Sur le portail : ${DJOMY_SANDBOX_TEST.soutra.display}, puis PIN ${DJOMY_SANDBOX_TEST.soutra.pin}.`,
       };
     case 'card':
       return {
         local: DJOMY_SANDBOX_TEST.cardSuccess.pan,
         display: DJOMY_SANDBOX_TEST.cardSuccess.panDisplay,
-        tip: `Même carte sur Djomy : ${DJOMY_SANDBOX_TEST.cardSuccess.panDisplay}, expiration future, CVV 3 chiffres.`,
+        tip: `Carte test : ${DJOMY_SANDBOX_TEST.cardSuccess.panDisplay}, expiration future, CVV 3 chiffres.`,
       };
     case 'orange_money':
       return {
         local: '',
         display: '—',
-        tip: 'Orange Money échoue toujours en sandbox Djomy. Choisissez PayCard, Soutra ou Carte.',
+        tip: 'Orange Money échoue en test. Choisissez PayCard, Soutra ou carte.',
       };
     case 'mtn_momo':
       return {
         local: DJOMY_SANDBOX_TEST.phone.local,
         display: DJOMY_SANDBOX_TEST.phone.display,
-        tip: `Même numéro sur Djomy si demandé : ${DJOMY_SANDBOX_TEST.phone.display}.`,
+        tip: `Si le portail le demande : ${DJOMY_SANDBOX_TEST.phone.display}.`,
       };
     default:
       return {
         local: DJOMY_SANDBOX_TEST.soutra.account,
         display: DJOMY_SANDBOX_TEST.soutra.display,
-        tip: `Choisissez un moyen, puis utilisez le même identifiant sur Djomy (Soutra ${DJOMY_SANDBOX_TEST.soutra.display} / PayCard ${DJOMY_SANDBOX_TEST.paycard.display} / carte test).`,
+        tip: `Choisissez un moyen sur le portail (Soutra ${DJOMY_SANDBOX_TEST.soutra.display} / PayCard ${DJOMY_SANDBOX_TEST.paycard.display} / carte test).`,
       };
   }
 }
@@ -294,7 +294,7 @@ export async function waitForDjomyFulfillment(
 
   if (sawNetworkError && !lastStatus) {
     throw new Error(
-      'Connexion au serveur de paiement interrompue. Si vous avez déjà payé sur Soutra/Djomy, ouvrez Mon PASS — l’activation peut arriver avec quelques minutes de retard.',
+      'Connexion au serveur de paiement interrompue. Si le débit est déjà passé, ouvrez Mon PASS — l’activation peut prendre quelques minutes.',
     );
   }
 

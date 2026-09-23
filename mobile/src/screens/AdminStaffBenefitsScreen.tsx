@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { AdminPageHeader } from '@/components/admin/AdminShell';
@@ -19,7 +20,7 @@ import {
   type BenefitCatalogItem,
 } from '@/lib/benefit-catalog-store';
 import { resolveCountryCode } from '@/lib/admin-country';
-import { isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
+import { isAdminAccount, isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
 import { syncUserRoleBenefitEntitlements } from '@/lib/prime-benefits-store';
 import {
   catalogEntryFromItem,
@@ -35,7 +36,7 @@ import {
   getStaffTeamPackForCountry,
   saveStaffTeamPackForCountry,
 } from '@/lib/staff-team-pack-store';
-import { listRegistryUsers } from '@/lib/user-registry-store';
+import { listDelegatedRegistryUsersForCountry, listRegistryUsers } from '@/lib/user-registry-store';
 import type { RoleBenefitEntitlementEntry } from '@/lib/role-benefit-entitlements-store';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -122,14 +123,9 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
       if (Date.now() - founderWriteAtRef.current < 4_000) return;
       setFounderOverrides(overrides);
 
-      const registry = await listRegistryUsers();
-      const admins = registry
-        .filter((u) => {
-          if ((u.userRole ?? '').toLowerCase() !== 'admin') return false;
-          const adminUser = registryToUser(u, countryCode);
-          if (isSuperAdminAccount(adminUser)) return false;
-          return resolveCountryCode(u.countryCode, u.phoneNumber) === countryCode;
-        })
+      const delegated = await listDelegatedRegistryUsersForCountry(countryCode);
+      const admins = delegated
+        .filter((u) => !isSuperAdminAccount(registryToUser(u, countryCode)))
         .map((u) => registryToUser(u, countryCode));
       await prefetchStaffBenefitOverridesForUsers(admins.map((a) => a.id));
       setDelegatedAdmins(admins);
@@ -142,9 +138,18 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
     }
   }, [countryCode, user]);
 
-  useEffect(() => {
-    if (role === 'ADMIN') void load();
-  }, [role, load, tick]);
+  useFocusLoad(
+    async (force) => {
+      if (!user || !isAdminAccount(user)) return;
+      await load();
+      if (force) setTick((t) => t + 1);
+    },
+    {
+      enabled: Boolean(user && isAdminAccount(user)),
+      resetKey: `${countryCode}:${tick}`,
+      ttlMs: 45_000,
+    },
+  );
 
   useEffect(() => {
     if (!selectedDelegateId) {
@@ -337,72 +342,84 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
         </>
       ) : null}
 
-      {tab === 'delegate' && isFounder && delegateOverrides ? (
+      {tab === 'delegate' && isFounder ? (
         <>
           <Text style={[styles.hint, { color: shell.pageKicker }]}>
             Ajustements individuels par admin délégué (retirer du pack ou ajouter un privilège hors pack).
           </Text>
           {delegatedAdmins.length === 0 ? (
-            <Text style={[styles.hint, { color: shell.pageKicker }]}>Aucun admin délégué pour {countryLabel}.</Text>
+            <Text style={[styles.hint, { color: shell.pageKicker }]}>
+              Aucun admin délégué pour {countryLabel} (`user_role = admin`, actif, même pays).
+            </Text>
           ) : (
-            <View style={styles.delegateRow}>
-              {delegatedAdmins.map((admin) => {
-                const active = admin.id === selectedDelegateId;
-                return (
-                  <Pressable
-                    key={admin.id}
-                    onPress={() => setSelectedDelegateId(admin.id)}
-                    style={[
-                      styles.delegateChip,
-                      {
-                        borderColor: active ? shell.tabIndicator : shell.filterInactiveBorder,
-                        backgroundColor: active ? shell.tabIndicator : shell.filterInactiveBg,
-                      },
-                    ]}
-                  >
-                    <Text
+            <>
+              <View style={styles.delegateRow}>
+                {delegatedAdmins.map((admin) => {
+                  const active = admin.id === selectedDelegateId;
+                  return (
+                    <Pressable
+                      key={admin.id}
+                      onPress={() => setSelectedDelegateId(admin.id)}
                       style={[
-                        styles.delegateChipText,
-                        { color: active ? '#fff' : shell.pageTitle },
+                        styles.delegateChip,
+                        {
+                          borderColor: active ? shell.tabIndicator : shell.filterInactiveBorder,
+                          backgroundColor: active ? shell.tabIndicator : shell.filterInactiveBg,
+                        },
                       ]}
-                      numberOfLines={1}
                     >
-                      {admin.fullName}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-          <TextInput
-            style={inputStyle}
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Rechercher…"
-            placeholderTextColor={shell.pageKicker}
-          />
-          {filteredCatalog.map((item) => (
-            <View
-              key={`d-${item.id}`}
-              style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
-            >
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
-                <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
-                  {item.offeringPartners.map((p) => p.displayName).join(' · ')}
-                  {teamCatalogIds.has(item.id) ? ' · pack' : ''}
-                </Text>
+                      <Text
+                        style={[
+                          styles.delegateChipText,
+                          { color: active ? '#fff' : shell.pageTitle },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {admin.fullName}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
-              <TogglePill
-                value={isBenefitEffectiveForAdmin(delegateOverrides, item.id, teamCatalogIds)}
-                onChange={(next) => void handleDelegateToggle(item.id, next)}
-                activeLabel="Oui"
-                inactiveLabel="Non"
-                activeColor={shell.tabIndicator}
-                shell={shell}
+              <TextInput
+                style={inputStyle}
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Rechercher…"
+                placeholderTextColor={shell.pageKicker}
               />
-            </View>
-          ))}
+              {!delegateOverrides ? (
+                <Text style={[styles.hint, { color: shell.pageKicker }]}>Chargement des privilèges…</Text>
+              ) : filteredCatalog.length === 0 ? (
+                <Text style={[styles.hint, { color: shell.pageKicker }]}>
+                  Aucun privilège assignable (catalogue actif lié à un contenu publié).
+                </Text>
+              ) : (
+                filteredCatalog.map((item) => (
+                  <View
+                    key={`d-${item.id}`}
+                    style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
+                  >
+                    <View style={{ flex: 1, paddingRight: 12 }}>
+                      <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
+                      <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
+                        {item.offeringPartners.map((p) => p.displayName).join(' · ')}
+                        {teamCatalogIds.has(item.id) ? ' · pack' : ''}
+                      </Text>
+                    </View>
+                    <TogglePill
+                      value={isBenefitEffectiveForAdmin(delegateOverrides, item.id, teamCatalogIds)}
+                      onChange={(next) => void handleDelegateToggle(item.id, next)}
+                      activeLabel="Oui"
+                      inactiveLabel="Non"
+                      activeColor={shell.tabIndicator}
+                      shell={shell}
+                    />
+                  </View>
+                ))
+              )}
+            </>
+          )}
         </>
       ) : null}
 
@@ -419,30 +436,37 @@ export function AdminStaffBenefitsScreen({ navigation }: Props) {
             placeholder="Rechercher…"
             placeholderTextColor={shell.pageKicker}
           />
-          {filteredCatalog.map((item) => {
-            const enabled = teamDraft.some((e) => e.catalogId === item.id);
-            return (
-              <View
-                key={`t-${item.id}`}
-                style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
-              >
-                <View style={{ flex: 1, paddingRight: 12 }}>
-                  <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
-                  <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
-                    {item.offeringPartners.map((p) => p.displayName).join(' · ')}
-                  </Text>
+          {filteredCatalog.length === 0 ? (
+            <Text style={[styles.hint, { color: shell.pageKicker }]}>
+              Aucun privilège assignable pour {countryLabel} — le catalogue actif doit être lié à un
+              contenu publié (événement, spot ou outil). Vérifiez Privilèges THE LOOP puis actualisez.
+            </Text>
+          ) : (
+            filteredCatalog.map((item) => {
+              const enabled = teamDraft.some((e) => e.catalogId === item.id);
+              return (
+                <View
+                  key={`t-${item.id}`}
+                  style={[styles.row, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
+                >
+                  <View style={{ flex: 1, paddingRight: 12 }}>
+                    <Text style={[styles.title, { color: shell.pageTitle }]}>{item.title}</Text>
+                    <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
+                      {item.offeringPartners.map((p) => p.displayName).join(' · ')}
+                    </Text>
+                  </View>
+                  <TogglePill
+                    value={enabled}
+                    onChange={(next) => void handleTeamToggle(item.id, next)}
+                    activeLabel="Oui"
+                    inactiveLabel="Non"
+                    activeColor={shell.tabIndicator}
+                    shell={shell}
+                  />
                 </View>
-                <TogglePill
-                  value={enabled}
-                  onChange={(next) => void handleTeamToggle(item.id, next)}
-                  activeLabel="Oui"
-                  inactiveLabel="Non"
-                  activeColor={shell.tabIndicator}
-                  shell={shell}
-                />
-              </View>
-            );
-          })}
+              );
+            })
+          )}
         </>
       ) : null}
     </KeyboardAwareFormScroll>

@@ -42,16 +42,18 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 > **Objectif :** reprendre le smoke **une brique à la fois** ou **pack par pack**, sans relire toute la checklist.  
 > **Format de réponse :** `A4-U3 PASS` · `A4-U3 FAIL: motif` · ou `PACK A4-1 OK` (tout le pack d’un coup).
 
-### Position actuelle
+### Position actuelle *(pilotée agent · pas le testeur device)*
 
 | Élément | Valeur |
 |---------|--------|
-| **Prochain test** | **💻 Partie B admin-web** (ou 🤖 A4-4/A4-5 après modération admin des 3 pending) |
-| **Compte** | `admin@theloop.gn` (web) · partenaire pour reprise A4-4/5 |
-| **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel (U18–U22) · **⏸ bugs → build 49+ (PR #7)** |
-| **🤖 Android build 48** | **A1–A2 · A4-1→3 · A4-4 partiel · A4-7 ✅ · A5-1 ✅** · smoke allégé **terminé** (reste A4-4/5/6 après admin) |
-| **Reporté build 48+** | LoopX · contenu prime · **A5-U23–U25 · Phase 1 · retests bugs A5** · **A4-4 U15–U17 · A4-5** (🤖) — prérequis : **contenu publié** (modération admin) · **A4-6** — privilège lié |
-| **Règle session** | Bug identifié → noter FAIL · **pas de retest build 48** · fix PR #7 / build 49 |
+| **Prochain test** | **💻 B4 Paiements** (Resync / Sans débit · post-deploy PR #9) · **build 49** retour app Android |
+| **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
+| **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
+| **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
+| **Reporté build 49+** | LoopX · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 si contenu publié |
+| **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
+
+> Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
 
 ---
 
@@ -223,9 +225,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **⏳** Serveur Render à jour (push planifiés)
 
 ### Qualité code
-- [ ] `cd mobile && npm run typecheck` → 0 erreur
-- [ ] `cd mobile && npm test` → 131 tests verts
-- [ ] `cd admin-web && npm run build` → OK
+- [x] `cd mobile && npm run typecheck` → 0 erreur *(22 sept. 2026 · agent)*
+- [x] `cd mobile && npm test` → 131 tests verts *(22 sept. 2026 · agent)*
+- [x] `cd admin-web && npm run build` → OK *(22 sept. 2026 · agent · branche PR #7)*
 
 ### Migrations Supabase
 - [ ] `20260916_admin_push_campaign_failed_status.sql`
@@ -366,8 +368,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PassPaymentScreen` — flux paiement (si gate PASS ON)
-- [ ] **🤖** Idem
+- [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · iPhone OM OK · **🤖 MTN** payé · PASS + notif membre · délai cron ~5 min · retour app crash → PR #9)*
+- [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(23 sept. 2026 · build 48 · **PASS** en file + **notif cloche** · sync différée cron · abandon 1ʳᵉ tentative = ligne sans débit)*
 - [ ] **📱** `MyBenefitsScreen` — Mes privilèges *(si entrée UI / notif)*
 - [ ] **🤖** Idem
 
@@ -387,7 +389,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Spécificités rôle
 - [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(22 sept. 2026 · build 48 · **violet/indigo** — pas or · OK mobile actuel)*
 - [x] **📱** Filtre **LoopX** (Agenda) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
 - [x] **📱** Filtre **Loop Prime** (Spots) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu prochain build)*
@@ -395,15 +397,22 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
 - [ ] **🤖** Idem
 - [x] **📱** Favoris via menu profil (pas seulement bottom nav) *(20 sept. 2026 · build 48 · compte carte membre Prime · **écart mobile** — aucune entrée Favoris dans Profil · accès via **bottom nav** comme membre · spec PWA = menu profil Prime)*
-- [ ] **🤖** Idem
+- [x] **🤖** **PASS écart** *(22 sept. 2026 · build 48 · **pas de favoris via Profil** · favoris via nav — conforme mobile)*
 
 ### Écrans Prime (reprendre A2 +)
 - [x] **📱** `AccueilScreen` — contenu Prime / hero *(20 sept. 2026 · build 48 · compte carte membre Prime · navigation OK · thème violet)*
+- [x] **🤖** Accueil · blocs hero/sections *(22 sept. 2026 · build 48 · Prime Android)*
 - [x] **📱** `AgendaScreen` — événements LoopX *(20 sept. 2026 · build 48 · navigation OK · LoopX contenu **BLOCKED** cf. A3.2)*
+- [x] **🤖** Agenda / événements *(22 sept. 2026 · build 48 · nav OK)*
 - [x] **📱** `SpotsScreen` — spots exclusifs *(20 sept. 2026 · build 48 · navigation OK · spots prime **BLOCKED** cf. A3.3)*
+- [x] **🤖** Spots *(22 sept. 2026 · build 48)*
+- [x] **🤖** `OutilsScreen` *(22 sept. 2026 · build 48 · Prime Android)*
+- [x] **🤖** `FavorisScreen` · `ProfilScreen` *(22 sept. 2026 · build 48)*
 - [x] **📱** `PrimeScreen` — statut PASS actif *(20 sept. 2026 · build 48 · **N/A statut** — statut PASS = **Profil / Mon PASS / Abonnement** ; `PrimeScreen` = **boutique achat** « Choisissez votre PASS » via « Acheter un autre PASS »)*
 - [x] **📱** `AbonnementScreen` — détail abonnement *(20 sept. 2026 · build 48 · compte carte membre Prime · **PASS en cours** + **1 en attente** · relais auto à expiration)*
-- [ ] **🤖** Idem pour chaque écran ci-dessus
+- [x] **🤖** Mon PASS — **en cours** + **en attente** *(22 sept. 2026 · build 48)*
+- [x] **🤖** `EditProfilScreen` · `SettingsScreen` · déconnexion *(22 sept. 2026 · build 48)*
+- [x] **🤖** Profil — Nous contacter · numéro / e-mail / site · **Nous rejoindre** *(22 sept. 2026 · build 48)*
 
 ### Privilèges & fiches
 - [x] **📱** Fiche event/spot avec privilège → **Utiliser chez le partenaire** *(20 sept. 2026 · build 48 · compte carte membre Prime · parcours complet : cadenas → octroi → utilisation → **quota atteint**)*
@@ -547,7 +556,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱** `AdminCreateUserScreen` — créer compte
 - [ ] **📱** `AdminWaitlistScreen` — waitlist · pré-créer
 - [ ] **📱** `AdminFeaturedScreen` — carousel à la une
-- [ ] **📱** `AdminPaymentsScreen` — paiements · Resync Djomy
+- [x] **📱** `AdminPaymentsScreen` — paiements · Resync Djomy *(23 sept. 2026 · build 48 · date **Vérifié Djomy** · badge **Sans débit** / onglet abandons · build 49 pour libellés Resync)*
 - [ ] **📱** `PartnerSubmissionScreen` (mode admin) — depuis Contenu / Modération
 - [ ] **🤖** Idem
 
@@ -623,9 +632,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **💻** Rejeter avec motif
 
 ### Onglet Modération
+
+> **Build 48** : valider OK · refuser / notif partenaire → reporter **build 49** (PR #7).  
+> **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
+
 - [x] **💻🤖✓** Chargement soumissions pending
-- [ ] **💻** Filtres event / spot / tool
-- [ ] **💻** **Valider** spot → visible app · notif partenaire
+- [ ] **💻** Filtres event / spot / tool *(UI présente — retest build 49)*
+- [x] **💻** **Valider** → publié mobile *(build 48 · 22 sept.)*
+- [ ] **💻** **Valider** spot → visible app · notif partenaire *(reprise build 49)*
 - [ ] **💻** **Valider** événement (intervenant sans titre) → Agenda
 - [ ] **💻** **Refuser** + motif → absent catalogue
 - [ ] **💻** Section **Demandes de retrait** — liste pending
@@ -670,8 +684,8 @@ Liens Param. → pages satellites :
 - [ ] **💻** Messages / modèles notification
 
 ### Paiements & Compta
-- [ ] **💻** Liste transactions · refs Djomy
-- [ ] **💻** **Resync** intent bloqué
+- [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
+- [x] **💻** **Resync** + libellé contextuel · colonne **Vérifié Djomy** · onglet **Sans débit** *(23 sept. 2026 · deploy admin-web post-merge PR #9)*
 - [ ] **💻** Export CSV
 - [ ] **💻** Analytics revenus (Compta)
 
@@ -740,6 +754,7 @@ Liens Param. → pages satellites :
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
 | Modération décision → partenaire notifié | [ ] | [ ] |
+| Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [ ] | [x] *(23 sept. 2026 · build 48 · 🤖 MTN · après cron)* |
 
 ## C2 — Auth transversal
 
@@ -793,7 +808,7 @@ Liens Param. → pages satellites :
 - [ ] **📱🤖** Push OS des deux côtés
 - [ ] **📱🤖** Partenaire soumission + modération
 - [ ] **📱🤖** Admin modération + push
-- [ ] **📱🤖** PASS Djomy (si testé)
+- [x] **📱🤖** PASS Djomy *(23 sept. 2026 · 📱 OM · 🤖 MTN · cron OK · retour app Android PR #9)*
 
 ## D3 — Onglets masqués (AdminRubrique)
 
@@ -866,47 +881,13 @@ A5 bugs smoke build 48 :
   - TEAMS compte **délégué** : **pas** d’onglet « Par admin » (réservé super admin) · seulement onglet **Admin** (pack pays) · **vide build 48** si pack vide / permission `staff_benefits_team` / catalogue — **FAIL partiel** · fix PR #7
   - Gestion PASS : octroi manuel KO (recherche cache local) · liste « PASS accordés » mélange achats Prime · fix PR #7
   - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
-A5-U4 délégué TEAMS : FAIL partiel (écran vide ou onglet Admin sans lignes — retest après PR #7)
-PACK A5-3 : partiel (U18–U22 · U23–U25 ⏸ build 49+)
-A5-U22 : PASS (Users → changer rôle / suspendre · persisté)
 A5-U23 : FAIL build 48 · ⏸ retest build 49+ (PR #7)
-Stratégie iOS : smoke **en pause** sur items bugués · reprise build 49+ (PR #7)
-Android build 48 : installé OK · smoke allégé = **A1 → A2 → A4 → A5-1** (miroir iOS) · ⏸ U23–U25 · Phase 1 · LoopX
-A1 🤖 : PASS (pile Auth · login · pas de nav catalogue)
-A2 🤖 : PASS partiel (nav · fiches · favoris · Profil OK · **CTA PASS Profil → prochain build**)
-PACK A4-1 🤖 : OK (U1 login · U2 thème teal · U3 bottom nav · U4 hub Pro)
-PACK A4-2 🤖 : OK partiel (U5–U8 PASS · U6 refusés dans « Tous » = normal · U9 récompenses vide = palier non atteint ou confusion validation membre vs offre catalogue)
-⏸ Validation privilège / paliers / récompenses (A4-6 · U21–U24 · test palier admin) : **plus tard** — pas de contenu avec privilège lié en session
-PACK A4-3 🤖 : OK partiel (U10–U12 pending OK · **FAIL** images soumission noires · **FAIL** notif acceptation partenaire en boucle · fix PR #7 notifs)
-PACK A4-4 🤖 : partiel (U13 modifier · U14 annuler OK · U15–U17 ⏸ pas publié sans modération admin)
-A4-5 🤖 : ⏸ N/A (retrait = contenu publié requis)
-A4-7 🤖 : PASS (U25/U26)
-A5-1 🤖 : PASS (shell admin bordeaux · sidebar)
-Android smoke allégé build 48 : **bouclé** — reprise A4-4/5/6 après modération admin (iOS déjà fait ou admin-web)
-
-### Plan tests build 48 (recommandé — sans build 49)
-
-**Continuer maintenant (Android 🤖 ou admin-web 💻)**  
-| ID | Test | Compte |
-|----|------|--------|
-| A4-4 | Modifier / annuler pending · liste publiés / rejeté | partenaire |
-| A4-5 | Retrait publié · annuler retrait pending | partenaire |
-| A4-7 | Parcours public + favoris partenaire | partenaire |
-| A5-1 | Shell admin bordeaux · sidebar (sans retests bugs) | super admin |
-| B0–B2 | Admin-web session · Demandes · modération (si 💻 dispo) | super admin |
-
-**⏸ Reporter build 49+ (PR #7 / contenu / prérequis)**  
-| Bloc | Motif |
-|------|--------|
-| A4-6 | Pas de contenu avec privilège lié |
-| A5-U23–U25 · Phase 1 | Bugs connus + push/tirage/octroi |
-| Retests A5 | TEAMS · octroi PASS · partenariats cache · notifs boucle |
-| A3 LoopX / prime | PR #4 / prochain build |
-| A2-U1/U2 PassPayment | Optionnel |
-
-Retests build 49+ (iOS + Android) : A5-U23 octroi PASS · TEAMS Par admin · Partenariats · Utilisateurs 60j · Notifs · Insights · A5-U4 délégué · Phase 1 (7)
-Build Android : **48** (même que iOS)
-Branch / commit :
+Android build 48 (23 sept. 2026 · achat PASS MTN membre) :
+  - **PASS métier OK** : 2 intents (1ʳᵉ abandon portail · 2ᵉ MTN payé) · PASS en file + **notif membre** après cron ~5 min
+  - **FAIL UX retour app** : crash « Ouvrir THE LOOP » · PR #9 · retest build 49
+  - **Admin** : ligne abandon = **Sans débit** (PR #9 · deploy web + API Render)
+Build Android : **48**
+Branch / commit : `main` PR #9 merge · admin-web auto-deploy
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

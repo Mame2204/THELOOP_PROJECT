@@ -51,7 +51,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AdminUsers'>;
 type StatusFilter = 'all' | 'active' | 'inactive' | 'stale';
 type RoleFilter = 'all' | AdminAssignableRole;
 
-const STALE_DAYS = 30;
+const STALE_DAYS = 60;
 
 function activityTimestamp(user: AdminUserRow): string | null {
   const a = user.lastSeenAt ? Date.parse(user.lastSeenAt) : NaN;
@@ -201,14 +201,15 @@ export function AdminUsersScreen({ navigation }: Props) {
 
     const from = page * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
+    const staleMode = statusFilter === 'stale';
     const selectCols =
       'id, email, first_name, last_name, phone_number, user_role, is_active, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at';
 
     let query = supabase
       .from('users')
-      .select(selectCols, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to);
+      .select(selectCols, { count: staleMode ? undefined : 'exact' })
+      .order('created_at', { ascending: false });
+    query = staleMode ? query.limit(500) : query.range(from, to);
 
     if (countryCode) {
       query = query.or(`country_code.eq.${countryCode},country_code.is.null`);
@@ -218,10 +219,7 @@ export function AdminUsersScreen({ navigation }: Props) {
     }
     if (statusFilter === 'active') query = query.eq('is_active', true);
     if (statusFilter === 'inactive') query = query.eq('is_active', false);
-    if (statusFilter === 'stale') {
-      const cutoff = new Date(Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000).toISOString();
-      query = query.or(`last_seen_at.is.null,last_seen_at.lt.${cutoff}`);
-    }
+    // « Sans activité » : filtrage client via isStaleUser (max last_seen + last_sign_in).
     if (roleFilter !== 'all') {
       query = query.eq('user_role', roleFilter);
     }
@@ -315,7 +313,14 @@ export function AdminUsersScreen({ navigation }: Props) {
     });
 
     setLoadError(authActivity.error ?? null);
-    setUsers(rows);
+    const visible = staleMode ? rows.filter((u) => isStaleUser(u)) : rows;
+    if (staleMode) {
+      const staleFrom = page * PAGE_SIZE;
+      setTotalCount(visible.length);
+      setUsers(visible.slice(staleFrom, staleFrom + PAGE_SIZE));
+    } else {
+      setUsers(visible);
+    }
   }, [countryCode, isSuperAdmin, page, roleFilter, searchQuery, statusFilter]);
 
   useEffect(() => {

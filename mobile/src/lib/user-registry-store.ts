@@ -1,4 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { resolveCountryCode } from '@/lib/admin-country';
+import type { CountryCode } from '@/lib/countries';
+import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { normalizePhone } from '@/lib/otp-auth';
 import { isNetworkOnline } from '@/lib/offline-store';
 import { hydrateScoped, peekMemory, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
@@ -147,6 +150,106 @@ export async function listRegistryUsers(forceRemote = false): Promise<RegistryUs
     saveRegistry,
   );
   return cached;
+}
+
+/** Admins délégués (`user_role = admin`, actifs) pour TEAMS — aligné admin-web. */
+export async function listDelegatedRegistryUsersForCountry(
+  countryCode: CountryCode,
+): Promise<RegistryUser[]> {
+  const cc = countryCode.toUpperCase().slice(0, 2);
+
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    const { data, error } = await supabase
+      .from('users')
+      .select(
+        'id, email, phone_number, first_name, last_name, user_role, birth_date, referral_code, referred_by_code, country_code, interest_country_code, city, prime_role_locked, is_active',
+      )
+      .eq('user_role', 'admin')
+      .eq('is_active', true)
+      .order('email')
+      .limit(100);
+    if (!error && data) {
+      return data
+        .map((row) => mapDbUserRow(row as Record<string, unknown>))
+        .filter(
+          (u) =>
+            (u.countryCode ?? DEFAULT_COUNTRY_CODE).toUpperCase().slice(0, 2) === cc,
+        );
+    }
+  }
+
+  const registry = await listRegistryUsers(true);
+  return registry.filter(
+    (u) =>
+      (u.userRole ?? '').toLowerCase() === 'admin' &&
+      (u.countryCode ?? DEFAULT_COUNTRY_CODE).toUpperCase().slice(0, 2) === cc,
+  );
+}
+
+const PASS_GRANT_EXCLUDED_ROLES = new Set(['admin', 'super_admin', 'partner', 'tool_partner']);
+
+function isPassGrantTargetUser(user: RegistryUser): boolean {
+  const dbRole = (user.userRole ?? '').toLowerCase();
+  return user.role !== 'ADMIN' && !PASS_GRANT_EXCLUDED_ROLES.has(dbRole);
+}
+
+function matchesPassGrantSearch(user: RegistryUser, query: string): boolean {
+  const tokens = query
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (tokens.length === 0) return false;
+
+  const hay = [user.firstName, user.lastName, user.email, user.phoneNumber, user.referralCode]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  const phoneDigits = user.phoneNumber ? normalizePhone(user.phoneNumber).replace(/\D/g, '') : '';
+  const queryDigits = query.replace(/\D/g, '');
+
+  if (queryDigits.length >= 4 && phoneDigits.includes(queryDigits)) return true;
+  return tokens.every((token) => hay.includes(token));
+}
+
+/** Recherche membres éligibles à un octroi PASS (Supabase en priorité, aligné écran Utilisateurs). */
+export async function searchRegistryUsersForPassGrant(
+  query: string,
+  countryCode?: CountryCode,
+  limit = 8,
+): Promise<RegistryUser[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    const safe = q.replace(/[%_,]/g, ' ').slice(0, 80);
+    let dbQuery = supabase
+      .from('users')
+      .select(
+        'id, email, phone_number, first_name, last_name, user_role, birth_date, referral_code, referred_by_code, country_code, interest_country_code, city, prime_role_locked, is_active',
+      )
+      .eq('is_active', true)
+      .not('user_role', 'in', '(admin,super_admin,partner,tool_partner)')
+      .or(
+        `email.ilike.%${safe}%,first_name.ilike.%${safe}%,last_name.ilike.%${safe}%,phone_number.ilike.%${safe}%`,
+      )
+      .order('email')
+      .limit(limit);
+
+    if (countryCode) {
+      dbQuery = dbQuery.or(`country_code.eq.${countryCode},country_code.is.null`);
+    }
+
+    const { data, error } = await dbQuery;
+    if (!error && data) {
+      return data
+        .map((row) => mapDbUserRow(row as Record<string, unknown>))
+        .filter(isPassGrantTargetUser);
+    }
+  }
+
+  const registry = await listRegistryUsers(true);
+  return registry.filter(isPassGrantTargetUser).filter((u) => matchesPassGrantSearch(u, q)).slice(0, limit);
 }
 
 export async function findRegistryUserById(userId: string): Promise<RegistryUser | null> {
