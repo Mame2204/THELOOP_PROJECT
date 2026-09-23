@@ -14,6 +14,7 @@ const projectRef = 'eeyhtulpixvftvhppinz';
 const callbackUrl = 'https://api.theloop-app.com/auth/callback';
 const edgeCallbackUrl = `https://${projectRef}.supabase.co/functions/v1/auth-callback`;
 const legacyCallbackUrl = 'https://admin.theloop-app.com/auth-callback.html';
+const storageCallbackUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/app-public/auth/auth-callback.html`;
 
 function readToken() {
   const fromEnv = process.env.SUPABASE_ACCESS_TOKEN?.trim();
@@ -90,6 +91,7 @@ const body = {
     callbackUrl,
     edgeCallbackUrl,
     legacyCallbackUrl,
+    storageCallbackUrl,
     'theloop://auth/callback',
     'theloop://**',
     'exp://**',
