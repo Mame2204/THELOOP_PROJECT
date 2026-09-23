@@ -12,12 +12,13 @@ if "%SUPABASE_ACCESS_TOKEN%"=="" (
   pause
   exit /b 1
 )
-set "NODE_DIR=%~dp0.tools\node"
 cd /d "%~dp0"
-"%NODE_DIR%\node.exe" scripts\deploy-edge-invite-functions.mjs
+call "%~dp0run-with-project-node.cmd" scripts\deploy-edge-invite-functions.mjs
 if errorlevel 1 (
   pause
   exit /b 1
 )
+echo.
+echo Optionnel : .\configure-auth-invite-email.cmd pour les modeles e-mail Auth.
 pause
 endlocal
