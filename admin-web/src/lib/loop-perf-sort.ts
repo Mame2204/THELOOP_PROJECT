@@ -16,6 +16,7 @@ export const LOOP_PERF_PAGE_SIZE = 20;
  * Score engagement (Paramètres → Étoiles) — tri onglet « Tous » :
  *   score = (clics × poidsClic) + (favoris × poidsFavori) + (moyenne note × poidsNote)
  * Défaut : clics×1 + favoris×5 + moyenne×10 (`computeEngagementScore` mobile).
+ * Si les notes membres sont masquées sur les fiches publiques, moyenne = 0 → pas d’impact sur le tri.
  */
 export function loopPerfEngagementScore(
   row: Pick<TeamLoopPerfRow, 'clicks' | 'favorites' | 'ratingAvg'>,
