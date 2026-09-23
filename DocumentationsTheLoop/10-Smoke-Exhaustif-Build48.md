@@ -288,12 +288,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — lien recovery → **in-app** *(iOS à confirmer)*
-- [ ] **🤖** Mode **set_password** — lien recovery *(23 sept. 2026 · **PARTIEL** : page HTTPS auth-callback · choix app/web · pas d’ouverture auto app · fix deep link Android auth-callback)*
+- [x] **📱** Mode **set_password** — lien recovery → page HTTPS **auth-callback** (choix app / web) *(23 sept. 2026 · build 48 · **pas d’ouverture auto app** · normal)*
+- [x] **🤖** Idem *(23 sept. 2026 · aligné iOS)*
+- [ ] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(retest post-deploy auth-callback)*
+- [ ] **🤖** Idem
 - [ ] **📱** Lien **Pro ? Rejoindre THE LOOP →**
-- [ ] **🤖** Idem
-- [ ] **📱** CGU / Politique confidentialité (modales)
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · navigation OK)*
+- [x] **📱** CGU / Politique confidentialité (modales) *(23 sept. 2026 · build 48)*
+- [x] **🤖** Idem *(23 sept. 2026)*
 
 ### Stack Auth (routes autorisées)
 - [ ] **📱** `PartnerApplyScreen` — demande partenariat · alerte duplicate si pending
@@ -765,8 +767,10 @@ Liens Param. → pages satellites :
 - [ ] **🤖** Idem
 - [x] **📱** Mot de passe oublié → **e-mail reçu** *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026)*
-- [ ] **📱** Lien e-mail → **set_password in-app** (sans page HTML intermédiaire)
-- [ ] **🤖** Idem *(PARTIEL · page HTTPS · bouton « Ouvrir l’app » · deploy auth-callback)*
+- [x] **📱** Lien e-mail → page **auth-callback** (choix app / web) *(23 sept. 2026 · build 48)*
+- [x] **🤖** Idem *(23 sept. 2026 · même UX que iOS)*
+- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app**
+- [ ] **🤖** Idem *(retest post-deploy auth-callback)*
 - [ ] **💻** Invitation admin-web → activation · bon rôle
 - [ ] **📱** Partenaire invité → connexion → Espace Pro
 - [ ] **🤖** Idem
@@ -904,7 +908,8 @@ A2 compte & services (23 sept. 2026 · build 48 · **📱🤖**) :
   - **SuggestionScreen** (envoyer idée) — **⏸** à tester
 Auth MDP (23 sept. 2026 · build 48) :
   - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
-  - **Oubli MDP** : e-mail OK · **🤖** lien → page HTML auth-callback (normal) · **set_password in-app** — retest après deploy **auth-callback**
+  - **Oubli MDP** : e-mail OK · lien → **page auth-callback 📱🤖** (normal · pas d’auto-app) · **CGU / Politique 📱🤖 PASS**
+  - **Pro ? Rejoindre THE LOOP** — **🤖 PASS** · **set_password in-app** (bouton app) — retest deploy **auth-callback**
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
