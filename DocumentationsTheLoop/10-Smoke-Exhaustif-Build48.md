@@ -47,7 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **192 / 367** cases cochées ≈ **52 %** *(recalcul après session privilèges · 23 sept.)* |
-| **Prochain test** | **FAIL octroi individuel** (validation partenaire) · **📱 A4 set_password** post-deploy Render |
+| **Prochain test** | **Retest octroi individuel** (migration `20260935` appliquée Supabase · 23 sept.) · **📱 A4 set_password** post-deploy Render |
+| **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
 | **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
@@ -231,11 +232,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `cd admin-web && npm run build` → OK *(22 sept. 2026 · agent · branche PR #7)*
 
 ### Migrations Supabase
-- [ ] `20260916_admin_push_campaign_failed_status.sql`
-- [ ] `20260916_support_email_contact_theloop_app.sql`
-- [ ] `20260918_partner_accept_activate_catalog.sql`
-- [ ] `20260919_event_speakers_default_empty_title.sql`
-- [ ] `20260925` — tirage `draw_city`
+- [x] `20260916_admin_push_campaign_failed_status.sql` *(23 sept. 2026 · testeur · Supabase prod OK)*
+- [x] `20260916_support_email_contact_theloop_app.sql` *(23 sept. 2026 · OK)*
+- [x] `20260918_partner_accept_activate_catalog.sql` *(23 sept. 2026 · OK)*
+- [x] `20260919_event_speakers_default_empty_title.sql` *(23 sept. 2026 · OK)*
+- [x] `20260925_admin_benefit_draws_draw_city.sql` — tirage `draw_city` *(23 sept. 2026 · OK)*
+- [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -428,7 +430,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Notifs cloche Prime — **en attente validation** + **privilège validé** *(23 sept. 2026 · build 48 · après « Utiliser » puis validation partenaire · **📱 iOS + 🤖 Android**)*
 - [x] **📱** `MyBenefitsScreen` — liste privilèges actifs *(20 sept. 2026 · build 48 · **BLOCKED / N/A** — écran « Mes privilèges » sans entrée UI visible dans l’app · privilèges consultés sur **fiche détail**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **N/A** — pas d’entrée menu · cohérent build 48)*
-- [ ] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(23 sept. 2026 · build 48 · **FAIL** · erreur serveur à la validation · message type « vérifiez le serveur » · **OK** pour privilège **inclus Prime / par rôle**)*
+- [ ] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(23 sept. 2026 · **FAIL** avant migration · fix `20260935` appliqué Supabase · **retest en attente**)*
 - [ ] **🤖** Idem
 
 ---
@@ -922,6 +924,9 @@ Privilèges build 48 (23 sept. 2026 · retest testeur) :
   - **PASS 📱🤖** : partenaire — scan QR **identité** Prime (sans « Utiliser ») · puis scan après « Utiliser » · avantage affiché coché · validation OK
   - **PASS 📱🤖** : notifs cloche Prime (attente validation · privilège validé) — iOS + Android
   - **FAIL** : **octroi individuel** (1 utilisateur ciblé admin) — erreur serveur à la validation partenaire (rôle / Prime OK)
+Supabase prod (23 sept. 2026 · testeur) :
+  - Migrations Phase 0 : **20260916** (push failed · support email) · **20260918** partner accept catalog · **20260919** speakers title · **20260925** draw_city — **OK**
+  - **20260935** individual grant materialize — **OK** → retest validation partenaire octroi individuel
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
