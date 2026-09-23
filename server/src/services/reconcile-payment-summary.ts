@@ -52,11 +52,7 @@ export function buildReconcileSummary(
   }
 
   if (isDjomyAbandonedStatus(after.djomy_status ?? undefined)) {
-    return [
-      'Djomy indique que ce paiement n’a pas été finalisé (portail ouvert, pas de débit).',
-      `Statut Djomy : ${djomy}.`,
-      'Ce n’est pas la ligne à resync si vous avez payé sur une autre tentative — comparez la date et l’ID transaction Djomy.',
-    ].join(' ');
+    return `Paiement non finalisé (Djomy : ${djomy}) — aucun débit. Si vous avez payé ailleurs, ouvrez l’autre ligne (date / n° transaction).`;
   }
 
   if (isDjomyInFlightStatus(after.djomy_status ?? undefined)) {

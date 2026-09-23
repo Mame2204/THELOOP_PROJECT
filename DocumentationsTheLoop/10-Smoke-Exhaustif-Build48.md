@@ -237,10 +237,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] `20260925` — tirage `draw_city`
 
 ### Gates (super admin → Paramètres)
-- [ ] Inscription **OFF** (invite-only)
-- [ ] Achat PASS **OFF** (sauf test paiement)
-- [ ] Maintenance **OFF**
-- [ ] Pré-lancement **OFF**
+- [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
+- [x] **💻** Achat PASS ON/OFF *(23 sept. 2026 · idem)*
+- [x] **💻** Maintenance ON/OFF *(23 sept. 2026 · idem)*
+- [x] **💻** Pré-lancement ON/OFF *(23 sept. 2026 · idem)*
 
 ---
 
@@ -656,7 +656,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Onglet | Tests | OK |
 |--------|-------|-----|
-| **Gates** | Inscription · PASS · pré-lancement · maintenance — lire / enregistrer | [ ] |
+| **Gates** | Inscription · PASS · pré-lancement · maintenance — lire / enregistrer | [x] *(23 sept. 2026 · 💻 toggle ON/OFF ×4 OK)* |
 | **Pays** | Activer / désactiver pays contenu | [ ] |
 | **Catégories** | Éditer label · emoji · activer / désactiver | [ ] |
 | **Permissions** | Admin délégué · overrides grant/revoke | [ ] |
@@ -685,7 +685,7 @@ Liens Param. → pages satellites :
 
 ### Paiements & Compta
 - [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
-- [x] **💻** **Resync** + libellé contextuel · colonne **Vérifié Djomy** · onglet **Sans débit** *(23 sept. 2026 · deploy admin-web post-merge PR #9)*
+- [x] **💻** **Resync** + libellé contextuel · colonne **Vérifié Djomy** · onglet **Sans débit** · pagination 20/ligne *(23 sept. 2026 · **test super admin OK** · abandon « Sans débit » + hint Resync)*
 - [ ] **💻** Export CSV
 - [ ] **💻** Analytics revenus (Compta)
 
@@ -887,7 +887,10 @@ Android build 48 (23 sept. 2026 · achat PASS MTN membre) :
   - **FAIL UX retour app** : crash « Ouvrir THE LOOP » · PR #9 · retest build 49
   - **Admin** : ligne abandon = **Sans débit** (PR #9 · deploy web + API Render)
 Build Android : **48**
-Branch / commit : `main` PR #9 merge · admin-web auto-deploy
+Admin-web (23 sept. 2026 · paiements + gates) :
+  - Paiements : onglet **Sans débit** · Resync abandon · **Vérifié Djomy** · libellé sous bouton — **PASS** (super admin)
+  - Paramètres **Gates** : inscription · maintenance · pré-lancement · achat PASS — toggle ON/OFF — **PASS**
+Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

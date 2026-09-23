@@ -71,7 +71,7 @@ export function resyncHintForIntent(intent: {
   const dj = intent.djomyStatus?.trim() ?? '';
 
   if (isDjomyAbandonedStatus(dj)) {
-    return 'Portail quitté sans paiement — aucun débit. Resync confirme chez Djomy.';
+    return 'Portail quitté — aucun débit. Resync confirme chez Djomy.';
   }
 
   if (isDjomyPaidStatus(dj)) {
