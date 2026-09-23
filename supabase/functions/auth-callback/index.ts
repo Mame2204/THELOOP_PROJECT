@@ -3,6 +3,9 @@
  * Flux hybride : app si installée · web sinon · modal install après MDP web.
  *
  * URL : https://<project>.supabase.co/functions/v1/auth-callback
+ *
+ * Corps HTML synchronisé depuis server/static/auth-callback.html :
+ *   node scripts/sync-auth-callback-edge.mjs
  */
 const HTML = `<!DOCTYPE html>
 <html lang="fr">
@@ -107,11 +110,38 @@ const HTML = `<!DOCTYPE html>
       var usedWebPath = false;
 
       function readParams() {
-        var hash = window.location.hash || '';
+        var merged = new URLSearchParams();
         var search = window.location.search || '';
-        var paramString = hash.indexOf('#') === 0 ? hash.slice(1)
-          : (search.indexOf('?') === 0 ? search.slice(1) : '');
-        return { paramString: paramString, params: new URLSearchParams(paramString) };
+        if (search.indexOf('?') === 0) {
+          new URLSearchParams(search.slice(1)).forEach(function (v, k) {
+            merged.set(k, v);
+          });
+        }
+        var hash = window.location.hash || '';
+        if (hash.indexOf('#') === 0 && hash.length > 1) {
+          new URLSearchParams(hash.slice(1)).forEach(function (v, k) {
+            merged.set(k, v);
+          });
+        }
+        var paramString = merged.toString();
+        return { paramString: paramString, params: merged };
+      }
+
+      function fetchWithTimeout(url, options, ms) {
+        return new Promise(function (resolve, reject) {
+          var timer = setTimeout(function () {
+            reject(new Error('Délai dépassé — vérifiez votre connexion et réessayez.'));
+          }, ms);
+          fetch(url, options)
+            .then(function (res) {
+              clearTimeout(timer);
+              resolve(res);
+            })
+            .catch(function (err) {
+              clearTimeout(timer);
+              reject(err);
+            });
+        });
       }
 
       function showErr(msg) {
@@ -193,7 +223,7 @@ const HTML = `<!DOCTYPE html>
         pwdForm.style.display = 'none';
         appFallback.style.display = 'none';
         title.textContent = sessionState.kind === 'recovery' ? 'Réinitialiser le mot de passe' : 'Activer votre compte';
-        message.textContent = 'THE LOOP est installée ? Ouvrez l\\'app. Sinon, continuez sur le web pour choisir votre mot de passe.';
+        message.textContent = 'THE LOOP est installée ? Ouvrez l\\\\'app. Sinon, continuez sur le web pour choisir votre mot de passe.';
       }
 
       function showWebForm() {
@@ -266,11 +296,11 @@ const HTML = `<!DOCTYPE html>
       }
 
       function verifyTokenHash(tokenHash, kind) {
-        return fetch(supabaseUrl + '/auth/v1/verify', {
+        return fetchWithTimeout(supabaseUrl + '/auth/v1/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'apikey': anon },
           body: JSON.stringify({ type: otpVerifyType(kind), token_hash: tokenHash })
-        }).then(function (res) {
+        }, 20000).then(function (res) {
           return res.json().then(function (body) {
             if (!res.ok) throw new Error(authError(body));
             return body;
@@ -291,25 +321,48 @@ const HTML = `<!DOCTYPE html>
         });
       }
 
+      var stuckGuard = window.setTimeout(function () {
+        if (title.textContent === 'Chargement…') {
+          title.textContent = 'Lien incomplet ou expiré';
+          message.textContent =
+            'Aucune information de validation dans ce lien. Demandez un nouvel e-mail d\\\\'invitation, ou ouvrez le lien dans Safari / Chrome (pas uniquement l\\\\'aperçu du mail).';
+        }
+      }, 15000);
+
+      function clearStuckGuard() {
+        window.clearTimeout(stuckGuard);
+      }
+
       var parsed = readParams();
       var params = parsed.params;
       var paramString = parsed.paramString;
       var kind = (params.get('type') || 'invite').toLowerCase();
-      var tokenHash = params.get('token_hash');
+      var tokenHash = params.get('token_hash') || params.get('token');
       var code = params.get('code');
       var accessToken = params.get('access_token');
       var refreshToken = params.get('refresh_token');
 
       var error = params.get('error_description') || params.get('error');
       if (error) {
+        clearStuckGuard();
         title.textContent = 'Lien invalide';
-        message.textContent = decodeURIComponent(String(error).replace(/\\+/g, ' '));
+        message.textContent = decodeURIComponent(String(error).replace(/\\\\+/g, ' '));
+        return;
+      }
+
+      if (!paramString) {
+        clearStuckGuard();
+        title.textContent = 'Lien incomplet';
+        message.textContent =
+          'Ce lien ne contient pas les informations attendues. Rouvrez le dernier e-mail et touchez « Activer mon compte », ou copiez le lien de secours sous le bouton.';
         return;
       }
 
       if (tokenHash) {
+        message.textContent = 'Validation du lien en cours…';
         verifyTokenHash(tokenHash, kind)
           .then(function (session) {
+            clearStuckGuard();
             var at = session.access_token;
             var rt = session.refresh_token;
             if (!at || !rt) throw new Error('Session invalide après validation.');
@@ -317,8 +370,9 @@ const HTML = `<!DOCTYPE html>
             beginSession(at, rt, kind, ps);
           })
           .catch(function (err) {
+            clearStuckGuard();
             title.textContent = 'Lien invalide ou expiré';
-            message.textContent = err.message || 'Demandez un nouvel e-mail depuis l\\'administrateur THE LOOP.';
+            message.textContent = err.message || 'Demandez un nouvel e-mail depuis l\\\\'administrateur THE LOOP.';
           });
         return;
       }
@@ -331,24 +385,20 @@ const HTML = `<!DOCTYPE html>
           .catch(function (err) {
             title.textContent = 'Lien incomplet';
             message.textContent = (err.message || 'Ce lien ne peut pas être validé ici.')
-              + ' Demandez à l\\'équipe THE LOOP de renvoyer l\\'invitation (nouveau modèle d\\'e-mail).';
+              + ' Demandez à l\\\\'équipe THE LOOP de renvoyer l\\\\'invitation (nouveau modèle d\\\\'e-mail).';
           });
         return;
       }
 
-      if (!paramString) {
-        title.textContent = 'Lien incomplet';
-        message.textContent = 'Ce lien ne fonctionne pas. Demandez un nouvel e-mail d\\'invitation.';
-        return;
-      }
-
       if ((kind === 'recovery' || kind === 'invite') && accessToken && refreshToken) {
+        clearStuckGuard();
         beginSession(accessToken, refreshToken, kind, paramString);
         return;
       }
 
+      clearStuckGuard();
       title.textContent = 'E-mail confirmé';
-      message.textContent = 'Utilisez les boutons ci-dessous pour continuer dans l\\'app ou sur le web.';
+      message.textContent = 'Utilisez les boutons ci-dessous pour continuer dans l\\\\'app ou sur le web.';
       sessionState.deepLink = buildDeepLink(paramString);
       sessionState.paramString = paramString;
       sessionState.kind = kind;
@@ -357,7 +407,6 @@ const HTML = `<!DOCTYPE html>
   </script>
 </body>
 </html>`;
-
 Deno.serve((req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
