@@ -545,8 +545,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `AdminLoopBenefitsScreen` — privilèges offerts *(contenu publié lié · pas modèles Paramètres)* *(23 sept. 2026 · **PASS**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 - [ ] **💻** Privilèges offerts web — alignement liste *(fix PR · avant : tout le catalogue THE LOOP)*
-- [ ] **📱** `AdminLoopFeaturedScreen` — à la une THE LOOP *(retest post-fix sync Supabase · web OK)*
-- [ ] **🤖** Idem
+- [x] **📱** `AdminLoopFeaturedScreen` — à la une THE LOOP *(23 sept. 2026 · build 48 · **PASS** · aligné web)*
+- [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 - [x] **💻** À la une admin-web `/loop?tab=featured` *(23 sept. 2026 · **PASS**)*
 - [x] **📱** `AdminLoopStatsScreen` — performances *(favoris · clics · étoiles)* *(23 sept. 2026 · **PASS**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
