@@ -1,3 +1,4 @@
+import { loopPerfCompositeScore } from './loop-perf-sort';
 import { supabase } from './supabase';
 
 /** Aligné `AdminLoopStatsScreen` + `content-mappers.ts` (mobile). */
@@ -47,22 +48,13 @@ function formatDisplayLine(row: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore
   return `${row.favorites} ${favLabel} · ${row.clicks} ${clickLabel} · ${row.stars}★ · ${formatRatingMeta(row.ratingAvg, row.ratingCount)}`;
 }
 
-function sortAllMetric(rows: TeamLoopPerfRow[]): TeamLoopPerfRow[] {
-  return [...rows].sort(
-    (a, b) => b.favorites + b.clicks + b.stars * 5 - (a.favorites + a.clicks + a.stars * 5),
-  );
-}
-
 function finalizeRows(rows: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore'>[]): TeamLoopPerfRow[] {
-  const withMeta = rows.map((r) => {
-    const sortScore = r.favorites + r.clicks + r.stars * 5;
-    return {
-      ...r,
-      sortScore,
-      displayLine: formatDisplayLine(r),
-    };
-  });
-  return sortAllMetric(withMeta);
+  const withMeta = rows.map((r) => ({
+    ...r,
+    sortScore: loopPerfCompositeScore(r),
+    displayLine: formatDisplayLine(r),
+  }));
+  return withMeta;
 }
 
 export async function loadTeamLoopPerformance(countryCode: string): Promise<{

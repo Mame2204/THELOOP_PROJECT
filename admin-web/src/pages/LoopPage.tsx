@@ -23,6 +23,7 @@ import {
   type BenefitCatalogRow,
 } from '../lib/privileges';
 import { loadInsights, type InsightsBundle } from '../lib/insights';
+import { sortLoopPerfRows, type LoopPerfMetricTab } from '../lib/loop-perf-sort';
 import { loadTeamLoopPerformance, type TeamLoopPerfRow } from '../lib/team-loop-performance';
 
 type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
@@ -82,6 +83,7 @@ export function LoopPage() {
     spots: TeamLoopPerfRow[];
     tools: TeamLoopPerfRow[];
   } | null>(null);
+  const [perfMetric, setPerfMetric] = useState<LoopPerfMetricTab>('all');
 
   const loadContent = useCallback(async () => {
     const res = await listCatalogContent(countryCode, [typeTab], {
@@ -142,6 +144,15 @@ export function LoopPage() {
     () => benefits.filter((b) => benefitFilter === 'all' || b.isActive),
     [benefits, benefitFilter],
   );
+
+  const sortedTeamPerf = useMemo(() => {
+    if (!teamPerfByKind) return null;
+    return {
+      events: sortLoopPerfRows(teamPerfByKind.events, perfMetric),
+      spots: sortLoopPerfRows(teamPerfByKind.spots, perfMetric),
+      tools: sortLoopPerfRows(teamPerfByKind.tools, perfMetric),
+    };
+  }, [teamPerfByKind, perfMetric]);
 
   async function applyStatus(item: CatalogContentItem, status: ContentStatus) {
     setBusy(true);
@@ -334,7 +345,7 @@ export function LoopPage() {
         </>
       ) : null}
 
-      {tab === 'stats' && canStats && stats && teamPerfByKind ? (
+      {tab === 'stats' && canStats && stats && sortedTeamPerf ? (
         <>
           <div className="kpi-grid">
             <div className="card kpi-card">
@@ -351,13 +362,33 @@ export function LoopPage() {
             </div>
           </div>
           <h3>Performances</h3>
-          <p className="meta" style={{ marginBottom: 12 }}>
-            Contenus publiés par THE LOOP — affichage identique à l’app mobile (favoris · clics · étoiles ·
-            notes). Le tri « Tous » utilise favoris + clics + étoiles × 5 en interne uniquement.
+          <p className="meta" style={{ marginBottom: 8 }}>
+            Contenus publiés par THE LOOP — même lignes détail que l’app mobile. Classement selon l’onglet ci-dessous
+            (par défaut « Tous » = favoris + clics + étoiles × 5).
           </p>
-          <TopList title="Événements" rows={teamPerfByKind.events} />
-          <TopList title="Spots" rows={teamPerfByKind.spots} />
-          <TopList title="Outils" rows={teamPerfByKind.tools} />
+          <nav className="tabs" style={{ marginBottom: 12 }}>
+            {(
+              [
+                ['all', 'Tous'],
+                ['favorites', 'Favoris'],
+                ['clicks', 'Clics'],
+                ['stars', 'Étoiles'],
+                ['ratings', 'Notes'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`tab ${perfMetric === id ? 'active' : ''}`}
+                onClick={() => setPerfMetric(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <TopList title="Événements" rows={sortedTeamPerf.events} />
+          <TopList title="Spots" rows={sortedTeamPerf.spots} />
+          <TopList title="Outils" rows={sortedTeamPerf.tools} />
         </>
       ) : null}
     </section>
@@ -472,7 +503,7 @@ function TopList({ title, rows }: { title: string; rows: TeamLoopPerfRow[] }) {
         <ol className="top-list">
           {rows.slice(0, 10).map((r, index) => (
             <li key={`${r.kind}-${r.id}`}>
-              <div>
+              <div style={{ flex: 1 }}>
                 <span className="meta" style={{ marginRight: 6 }}>
                   #{index + 1}
                 </span>

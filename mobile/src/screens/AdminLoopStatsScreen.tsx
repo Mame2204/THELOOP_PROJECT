@@ -77,7 +77,7 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
         title: loc.name,
         clicks: loc.clickCount ?? 0,
         favorites: loc.favoriteCount ?? 0,
-        stars: loc.starCount ?? 0,
+        stars: loc.starCount ?? 3,
         ratingAvg: loc.ratingAvg ?? 0,
         ratingCount: loc.ratingCount ?? 0,
       });
