@@ -23,6 +23,7 @@ import {
   type BenefitCatalogRow,
 } from '../lib/privileges';
 import { loadInsights, type InsightsBundle } from '../lib/insights';
+import { loadTeamLoopPerformance, type TeamLoopPerfRow } from '../lib/team-loop-performance';
 
 type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
 
@@ -76,6 +77,11 @@ export function LoopPage() {
   const [benefits, setBenefits] = useState<BenefitCatalogRow[]>([]);
   const [benefitFilter, setBenefitFilter] = useState<'active' | 'all'>('active');
   const [stats, setStats] = useState<InsightsBundle | null>(null);
+  const [teamPerfByKind, setTeamPerfByKind] = useState<{
+    events: TeamLoopPerfRow[];
+    spots: TeamLoopPerfRow[];
+    tools: TeamLoopPerfRow[];
+  } | null>(null);
 
   const loadContent = useCallback(async () => {
     const res = await listCatalogContent(countryCode, [typeTab], {
@@ -100,7 +106,13 @@ export function LoopPage() {
   }, [countryCode]);
 
   const loadStats = useCallback(async () => {
-    setStats(await loadInsights(countryCode, { teamOnly: true }));
+    const [insights, perf] = await Promise.all([
+      loadInsights(countryCode, { teamOnly: true }),
+      loadTeamLoopPerformance(countryCode),
+    ]);
+    setStats(insights);
+    setTeamPerfByKind({ events: perf.events, spots: perf.spots, tools: perf.tools });
+    if (perf.error) setMsg(perf.error);
   }, [countryCode]);
 
   useEffect(() => {
@@ -322,7 +334,7 @@ export function LoopPage() {
         </>
       ) : null}
 
-      {tab === 'stats' && canStats && stats ? (
+      {tab === 'stats' && canStats && stats && teamPerfByKind ? (
         <>
           <div className="kpi-grid">
             <div className="card kpi-card">
@@ -338,13 +350,14 @@ export function LoopPage() {
               <strong>{stats.counts.tools}</strong>
             </div>
           </div>
-          <h3>Performances (favoris · clics · étoiles)</h3>
+          <h3>Performances</h3>
           <p className="meta" style={{ marginBottom: 12 }}>
-            Classement aligné app mobile — score = favoris + clics + étoiles × 5.
+            Contenus publiés par THE LOOP — affichage identique à l’app mobile (favoris · clics · étoiles ·
+            notes). Le tri « Tous » utilise favoris + clics + étoiles × 5 en interne uniquement.
           </p>
-          <TopList title="Événements" rows={stats.eventsByEngagement} />
-          <TopList title="Spots" rows={stats.spotsByEngagement} />
-          <TopList title="Outils" rows={stats.toolsByEngagement} />
+          <TopList title="Événements" rows={teamPerfByKind.events} />
+          <TopList title="Spots" rows={teamPerfByKind.spots} />
+          <TopList title="Outils" rows={teamPerfByKind.tools} />
         </>
       ) : null}
     </section>
@@ -449,18 +462,25 @@ function ContentTable({
   );
 }
 
-function TopList({ title, rows }: { title: string; rows: { id: string; title: string; metric: number }[] }) {
+function TopList({ title, rows }: { title: string; rows: TeamLoopPerfRow[] }) {
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <h4 style={{ margin: '0 0 8px' }}>{title}</h4>
       {rows.length === 0 ? (
-        <p className="muted">Aucune donnée.</p>
+        <p className="muted">Aucun contenu THE LOOP publié pour ce pays.</p>
       ) : (
         <ol className="top-list">
-          {rows.slice(0, 5).map((r) => (
-            <li key={r.id}>
-              <span>{r.title}</span>
-              <strong>{r.metric}</strong>
+          {rows.slice(0, 10).map((r, index) => (
+            <li key={`${r.kind}-${r.id}`}>
+              <div>
+                <span className="meta" style={{ marginRight: 6 }}>
+                  #{index + 1}
+                </span>
+                <span>{r.title}</span>
+                <div className="meta" style={{ marginTop: 4 }}>
+                  {r.displayLine}
+                </div>
+              </div>
             </li>
           ))}
         </ol>
