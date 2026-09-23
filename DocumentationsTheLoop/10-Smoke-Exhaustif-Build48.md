@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **180 / 363** cases cochées ≈ **50 %** *(363 items `- [ ]` / `- [x]` dans ce doc)* |
-| **Prochain test** | **📱 A4 set_password** (lien e-mail recovery rendu · post-deploy Render auth-sync) · **💻 B4 Paiements** |
+| **Avancement smoke** | **~194 / 367** cases cochées ≈ **53 %** *(recalcul après session privilèges · 23 sept.)* |
+| **Prochain test** | **FAIL octroi individuel** (validation partenaire) · **📱 A4 set_password** post-deploy Render |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
 | **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
@@ -303,10 +303,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [ ] **📱** `PartnerValidationCodeScreen` — double tap logo → code établissement
 - [ ] **🤖** Idem
-- [ ] **📱** `PartnerBenefitScanScreen` — scan QR après code valide
-- [ ] **🤖** Idem
-- [ ] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerBenefitScanScreen` — scan QR après code valide *(23 sept. 2026 · build 48 · Pro connecté · scan QR Prime — identité OK)*
+- [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
+- [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
+- [x] **🤖** Idem *(23 sept. 2026 · Android)*
 - [ ] **📱** `PartnerLoginScreen` — connexion jeton SPOT *(deep link / nav manuelle)*
 - [ ] **🤖** Idem
 
@@ -420,12 +420,15 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Privilèges & fiches
 - [x] **📱** Fiche event/spot avec privilège → **Utiliser chez le partenaire** *(20 sept. 2026 · build 48 · compte carte membre Prime · parcours complet : cadenas → octroi → utilisation → **quota atteint**)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · Android · privilège **inclus Prime** · scan partenaire OK)*
 - [x] **📱** Privilège sans octroi → cadenas *(20 sept. 2026 · build 48 · état initial observé avant octroi)*
-- [ ] **🤖** Idem
-- [x] **📱** Privilège octroyé (tirage / admin) → déverrouillé *(20 sept. 2026 · build 48 · déverrouillé après octroi · puis consommé)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · Android · membre · cadenas sur fiches / spots)*
+- [x] **📱** Privilège octroyé (tirage / admin / **Prime**) → déverrouillé *(20 sept. 2026 · build 48 · déverrouillé après octroi · puis consommé)*
+- [x] **🤖** Idem *(23 sept. 2026 · Android · Prime · liste fiche détail déverrouillée)*
+- [x] **📱** Notifs cloche Prime — **en attente validation** + **privilège validé** *(23 sept. 2026 · build 48 · après « Utiliser » puis validation partenaire · **📱 iOS + 🤖 Android**)*
 - [x] **📱** `MyBenefitsScreen` — liste privilèges actifs *(20 sept. 2026 · build 48 · **BLOCKED / N/A** — écran « Mes privilèges » sans entrée UI visible dans l’app · privilèges consultés sur **fiche détail**)*
+- [x] **🤖** Idem *(23 sept. 2026 · **N/A** — pas d’entrée menu · cohérent build 48)*
+- [ ] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(23 sept. 2026 · build 48 · **FAIL** · erreur serveur à la validation · message type « vérifiez le serveur » · **OK** pour privilège **inclus Prime / par rôle**)*
 - [ ] **🤖** Idem
 
 ---
@@ -478,10 +481,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
 - [ ] **🤖** Idem
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR membre *(20 sept. 2026 · build 48 · A4-U22 PASS · validation identité OK depuis Pro connecté)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · Android · scan Prime sans « Utiliser » puis avec privilège — OK)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — accepter / refuser *(20 sept. 2026 · build 48 · A4-U23 PASS)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · Android · privilège Prime coché / validé)*
 - [x] **📱** Notif « privilège à valider » dans Pro *(20 sept. 2026 · build 48 · A4-U24 **N/A** — aucun privilège en attente · comportement attendu)*
+- [x] **🤖** Flux complet membre Prime « Utiliser » → partenaire voit demande *(23 sept. 2026 · notifs côté Prime **📱🤖** observées)*
 
 ### Catalogue & favoris
 - [x] **📱** Onglets Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48 · A4-U25 PASS)*
@@ -913,6 +917,11 @@ Auth MDP (23 sept. 2026 · build 48) :
   - **Pro ? Rejoindre THE LOOP** + **PartnerApply** — **PASS 📱🤖** (demande reçue super admin)
   - **Recovery HTML balises visibles** — fix **api.theloop-app.com/auth/callback** (deploy Render) · **nouvel e-mail** reset (build 48 OK · build 49 = URL dans l’APK)
   - **🤖 Interactions** : favori sans compte · recherche barre · profil contact — **PASS** (23 sept.)
+Privilèges build 48 (23 sept. 2026 · retest testeur) :
+  - **PASS 📱🤖** : privilège **inclus Prime** (tous Prime) · fiche détail · cadenas membre / déverrouillé Prime
+  - **PASS 📱🤖** : partenaire — scan QR **identité** Prime (sans « Utiliser ») · puis scan après « Utiliser » · avantage affiché coché · validation OK
+  - **PASS 📱🤖** : notifs cloche Prime (attente validation · privilège validé) — iOS + Android
+  - **FAIL** : **octroi individuel** (1 utilisateur ciblé admin) — erreur serveur à la validation partenaire (rôle / Prime OK)
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
