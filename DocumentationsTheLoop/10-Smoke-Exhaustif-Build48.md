@@ -379,11 +379,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** Tentative favori sans compte → page connexion Auth *(20 sept. 2026 · build 48 · pile Auth sans compte)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · pas d’accès favoris sans compte OK)*
 - [x] **📱** Recherche inline (Agenda / Spots) *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · barre de recherche OK)*
 - [x] **📱** Profil → contact `contact@theloop-app.com` *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48)*
 
 ---
 
@@ -777,8 +777,8 @@ Liens Param. → pages satellites :
 
 ## C3 — Contact & support
 
-- [ ] **📱** Profil → `contact@theloop-app.com`
-- [ ] **🤖** Idem
+- [x] **📱** Profil → `contact@theloop-app.com` *(20 sept. 2026 · build 48 · A2)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48)*
 - [ ] **📱** mailto / WhatsApp sheet
 - [ ] **📱** FAQ / CGU → e-mail support à jour
 - [ ] **🤖** Idem
@@ -910,7 +910,8 @@ Auth MDP (23 sept. 2026 · build 48) :
   - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
   - **Oubli MDP** : e-mail OK · lien → **page auth-callback 📱🤖** (normal · pas d’auto-app) · **CGU / Politique 📱🤖 PASS**
   - **Pro ? Rejoindre THE LOOP** + **PartnerApply** — **PASS 📱🤖** (demande reçue super admin)
-  - **Recovery HTML balises visibles** — fix **api.theloop-app.com/auth/callback** (deploy Render) · renvoyer e-mail reset
+  - **Recovery HTML balises visibles** — fix **api.theloop-app.com/auth/callback** (deploy Render) · **nouvel e-mail** reset (build 48 OK · build 49 = URL dans l’APK)
+  - **🤖 Interactions** : favori sans compte · recherche barre · profil contact — **PASS** (23 sept.)
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —
