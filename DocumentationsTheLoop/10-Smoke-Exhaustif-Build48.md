@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~194 / 367** cases cochées ≈ **53 %** *(recalcul après session privilèges · 23 sept.)* |
+| **Avancement smoke** | **192 / 367** cases cochées ≈ **52 %** *(recalcul après session privilèges · 23 sept.)* |
 | **Prochain test** | **FAIL octroi individuel** (validation partenaire) · **📱 A4 set_password** post-deploy Render |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
