@@ -340,7 +340,21 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ## A1 — Non connecté (`USER_ANONYMOUS`)
 
-> Pas de bottom nav · pile Auth uniquement.
+> Pas de bottom nav · pile Auth uniquement. **Toutes les cases ci-dessous = tu es déconnecté** (pas Accueil / Agenda).  
+> Exception : certaines lignes « Stack Auth » ont été testées **après** connexion partenaire (scan privilège) — le libellé le dit dans la note *(Pro connecté)*.
+
+### Comment lire Auth — invite vs mot de passe oublié
+
+| Parcours | Où dans l’app | Lien e-mail ? | Cases smoke |
+|----------|----------------|---------------|-------------|
+| **Invité admin** | Auth → « Activer un compte invité… » → mode **activate** | Non (in-app seulement depuis PR #22) | **activate** 📱/🤖 |
+| **Oubli MDP — étape 1** | Auth → mot de passe oublié → mode **reset** | Tu **demandes** le mail | **reset** 📱/🤖 *(coché = mail reçu)* |
+| **Oubli MDP — étape 2 web** | Tu **ouvres le lien** du mail → page **`/auth/callback`** (navigateur) · choix app/web · **nouveau MDP sur le web** | Oui | **set_password** *(page recovery rendue)* |
+| **Oubli MDP — étape 2 app** | Même lien → **« J’ai THE LOOP — ouvrir l’application »** → écran Auth mode **set_password** dans l’app | Oui | **recovery → set_password in-app** |
+| **Partenaire Pro (jeton SPOT)** | Écran **`PartnerLoginScreen`** · code type **`SPOT-XXXX-YYYY`** (carte Pro · pas le MDP membre) | Optionnel (deep link) | **PartnerLogin** *(souvent non testé : les partenaires passent surtout par **e-mail + MDP** → voir **A4**)* |
+
+> **Ce qui est déjà validé en session (journal)** : oubli MDP → **mail OK** · lien → **page auth-callback s’affiche** 📱🤖.  
+> **Ce qui n’est pas encore coché dans la checklist** : saisie du **nouveau mot de passe** jusqu’au bout (web **ou** app) — d’où les 4 lignes **set_password** encore vides.
 
 ### `AuthScreen` — modes
 - [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 48)*
@@ -350,12 +364,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(même parcours que 📱 · cocher si tu as refait « Activer un compte invité » sur Android build 48)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
-- [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
-- [ ] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(retest post-deploy auth-callback)*
+- [ ] **📱** Mode **set_password** — **étape 2 oubli MDP (web)** : après le mail, sur **`api.theloop-app.com/auth/callback`**, formulaire nouveau MDP · boutons OK · pas de HTML brut *(≠ mode reset dans l’app · retest avec **nouvel** e-mail post-deploy Render)*
+- [ ] **🤖** Idem
+- [ ] **📱** **Oubli MDP étape 2 (app)** : depuis la page callback · **« Ouvrir l’application »** → Auth **set_password** · enregistrer MDP · se connecter *(anonymous jusqu’à la fin)*
 - [ ] **🤖** Idem
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
 - [x] **🤖** Idem *(23 sept. 2026)*
@@ -371,7 +385,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android)*
-- [ ] **📱** `PartnerLoginScreen` — connexion jeton SPOT *(deep link / nav manuelle)*
+- [ ] **📱** `PartnerLoginScreen` — connexion **jeton SPOT** (`SPOT-XXXX-YYYY` · ex. démo `SPOT-DEMO-2026`) · accès espace Pro **sans** e-mail membre *(écran présent dans l’app · peu d’entrée UI visible — test manuel / deep link ; **non bloquant** si partenaires utilisent `contact@…` + MDP en A4)*
 - [ ] **🤖** Idem
 
 ### Bloqué sans connexion
