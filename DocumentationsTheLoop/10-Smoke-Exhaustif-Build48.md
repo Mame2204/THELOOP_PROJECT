@@ -46,13 +46,13 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **202 / 369** cases cochées ≈ **55 %** *(23 sept. · retours testeur Android + compta)* |
-| **Prochain test** | **Retest octroi individuel 📱🤖** (**build mobile 49+** avec correctifs PR #13 · SQL `20260935`+`20260936` **OK**) · **📱 A4 set_password** post-deploy Render |
+| **Avancement smoke** | **205 / 369** cases cochées ≈ **56 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
+| **Prochain test** | **💻 B6 suite** (Accueil blocs · Loop hub · transfert) · **📱🤖 reporté build 49+** : octroi individuel · slider **À la une** Accueil (`20260937` + app) · **📱 A4 set_password** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
 | **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
-| **Reporté build 49+** | LoopX · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 si contenu publié |
+| **Reporté build 49+** | LoopX · octroi individuel · **Accueil slider À la une** (migration `20260937`) · événements sans date (fallback app) · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 |
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
@@ -239,6 +239,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260925_admin_benefit_draws_draw_city.sql` — tirage `draw_city` *(23 sept. 2026 · OK)*
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
+- [ ] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **à appliquer Supabase** · puis build **49+**)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -613,7 +614,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/accueil` | Accueil | [ ] | Hero · sondage · parcours · singulier | [x] |
 | `/onglets` | Onglets | [ ] | Visibilité tabs app | [x] |
 | `/loop` | THE LOOP | [ ] | Hub éditorial | [x] |
-| `/contenu` | Contenu | [ ] | Liste events/spots/outils | [x] |
+| `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
 | `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
 | `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
 | `/contenu/editer/tool` | ContentEditor | [ ] | Créer / modifier outil | [x] |
@@ -715,9 +716,10 @@ Liens Param. → pages satellites :
 
 ## B6 — Contenu & éditorial
 
-- [ ] **💻** Filtrer events / spots / outils / archivés
-- [ ] **💻** Créer event · spot · outil (ContentEditor)
-- [ ] **💻** À la une · archiver · republier
+- [x] **💻** Filtrer events / spots / outils / marché *(23 sept. 2026 · super admin · Contenu **PASS**)*
+- [x] **💻** Créer event · spot · outil (ContentEditor) *(23 sept. 2026 · **PASS web** · sans date événement → agenda mobile faible jusqu’à edit / **build 49+**)*
+- [x] **💻** À la une *(23 sept. 2026 · **PASS web** (Accueil → À la une) · **📱🤖 Accueil slider** → **build 49+** + `20260937` · republier/archiver : suite B6)*
+- [ ] **💻** Archiver · republier (cycle de vie catalogue)
 - [ ] **💻** Transfert propriétaire THE LOOP ↔ partenaire
 - [ ] **💻** Accueil — hero · sondage · parcours · singulier · logos
 - [ ] **💻** Loop hub — sections éditoriales
@@ -911,6 +913,10 @@ Admin-web (23 sept. 2026 · paiements + gates) :
 Android (23 sept. 2026 · build 48 · suite) :
   - **Double tap** logo Auth → code établissement — **PASS**
   - **Déconnexion** — **PASS**
+Admin-web B6 Contenu (23 sept. 2026 · testeur) :
+  - **PASS 💻** : filtres events / spots / outils / marché · création event / spot / outil
+  - **PASS 💻** : « À la une » (coché admin-web) — effet **immédiat web**
+  - **Reporté 📱🤖 build 49+** : slider Accueil membre (fix empreinte `20260937` + binaire mobile) · date événement recommandée (fallback app build 49+)
   - Paramètres **Gates** : inscription · maintenance · pré-lancement · achat PASS — toggle ON/OFF — **PASS**
 Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
   - Maintenance + pré-lancement ON · **bypass 4 taps** — **PASS**
