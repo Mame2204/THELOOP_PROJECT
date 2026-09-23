@@ -1,4 +1,5 @@
-import { loopPerfCompositeScore } from './loop-perf-sort';
+import { loopPerfEngagementScore } from './loop-perf-sort';
+import { loadLoopPerfScoreWeights, type LoopPerfScoreWeights } from './loop-perf-score-weights';
 import { supabase } from './supabase';
 
 /** Aligné `AdminLoopStatsScreen` + `content-mappers.ts` (mobile). */
@@ -13,7 +14,7 @@ export interface TeamLoopPerfRow {
   stars: number;
   ratingAvg: number;
   ratingCount: number;
-  /** Tri onglet « Tous » uniquement — ne pas afficher comme métrique principale. */
+  /** Score engagement (clics×wC + favoris×wF + moyenne×wN) — tri « Tous ». */
   sortScore: number;
   displayLine: string;
 }
@@ -48,23 +49,27 @@ function formatDisplayLine(row: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore
   return `${row.favorites} ${favLabel} · ${row.clicks} ${clickLabel} · ${row.stars}★ · ${formatRatingMeta(row.ratingAvg, row.ratingCount)}`;
 }
 
-function finalizeRows(rows: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore'>[]): TeamLoopPerfRow[] {
-  const withMeta = rows.map((r) => ({
+function finalizeRows(
+  rows: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore'>[],
+  weights: LoopPerfScoreWeights,
+): TeamLoopPerfRow[] {
+  return rows.map((r) => ({
     ...r,
-    sortScore: loopPerfCompositeScore(r),
+    sortScore: loopPerfEngagementScore(r, weights),
     displayLine: formatDisplayLine(r),
   }));
-  return withMeta;
 }
 
 export async function loadTeamLoopPerformance(countryCode: string): Promise<{
   events: TeamLoopPerfRow[];
   spots: TeamLoopPerfRow[];
   tools: TeamLoopPerfRow[];
+  weights: LoopPerfScoreWeights;
   error?: string;
 }> {
   const cc = countryCode.toUpperCase().slice(0, 2);
   const errors: string[] = [];
+  const weights = await loadLoopPerfScoreWeights(cc);
 
   const eventsRes = await supabase
     .from('events')
@@ -145,9 +150,10 @@ export async function loadTeamLoopPerformance(countryCode: string): Promise<{
     });
 
   return {
-    events: finalizeRows(eventRows),
-    spots: finalizeRows(spotRows),
-    tools: finalizeRows(toolRows),
+    events: finalizeRows(eventRows, weights),
+    spots: finalizeRows(spotRows, weights),
+    tools: finalizeRows(toolRows, weights),
+    weights,
     error: errors.length ? errors.join(' · ') : undefined,
   };
 }

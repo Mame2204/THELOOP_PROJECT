@@ -29,6 +29,7 @@ import {
   type LoopPerfMetricTab,
   type LoopPerfSectionTab,
 } from '../lib/loop-perf-sort';
+import type { LoopPerfScoreWeights } from '../lib/loop-perf-score-weights';
 import { loadTeamLoopPerformance, type TeamLoopPerfRow } from '../lib/team-loop-performance';
 
 type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
@@ -91,6 +92,7 @@ export function LoopPage() {
   const [perfSection, setPerfSection] = useState<LoopPerfSectionTab>('all');
   const [perfMetric, setPerfMetric] = useState<LoopPerfMetricTab>('all');
   const [perfPage, setPerfPage] = useState(0);
+  const [perfScoreWeights, setPerfScoreWeights] = useState<LoopPerfScoreWeights | null>(null);
   const [benefitPage, setBenefitPage] = useState(0);
 
   const loadContent = useCallback(async () => {
@@ -122,6 +124,7 @@ export function LoopPage() {
     ]);
     setStats(insights);
     setTeamPerfByKind({ events: perf.events, spots: perf.spots, tools: perf.tools });
+    setPerfScoreWeights(perf.weights);
     if (perf.error) setMsg(perf.error);
   }, [countryCode]);
 
@@ -154,17 +157,18 @@ export function LoopPage() {
   );
 
   const perfListSorted = useMemo(() => {
-    if (!teamPerfByKind) return [];
-    if (perfSection === 'events') return sortLoopPerfRows(teamPerfByKind.events, perfMetric);
-    if (perfSection === 'spots') return sortLoopPerfRows(teamPerfByKind.spots, perfMetric);
-    if (perfSection === 'tools') return sortLoopPerfRows(teamPerfByKind.tools, perfMetric);
+    if (!teamPerfByKind || !perfScoreWeights) return [];
+    const weights = perfScoreWeights;
+    if (perfSection === 'events') return sortLoopPerfRows(teamPerfByKind.events, perfMetric, weights);
+    if (perfSection === 'spots') return sortLoopPerfRows(teamPerfByKind.spots, perfMetric, weights);
+    if (perfSection === 'tools') return sortLoopPerfRows(teamPerfByKind.tools, perfMetric, weights);
     const merged = [
       ...teamPerfByKind.events,
       ...teamPerfByKind.spots,
       ...teamPerfByKind.tools,
     ];
-    return sortLoopPerfRows(merged, perfMetric);
-  }, [teamPerfByKind, perfSection, perfMetric]);
+    return sortLoopPerfRows(merged, perfMetric, weights);
+  }, [teamPerfByKind, perfSection, perfMetric, perfScoreWeights]);
 
   const perfListPage = useMemo(() => {
     const start = perfPage * LOOP_PERF_PAGE_SIZE;
@@ -382,7 +386,7 @@ export function LoopPage() {
         </>
       ) : null}
 
-      {tab === 'stats' && canStats && stats && teamPerfByKind ? (
+      {tab === 'stats' && canStats && stats && teamPerfByKind && perfScoreWeights ? (
         <>
           <div className="kpi-grid">
             <div className="card kpi-card">
@@ -400,7 +404,9 @@ export function LoopPage() {
           </div>
           <h3>Performances</h3>
           <p className="meta" style={{ marginBottom: 8 }}>
-            Aligné app mobile : vue globale ou par type, puis tri favoris / clics / étoiles / notes.
+            Tri « Tous » : score = clics×{perfScoreWeights.clickWeight} + favoris×
+            {perfScoreWeights.favoriteWeight} + moyenne note×{perfScoreWeights.ratingWeight} (Paramètres
+            étoiles). Vue globale ou par type.
           </p>
           <nav className="tabs" style={{ marginBottom: 8 }}>
             {(
