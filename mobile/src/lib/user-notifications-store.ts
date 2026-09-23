@@ -27,6 +27,26 @@ export interface UserNotification {
 
 const KEY = 'loop_user_notifications_v1';
 const DELETED_IDS_KEY = 'loop_deleted_notification_ids_v1';
+const WELCOME_SENT_KEY = 'loop_welcome_notification_sent_v1';
+
+async function loadWelcomeSentUserIds(): Promise<Set<string>> {
+  try {
+    const raw = await AsyncStorage.getItem(WELCOME_SENT_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+async function markWelcomeSentUserId(userId: string): Promise<void> {
+  const set = await loadWelcomeSentUserIds();
+  if (set.has(userId)) return;
+  set.add(userId);
+  const trimmed = [...set].slice(-500);
+  await AsyncStorage.setItem(WELCOME_SENT_KEY, JSON.stringify(trimmed));
+}
 
 function notificationBelongsToUser(
   notification: UserNotification,
@@ -725,6 +745,36 @@ export async function clearUserNotifications(userId: string, phone?: string | nu
  * qu'une fois par fenêtre, même si un appelant la redemande en cascade.
  */
 const APPEND_DEDUP_WINDOW_MS = 60_000;
+/** Titres sensibles : une seule inbox par compte (anti-boucle welcome / validation partenaire). */
+const APPEND_ONCE_TITLES = new Set([
+  'Privilège à valider',
+  'Privilège à revalider',
+  'Avantage à valider',
+  'Avantage à revalider',
+]);
+
+async function hasExistingNotificationWithTitle(userId: string, title: string): Promise<boolean> {
+  const needle = title.trim();
+  if (!needle) return false;
+  const all = await loadAll();
+  const phoneKey = await resolveRecipientPhone(userId, null);
+  return all.some(
+    (n) =>
+      notificationBelongsToUser(n, userId, phoneKey) &&
+      n.title.trim() === needle,
+  );
+}
+
+async function hasExistingWelcomeNotification(userId: string): Promise<boolean> {
+  const all = await loadAll();
+  const phoneKey = await resolveRecipientPhone(userId, null);
+  return all.some(
+    (n) =>
+      notificationBelongsToUser(n, userId, phoneKey) &&
+      n.title.trim().startsWith('Bienvenue'),
+  );
+}
+
 const recentAppends = new Map<string, { at: number; task: Promise<UserNotification> }>();
 
 function pruneRecentAppends(now: number): void {
@@ -750,7 +800,36 @@ export function appendUserNotification(
   const pending = recentAppends.get(key);
   if (pending) return pending.task;
 
-  const task = createUserNotification(userId, input, options);
+  const task = (async () => {
+    const titleTrim = input.title.trim();
+    if (titleTrim.startsWith('Bienvenue')) {
+      const welcomed = await loadWelcomeSentUserIds();
+      if (welcomed.has(userId) || (await hasExistingWelcomeNotification(userId))) {
+        await markWelcomeSentUserId(userId);
+        const all = await loadAll();
+        const phoneKey = await resolveRecipientPhone(userId, options?.recipientPhone);
+        const existing = all.find(
+          (n) =>
+            notificationBelongsToUser(n, userId, phoneKey) &&
+            n.title.trim().startsWith('Bienvenue'),
+        );
+        if (existing) return existing;
+      }
+    }
+    if (APPEND_ONCE_TITLES.has(titleTrim)) {
+      if (await hasExistingNotificationWithTitle(userId, input.title)) {
+        const all = await loadAll();
+        const phoneKey = await resolveRecipientPhone(userId, options?.recipientPhone);
+        const existing = all.find(
+          (n) =>
+            notificationBelongsToUser(n, userId, phoneKey) &&
+            n.title.trim() === titleTrim,
+        );
+        if (existing) return existing;
+      }
+    }
+    return createUserNotification(userId, input, options);
+  })();
   recentAppends.set(key, { at: now, task });
   // Un échec ne doit pas bloquer une nouvelle tentative pendant toute la fenêtre.
   void task.catch(() => recentAppends.delete(key));
@@ -794,7 +873,7 @@ async function createUserNotification(
   withoutDup.unshift(entry);
   await saveAll(withoutDup);
 
-  // Alerte OS (arrière-plan / app fermée) — en plus de l’inbox.
+  // Push distant uniquement — pas de bannière locale en plus (évite doublon OS + listener en rafale).
   if (!options?.skipOsDelivery && /^[0-9a-f-]{36}$/i.test(userId)) {
     void import('@/lib/push-notifications').then(async (m) => {
       await m.requestExpoPushDelivery({
@@ -803,21 +882,6 @@ async function createUserNotification(
         body: input.message,
         data: { notificationId: id, audience: input.audience },
       });
-      // Si c’est le compte connecté sur cet appareil : bannière OS aussi en premier plan.
-      try {
-        if (isSupabaseConfigured() && supabase) {
-          const { data } = await supabase.auth.getUser();
-          if (data.user?.id === userId) {
-            await m.presentLocalOsNotification({
-              title: input.title,
-              body: input.message,
-              data: { notificationId: id, audience: input.audience },
-            });
-          }
-        }
-      } catch {
-        /* ignore */
-      }
     });
   }
 
@@ -892,9 +956,17 @@ export async function sendWelcomeNotification(user: {
   firstName?: string | null;
   countryCode?: string | null;
 }): Promise<void> {
+  const welcomed = await loadWelcomeSentUserIds();
+  if (welcomed.has(user.id)) return;
   const name = user.firstName?.trim() || 'Membre';
+  const title = `Bienvenue ${name} !`;
+  if ((await hasExistingWelcomeNotification(user.id)) || (await hasExistingNotificationWithTitle(user.id, title))) {
+    await markWelcomeSentUserId(user.id);
+    return;
+  }
+  await markWelcomeSentUserId(user.id);
   await appendUserNotification(user.id, {
-    title: `Bienvenue ${name} !`,
+    title,
     message:
       'Ton compte THE LOOP est actif. Découvre les événements, spots et outils près de toi. ' +
       'Tu peux à tout moment mettre à jour ton profil en cliquant sur le petit bonhomme en bas à droite.',

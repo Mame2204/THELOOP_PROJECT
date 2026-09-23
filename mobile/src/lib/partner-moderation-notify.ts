@@ -53,7 +53,7 @@ async function notifyPartnerUser(params: {
     });
     if (!error) {
       invalidateNotificationListCache();
-      await deliverPushToAdminUserIds(partnerIds, title, message, 'partner');
+      // Inbox + push déjà créés côté RPC — pas d’append client (doublons / rafales).
       return;
     }
     if (!error.message.includes('Could not find the function')) {
@@ -101,20 +101,8 @@ async function notifyAdminsForPartnerSubmission(params: {
       p_message_override: undefinedIfNull(params.messageOverride?.trim() || null),
     });
     if (!error) {
-      await deliverPushToAdminUserIds(adminIds, title, message, 'admin');
       invalidateNotificationListCache();
-      const adminIdList = Array.isArray(adminIds)
-        ? adminIds.map((id) => String(id)).filter((id) => UUID_RE.test(id))
-        : [];
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentAdminId = sessionData.session?.user?.id?.trim();
-      if (currentAdminId && adminIdList.includes(currentAdminId)) {
-        await appendUserNotification(currentAdminId, {
-          title,
-          message,
-          audience: 'admin',
-        });
-      }
+      await deliverPushToAdminUserIds(adminIds, title, message, 'admin');
       return;
     }
     if (!error.message.includes('Could not find the function')) {

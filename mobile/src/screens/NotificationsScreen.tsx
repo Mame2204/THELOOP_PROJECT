@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   Alert,
@@ -116,11 +116,23 @@ export function NotificationsScreen({ navigation }: Props) {
     }, [load]),
   );
 
+  const loadDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     return subscribeUserNotifications(() => {
-      void load(true);
+      if (loadDebounceRef.current) clearTimeout(loadDebounceRef.current);
+      loadDebounceRef.current = setTimeout(() => {
+        loadDebounceRef.current = null;
+        void load(false);
+      }, 350);
     });
   }, [load]);
+
+  useEffect(() => {
+    return () => {
+      if (loadDebounceRef.current) clearTimeout(loadDebounceRef.current);
+    };
+  }, []);
 
   async function reload() {
     await load(true);

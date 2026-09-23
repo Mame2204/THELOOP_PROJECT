@@ -19,12 +19,17 @@ import {
 } from '@/lib/admin-automation-jobs-store';
 import * as Crypto from 'expo-crypto';
 import { ensurePushCampaignDraft, recordSentPushCampaign } from '@/lib/admin-notifications-store';
-import { distributeNotification, appendUserNotification, filterUsersMatchingFavoriteCategories } from '@/lib/user-notifications-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  distributeNotification,
+  appendUserNotification,
+  filterUsersMatchingFavoriteCategories,
+  listUserNotifications,
+} from '@/lib/user-notifications-store';
 import { grantPrimeBenefits, listBenefitGrantRecipientTargets } from '@/lib/prime-benefits-store';
 import { processDailySpotStarCalculation } from '@/lib/spot-stars-store';
 import { listRegistryUsers, type RegistryUser } from '@/lib/user-registry-store';
 import { loadDemoFavorites } from '@/lib/demo-auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { HomeLocation } from '@/lib/demo-data';
 import type { UserRole } from '@/types';
 
@@ -207,8 +212,36 @@ async function runBirthdayJob(job: AutomationJob, date = new Date()): Promise<nu
   return processed;
 }
 
+const WELCOME_AUTOMATION_USERS_KEY = 'loop_welcome_automation_done_v1';
+
+async function loadWelcomeAutomationDone(): Promise<Set<string>> {
+  try {
+    const raw = await AsyncStorage.getItem(WELCOME_AUTOMATION_USERS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+async function markWelcomeAutomationDone(userId: string): Promise<void> {
+  const set = await loadWelcomeAutomationDone();
+  if (set.has(userId)) return;
+  set.add(userId);
+  await AsyncStorage.setItem(WELCOME_AUTOMATION_USERS_KEY, JSON.stringify([...set].slice(-800)));
+}
+
+async function userAlreadyWelcomedByAutomation(userId: string): Promise<boolean> {
+  const done = await loadWelcomeAutomationDone();
+  if (done.has(userId)) return true;
+  const inbox = await listUserNotifications(userId, null, { force: false });
+  return inbox.some((n) => n.title.trim().startsWith('Bienvenue'));
+}
+
 async function runWelcomeJobForUser(job: AutomationJob, user: RegistryUser): Promise<number> {
   if (!userMatchesJobGeo(user, job)) return 0;
+  if (await userAlreadyWelcomedByAutomation(user.id)) return 0;
 
   const name = user.firstName?.trim() || 'Membre';
   const customMessage = job.payload.welcomeMessage?.trim();
@@ -221,6 +254,7 @@ async function runWelcomeJobForUser(job: AutomationJob, user: RegistryUser): Pro
     message: customMessage || defaultMessage,
     audience: 'individual',
   });
+  await markWelcomeAutomationDone(user.id);
   const count = 1;
 
   if (!jobGrantsBenefits(job)) return count;

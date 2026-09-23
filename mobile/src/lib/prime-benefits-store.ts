@@ -2111,8 +2111,11 @@ export async function syncUserRoleBenefitEntitlements(user: User): Promise<numbe
   if (changed > 0) {
     const refreshed = refreshStatuses(next);
     await persistAndSync(refreshed, [...touched, ...revokedRemote]);
-    if (newlyCreated.length > 0) {
-      await pushCreatedBenefitNotifications(newlyCreated);
+    const grantsNeedingNotify = newlyCreated.filter(
+      (b) => b.grantedBy !== 'role-entitlement' && !b.roleEntitlement,
+    );
+    if (grantsNeedingNotify.length > 0) {
+      await pushCreatedBenefitNotifications(grantsNeedingNotify);
       markNetworkReachable();
     }
   }
