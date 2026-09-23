@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **205 / 371** cases cochées ≈ **55 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
-| **Prochain test** | **📱 A4 set_password** (oubli MDP) · **💻 B4 waitlist** · build **49+** (deep link connexion post-invite · octroi · à la une mobile) |
+| **Avancement smoke** | **~227 / 378** cases cochées ≈ **60 %** *(23 sept. soir · Hub THE LOOP web perf + privilèges)* |
+| **Prochain test** | **📱 build 49+** : perf THE LOOP (formule + pagination) · **A4 set_password** · **💻 B4 waitlist** · octroi individuel |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -519,7 +519,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | Insights | `AdminInsightsScreen` | [x] FAIL partiel | [ ] |
 | Accueil | `AdminAccueilScreen` | [x] PASS | [ ] |
 | Onglets & Espace Pro | `AdminRubriqueScreen` | [x] PASS | [ ] |
-| Hub THE LOOP | `AdminLoopScreen` | [x] FAIL partiel | [ ] |
+| Hub THE LOOP | `AdminLoopScreen` | [x] PASS *(sauf création hub · retest perf 📱49+)* | [ ] |
 | Contenu | `AdminContentScreen` | [x] PASS | [ ] |
 | Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [ ] |
 | Demandes | `AdminDemandesScreen` | [x] FAIL partiel | [ ] |
@@ -548,9 +548,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `AdminLoopFeaturedScreen` — à la une THE LOOP *(23 sept. 2026 · build 48 · **PASS** · aligné web)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 - [x] **💻** À la une admin-web `/loop?tab=featured` *(23 sept. 2026 · **PASS**)*
-- [x] **📱** `AdminLoopStatsScreen` — performances *(favoris · clics · étoiles)* *(23 sept. 2026 · **PASS**)*
-- [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
-- [ ] **💻** Performances web — score composite *(fix PR · aligné mobile)*
+- [x] **📱** `AdminLoopStatsScreen` — performances *(23 sept. 2026 · build 48 · **PASS** · retest **build 49+** : score clics×1+favoris×5+note×10 · pagination 20)*
+- [x] **🤖** Idem *(23 sept. 2026 · **PASS** · idem retest build 49+)*
+- [x] **💻** Performances web `/loop?tab=stats` *(23 sept. 2026 soir · **PASS** · Tous/Events/Spots/Outils · tri métrique · score engagement · pagination 20 · notes publiques off = 0 avis)*
 - [ ] **📱** `PartnerSubmissionScreen` — **création** event/spot/outil depuis hub THE LOOP *(non testé · 23 sept.)*
 - [ ] **🤖** Idem
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR **depuis compte admin** (hub THE LOOP) *(23 sept. 2026 · **PASS**)*
@@ -620,7 +620,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/insights` | Insights | [ ] | KPIs · graphiques | [x] |
 | `/accueil` | Accueil | [ ] | Hero · sondage · parcours · singulier | [x] |
 | `/onglets` | Onglets | [ ] | Visibilité tabs app | [x] |
-| `/loop` | THE LOOP | [ ] | Hub éditorial | [x] |
+| `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* | [x] |
 | `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
 | `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
 | `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
@@ -906,7 +906,7 @@ A5 bugs smoke build 48 :
   - TEAMS super admin : onglet **Par admin** vide (build 48) malgré admin délégué existant · fix PR #7 (fetch Supabase + UI sans blocage delegateOverrides)
   - TEAMS compte **délégué** : **pas** d’onglet « Par admin » (réservé super admin) · seulement onglet **Admin** (pack pays) · **vide build 48** si pack vide / permission `staff_benefits_team` / catalogue — **FAIL partiel** · fix PR #7
   - Gestion PASS : octroi manuel KO (recherche cache local) · liste « PASS accordés » mélange achats Prime · fix PR #7
-  - Enhancement : pagination listes admin (Users/Payments seulement aujourd’hui)
+  - Enhancement : pagination hub THE LOOP perf + privilèges web (**PASS 23 sept.**) · mobile perf **build 49+**
 A5-U23 : FAIL build 48 · ⏸ retest build 49+ (PR #7)
 Android build 48 (23 sept. 2026 · achat PASS MTN membre) :
   - **PASS métier OK** : 2 intents (1ʳᵉ abandon portail · 2ᵉ MTN payé) · PASS en file + **notif membre** après cron ~5 min
@@ -929,6 +929,10 @@ Admin-web B6 Contenu (23 sept. 2026 · testeur) :
   - **PASS 💻** : « À la une » (coché admin-web) — effet **immédiat web**
   - **Reporté 📱🤖 build 49+** : slider Accueil membre (fix empreinte `20260937` + binaire mobile) · date événement recommandée (fallback app build 49+)
   - Paramètres **Gates** : inscription · maintenance · pré-lancement · achat PASS — toggle ON/OFF — **PASS**
+Hub THE LOOP admin-web (23 sept. 2026 soir · testeur + agent) :
+  - **PASS 💻** : `/loop?tab=contenu` · **privilèges offerts** (liste liée contenu publié) · **à la une** · **performances** (formule clics×1 + favoris×5 + note×10 · vues Tous/type · pagination)
+  - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
+  - **Reporté 📱🤖 build 49+** : retest perf mobile après binaire (alignement formule + pagination)
 Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
   - Maintenance + pré-lancement ON · **bypass 4 taps** — **PASS**
 Serveur (23 sept. 2026) :
