@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **192 / 367** cases cochées ≈ **52 %** *(recalcul après session privilèges · 23 sept.)* |
+| **Avancement smoke** | **198 / 368** cases cochées ≈ **54 %** *(+migrations Supabase Phase 0 · 23 sept.)* |
 | **Prochain test** | **Retest octroi individuel** (migration `20260935` appliquée Supabase · 23 sept.) · **📱 A4 set_password** post-deploy Render |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
