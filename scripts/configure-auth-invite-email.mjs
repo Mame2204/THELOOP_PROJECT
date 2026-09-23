@@ -1,7 +1,8 @@
 /**
  * Configure Supabase Auth : templates invite / recovery / confirmation + redirect URLs.
  *
- * Usage: SUPABASE_ACCESS_TOKEN=xxx node scripts/configure-auth-invite-email.mjs
+ * Usage (Windows, racine du repo) : .\configure-auth-invite-email.cmd
+ * Usage (Linux/mac, Node global) : SUPABASE_ACCESS_TOKEN=xxx node scripts/configure-auth-invite-email.mjs
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';

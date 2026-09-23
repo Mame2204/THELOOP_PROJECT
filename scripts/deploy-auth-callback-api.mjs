@@ -1,6 +1,8 @@
 /**
  * Deploie auth-callback via Supabase Management API (sans supabase login).
- * Usage: node scripts/deploy-auth-callback-api.mjs
+ * Usage (Windows) : .\deploy-auth-callback.cmd  (auth-callback seul)
+ * Usage (Windows, les deux fonctions invite) : .\deploy-edge-invite.cmd
+ * Usage (Linux/mac) : node scripts/deploy-auth-callback-api.mjs
  * Env: SUPABASE_ACCESS_TOKEN (https://supabase.com/dashboard/account/tokens)
  */
 import { readFileSync, existsSync } from 'node:fs';

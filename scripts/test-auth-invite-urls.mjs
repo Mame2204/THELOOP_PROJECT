@@ -1,6 +1,7 @@
 /**
  * Vérifie que les URLs d’activation pointent bien vers l’API Render (pas l’Edge bloquée).
- * Usage: node scripts/test-auth-invite-urls.mjs
+ * Usage (Windows) : .\test-auth-invite-urls.cmd
+ * Usage (Linux/mac) : node scripts/test-auth-invite-urls.mjs
  */
 const API = 'https://api.theloop-app.com/auth/callback';
 const EDGE = 'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
@@ -34,7 +35,14 @@ const total = 4;
 if (await check('API sans params', API, 'api-incomplet')) pass += 1;
 if (await check('API token_hash fake', `${API}?token_hash=fake&type=invite`, 'api-preboot')) pass += 1;
 if (await check('Edge → redirect API', `${EDGE}?token_hash=x&type=invite`, 'redirect-api')) pass += 1;
-if (await check('Storage redirect', `${STORAGE}?token_hash=x&type=invite`, 'redirect-api')) pass += 1;
+async function checkStorage() {
+  const res = await fetch(`${STORAGE}?token_hash=x&type=invite`);
+  const text = await res.text();
+  const ok = text.includes('api.theloop-app.com/auth/callback');
+  console.log(ok ? 'PASS' : 'FAIL', 'Storage HTML → API', '—', ok ? 'redirect JS vers API' : 'mauvaise cible');
+  return ok;
+}
+if (await checkStorage()) pass += 1;
 
 console.log(`\n${pass}/${total} checks OK`);
 process.exit(pass === total ? 0 : 1);
