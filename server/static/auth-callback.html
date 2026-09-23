@@ -90,7 +90,7 @@
       if (p.accessToken && p.refreshToken) {
         t.textContent = 'Activer votre compte';
         m.textContent =
-          'THE LOOP est installée ? Touchez « Ouvrir l\\'application ». Sinon « Continuer sur le web » pour choisir votre mot de passe.';
+          "THE LOOP est installée ? Touchez « Ouvrir l'application ». Sinon « Continuer sur le web » pour choisir votre mot de passe.";
         var c = document.getElementById('choice');
         if (c) c.style.display = 'block';
       }
@@ -242,7 +242,7 @@
         pwdForm.style.display = 'none';
         appFallback.style.display = 'none';
         title.textContent = sessionState.kind === 'recovery' ? 'Réinitialiser le mot de passe' : 'Activer votre compte';
-        message.textContent = 'THE LOOP est installée ? Ouvrez l\\'app. Sinon, continuez sur le web pour choisir votre mot de passe.';
+        message.textContent = "THE LOOP est installée ? Ouvrez l'app. Sinon, continuez sur le web pour choisir votre mot de passe.";
       }
 
       function showWebForm() {
@@ -359,7 +359,7 @@
         if (title.textContent === 'Chargement…') {
           title.textContent = 'Lien incomplet ou expiré';
           message.textContent =
-            'Ouvrez le lien dans Safari ou Chrome (icône ⋯ du mail → « Ouvrir dans le navigateur »). Si le problème continue, demandez un nouvel e-mail d\\'invitation.';
+            "Ouvrez le lien dans Safari ou Chrome (icône ⋯ du mail → « Ouvrir dans le navigateur »). Si le problème continue, demandez un nouvel e-mail d'invitation.";
         }
       }, 8000);
 
@@ -406,7 +406,7 @@
           .catch(function (err) {
             clearStuckGuard();
             title.textContent = 'Lien invalide ou expiré';
-            message.textContent = err.message || 'Demandez un nouvel e-mail depuis l\\'administrateur THE LOOP.';
+            message.textContent = err.message || "Demandez un nouvel e-mail depuis l'administrateur THE LOOP.";
           });
         return;
       }
@@ -419,7 +419,7 @@
           .catch(function (err) {
             title.textContent = 'Lien incomplet';
             message.textContent = (err.message || 'Ce lien ne peut pas être validé ici.')
-              + ' Demandez à l\\'équipe THE LOOP de renvoyer l\\'invitation (nouveau modèle d\\'e-mail).';
+              + " Demandez à l'équipe THE LOOP de renvoyer l'invitation (nouveau modèle d'e-mail).";
           });
         return;
       }
@@ -432,7 +432,7 @@
 
       clearStuckGuard();
       title.textContent = 'E-mail confirmé';
-      message.textContent = 'Utilisez les boutons ci-dessous pour continuer dans l\\'app ou sur le web.';
+      message.textContent = "Utilisez les boutons ci-dessous pour continuer dans l'app ou sur le web.";
       sessionState.deepLink = buildDeepLink(paramString);
       sessionState.paramString = paramString;
       sessionState.kind = kind;
