@@ -3,6 +3,7 @@ import { mapDjomyGatewayMethodToApp } from '../lib/djomy-fees.js';
 import { getSupabaseAdmin, type PaymentIntentRow } from '../lib/supabase-admin.js';
 import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
 import { fulfillPaymentIntent, markFulfillmentFailed } from './fulfill-pass-payment.js';
+import { isDjomyAbandonedStatus } from './reconcile-payment-summary.js';
 
 function isPaidStatus(status: string | undefined): boolean {
   const normalized = String(status ?? '').toUpperCase();
@@ -129,6 +130,15 @@ export async function reconcilePaymentIntent(intent: PaymentIntentRow): Promise<
     });
 
     return { ...intent, status: nextStatus, djomy_status: djomyStatus };
+  }
+
+  if (isDjomyAbandonedStatus(djomyStatus)) {
+    await stampDjomyCheck(intent.id, {
+      djomy_status: djomyStatus,
+      djomy_provider_reference: providerRef,
+      status: 'cancelled',
+    });
+    return { ...intent, status: 'cancelled', djomy_status: djomyStatus };
   }
 
   return {

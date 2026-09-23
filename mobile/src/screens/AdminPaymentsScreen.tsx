@@ -187,8 +187,9 @@ export function AdminPaymentsScreen({ navigation }: Props) {
         return;
       }
       Alert.alert(
-        'Resynchronisé',
-        `Statut : ${res.intent?.status ?? '—'} · Fulfillment : ${res.intent?.fulfillmentStatus ?? '—'}`,
+        'Resync Djomy',
+        res.summary ??
+          `Statut : ${res.intent?.status ?? '—'} · Fulfillment : ${res.intent?.fulfillmentStatus ?? '—'} · Djomy : ${res.intent?.djomyStatus ?? '—'}`,
       );
       await load();
     } finally {

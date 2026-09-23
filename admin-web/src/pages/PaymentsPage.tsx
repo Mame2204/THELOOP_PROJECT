@@ -385,7 +385,13 @@ export function PaymentsPage() {
                 <td>
                   <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
                   <div className="meta">
-                    {p.fulfillmentStatus} · {p.djomyStatus ?? '—'}
+                    {p.fulfillmentStatus} · Djomy {p.djomyStatus ?? '—'}
+                    {p.lastCheckedAt ? (
+                      <>
+                        <br />
+                        Vérifié {formatWhen(p.lastCheckedAt)}
+                      </>
+                    ) : null}
                   </div>
                 </td>
                 <td>{formatWhen(p.createdAt)}</td>
@@ -397,8 +403,12 @@ export function PaymentsPage() {
                         className="btn small ghost"
                         onClick={() => {
                           void reconcilePayment(p.id).then((r) => {
-                            if (!r.ok) window.alert(r.error ?? 'Erreur');
-                            else void load();
+                            if (!r.ok) {
+                              window.alert(r.error ?? 'Erreur');
+                              return;
+                            }
+                            window.alert(r.summary ?? 'Vérification Djomy terminée.');
+                            void load();
                           });
                         }}
                       >
