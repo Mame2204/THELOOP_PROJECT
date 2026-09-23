@@ -131,6 +131,7 @@ adminRouter.post('/admin/sync-user-email', requireSupabaseAuth, requireAdmin, as
 adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, async (req, res) => {
   try {
     const status = String(req.query.status ?? '').trim();
+    const bucket = String(req.query.bucket ?? '').trim();
     const fulfillment = String(req.query.fulfillment ?? '').trim();
     const countryCode = String(req.query.country ?? req.query.countryCode ?? '')
       .trim()
@@ -212,6 +213,19 @@ adminRouter.get('/admin/payment-intents', requireSupabaseAuth, requireAdmin, asy
     }, 0);
 
     if (status) listQ = listQ.eq('status', status);
+    if (bucket === 'abandoned') {
+      listQ = listQ.or(
+        'status.in.(cancelled,failed),and(status.eq.redirected,djomy_status.ilike.redirected),and(status.eq.redirected,djomy_status.ilike.expired)',
+      );
+    } else if (bucket === 'in_progress') {
+      listQ = listQ
+        .in('status', ['created', 'redirected'])
+        .eq('fulfillment_status', 'pending')
+        .not('djomy_status', 'ilike', 'redirected')
+        .not('djomy_status', 'ilike', 'expired');
+    } else if (bucket === 'paid') {
+      listQ = listQ.or('status.eq.paid,fulfillment_status.eq.fulfilled');
+    }
     if (fulfillment) listQ = listQ.eq('fulfillment_status', fulfillment);
 
     const { data, error, count } = await listQ.range(offset, offset + limit - 1);

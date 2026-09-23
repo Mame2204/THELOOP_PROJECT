@@ -13,6 +13,8 @@ import { formatWhen, statusBadge } from '../lib/format';
 import { billingPeriodLabel, paymentMethodLabel } from '../lib/payment-labels';
 import { canReconcilePaymentIntent, reconcileDisabledReason } from '../lib/payment-reconcile';
 import {
+  classifyPaymentAttempt,
+  paymentAttemptBadgeLabel,
   paymentIntentStatusLabel,
   resyncHintForIntent,
 } from '../lib/payment-intent-display';
@@ -22,7 +24,7 @@ import { Link } from 'react-router-dom';
 const PAGE = 20;
 const PERIOD_OPTIONS = [7, 30, 90] as const;
 
-type PayFilter = 'all' | 'incidents';
+type PayFilter = 'all' | 'in_progress' | 'paid' | 'abandoned' | 'incidents';
 
 export function PaymentsPage() {
   const { countryCode, countryLabel } = useAdminCountry();
@@ -42,6 +44,14 @@ export function PaymentsPage() {
       limit: PAGE,
       offset: page * PAGE,
       countryCode,
+      bucket:
+        filter === 'in_progress'
+          ? 'in_progress'
+          : filter === 'paid'
+            ? 'paid'
+            : filter === 'abandoned'
+              ? 'abandoned'
+              : undefined,
       fulfillment: filter === 'incidents' ? 'failed' : undefined,
     });
     setError(res.error ?? null);
@@ -277,20 +287,24 @@ export function PaymentsPage() {
       </div>
 
       <div className="tabs" style={{ marginBottom: 12 }}>
-        <button
-          type="button"
-          className={`tab ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          Tous
-        </button>
-        <button
-          type="button"
-          className={`tab ${filter === 'incidents' ? 'active' : ''}`}
-          onClick={() => setFilter('incidents')}
-        >
-          Incidents fulfillment
-        </button>
+        {(
+          [
+            ['all', 'Tous'],
+            ['in_progress', 'En cours'],
+            ['paid', 'Payés'],
+            ['abandoned', 'Sans débit'],
+            ['incidents', 'Incidents PASS'],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            className={`tab ${filter === id ? 'active' : ''}`}
+            onClick={() => setFilter(id)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {error ? <p className="error">{error}</p> : null}
@@ -389,10 +403,17 @@ export function PaymentsPage() {
                 <td>{p.netGnf != null ? `${p.netGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
                 <td>
                   <span className={`badge ${statusBadge(p.status)}`}>
-                    {paymentIntentStatusLabel(p.status)}
+                    {paymentAttemptBadgeLabel(
+                      classifyPaymentAttempt({
+                        status: p.status,
+                        fulfillmentStatus: p.fulfillmentStatus,
+                        djomyStatus: p.djomyStatus,
+                      }),
+                    )}
                   </span>
                   <div className="meta">
-                    PASS {p.fulfillmentStatus} · Djomy {p.djomyStatus ?? '—'}
+                    {paymentIntentStatusLabel(p.status)} · PASS {p.fulfillmentStatus} · Djomy{' '}
+                    {p.djomyStatus ?? '—'}
                   </div>
                 </td>
                 <td>

@@ -108,6 +108,7 @@ async function authHeaders(): Promise<HeadersInit> {
 
 export async function listAdminPaymentIntents(options?: {
   status?: string;
+  bucket?: 'in_progress' | 'paid' | 'abandoned';
   fulfillment?: string;
   countryCode?: string;
   limit?: number;
@@ -127,6 +128,7 @@ export async function listAdminPaymentIntents(options?: {
 
   const params = new URLSearchParams();
   if (options?.status) params.set('status', options.status);
+  if (options?.bucket) params.set('bucket', options.bucket);
   if (options?.fulfillment) params.set('fulfillment', options.fulfillment);
   if (options?.countryCode) params.set('country', options.countryCode);
   if (options?.limit) params.set('limit', String(options.limit));

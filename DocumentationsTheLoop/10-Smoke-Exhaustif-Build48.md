@@ -366,8 +366,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
 - [ ] **🤖** Idem
-- [ ] **📱** `PassPaymentScreen` — flux paiement (si gate PASS ON)
-- [ ] **🤖** Idem
+- [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · iPhone OM OK · **🤖 MTN** payé · PASS + notif membre · délai cron ~5 min · retour app crash → PR #9)*
+- [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(23 sept. 2026 · build 48 · **PASS** en file + **notif cloche** · sync différée cron · abandon 1ʳᵉ tentative = ligne sans débit)*
 - [ ] **📱** `MyBenefitsScreen` — Mes privilèges *(si entrée UI / notif)*
 - [ ] **🤖** Idem
 
@@ -554,7 +554,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱** `AdminCreateUserScreen` — créer compte
 - [ ] **📱** `AdminWaitlistScreen` — waitlist · pré-créer
 - [ ] **📱** `AdminFeaturedScreen` — carousel à la une
-- [ ] **📱** `AdminPaymentsScreen` — paiements · Resync Djomy
+- [x] **📱** `AdminPaymentsScreen` — paiements · Resync Djomy *(23 sept. 2026 · build 48 · date **Vérifié Djomy** · badge **Sans débit** / onglet abandons · build 49 pour libellés Resync)*
 - [ ] **📱** `PartnerSubmissionScreen` (mode admin) — depuis Contenu / Modération
 - [ ] **🤖** Idem
 
@@ -682,8 +682,8 @@ Liens Param. → pages satellites :
 - [ ] **💻** Messages / modèles notification
 
 ### Paiements & Compta
-- [ ] **💻** Liste transactions · refs Djomy
-- [ ] **💻** **Resync** intent bloqué
+- [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
+- [x] **💻** **Resync** + libellé contextuel · colonne **Vérifié Djomy** · onglet **Sans débit** *(23 sept. 2026 · deploy admin-web post-merge PR #9)*
 - [ ] **💻** Export CSV
 - [ ] **💻** Analytics revenus (Compta)
 
@@ -752,6 +752,7 @@ Liens Param. → pages satellites :
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
 | Modération décision → partenaire notifié | [ ] | [ ] |
+| Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [ ] | [x] *(23 sept. 2026 · build 48 · 🤖 MTN · après cron)* |
 
 ## C2 — Auth transversal
 
@@ -805,7 +806,7 @@ Liens Param. → pages satellites :
 - [ ] **📱🤖** Push OS des deux côtés
 - [ ] **📱🤖** Partenaire soumission + modération
 - [ ] **📱🤖** Admin modération + push
-- [ ] **📱🤖** PASS Djomy (si testé)
+- [x] **📱🤖** PASS Djomy *(23 sept. 2026 · 📱 OM · 🤖 MTN · cron OK · retour app Android PR #9)*
 
 ## D3 — Onglets masqués (AdminRubrique)
 
@@ -892,9 +893,10 @@ A3 Prime Android (22 sept. 2026 · build 48 · prime@theloop.gn) :
   - Nous contacter · infos tel/mail/site · Nous rejoindre : PASS
   - Pas favoris via Profil : PASS (écart mobile vs spec PWA · nav OK)
 Build Android (23 sept. 2026 · build 48 · paiement PASS MTN) :
-  - **FAIL** : Djomy OK · MTN payé · « Ouvrir THE LOOP » → **arrêt systématique** · Mon PASS / cloche vides côté app
-  - Admin + Djomy : achat **OK quelques min après** (cron reconcile ~5 min) · statut intent **`redirected`** dès ouverture portail (normal, y compris si annulation avant débit)
-  - **Fix** : `PaymentReturnHandler` + intent pending AsyncStorage · `openAuthSessionAsync` + deep link · page succès Android `theloop://` avant `intent://` · **retest build 49**
+  - **PARTIEL → PASS métier** : 2 intents (1ʳᵉ abandon portail · 2ᵉ MTN payé) · PASS en attente + **notif membre** après **cron ~5 min**
+  - **FAIL UX retour** : « Ouvrir THE LOOP » → crash · Mon PASS / cloche vides **immédiat** (sync app · PR #9)
+  - **Admin** : 1ʳᵉ ligne `redirected` = **sans débit** (Resync + onglet Sans débit · PR #9)
+  - **Retest build 49** : retour app + sync immédiate
 Build Android :
 Branch / commit :
 
