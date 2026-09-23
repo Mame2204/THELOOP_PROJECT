@@ -26,6 +26,13 @@ type InviteBody = {
   city?: string | null;
 };
 
+function defaultInviteFirstName(userRole?: string | null): string {
+  const role = (userRole ?? 'member').toLowerCase();
+  if (role === 'partner') return 'Partenaire';
+  if (role === 'admin') return 'Administrateur';
+  return 'Membre';
+}
+
 function extractSecondsFromMessage(message: string): number {
   const patterns = [
     /(\d+)\s*seconds?/i,
@@ -202,13 +209,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    const role = body.userRole ?? 'member';
     const metadata: Record<string, unknown> = {
       pending_welcome: true,
       invited_by_admin: true,
       admin_invite_id: body.inviteId ?? null,
-      first_name: body.firstName ?? null,
-      last_name: body.lastName ?? null,
-      user_role: body.userRole ?? 'member',
+      first_name: body.firstName?.trim() || defaultInviteFirstName(role),
+      last_name: body.lastName?.trim() || 'THE LOOP',
+      user_role: role,
       country_code: body.countryCode ?? 'GN',
       phone_number: body.phoneNumber ?? null,
       city: body.city ?? null,

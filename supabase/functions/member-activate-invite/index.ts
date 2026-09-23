@@ -73,7 +73,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    const invite = inviteJson as { id?: string; email?: string };
+    const invite = inviteJson as {
+      id?: string;
+      email?: string;
+      user_role?: string;
+      first_name?: string | null;
+      last_name?: string | null;
+    };
+
+    function defaultInviteFirstName(userRole?: string | null): string {
+      const role = (userRole ?? 'member').toLowerCase();
+      if (role === 'partner') return 'Partenaire';
+      if (role === 'admin') return 'Administrateur';
+      return 'Membre';
+    }
     if (inviteId && invite.id && invite.id !== inviteId) {
       return new Response(JSON.stringify({ error: 'Invitation invalide pour cet e-mail.' }), {
         status: 400,
@@ -144,6 +157,21 @@ Deno.serve(async (req) => {
         p_email: email,
       });
     }
+
+    const profileFirst =
+      (invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
+    const profileLast = (invite.last_name ?? '').trim() || 'THE LOOP';
+    await admin
+      .from('users')
+      .update({
+        first_name: profileFirst,
+        last_name: profileLast,
+        user_role: invite.user_role ?? undefined,
+        is_active: true,
+        account_status: 'active',
+        updated_at: new Date().toISOString(),
+      })
+      .ilike('email', email);
 
     return new Response(JSON.stringify({ ok: true, userId: authUser.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

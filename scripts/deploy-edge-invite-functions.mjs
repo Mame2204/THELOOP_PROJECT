@@ -1,5 +1,5 @@
 /**
- * Déploie auth-callback + admin-send-invite via Supabase Management API (sans supabase login).
+ * Déploie auth-callback + admin-send-invite + member-activate-invite via Supabase Management API.
  * Windows : .\deploy-edge-invite.cmd
  * Env : SUPABASE_ACCESS_TOKEN (https://supabase.com/dashboard/account/tokens)
  */
@@ -14,6 +14,7 @@ const projectRef = 'eeyhtulpixvftvhppinz';
 const FUNCTIONS = [
   { slug: 'auth-callback', verify_jwt: false },
   { slug: 'admin-send-invite', verify_jwt: true },
+  { slug: 'member-activate-invite', verify_jwt: false },
 ];
 
 function readToken() {
