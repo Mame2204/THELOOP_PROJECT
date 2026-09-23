@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image as RNImage,
   Pressable,
   StyleSheet,
   Text,
@@ -12,6 +13,7 @@ import { Image } from 'expo-image';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import {
   cropToAspect,
+  ensureReadableFileUri,
   normalizeLocalFileUri,
   pickImageFromLibrary,
   uploadContentImage,
@@ -30,10 +32,21 @@ interface Props {
   cropAspect?: [number, number];
 }
 
+function isLocalPreviewUri(uri: string): boolean {
+  const lower = uri.toLowerCase();
+  return (
+    lower.startsWith('file://') ||
+    lower.startsWith('content://') ||
+    lower.startsWith('ph://') ||
+    lower.startsWith('assets-library://') ||
+    (lower.startsWith('/') && !lower.startsWith('//'))
+  );
+}
+
 /**
  * Champ image admin.
- * Aperçu = expo-image (même moteur que l’Accueil) + taille en px (évite hauteur 0 Android).
- * Après sélection : on garde le fichier local file:// pour l’aperçu, l’URL https part dans `value`.
+ * Aperçu local = Image RN (file:// fiable sur Android) · distant = expo-image.
+ * Après upload : on affiche l’URL https (previewUri effacé).
  */
 export function ImageUploadField({
   label,
@@ -54,6 +67,14 @@ export function ImageUploadField({
   const boxHeight = Math.round(boxWidth / previewAspect);
 
   const shown = previewUri || value;
+  const shownIsLocal = shown ? isLocalPreviewUri(shown) : false;
+
+  useEffect(() => {
+    if (!value) return;
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      setPreviewUri(null);
+    }
+  }, [value]);
 
   async function handlePick() {
     setUploading(true);
@@ -64,12 +85,13 @@ export function ImageUploadField({
       });
       if (!rawUri) return;
 
-      const preparedUri = normalizeLocalFileUri(await cropToAspect(rawUri, cropAspect, 'top'));
-      // Aperçu local immédiat (ne pas écrire file:// dans value — risque d’enregistrement).
+      const cropped = await cropToAspect(rawUri, cropAspect, 'top');
+      const preparedUri = await ensureReadableFileUri(normalizeLocalFileUri(cropped));
       setPreviewUri(preparedUri);
 
       const url = await uploadContentImage(preparedUri, folder, { aspect: cropAspect });
       onChange(url);
+      setPreviewUri(null);
 
       if (!isSupabaseConfigured()) {
         Alert.alert(
@@ -85,22 +107,41 @@ export function ImageUploadField({
     }
   }
 
+  function renderPreview() {
+    if (!shown) return null;
+
+    if (shownIsLocal) {
+      return (
+        <RNImage
+          key={shown}
+          source={{ uri: shown }}
+          style={{ width: boxWidth, height: boxHeight }}
+          resizeMode="cover"
+        />
+      );
+    }
+
+    return (
+      <Image
+        key={shown}
+        source={{ uri: shown }}
+        style={{ width: boxWidth, height: boxHeight }}
+        contentFit="cover"
+        contentPosition="top"
+        cachePolicy="memory-disk"
+        transition={150}
+        recyclingKey={shown}
+      />
+    );
+  }
+
   return (
     <View style={styles.wrap}>
       <Text style={[styles.label, { color: shell.pageKicker }]}>{label}</Text>
 
       {shown ? (
         <View style={[styles.previewWrap, { width: boxWidth, height: boxHeight }]}>
-          <Image
-            key={shown}
-            source={{ uri: shown }}
-            style={{ width: boxWidth, height: boxHeight }}
-            contentFit="cover"
-            contentPosition="top"
-            cachePolicy="memory-disk"
-            transition={0}
-            recyclingKey={shown}
-          />
+          {renderPreview()}
           <Pressable
             style={styles.removeBtn}
             onPress={() => {
