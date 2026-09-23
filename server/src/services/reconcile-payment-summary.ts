@@ -12,6 +12,11 @@ export function isDjomyAbandonedStatus(status: string | undefined): boolean {
   );
 }
 
+export function isDjomyPaidStatus(status: string | undefined): boolean {
+  const normalized = String(status ?? '').trim().toUpperCase();
+  return normalized === 'SUCCESS' || normalized === 'CAPTURED';
+}
+
 /** Paiement mobile money encore en cours côté opérateur. */
 export function isDjomyInFlightStatus(status: string | undefined): boolean {
   const normalized = String(status ?? '').trim().toUpperCase();

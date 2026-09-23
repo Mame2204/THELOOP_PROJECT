@@ -264,12 +264,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ## A0 — System Gate (`SystemGateScreen`)
 
-- [ ] **📱** Gate maintenance ON → écran maintenance (sauf admin connecté)
-- [ ] **🤖** Idem
-- [ ] **📱** Gate pré-lancement ON → countdown / message
-- [ ] **🤖** Idem
-- [ ] **📱** Bypass 4 taps logo (session) → accès app
-- [ ] **🤖** Idem
+- [x] **📱** Gate maintenance ON → écran maintenance *(23 sept. 2026 · build 48 · bypass 4 taps logo OK)*
+- [x] **🤖** Idem *(23 sept. 2026 · build 48)*
+- [x] **📱** Gate pré-lancement ON → countdown / message *(23 sept. 2026 · bypass OK)*
+- [x] **🤖** Idem *(23 sept. 2026)*
+- [x] **📱** Bypass 4 taps logo (session) → accès app *(23 sept. 2026 · maintenance + pré-lancement)*
+- [x] **🤖** Idem *(23 sept. 2026)*
 
 ---
 
@@ -890,6 +890,10 @@ Build Android : **48**
 Admin-web (23 sept. 2026 · paiements + gates) :
   - Paiements : onglet **Sans débit** · Resync abandon · **Vérifié Djomy** · libellé sous bouton — **PASS** (super admin)
   - Paramètres **Gates** : inscription · maintenance · pré-lancement · achat PASS — toggle ON/OFF — **PASS**
+Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
+  - Maintenance + pré-lancement ON · **bypass 4 taps** — **PASS**
+Serveur (23 sept. 2026) :
+  - **Fix cron** : plus d’alerte « Paiement bloqué » toutes les 5 min sur intent **abandon** (reconcile d’abord · alerte seulement si Djomy payé · dedup DB)
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —

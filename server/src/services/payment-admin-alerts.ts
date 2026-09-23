@@ -4,15 +4,29 @@ import { deliverPushToUserIds } from './push-delivery.js';
 
 type PaymentAlertKind = 'fulfillment_failed' | 'stuck_pending';
 
-const recentAlerts = new Map<string, number>();
 const ALERT_TTL_MS = 6 * 60 * 60 * 1000;
 
-function shouldAlert(key: string): boolean {
+const recentAlerts = new Map<string, number>();
+
+function recentInMemory(key: string): boolean {
   const last = recentAlerts.get(key);
-  const now = Date.now();
-  if (last != null && now - last < ALERT_TTL_MS) return false;
-  recentAlerts.set(key, now);
-  return true;
+  if (last == null) return false;
+  return Date.now() - last < ALERT_TTL_MS;
+}
+
+function markInMemory(key: string): void {
+  recentAlerts.set(key, Date.now());
+}
+
+function recentStuckAlertOnIntent(
+  intent: Pick<PaymentIntentRow, 'last_webhook_event' | 'last_webhook_at'>,
+): boolean {
+  if (intent.last_webhook_event !== 'stuck_pending_alert' || !intent.last_webhook_at) {
+    return false;
+  }
+  const at = Date.parse(intent.last_webhook_at);
+  if (Number.isNaN(at)) return false;
+  return Date.now() - at < ALERT_TTL_MS;
 }
 
 async function resolveUserCountry(
@@ -34,13 +48,22 @@ export async function notifyAdminsPaymentAlert(
     kind: PaymentAlertKind;
     intent: Pick<
       PaymentIntentRow,
-      'id' | 'merchant_reference' | 'amount_gnf' | 'billing_period' | 'user_id'
+      | 'id'
+      | 'merchant_reference'
+      | 'amount_gnf'
+      | 'billing_period'
+      | 'user_id'
+      | 'last_webhook_event'
+      | 'last_webhook_at'
     >;
     countryCode?: string | null;
   },
 ): Promise<void> {
   const key = `${input.kind}:${input.intent.id}`;
-  if (!shouldAlert(key)) return;
+  if (input.kind === 'stuck_pending' && recentStuckAlertOnIntent(input.intent)) {
+    return;
+  }
+  if (recentInMemory(key)) return;
 
   const countryCode =
     input.countryCode ?? (await resolveUserCountry(supabase, input.intent.user_id));
@@ -80,5 +103,19 @@ export async function notifyAdminsPaymentAlert(
       intentId: input.intent.id,
       kind: input.kind,
     });
+  }
+
+  markInMemory(key);
+
+  if (input.kind === 'stuck_pending') {
+    const now = new Date().toISOString();
+    await supabase
+      .from('payment_intents')
+      .update({
+        last_webhook_event: 'stuck_pending_alert',
+        last_webhook_at: now,
+        updated_at: now,
+      })
+      .eq('id', input.intent.id);
   }
 }
