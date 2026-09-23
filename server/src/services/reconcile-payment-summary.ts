@@ -43,7 +43,7 @@ export function isPaidButPassPending(
   return isDjomyPaidStatus(intent.djomy_status ?? undefined);
 }
 
-/** Intent payé côté Djomy, PASS pending, sans activité depuis &gt; 5 min (analytics + cron). */
+/** Intent payé côté Djomy, PASS pending, sans activité depuis plus de 5 min (analytics + cron). */
 export function isStuckPendingFulfillment(
   intent: Pick<
     PaymentIntentRow,

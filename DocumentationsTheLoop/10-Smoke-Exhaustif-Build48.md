@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **199 / 369** cases cochées ≈ **54 %** *(migrations octroi individuel OK Supabase · 23 sept.)* |
+| **Avancement smoke** | **202 / 369** cases cochées ≈ **55 %** *(23 sept. · retours testeur Android + compta)* |
 | **Prochain test** | **Retest octroi individuel 📱🤖** (**build mobile 49+** avec correctifs PR #13 · SQL `20260935`+`20260936` **OK**) · **📱 A4 set_password** post-deploy Render |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -304,8 +304,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Stack Auth (routes autorisées)
 - [x] **📱** `PartnerApplyScreen` — demande partenariat *(23 sept. 2026 · build 48 · inbox super admin OK)*
 - [x] **🤖** Idem *(23 sept. 2026)*
-- [ ] **📱** `PartnerValidationCodeScreen` — double tap logo → code établissement
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerValidationCodeScreen` — double tap logo → code établissement *(23 sept. 2026 · build 48 · **🤖 Android OK**)*
+- [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR après code valide *(23 sept. 2026 · build 48 · Pro connecté · scan QR Prime — identité OK)*
 - [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
@@ -697,7 +697,7 @@ Liens Param. → pages satellites :
 ### Paiements & Compta
 - [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
 - [x] **💻** **Resync** + libellé contextuel · colonne **Vérifié Djomy** · onglet **Sans débit** · pagination 20/ligne *(23 sept. 2026 · **test super admin OK** · abandon « Sans débit » + hint Resync)*
-- [ ] **💻** Export CSV
+- [x] **💻** Export CSV *(23 sept. 2026 · super admin · export marchés / compta **OK**)*
 - [ ] **💻** Analytics revenus (Compta)
 
 ## B5 — Notifications push (admin-web)
@@ -906,6 +906,11 @@ Android build 48 (23 sept. 2026 · achat PASS MTN membre) :
 Build Android : **48**
 Admin-web (23 sept. 2026 · paiements + gates) :
   - Paiements : onglet **Sans débit** · Resync abandon · **Vérifié Djomy** · libellé sous bouton — **PASS** (super admin)
+  - **Export CSV / marchés (Compta)** — **PASS** (testeur 23 sept.)
+  - Bandeau « paiement Djomy bloqué &gt; 5 min » : comptait aussi les **abandons** (tx sans débit) — **fix serveur** `isStuckPendingFulfillment` (aligné cron · deploy Render)
+Android (23 sept. 2026 · build 48 · suite) :
+  - **Double tap** logo Auth → code établissement — **PASS**
+  - **Déconnexion** — **PASS**
   - Paramètres **Gates** : inscription · maintenance · pré-lancement · achat PASS — toggle ON/OFF — **PASS**
 Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
   - Maintenance + pré-lancement ON · **bypass 4 taps** — **PASS**
