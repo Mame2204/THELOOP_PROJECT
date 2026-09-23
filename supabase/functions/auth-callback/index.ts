@@ -259,11 +259,17 @@ const HTML = `<!DOCTYPE html>
         });
       });
 
-      function verifyTokenHash(tokenHash, type) {
+      function otpVerifyType(kind) {
+        if (kind === 'recovery') return 'recovery';
+        if (kind === 'signup' || kind === 'email') return 'signup';
+        return 'invite';
+      }
+
+      function verifyTokenHash(tokenHash, kind) {
         return fetch(supabaseUrl + '/auth/v1/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'apikey': anon },
-          body: JSON.stringify({ type: type, token_hash: tokenHash })
+          body: JSON.stringify({ type: otpVerifyType(kind), token_hash: tokenHash })
         }).then(function (res) {
           return res.json().then(function (body) {
             if (!res.ok) throw new Error(authError(body));
@@ -302,7 +308,7 @@ const HTML = `<!DOCTYPE html>
       }
 
       if (tokenHash) {
-        verifyTokenHash(tokenHash, kind === 'recovery' ? 'recovery' : 'invite')
+        verifyTokenHash(tokenHash, kind)
           .then(function (session) {
             var at = session.access_token;
             var rt = session.refresh_token;
@@ -324,7 +330,8 @@ const HTML = `<!DOCTYPE html>
           })
           .catch(function (err) {
             title.textContent = 'Lien incomplet';
-            message.textContent = err.message || 'Ouvrez le lien depuis le même appareil ou demandez un nouvel e-mail.';
+            message.textContent = (err.message || 'Ce lien ne peut pas être validé ici.')
+              + ' Demandez à l\\'équipe THE LOOP de renvoyer l\\'invitation (nouveau modèle d\\'e-mail).';
           });
         return;
       }

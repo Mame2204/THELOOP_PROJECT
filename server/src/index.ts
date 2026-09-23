@@ -17,6 +17,7 @@ import { cronRouter } from './routes/cron.js';
 import { startInternalPushCron } from './services/internal-push-cron.js';
 import { syncSupabaseAuthConfigIfNeeded } from './boot/sync-auth-config.js';
 import { syncAuthRecoveryStorageIfNeeded } from './boot/sync-auth-recovery-storage.js';
+import { syncAuthEmailTemplatesIfNeeded } from './boot/sync-auth-email-templates.js';
 
 const app = express();
 
@@ -116,6 +117,9 @@ app.listen(config.port, '0.0.0.0', () => {
   });
   void syncSupabaseAuthConfigIfNeeded(true).catch((err) => {
     console.warn('[auth-sync] Auth config:', err instanceof Error ? err.message : err);
+  });
+  void syncAuthEmailTemplatesIfNeeded(true).catch((err) => {
+    console.warn('[auth-sync] E-mail templates:', err instanceof Error ? err.message : err);
   });
 
   console.log(`[payment-server] Écoute sur 0.0.0.0:${config.port} (${config.nodeEnv})`);
