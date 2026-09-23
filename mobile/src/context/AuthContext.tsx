@@ -98,8 +98,6 @@ import { isPhoneDeactivated } from '@/lib/deactivated-users-store';
 import { applyPasswordResetAfterOtp } from '@/lib/admin-invite-store';
 import { consumePasswordReset, findPendingPasswordReset } from '@/lib/password-reset-store';
 import { isValidOtp } from '@/lib/otp-auth';
-import { loadPartnerUserFromDatabase } from '@/lib/partner-user-resolve';
-import { bootstrapPartnerSupabaseAuth } from '@/lib/partner-spot-auth';
 import { bootstrapPlatformRoles } from '@/lib/platform-roles-store';
 import { clearPartnerSpotSession, loadPartnerSpotSession, savePartnerSpotSession } from '@/lib/partner-session-store';
 import {
@@ -141,8 +139,6 @@ interface AuthContextValue {
   signInWithPhone: (phone: string, password: string) => Promise<void>;
 
   signInWithOtp: (identifier: string) => Promise<void>;
-
-  signInWithPartnerToken: (token: string) => Promise<{ ok: true } | { ok: false; error: string }>;
 
   simulatePrimeUpgrade: (period: PrimeBillingPeriod) => Promise<void>;
   purchasePrimePass: (
@@ -1251,176 +1247,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-  const signInWithPartnerToken = useCallback(async (token: string): Promise<{ ok: true } | { ok: false; error: string }> => {
-
-    const normalized = token.trim().toUpperCase();
-
-    if (!supabase) {
-      return { ok: false, error: 'Connexion Supabase requise pour l’espace Pro.' };
-    }
-
-    if (!normalized) {
-      return { ok: false, error: 'Saisissez le code figurant sur votre carte partenaire.' };
-    }
-
-    const { data: tokenRows, error } = await supabase.rpc('validate_partner_spot_token', {
-      p_code: normalized,
-    });
-
-    const data = Array.isArray(tokenRows) ? tokenRows[0] : tokenRows;
-
-    if (error) {
-      console.warn('[PartnerAuth] lecture jeton:', error.message);
-      return { ok: false, error: 'Vérification impossible. Vérifiez votre connexion et réessayez.' };
-    }
-
-    if (!data) {
-      return {
-        ok: false,
-        error: 'Code invalide ou expiré. Utilisez le code SPOT figurant sur votre carte partenaire THE LOOP.',
-      };
-    }
-
-    const partnerName = data.partner_name as string;
-    const expiresAt = data.expires_at as string;
-    const linkedUserId = data.user_id ? String(data.user_id) : null;
-    const rpcMappedPartner =
-      linkedUserId && /^[0-9a-f-]{36}$/i.test(linkedUserId)
-        ? ({
-            ...ANONYMOUS_USER,
-            id: linkedUserId,
-            email: data.linked_email ? String(data.linked_email) : null,
-            firstName: data.first_name ? String(data.first_name) : partnerName,
-            lastName: data.last_name ? String(data.last_name) : null,
-            fullName:
-              `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim() || partnerName,
-            company: data.company ? String(data.company) : partnerName,
-            phoneNumber: data.phone_number ? String(data.phone_number) : null,
-            userRole: 'partner',
-            role: 'PARTNER',
-          } satisfies User)
-        : null;
-    const dbPartner = rpcMappedPartner ?? (await loadPartnerUserFromDatabase(partnerName));
-
-    const sessionUser: User = dbPartner
-      ? {
-          ...dbPartner,
-          role: 'PARTNER',
-          userRole: 'partner',
-          subscriptionStatus: 'active',
-          subscriptionExpiresAt: expiresAt,
-        }
-      : {
-          ...ANONYMOUS_USER,
-          id: linkedUserId ?? `partner-${data.token_id ?? normalized}`,
-          firstName: partnerName,
-          fullName: partnerName,
-          company: partnerName,
-          userRole: 'partner',
-          role: 'PARTNER',
-          subscriptionStatus: 'active',
-          subscriptionExpiresAt: expiresAt,
-        };
-
-    await savePartnerSpotSession({
-      user: sessionUser,
-      tokenCode: normalized,
-      expiresAt,
-    });
-
-    await clearDemoSession();
-
-    const linkedForAuth =
-      (dbPartner?.id && /^[0-9a-f-]{36}$/i.test(dbPartner.id) ? dbPartner.id : null)
-      ?? linkedUserId;
-
-    const boot = await bootstrapPartnerSupabaseAuth({
-      linkedUserId: linkedForAuth,
-      tokenCode: normalized,
-      email: dbPartner?.email ?? sessionUser.email ?? null,
-    });
-
-    if (boot.ok && boot.userId) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        await savePartnerSpotSession({
-          user: {
-            ...sessionUser,
-            id: boot.userId,
-            email: sessionData.session.user.email ?? sessionUser.email,
-          },
-          tokenCode: normalized,
-          expiresAt,
-        });
-        await applySession(sessionData.session);
-        await upsertActiveSubscription(boot.userId, {
-          type: 'partner',
-          status: 'active',
-          startedAt: new Date().toISOString(),
-          expiresAt,
-          label: `Partenariat · ${partnerName}`,
-        });
-        return { ok: true };
-      }
-    }
-
-    const fallbackId =
-      boot.userId && /^[0-9a-f-]{36}$/i.test(boot.userId)
-        ? boot.userId
-        : linkedForAuth && /^[0-9a-f-]{36}$/i.test(linkedForAuth)
-          ? linkedForAuth
-          : sessionUser.id;
-
-    const fallbackUser: User = {
-      ...sessionUser,
-      id: fallbackId,
-    };
-
-    await savePartnerSpotSession({
-      user: fallbackUser,
-      tokenCode: normalized,
-      expiresAt,
-    });
-
-    const { ensurePartnerSupabaseSession } = await import('@/lib/partner-spot-auth');
-    const restored = await ensurePartnerSupabaseSession();
-    if (restored) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        await applySession(sessionData.session);
-        await upsertActiveSubscription(sessionData.session.user.id, {
-          type: 'partner',
-          status: 'active',
-          startedAt: new Date().toISOString(),
-          expiresAt,
-          label: `Partenariat · ${partnerName}`,
-        });
-        return { ok: true };
-      }
-    }
-
-    setUser(fallbackUser);
-    await upsertActiveSubscription(fallbackId, {
-      type: 'partner',
-      status: 'active',
-      startedAt: new Date().toISOString(),
-      expiresAt,
-      label: `Partenariat · ${partnerName}`,
-    });
-
-    if (__DEV__) {
-      console.warn(
-        '[PartnerAuth] Session Supabase partielle — avantages cloud via retry au focus.',
-        boot.reason,
-      );
-    }
-
-    return { ok: true };
-
-  }, [applySession]);
-
-
-
   const simulatePrimeUpgrade = useCallback(async (period: PrimeBillingPeriod) => {
 
     if (!user || user.role === 'USER_ANONYMOUS' || user.role === 'USER_PRIME') return;
@@ -1840,7 +1666,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       signInWithOtp,
 
-      signInWithPartnerToken,
 
       simulatePrimeUpgrade,
 
@@ -1866,7 +1691,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     }),
 
-    [user, isLoading, passwordRecoveryPending, signUpMember, signIn, signInWithPhone, signInWithOtp, signInWithPartnerToken, simulatePrimeUpgrade, purchasePrimePass, updateProfile, updateInterestCountry, changePassword, requestPasswordResetEmail, completePasswordRecovery, resendSignupConfirmationEmail, resetPasswordWithOtp, signOut, refreshUserSession],
+    [user, isLoading, passwordRecoveryPending, signUpMember, signIn, signInWithPhone, signInWithOtp, simulatePrimeUpgrade, purchasePrimePass, updateProfile, updateInterestCountry, changePassword, requestPasswordResetEmail, completePasswordRecovery, resendSignupConfirmationEmail, resetPasswordWithOtp, signOut, refreshUserSession],
   );
 
 

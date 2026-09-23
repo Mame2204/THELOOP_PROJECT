@@ -15,6 +15,10 @@ import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import { AdminModuleDenied } from '@/components/admin/AdminModuleDenied';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
 import { AdminTabMenu } from '@/components/admin/AdminTabMenu';
+import {
+  AdminPublishedContentPicker,
+  type PublishedContentPick,
+} from '@/components/admin/AdminPublishedContentPicker';
 import { ImageUploadField } from '@/components/ImageUploadField';
 import { DateTimeField } from '@/components/DateTimeField';
 import { useAdminCountry } from '@/context/AdminCountryContext';
@@ -190,7 +194,85 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
     () => getHomeLocations().filter((l) => l.subCategory === 'tools'),
     [getHomeLocations],
   );
-  const eventOptions = useMemo(() => filterUpcomingEvents(publicEvents).slice(0, 40), [publicEvents]);
+  const eventOptions = useMemo(() => filterUpcomingEvents(publicEvents), [publicEvents]);
+
+  const cornerRelatedPick = useMemo((): PublishedContentPick | null => {
+    if (!cornerRelatedType || !cornerRelatedId) return null;
+    if (cornerRelatedType === 'event') {
+      const e = eventOptions.find((x) => x.id === cornerRelatedId);
+      if (!e) return null;
+      return {
+        kind: 'event',
+        id: e.id,
+        slug: cornerRelatedSlug ?? e.slug,
+        label: e.title,
+      };
+    }
+    if (cornerRelatedType === 'tool') {
+      const t = toolOptions.find((x) => x.id === cornerRelatedId);
+      if (!t) return null;
+      return {
+        kind: 'tool',
+        id: t.id,
+        slug: cornerRelatedSlug ?? t.slug,
+        label: t.name,
+      };
+    }
+    const s = spotOptions.find((x) => x.id === cornerRelatedId);
+    if (!s) return null;
+    return {
+      kind: 'spot',
+      id: s.id,
+      slug: cornerRelatedSlug ?? s.slug,
+      label: s.name,
+    };
+  }, [
+    cornerRelatedType,
+    cornerRelatedId,
+    cornerRelatedSlug,
+    eventOptions,
+    toolOptions,
+    spotOptions,
+  ]);
+
+  const chroniqueTargetPick = useMemo((): PublishedContentPick | null => {
+    if (!chroniqueTargetType || !chroniqueTargetId) return null;
+    if (chroniqueTargetType === 'event') {
+      const e = eventOptions.find((x) => x.id === chroniqueTargetId);
+      if (!e) return null;
+      return {
+        kind: 'event',
+        id: e.id,
+        slug: chroniqueTargetSlug ?? e.slug,
+        label: e.title,
+      };
+    }
+    if (chroniqueTargetType === 'tool') {
+      const t = toolOptions.find((x) => x.id === chroniqueTargetId);
+      if (!t) return null;
+      return {
+        kind: 'tool',
+        id: t.id,
+        slug: chroniqueTargetSlug ?? t.slug,
+        label: t.name,
+      };
+    }
+    const s = spotOptions.find((x) => x.id === chroniqueTargetId);
+    if (!s) return null;
+    return {
+      kind: 'spot',
+      id: s.id,
+      slug: chroniqueTargetSlug ?? s.slug,
+      label: s.name,
+    };
+  }, [
+    chroniqueTargetType,
+    chroniqueTargetId,
+    chroniqueTargetSlug,
+    eventOptions,
+    toolOptions,
+    spotOptions,
+  ]);
 
   const load = useCallback(async (options?: { force?: boolean }) => {
     const apply = (
@@ -406,23 +488,6 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
     setTab('corner');
   }
 
-  function selectCornerRelated(
-    type: SinguliersRelatedType,
-    id: string,
-    slug: string,
-  ) {
-    const same = cornerRelatedType === type && cornerRelatedId === id;
-    if (same) {
-      setCornerRelatedType(null);
-      setCornerRelatedId(null);
-      setCornerRelatedSlug(null);
-      return;
-    }
-    setCornerRelatedType(type);
-    setCornerRelatedId(id);
-    setCornerRelatedSlug(slug);
-  }
-
   function resetChroniqueForm() {
     setEditingChroniqueId(undefined);
     setChroniqueVolume('');
@@ -460,29 +525,6 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
     setChroniquePeriodEnd(c.periodEnd ?? '');
     setChroniqueActivate(c.isActive);
     setTab('chronique');
-  }
-
-  function selectChroniqueTarget(
-    type: ChroniqueTargetType,
-    id: string,
-    title: string,
-    slug: string,
-  ) {
-    const same = chroniqueTargetType === type && chroniqueTargetId === id;
-    if (same) {
-      setChroniqueTargetType(null);
-      setChroniqueTargetId(null);
-      setChroniqueTargetSlug(null);
-      setChroniqueLoc('');
-      return;
-    }
-    setChroniqueTargetType(type);
-    setChroniqueTargetId(id);
-    setChroniqueTargetSlug(slug);
-    setChroniqueLoc(title);
-    if (!chroniqueCta.trim()) {
-      setChroniqueCta(defaultChroniqueCtaLabel(type));
-    }
   }
 
   function toggleWalkStep(type: 'event' | 'spot' | 'tool', id: string, title: string) {
@@ -1255,75 +1297,26 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
             dateOnly
           />
 
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Contenu lié (optionnel)</Text>
-          <Text style={[styles.cardMeta, { color: shell.pageKicker, marginBottom: 6 }]}>
-            Spot / événement / outil déjà publié dans l’app.
-          </Text>
-          <View style={styles.chipWrap}>
-            {spotOptions.slice(0, 10).map((s) => {
-              const on = cornerRelatedType === 'spot' && cornerRelatedId === s.id;
-              return (
-                <Pressable
-                  key={`c-spot-${s.id}`}
-                  onPress={() => selectCornerRelated('spot', s.id, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-            {eventOptions.slice(0, 10).map((e) => {
-              const on = cornerRelatedType === 'event' && cornerRelatedId === e.id;
-              return (
-                <Pressable
-                  key={`c-evt-${e.id}`}
-                  onPress={() => selectCornerRelated('event', e.id, e.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {e.title}
-                  </Text>
-                </Pressable>
-              );
-            })}
-            {toolOptions.slice(0, 8).map((s) => {
-              const on = cornerRelatedType === 'tool' && cornerRelatedId === s.id;
-              return (
-                <Pressable
-                  key={`c-tool-${s.id}`}
-                  onPress={() => selectCornerRelated('tool', s.id, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <AdminPublishedContentPicker
+            label="Contenu lié (optionnel)"
+            hint="Affiche « Voir le contenu lié » sur la fiche Singulier (secondaire au Fragment · bouton Découvrir)."
+            shell={shell}
+            spots={spotOptions}
+            events={eventOptions}
+            tools={toolOptions}
+            value={cornerRelatedPick}
+            onChange={(pick) => {
+              if (!pick) {
+                setCornerRelatedType(null);
+                setCornerRelatedId(null);
+                setCornerRelatedSlug(null);
+                return;
+              }
+              setCornerRelatedType(pick.kind);
+              setCornerRelatedId(pick.id);
+              setCornerRelatedSlug(pick.slug);
+            }}
+          />
 
           <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Liens utiles (3 max)</Text>
           {cornerLinks.map((link, i) => (
@@ -1471,8 +1464,6 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
                 style={[styles.input, fieldStyle(shell)]}
               />
 
-              <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Contenu lié *</Text>
-              <Text style={[styles.hint, { color: shell.pageKicker }]}>Un seul choix — spot, événement ou outil.</Text>
             </>
           ) : (
             <>
@@ -1507,80 +1498,36 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
           )}
 
           {chroniqueCtaEnabled ? (
-          <>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Spots</Text>
-          <View style={styles.chipWrap}>
-            {spotOptions.slice(0, 24).map((s) => {
-              const on = chroniqueTargetType === 'spot' && chroniqueTargetId === s.id;
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => selectChroniqueTarget('spot', s.id, s.name, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Outils</Text>
-          <View style={styles.chipWrap}>
-            {toolOptions.slice(0, 24).map((s) => {
-              const on = chroniqueTargetType === 'tool' && chroniqueTargetId === s.id;
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => selectChroniqueTarget('tool', s.id, s.name, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Événements</Text>
-          <View style={styles.chipWrap}>
-            {eventOptions.map((e) => {
-              const on = chroniqueTargetType === 'event' && chroniqueTargetId === e.id;
-              return (
-                <Pressable
-                  key={e.id}
-                  onPress={() => selectChroniqueTarget('event', e.id, e.title, e.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {e.title}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          </>
+            <AdminPublishedContentPicker
+              label="Contenu lié *"
+              hint="Cible du bouton Découvrir — recherche dans spots, événements et outils publiés."
+              required
+              shell={shell}
+              spots={spotOptions}
+              events={eventOptions}
+              tools={toolOptions}
+              value={chroniqueTargetPick}
+              onChange={(pick) => {
+                if (!pick) {
+                  setChroniqueTargetType(null);
+                  setChroniqueTargetId(null);
+                  setChroniqueTargetSlug(null);
+                  setChroniqueLoc('');
+                  return;
+                }
+                setChroniqueTargetType(pick.kind);
+                setChroniqueTargetId(pick.id);
+                setChroniqueTargetSlug(pick.slug);
+                setChroniqueLoc(pick.label);
+                const autoCta =
+                  pick.kind === 'event'
+                    ? 'Voir l’événement'
+                    : pick.kind === 'tool'
+                      ? 'Voir l’outil'
+                      : 'Voir le spot';
+                if (!chroniqueCta.trim()) setChroniqueCta(autoCta);
+              }}
+            />
           ) : null}
 
           <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Planification (optionnel)</Text>

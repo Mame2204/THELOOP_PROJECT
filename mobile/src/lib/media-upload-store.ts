@@ -45,7 +45,8 @@ export function normalizeLocalFileUri(uri: string): string {
   return trimmed;
 }
 
-async function ensureReadableFileUri(localUri: string): Promise<string> {
+/** Copie content:// / ph:// vers cache file:// — requis pour aperçu Android. */
+export async function ensureReadableFileUri(localUri: string): Promise<string> {
   const normalized = normalizeLocalFileUri(localUri);
   if (normalized.startsWith('file://')) {
     return normalized;

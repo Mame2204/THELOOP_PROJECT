@@ -33,7 +33,7 @@ Cocher `- [ ]` → `- [x]`. Noter PASS/FAIL dans le **Journal** (fin de doc).
 | Prime | `prime@theloop.gn` | PASS actif |
 | Partenaire | `contact@lavenue.gn` | Espace Pro |
 
-Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1234`
+Jetons démo : VIP `INVIT-DEMO-2026` · OTP BL `1234` *(connexion partenaire = e-mail + MDP · plus de jeton SPOT)*
 
 ---
 
@@ -46,14 +46,71 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **205 / 371** cases cochées ≈ **55 %** *(23 sept. · B6 Contenu web + correctifs à la une / dates)* |
-| **Prochain test** | **📱 A4 set_password** (oubli MDP) · **💻 B4 waitlist** · build **49+** (deep link connexion post-invite · octroi · à la une mobile) |
-| **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
+| **Avancement smoke** | **214 / 370** cases cochées ≈ **58 %** *(23 sept. soir · migration `20260939` OK · retrait jeton SPOT)* |
+| **Prochain test (build 48)** | **set_password** recovery 📱🤖 · **activate** invité 🤖 · admin **B0/B2/B3** 💻 |
+| **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — checklist QA, pas un numéro de version app |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
-| **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
-| **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
-| **Reporté build 49+** | LoopX · octroi individuel · **Accueil slider À la une** (migration `20260937`) · événements sans date (fallback app) · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 |
-| **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
+| **Règle session** | Bug identifié → noter FAIL · fix PR · retest sur le **build indiqué** |
+
+> **Légende colonnes :** une **case cochée** = testée et OK sur le build indiqué (48 ou 49). **Attente build 49+** = case **non cochée** volontairement jusqu’au prochain binaire. **Reste à tester** = faisable sur **build 48** (ou web) sans attendre le 49.
+
+### Synthèse globale (4 colonnes)
+
+| Bloc | Cases cochées | En attente build 49+ *(non cochées)* | Reste à tester *(build 48 / web)* | % coché |
+|------|---------------|--------------------------------------|-----------------------------------|---------|
+| **Phase 0** — prérequis | **20** | 0 | 0 | **100 %** |
+| **Phase 1** — retests bloquants *(tableau 7 scénarios)* | 0 | **7** | 0 | **0 %** |
+| **Partie A** — mobile & auth | 167 | **2** | 67 | **71 %** |
+| **Partie B** — admin-web | 14 | **2** | 54 | **20 %** |
+| **Partie C** — push & transversal | 12 | 0 | 13 | **48 %** |
+| **Partie D** — régression & parité | 1 | 0 | 19 | **5 %** |
+| **TOTAL checklist** | **214** | **≈ 11** *(voir liste)* | **≈ 156** | **58 %** |
+
+*Total cases = 370 lignes `- [ ]` / `- [x]` · hors cellules `[ ]` des tableaux B1 (comptées à part).*
+
+### Détail Partie A *(mobile)*
+
+| Section | Cochées | Attente 49+ | Reste (48) | % |
+|---------|---------|-------------|------------|---|
+| A0 System Gate | 6 | 0 | 0 | 100 % |
+| A1 Auth / invite / recovery | 26 | 0 | 5 *(set_password recovery · parité restante)* | 84 % |
+| A2 Membre | 51 | 0 | 7 *(surtout 🤖 parité)* | 88 % |
+| A3 Prime | 30 | **2** *(octroi individuel 📱🤖)* | 3 | 86 % |
+| A4 Partenaire | 40 | 0 | 8 *(🤖 A4-4/5/6 · retraits)* | 83 % |
+| A5 Admin mobile | 14 | 0 | 44 *(sidebar · actions · 🤖)* | 24 % |
+
+### Détail Partie B *(admin-web 💻)*
+
+| Section | Cochées | Attente 49+ | Reste (48) | % |
+|---------|---------|-------------|------------|---|
+| B0 Session | 2 | 0 | 3 | 40 % |
+| B1 Navigation *(cellules table)* | *(🤖✓ routes)* | — | actions clés par page | partiel |
+| B2 Demandes / modération | 4 | **2** *(valider spot · filtres · PR #7)* | 3 | 24 % |
+| B3 Paramètres | 0 | 0 | 5 | 0 % |
+| B4 Users · PASS · Paiements | 5 | 0 | 6 | 45 % |
+| B5 Push admin | 0 | 0 | 8 | 0 % |
+| B6 Contenu | 3 | 0 | 4 | 43 % |
+| B7–B9 Privilèges · TEAMS · délégué | 0 | 0 | 17 | 0 % |
+
+### Liste — **non cochées** · en attente **build 49+** *(priorité binaire)*
+
+1. **Phase 1** — les **7** retests bloquants (push partenaire · retraits · tirage · privilèges · modération sans titre).
+2. **A3** — **octroi individuel** (validation partenaire après scan) 📱 + 🤖 *(SQL OK · PR mobile)*.
+3. **B2** — **Valider** spot + notif partenaire · filtres modération *(PR #7)*.
+4. **A5-U23** — octroi PASS manuel admin mobile *(recherche membre · PR #7)* — case smoke dédiée.
+5. **Retests** *(souvent déjà cochées « BLOCKED » sur 48)* à **refaire sur 49** : LoopX / contenu prime Agenda·Spots · **slider Accueil « À la une »** 📱🤖 · formulaire **invite enrichi** (prénom/nom) · retour paiement Android **PR #9** · deep link **connexion post-invite**.
+
+### Liste — **reste à tester** *(build 48 ou web — sans attendre 49)*
+
+- **Auth** : `set_password` après mail recovery 📱🤖 *(oubli MDP étapes 2 web/app)*.
+- **Parité 🤖** : nombreuses lignes « Idem » Android (A2 fiches · A4 soumissions/retraits · A5 admin).
+- **Admin-web** : session 15 min · B3 gates · B5 campagnes push · B7 TEAMS · B9 admin délégué · actions clés B1 (Insights, Users actions, Privilèges…).
+- **Partie C–D** : push planifié · mailto support · parité iPhone/Android · régression rapide.
+- **Ops** : `configure-auth-invite-email.cmd` *(e-mail invite sans lien)* · redeploy Edge `member-activate-invite` si pas déjà fait après migration.
+
+### Ce qui est **OK** sur build **48** *(rappel invite)*
+
+- Waitlist + **Inviter** 💻 · activation **in-app** 📱 · e-mail invite informatif *(après sync template)* · mot de passe oublié **e-mail reçu** 📱🤖 · Phase 0 env + gates.
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
 
@@ -242,7 +299,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
-- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
+- [x] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(23 sept. 2026 · **OK Supabase prod** · redeploy Edge `member-activate-invite` si changement post-migration)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -283,7 +340,20 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ## A1 — Non connecté (`USER_ANONYMOUS`)
 
-> Pas de bottom nav · pile Auth uniquement.
+> Pas de bottom nav · pile Auth uniquement. **Toutes les cases ci-dessous = tu es déconnecté** (pas Accueil / Agenda).  
+> Exception : certaines lignes « Stack Auth » ont été testées **après** connexion partenaire (scan privilège) — le libellé le dit dans la note *(Pro connecté)*.
+
+### Comment lire Auth — invite vs mot de passe oublié
+
+| Parcours | Où dans l’app | Lien e-mail ? | Cases smoke |
+|----------|----------------|---------------|-------------|
+| **Invité admin** | Auth → « Activer un compte invité… » → mode **activate** | Non (in-app seulement depuis PR #22) | **activate** 📱/🤖 |
+| **Oubli MDP — étape 1** | Auth → mot de passe oublié → mode **reset** | Tu **demandes** le mail | **reset** 📱/🤖 *(coché = mail reçu)* |
+| **Oubli MDP — étape 2 web** | Tu **ouvres le lien** du mail → page **`/auth/callback`** (navigateur) · choix app/web · **nouveau MDP sur le web** | Oui | **set_password** *(page recovery rendue)* |
+| **Oubli MDP — étape 2 app** | Même lien → **« J’ai THE LOOP — ouvrir l’application »** → écran Auth mode **set_password** dans l’app | Oui | **recovery → set_password in-app** |
+
+> **Ce qui est déjà validé en session (journal)** : oubli MDP → **mail OK** · lien → **page auth-callback s’affiche** 📱🤖.  
+> **Ce qui n’est pas encore coché dans la checklist** : saisie du **nouveau mot de passe** jusqu’au bout (web **ou** app) — d’où les 4 lignes **set_password** encore vides.
 
 ### `AuthScreen` — modes
 - [x] **📱** Mode **login** — écran initial · champs e-mail / MDP *(20 sept. 2026 · build 48)*
@@ -293,12 +363,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(23 sept. 2026 · build 48 · activation invité in-app OK)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
-- [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
-- [ ] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(retest post-deploy auth-callback)*
+- [ ] **📱** Mode **set_password** — **étape 2 oubli MDP (web)** : après le mail, sur **`api.theloop-app.com/auth/callback`**, formulaire nouveau MDP · boutons OK · pas de HTML brut *(≠ mode reset dans l’app · retest avec **nouvel** e-mail post-deploy Render)*
+- [ ] **🤖** Idem
+- [ ] **📱** **Oubli MDP étape 2 (app)** : depuis la page callback · **« Ouvrir l’application »** → Auth **set_password** · enregistrer MDP · se connecter *(anonymous jusqu’à la fin)*
 - [ ] **🤖** Idem
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
 - [x] **🤖** Idem *(23 sept. 2026)*
@@ -314,9 +384,6 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android)*
-- [ ] **📱** `PartnerLoginScreen` — connexion jeton SPOT *(deep link / nav manuelle)*
-- [ ] **🤖** Idem
-
 ### Bloqué sans connexion
 - [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS · pile Auth seule)*
@@ -690,7 +757,7 @@ Liens Param. → pages satellites :
 ### Users
 - [ ] **💻** Pagination · recherche
 - [ ] **💻** Éditer profil · rôle · suspendre
-- [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
+- [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · e-mail **informatif** sans lien · activation **in-app** « Activer un compte invité » · `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
 ### PASS
@@ -918,7 +985,8 @@ Android (23 sept. 2026 · build 48 · suite) :
   - **Déconnexion** — **PASS**
 Admin-web B4 Users (23 sept. 2026 · testeur) :
   - **PASS 💻** (soir) : Inviter · e-mail · activation **web** + **in-app** (« Activer un compte invité par l’équipe ») · deploy Edge 4/4 · Render auth-callback
-  - **À faire** : `configure-auth-invite-email.cmd` (nouveau texte sans lien URL en clair) · migration `20260939` · waitlist non retestée
+  - **À faire** : `configure-auth-invite-email.cmd` (nouveau texte sans lien URL en clair) · waitlist non retestée
+  - **Migration `20260939`** — **OK Supabase prod** *(23 sept. 2026 · testeur)*
   - **Oubli MDP** : toujours **KO** (mobile · voir A4 set_password)
 Admin-web B6 Contenu (23 sept. 2026 · testeur) :
   - **PASS 💻** : filtres events / spots / outils / marché · création event / spot / outil
@@ -947,6 +1015,7 @@ Supabase prod (23 sept. 2026 · testeur) :
   - Migrations Phase 0 : **20260916** (push failed · support email) · **20260918** partner accept catalog · **20260919** speakers title · **20260925** draw_city — **OK**
   - **20260935** individual grant materialize — **OK**
   - **20260936** partner validation match — **OK** → retest octroi individuel après **build mobile 49+**
+  - **20260939** invite default names by role — **OK** *(23 sept. 2026)*
 Branch / commit : `main` PR #9 · deploy admin-web auto
 
 Phase 1 retests (7)     : PASS / FAIL —

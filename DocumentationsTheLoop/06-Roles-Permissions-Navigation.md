@@ -132,7 +132,7 @@ Chargé au boot via `bootstrapPlatformRoles()` → cache `loop_platform_roles_v1
 
 ## 8. Session partenaire SPOT (hors matrice rôle Auth)
 
-- Connexion : `signInWithPartnerToken()` lit `partner_tokens`.
+- Connexion : **e-mail + mot de passe** (app mobile / PWA) — plus de connexion jeton SPOT.
 - Session : `loop_partner_spot_session_v1`.
 - L’utilisateur partenaire **n’a pas** nécessairement de ligne `auth.users` active dans la session courante.
 - Déconnexion partenaire ≠ déconnexion membre (gérées séparément).

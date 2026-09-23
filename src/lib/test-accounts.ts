@@ -37,7 +37,7 @@ export const TEST_ACCOUNTS: TestAccount[] = [
     phone: '+22462000003',
     userRole: 'partner',
     appRole: 'PARTNER',
-    hint: 'Espace Pro + code SPOT-DEMO-2026',
+    hint: 'Espace Pro · connexion e-mail + mot de passe (app mobile)',
   },
   {
     label: 'Admin',

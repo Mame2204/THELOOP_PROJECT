@@ -220,7 +220,6 @@ export function UsersPage() {
     if (!profile) return;
     setBusy(true);
     setInviteMsg(null);
-    setInviteActivationLink(null);
     const res = await createUserInvite({
       ...inviteForm,
       countryCode,
@@ -241,7 +240,6 @@ export function UsersPage() {
     setInviteMsg(
       `${mailKind} à ${sentEmail}. L'invité ouvre l'app → Connexion → « Activer un compte invité par l'équipe ». Vérifiez les spams.`,
     );
-    setInviteActivationLink(null);
     setInviteForm({
       email: '',
       firstName: '',
