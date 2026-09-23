@@ -16,7 +16,12 @@ import {
   type CatalogKind,
   type ContentStatus,
 } from '../lib/content';
-import { isTheLoopLinked, listBenefitCatalog, type BenefitCatalogRow } from '../lib/privileges';
+import {
+  filterTheLoopOfferedBenefits,
+  listBenefitCatalog,
+  loadPublishedContentIndex,
+  type BenefitCatalogRow,
+} from '../lib/privileges';
 import { loadInsights, type InsightsBundle } from '../lib/insights';
 
 type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
@@ -86,8 +91,11 @@ export function LoopPage() {
   }, [countryCode, typeTab, page, statusFilter]);
 
   const loadBenefits = useCallback(async () => {
-    const res = await listBenefitCatalog(countryCode);
-    setBenefits(res.items.filter((i) => isTheLoopLinked(i.partnerNames)));
+    const [res, index] = await Promise.all([
+      listBenefitCatalog(countryCode),
+      loadPublishedContentIndex(countryCode),
+    ]);
+    setBenefits(filterTheLoopOfferedBenefits(res.items, index, { countryCode, activeOnly: false }));
     if (res.error) setMsg(res.error);
   }, [countryCode]);
 
@@ -138,7 +146,7 @@ export function LoopPage() {
     <section>
       <header className="page-header">
         <div>
-          <p className="brand-kicker">Publication équipe</p>
+          <p className="brand-kicker">Contenu THE LOOP</p>
           <h2>THE LOOP</h2>
           <p className="meta">
             Contenu d’origine admin/loop — pays : {countryLabel}. Catalogue global :{' '}
@@ -251,6 +259,9 @@ export function LoopPage() {
 
       {tab === 'privileges' && canBenefits ? (
         <>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Uniquement les privilèges THE LOOP rattachés à un contenu publié (événement, spot ou outil) — aligné app mobile.
+          </p>
           <div className="tabs" style={{ marginBottom: 12 }}>
             <button
               type="button"
@@ -327,10 +338,13 @@ export function LoopPage() {
               <strong>{stats.counts.tools}</strong>
             </div>
           </div>
-          <h3>Top clics (équipe)</h3>
-          <TopList title="Événements" rows={stats.eventsByClicks} />
-          <TopList title="Spots" rows={stats.spotsByClicks} />
-          <TopList title="Outils" rows={stats.toolsByClicks} />
+          <h3>Performances (favoris · clics · étoiles)</h3>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Classement aligné app mobile — score = favoris + clics + étoiles × 5.
+          </p>
+          <TopList title="Événements" rows={stats.eventsByEngagement} />
+          <TopList title="Spots" rows={stats.spotsByEngagement} />
+          <TopList title="Outils" rows={stats.toolsByEngagement} />
         </>
       ) : null}
     </section>

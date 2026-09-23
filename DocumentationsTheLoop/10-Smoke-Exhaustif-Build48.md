@@ -539,18 +539,22 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 
 ### Hub THE LOOP (stack)
-- [ ] **📱** `AdminLoopContentScreen` — contenu équipe
+- [x] **📱** `AdminLoopContentScreen` — **Mon contenu** THE LOOP (liste complète) *(23 sept. 2026 · build 48 · **PASS**)*
+- [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
+- [x] **💻** Idem admin-web `/loop?tab=contenu` *(23 sept. 2026 · **PASS**)*
+- [x] **📱** `AdminLoopBenefitsScreen` — privilèges offerts *(contenu publié lié · pas modèles Paramètres)* *(23 sept. 2026 · **PASS**)*
+- [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
+- [ ] **💻** Privilèges offerts web — alignement liste *(fix PR · avant : tout le catalogue THE LOOP)*
+- [ ] **📱** `AdminLoopFeaturedScreen` — à la une THE LOOP *(retest post-fix sync Supabase · web OK)*
 - [ ] **🤖** Idem
-- [ ] **📱** `AdminLoopBenefitsScreen` — privilèges offerts équipe
+- [x] **💻** À la une admin-web `/loop?tab=featured` *(23 sept. 2026 · **PASS**)*
+- [x] **📱** `AdminLoopStatsScreen` — performances *(favoris · clics · étoiles)* *(23 sept. 2026 · **PASS**)*
+- [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
+- [ ] **💻** Performances web — score composite *(fix PR · aligné mobile)*
+- [ ] **📱** `PartnerSubmissionScreen` — **création** event/spot/outil depuis hub THE LOOP *(non testé · 23 sept.)*
 - [ ] **🤖** Idem
-- [ ] **📱** `AdminLoopFeaturedScreen` — à la une THE LOOP
-- [ ] **🤖** Idem
-- [ ] **📱** `AdminLoopStatsScreen` — performances
-- [ ] **🤖** Idem
-- [ ] **📱** `PartnerSubmissionScreen` (canal loop) — soumission admin
-- [ ] **🤖** Idem
-- [ ] **📱** `PartnerBenefitScanScreen` — depuis hub LOOP
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerBenefitScanScreen` — scan QR **depuis compte admin** (hub THE LOOP) *(23 sept. 2026 · **PASS**)*
+- [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 
 ### Paramètres → sous-modules (stack)
 - [ ] **📱** `AdminContentCountriesScreen` — pays contenu

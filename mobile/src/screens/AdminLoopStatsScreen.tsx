@@ -126,7 +126,7 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
       />
       <AdminCountryBar shell={shell} compact />
       <Text style={[styles.note, { color: shell.pageKicker }]}>
-        Uniquement les contenus créés par l'équipe THE LOOP — du plus plébiscité au moins.
+        Uniquement les contenus publiés par THE LOOP — score favoris + clics + étoiles (aligné admin-web).
       </Text>
 
       <AdminTabMenu

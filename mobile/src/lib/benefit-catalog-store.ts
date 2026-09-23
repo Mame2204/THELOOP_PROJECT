@@ -902,12 +902,21 @@ export function filterTheLoopOfferedBenefits(
   items: BenefitCatalogItem[],
   countryCode?: string,
   activeOnly = false,
+  publishedIndex?: PublishedContentIndex,
 ): BenefitCatalogItem[] {
   return items.filter((item) => {
     if (!isTheLoopLinkedBenefit(item)) return false;
     if (isStandaloneTheLoopBenefit(item)) return false;
+    if (!isPartnerAssociatedBenefit(item)) return false;
     if (activeOnly && !item.isActive) return false;
     if (countryCode && item.countryCode && item.countryCode !== countryCode) return false;
+    if (publishedIndex) {
+      return (item.offeringPartners ?? []).some(
+        (o) =>
+          o.displayName.trim().toUpperCase().includes('THE LOOP') &&
+          offeringMatchesPublishedContent(o, publishedIndex),
+      );
+    }
     return true;
   });
 }

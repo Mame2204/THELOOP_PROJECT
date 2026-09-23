@@ -326,6 +326,27 @@ export function isTheLoopLinked(partners: string[]): boolean {
   return partners.some((n) => n.toUpperCase().includes('THE LOOP'));
 }
 
+/** Hub THE LOOP — privilèges liés à un contenu THE LOOP publié (aligné app mobile). */
+export function filterTheLoopOfferedBenefits(
+  items: BenefitCatalogRow[],
+  index: PublishedContentIndex,
+  options?: { countryCode?: string; activeOnly?: boolean },
+): BenefitCatalogRow[] {
+  const cc = options?.countryCode?.toUpperCase().slice(0, 2);
+  return items.filter((item) => {
+    if (!isTheLoopLinked(item.partnerNames)) return false;
+    if (isStandaloneTheLoopBenefit(item)) return false;
+    if (!isPartnerAssociatedBenefit(item)) return false;
+    if (options?.activeOnly && !item.isActive) return false;
+    if (cc && item.countryCode && item.countryCode.toUpperCase().slice(0, 2) !== cc) return false;
+    return (item.offeringPartners ?? []).some(
+      (o) =>
+        o.displayName.trim().toUpperCase().includes('THE LOOP') &&
+        offeringMatchesPublishedContent(o, index),
+    );
+  });
+}
+
 export async function listBenefitCatalog(
   countryCode?: string,
 ): Promise<{ items: BenefitCatalogRow[]; error?: string }> {

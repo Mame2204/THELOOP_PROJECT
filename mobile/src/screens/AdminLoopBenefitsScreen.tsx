@@ -11,6 +11,7 @@ import {
   BENEFIT_KIND_LABELS,
   filterTheLoopOfferedBenefits,
   listBenefitCatalog,
+  loadPublishedContentIndexFromSnapshot,
   peekBenefitCatalog,
   type BenefitCatalogItem,
 } from '@/lib/benefit-catalog-store';
@@ -34,8 +35,13 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
   const [detailItem, setDetailItem] = useState<BenefitCatalogItem | null>(null);
 
   const refresh = useCallback(async () => {
-    const fresh = await listBenefitCatalog();
-    setItems(filterTheLoopOfferedBenefits(fresh, countryCode, statusFilter === 'active'));
+    const [fresh, publishedIndex] = await Promise.all([
+      listBenefitCatalog(),
+      loadPublishedContentIndexFromSnapshot(countryCode),
+    ]);
+    setItems(
+      filterTheLoopOfferedBenefits(fresh, countryCode, statusFilter === 'active', publishedIndex),
+    );
   }, [countryCode, statusFilter]);
 
   const { run } = useFocusLoad(
@@ -43,7 +49,10 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
       if (role !== 'ADMIN' || !allowed) return;
       const cached = await peekBenefitCatalog();
       if (cached.length > 0) {
-        setItems(filterTheLoopOfferedBenefits(cached, countryCode, statusFilter === 'active'));
+        const publishedIndex = await loadPublishedContentIndexFromSnapshot(countryCode);
+        setItems(
+          filterTheLoopOfferedBenefits(cached, countryCode, statusFilter === 'active', publishedIndex),
+        );
       }
       if (force || cached.length === 0) {
         await refresh();
@@ -124,12 +133,17 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
               ]}
               onPress={() => {
                 setStatusFilter(f.id);
-                void peekBenefitCatalog().then((cached) => {
-                  setItems(filterTheLoopOfferedBenefits(cached, countryCode, f.id === 'active'));
-                });
-                void listBenefitCatalog().then((fresh) => {
-                  setItems(filterTheLoopOfferedBenefits(fresh, countryCode, f.id === 'active'));
-                });
+                void (async () => {
+                  const publishedIndex = await loadPublishedContentIndexFromSnapshot(countryCode);
+                  const cached = await peekBenefitCatalog();
+                  setItems(
+                    filterTheLoopOfferedBenefits(cached, countryCode, f.id === 'active', publishedIndex),
+                  );
+                  const fresh = await listBenefitCatalog();
+                  setItems(
+                    filterTheLoopOfferedBenefits(fresh, countryCode, f.id === 'active', publishedIndex),
+                  );
+                })();
               }}
             >
               <Text style={{ color: statusFilter === f.id ? '#fff' : shell.pageTitle, fontSize: 10, fontWeight: '700' }}>
