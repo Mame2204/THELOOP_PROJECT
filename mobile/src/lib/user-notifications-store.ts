@@ -887,11 +887,15 @@ export async function notifyAdminUsers(input: {
   }
 }
 
+const welcomeSentUserIds = new Set<string>();
+
 export async function sendWelcomeNotification(user: {
   id: string;
   firstName?: string | null;
   countryCode?: string | null;
 }): Promise<void> {
+  if (welcomeSentUserIds.has(user.id)) return;
+  welcomeSentUserIds.add(user.id);
   const name = user.firstName?.trim() || 'Membre';
   await appendUserNotification(user.id, {
     title: `Bienvenue ${name} !`,

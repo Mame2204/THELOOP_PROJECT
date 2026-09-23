@@ -32,60 +32,6 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function translateVerifyError(raw: string): string {
-  const lower = raw.toLowerCase();
-  if (lower.includes('invalid') || lower.includes('expired') || lower.includes('otp_expired')) {
-    return 'Ce lien est invalide ou expiré. Demandez un nouvel e-mail d’invitation depuis l’admin THE LOOP.';
-  }
-  return raw;
-}
-
-function otpVerifyType(kind: string): string {
-  if (kind === 'recovery') return 'recovery';
-  if (kind === 'signup' || kind === 'email') return 'signup';
-  return 'invite';
-}
-
-async function verifyTokenHashOnServer(
-  tokenHash: string,
-  kind: string,
-): Promise<{ accessToken: string; refreshToken: string } | { verifyError: string }> {
-  const anon = config.supabaseAnonKey;
-  const base = config.supabaseUrl.replace(/\/$/, '');
-  if (!anon) {
-    return { verifyError: 'Configuration serveur incomplète (clé anon).' };
-  }
-
-  const res = await fetch(`${base}/auth/v1/verify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: anon },
-    body: JSON.stringify({ type: otpVerifyType(kind), token_hash: tokenHash }),
-  });
-
-  const body = (await res.json().catch(() => ({}))) as {
-    access_token?: string;
-    refresh_token?: string;
-    msg?: string;
-    error_description?: string;
-    message?: string;
-  };
-
-  if (!res.ok) {
-    const msg =
-      body.error_description
-      ?? body.msg
-      ?? body.message
-      ?? 'Ce lien est invalide ou expiré.';
-    return { verifyError: translateVerifyError(msg) };
-  }
-
-  if (!body.access_token || !body.refresh_token) {
-    return { verifyError: 'Session invalide après validation du lien.' };
-  }
-
-  return { accessToken: body.access_token, refreshToken: body.refresh_token };
-}
-
 function patchVisibleShell(
   html: string,
   title: string,
@@ -178,25 +124,13 @@ function queryHasAuthParams(req: import('express').Request): boolean {
 }
 
 async function handleAuthCallback(req: import('express').Request, res: import('express').Response): Promise<void> {
-  const rawHash = req.query.token_hash ?? req.query.token;
-  const tokenHash = typeof rawHash === 'string' ? rawHash.trim() : '';
-  const kind = String(req.query.type ?? 'invite').toLowerCase();
-
-  let preboot: AuthCallbackPreboot = null;
-  if (tokenHash) {
-    const verified = await verifyTokenHashOnServer(tokenHash, kind);
-    if ('verifyError' in verified) {
-      preboot = verified;
-    } else {
-      preboot = { kind, accessToken: verified.accessToken, refreshToken: verified.refreshToken };
-    }
-  }
-
-  const incompleteLink = !preboot && !queryHasAuthParams(req);
-  sendAuthCallbackPage(res, preboot, incompleteLink);
+  // Ne pas appeler /auth/v1/verify ici : un GET (aperçu mail, anti-virus) consumerait
+  // le token_hash avant le clic réel. La validation se fait dans auth-callback.html (JS).
+  const incompleteLink = !queryHasAuthParams(req);
+  sendAuthCallbackPage(res, null, incompleteLink);
 }
 
-/** Page recovery / invite — validation token_hash côté serveur (navigateur mail sans fetch JS). */
+/** Page recovery / invite — shell HTML ; validation token_hash côté navigateur uniquement. */
 authCallbackPageRouter.get('/auth/callback', (req, res) => {
   void handleAuthCallback(req, res).catch((err) => {
     const message = err instanceof Error ? err.message : 'Page indisponible.';

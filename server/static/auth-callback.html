@@ -362,7 +362,10 @@
             'Authorization': 'Bearer ' + sessionState.accessToken,
             'apikey': anon
           },
-          body: JSON.stringify({ password: pwd })
+          body: JSON.stringify({
+            password: pwd,
+            data: { pending_welcome: null, referral_code: null },
+          })
         }).then(function (res) {
           if (!res.ok) return res.json().then(function (j) { throw new Error(authError(j)); });
           return markInviteActivated(sessionState.accessToken);
