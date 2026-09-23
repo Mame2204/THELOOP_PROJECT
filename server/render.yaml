@@ -27,6 +27,9 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: SUPABASE_ACCESS_TOKEN
+        sync: false
+      # Optionnel : token dashboard Supabase → sync site_url au démarrage (scripts/configure-auth-invite-email.mjs)
       - key: DJOMY_CLIENT_ID
         sync: false
       - key: DJOMY_CLIENT_SECRET

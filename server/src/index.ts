@@ -15,6 +15,8 @@ import { publicPagesRouter } from './routes/public-pages.js';
 import { webhookRouter } from './routes/webhook.js';
 import { cronRouter } from './routes/cron.js';
 import { startInternalPushCron } from './services/internal-push-cron.js';
+import { syncSupabaseAuthConfigIfNeeded } from './boot/sync-auth-config.js';
+import { syncAuthRecoveryStorageIfNeeded } from './boot/sync-auth-recovery-storage.js';
 
 const app = express();
 
@@ -109,6 +111,13 @@ app.use((_req, res) => {
 });
 
 app.listen(config.port, '0.0.0.0', () => {
+  void syncAuthRecoveryStorageIfNeeded(true).catch((err) => {
+    console.warn('[auth-sync] Storage:', err instanceof Error ? err.message : err);
+  });
+  void syncSupabaseAuthConfigIfNeeded(true).catch((err) => {
+    console.warn('[auth-sync] Auth config:', err instanceof Error ? err.message : err);
+  });
+
   console.log(`[payment-server] Écoute sur 0.0.0.0:${config.port} (${config.nodeEnv})`);
   console.log(`[payment-server] Djomy base: ${config.djomyBaseUrl}`);
   if (config.isDjomyProduction) {
