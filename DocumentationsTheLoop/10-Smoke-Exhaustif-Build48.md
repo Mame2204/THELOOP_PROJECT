@@ -691,7 +691,7 @@ Liens Param. → pages satellites :
 - [ ] **💻** Pagination · recherche
 - [ ] **💻** Éditer profil · rôle · suspendre
 - [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
-- [ ] **💻** **Waitlist** → statut `invited` *(non retesté · même pipeline que Inviter)*
+- [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
 ### PASS
 - [ ] **💻** Prix Guinée · enregistrer

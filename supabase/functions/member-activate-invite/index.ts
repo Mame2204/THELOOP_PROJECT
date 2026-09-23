@@ -15,6 +15,12 @@ type Body = {
   email?: string;
   password?: string;
   inviteId?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
+  city?: string | null;
+  countryCode?: string | null;
+  phoneNumber?: string | null;
 };
 
 function normalizeEmail(raw: string): string {
@@ -135,8 +141,12 @@ Deno.serve(async (req) => {
     }
 
     const profileFirst =
-      (invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
-    const profileLast = (invite.last_name ?? '').trim() || 'THE LOOP';
+      (body.firstName ?? invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
+    const profileLast = (body.lastName ?? invite.last_name ?? '').trim() || 'THE LOOP';
+    const birthDate = (body.birthDate ?? '').trim() || null;
+    const city = (body.city ?? invite.city ?? '').trim() || null;
+    const countryCode = (body.countryCode ?? invite.country_code ?? 'GN').trim().toUpperCase().slice(0, 2);
+    const phoneNumber = (body.phoneNumber ?? '').trim() || null;
     const { error: updateErr } = await admin.auth.admin.updateUserById(authUser.id, {
       password,
       email_confirm: true,
@@ -169,6 +179,10 @@ Deno.serve(async (req) => {
       .update({
         first_name: profileFirst,
         last_name: profileLast,
+        birth_date: birthDate,
+        city,
+        country_code: countryCode,
+        phone_number: phoneNumber,
         user_role: invite.user_role ?? undefined,
         is_active: true,
         account_status: 'active',

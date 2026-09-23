@@ -315,13 +315,12 @@ Deno.serve(async (req) => {
         .eq('id', body.inviteId);
     }
 
-    const activationLink = await buildActivationLink('invite');
     return new Response(
       JSON.stringify({
         ok: true,
         mode: 'invite',
         userId: invited.user?.id ?? null,
-        activationLink,
+        activationLink: null,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
