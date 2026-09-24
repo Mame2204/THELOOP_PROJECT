@@ -609,9 +609,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 - [x] **💻🤖✓** Login → redirect dashboard
 - [x] **💻🤖✓** Sélecteur pays **Guinée**
-- [ ] **💻** Session stable 15 min
-- [ ] **💻** Déconnexion → `/login`
-- [ ] **💻** Menu latéral — badge Demandes si pending
+- [x] **💻** Session stable *(24 sept. 2026 · testeur · connexion / déconnexion / reconnexion OK · atterrit sur Insights)*
+- [x] **💻** Déconnexion → `/login` *(24 sept. 2026 · **PASS**)*
+- [x] **💻** Menu latéral — badge Demandes si pending *(24 sept. 2026 · **PASS** · détail : badge = partenariats actifs + modération + retraits + idées · ≠ nombre de cartes « Tous » partenariats)*
 
 ## B1 — Navigation — toutes les routes
 
@@ -929,7 +929,8 @@ Admin-web B6 Contenu (23 sept. 2026 · testeur) :
   - **PASS 💻** : « À la une » (coché admin-web) — effet **immédiat web**
   - **Reporté 📱🤖 build 49+** : slider Accueil membre (fix empreinte `20260937` + binaire mobile) · date événement recommandée (fallback app build 49+)
   - Paramètres **Gates** : inscription · maintenance · pré-lancement · achat PASS — toggle ON/OFF — **PASS**
-Hub THE LOOP admin-web (23 sept. 2026 soir · testeur + agent) :
+Admin-web B0 session (24 sept. 2026 · testeur) :
+  - **PASS 💻** : déconnexion / reconnexion · landing **Insights** · badge Demandes (4) — décomposition expliquée sur `/demandes` (deploy à venir)
   - **PASS 💻** : `/loop?tab=contenu` · **privilèges offerts** (liste liée contenu publié) · **à la une** · **performances** (formule clics×1 + favoris×5 + note×10 · vues Tous/type · pagination)
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
   - **Reporté 📱🤖 build 49+** : retest perf mobile après binaire (alignement formule + pagination)

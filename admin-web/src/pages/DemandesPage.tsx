@@ -38,6 +38,7 @@ import {
   type SuggestionStatus,
   type SuggestionType,
 } from '../lib/suggestions';
+import { loadDemandesCounts, type DemandesCounts } from '../lib/demandes-counts';
 
 type HubTab = 'partnerships' | 'moderation' | 'ideas';
 type ModFilter = 'all' | StagingKind;
@@ -101,6 +102,11 @@ export function DemandesPage() {
   const [ideaStatus, setIdeaStatus] = useState<SuggestionStatus | 'all'>('pending');
   const [ideaType, setIdeaType] = useState<SuggestionType | 'all'>('all');
   const [ideaError, setIdeaError] = useState<string | null>(null);
+  const [hubCounts, setHubCounts] = useState<DemandesCounts | null>(null);
+
+  const refreshHubCounts = useCallback(async () => {
+    setHubCounts(await loadDemandesCounts(countryCode));
+  }, [countryCode]);
 
   const loadPartnerships = useCallback(async () => {
     setPError(null);
@@ -131,6 +137,7 @@ export function DemandesPage() {
 
   useEffect(() => {
     setMsg(null);
+    void refreshHubCounts();
     if (tab === 'partnerships' && canPartnerships) void loadPartnerships();
     if (tab === 'moderation' && canModeration) void loadModeration();
     if (tab === 'ideas' && canIdeas) void loadIdeas();
@@ -142,6 +149,7 @@ export function DemandesPage() {
     loadPartnerships,
     loadModeration,
     loadIdeas,
+    refreshHubCounts,
   ]);
 
   const filteredPartnerships = useMemo(
@@ -323,6 +331,22 @@ export function DemandesPage() {
           <p className="meta">
             Partenariats, modération staging et idées — pays : {countryLabel}.
           </p>
+          {hubCounts && hubCounts.total > 0 ? (
+            <p className="meta" style={{ marginTop: 6 }}>
+              Badge menu ({hubCounts.total}) = {hubCounts.partnerships} partenariat
+              {hubCounts.partnerships > 1 ? 's' : ''} actif
+              {hubCounts.partnerships > 1 ? 's' : ''} (nouvelle, à contacter, en discussion)
+              {hubCounts.moderation > 0
+                ? ` · ${hubCounts.moderation} modération`
+                : ''}
+              {hubCounts.withdrawals > 0 ? ` · ${hubCounts.withdrawals} retrait` : ''}
+              {hubCounts.withdrawals > 1 ? 's' : ''}
+              {hubCounts.suggestions > 0
+                ? ` · ${hubCounts.suggestions} idée${hubCounts.suggestions > 1 ? 's' : ''}`
+                : ''}
+              . L’onglet Partenariats → « Tous » inclut aussi validés / refusés (hors badge).
+            </p>
+          ) : null}
         </div>
       </header>
 
