@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~262 / 387** checklists markdown ≈ **68 %** · **~323 / 500** toutes cases doc ≈ **65 %** *(25 sept. · voir métriques ci-dessous)* |
-| **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste surtout B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
+| **Avancement smoke** | **263 / 388** ≈ **68 %** global · **Web 74/109 (68 %)** · **iOS 110/181 (61 %)** · **Android 87/152 (57 %)** |
+| **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
 | **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier *(option)* · **📱 build 49+** modération · refus privilège · octroi scan · LoopX |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -62,11 +62,22 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **387 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **~262 cochées ≈ 68 %**. |
-| **500 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~323 cochées ≈ 65 %** — normal qu’il soit **plus bas**. |
-| **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **387** pour éviter la confusion. **Ce n’était pas un bug build 49.** |
+| **388 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **263 / 388 ≈ 68 %**. |
+| **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
+| **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
-**Build 49+** = cases encore ouvertes qui **exigent un binaire mobile** ou des **notifs partenaire modération** — pas une erreur de comptage.
+### Avancement par plateforme *(décompte agent · 25 sept. 2026)*
+
+> Chaque **ligne** `- [ ]` compte **une fois** dans le global. Une ligne **📱** ou **🤖** ne compte que pour cette plateforme ; **📱🤖** compte pour **iOS et Android**. Le global **68 %** reste bas surtout parce que la checklist inclut **tout le mobile** (A1–A5, parité 🤖, Phase 1, C1, admin mobile…) alors que le web a été massacré en QA cette semaine.
+
+| Plateforme | Coché | Total | % | Commentaire |
+|------------|------:|------:|---:|-------------|
+| **💻 Web** | **74** | **109** | **68 %** | Lignes `💻` + colonne test inventaire routes (24 pages). |
+| **📱 iOS** | **110** | **181** | **61 %** | Lignes `📱` + lignes `📱🤖` + colonne 📱 tableaux Phase 1 / C1 (18). |
+| **🤖 Android** | **87** | **152** | **57 %** | Lignes `🤖` + lignes `📱🤖` + colonne 🤖 tableaux (18) — **retard parité** vs iOS. |
+| **Global (1 ligne = 1 case)** | **263** | **388** | **68 %** | Une case cochée une seule fois, toutes plateformes confondues. |
+
+**Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
 ---
 
@@ -661,7 +672,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Onglet Partenariats
 - [x] **💻🤖✓** Chargement liste
-- [ ] **💻** Filtrer par statut (pending / to_contact / in_discussion / …) *(non découpé ce tour)*
+- [x] **💻** Filtrer par statut (pending / to_contact / in_discussion / …) *(25 sept. 2026 · testeur **PASS**)*
 - [x] **💻** Approuver demande → inviter partenaire *(24 sept. 2026 · testeur **PASS** · même flux qu’Inviter depuis Users)*
 - [x] **💻** Rejeter avec motif *(24 sept. 2026 · testeur **PASS** · motif conservé dans fiche partenariat · **pas d’e-mail / push au demandeur** — attendu produit)*
 
