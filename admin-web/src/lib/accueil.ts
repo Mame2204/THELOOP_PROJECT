@@ -197,21 +197,311 @@ export async function listAccueilPolls(countryCode: string): Promise<AccueilPoll
   }));
 }
 
+function isoWeekKey(date = new Date()): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+export async function upsertAccueilPoll(
+  countryCode: string,
+  input: {
+    id?: string;
+    question: string;
+    optionLabels: string[];
+    activate?: boolean;
+    periodStart?: string | null;
+    periodEnd?: string | null;
+  },
+): Promise<{ ok: boolean; error?: string }> {
+  const q = input.question.trim();
+  const options = input.optionLabels
+    .map((label, i) => ({ id: `opt${i + 1}`, label: label.trim() }))
+    .filter((o) => o.label)
+    .slice(0, 4);
+  if (!q) return { ok: false, error: 'Question requise.' };
+  if (options.length < 2) return { ok: false, error: 'Au moins 2 choix de réponse requis.' };
+
+  const payload = {
+    question: q,
+    options,
+    week_key: isoWeekKey(),
+    is_active: input.activate !== false,
+    country_code: countryCode,
+    period_start: input.periodStart?.trim() || null,
+    period_end: input.periodEnd?.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (input.id) {
+    const { error } = await supabase.from('home_polls').update(payload).eq('id', input.id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
+  const { error } = await supabase.from('home_polls').insert({
+    id: crypto.randomUUID(),
+    ...payload,
+    created_at: new Date().toISOString(),
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** @deprecated Préférer `upsertAccueilPoll` avec choix de réponses. */
 export async function createPoll(
   countryCode: string,
   question: string,
+  optionLabels?: string[],
 ): Promise<{ ok: boolean; error?: string }> {
-  const q = question.trim();
-  if (!q) return { ok: false, error: 'Question requise.' };
-  const { error } = await supabase.from('home_polls').insert({
-    id: crypto.randomUUID(),
-    question: q,
-    is_active: true,
+  return upsertAccueilPoll(countryCode, {
+    question,
+    optionLabels: optionLabels ?? [],
+    activate: true,
+  });
+}
+
+export interface WalkStepInput {
+  targetType: 'event' | 'spot' | 'tool';
+  targetId: string;
+  title: string;
+}
+
+export async function upsertAccueilWalk(
+  countryCode: string,
+  input: {
+    id?: string;
+    title: string;
+    summary?: string;
+    description?: string;
+    coverImageUrl?: string;
+    durationMinutes?: number | null;
+    steps: WalkStepInput[];
+    activateFeatured?: boolean;
+  },
+): Promise<{ ok: boolean; error?: string }> {
+  const title = input.title.trim();
+  if (!title) return { ok: false, error: 'Titre requis.' };
+  if (input.steps.length < 2) {
+    return { ok: false, error: 'Sélectionnez au moins 2 étapes (événement, spot ou outil).' };
+  }
+
+  const stepsJson = input.steps.map((s, i) => ({
+    order: i + 1,
+    target_type: s.targetType,
+    target_id: s.targetId,
+    title: s.title,
+    description: null,
+  }));
+  const cover =
+    input.coverImageUrl?.trim() ||
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80';
+  const rawDuration = Number(input.durationMinutes ?? 0);
+  const duration = Number.isFinite(rawDuration) && rawDuration > 0 ? Math.round(rawDuration) : 0;
+  const now = new Date().toISOString();
+
+  if (input.activateFeatured) {
+    await supabase
+      .from('loop_walks')
+      .update({ is_featured_week: false, updated_at: now })
+      .eq('country_code', countryCode)
+      .eq('is_featured_week', true);
+  }
+
+  const payload = {
+    title,
+    cover_image_url: cover,
+    duration_minutes: duration,
+    steps_count: stepsJson.length,
+    category: 'parcours',
+    category_label: 'Parcours',
+    summary: input.summary?.trim() || null,
+    description: input.description?.trim() || null,
+    steps: stepsJson,
+    price_type: 'free',
+    price_label: null,
+    contact_phone: null,
+    contact_url: null,
     country_code: countryCode,
-    period_start: null,
-    period_end: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: now,
+    ...(input.activateFeatured ? { is_featured_week: true, is_published: true } : {}),
+  };
+
+  if (input.id) {
+    const { error } = await supabase.from('loop_walks').update(payload).eq('id', input.id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
+  const { error } = await supabase.from('loop_walks').insert({
+    id: crypto.randomUUID(),
+    slug: `${slugify(title)}-${Date.now().toString(36).slice(-4)}`,
+    is_published: true,
+    is_featured_week: Boolean(input.activateFeatured),
+    sort_order: 99,
+    partner_ids: [],
+    star_count: 3,
+    created_at: now,
+    ...payload,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function upsertAccueilCorner(
+  countryCode: string,
+  input: {
+    id?: string;
+    subjectName: string;
+    title: string;
+    impactDescription: string;
+    locationLabel?: string;
+    badgeTag?: string;
+    coreQuote?: string;
+    mediaUrl?: string;
+    relatedTargetType?: 'event' | 'spot' | 'tool' | null;
+    relatedTargetId?: string | null;
+    relatedTargetSlug?: string | null;
+    periodStart?: string | null;
+    periodEnd?: string | null;
+    activate?: boolean;
+  },
+): Promise<{ ok: boolean; error?: string }> {
+  const subjectName = input.subjectName.trim();
+  const title = input.title.trim();
+  const impactDescription = input.impactDescription.trim();
+  if (!subjectName || !title || !impactDescription) {
+    return { ok: false, error: 'Sujet, titre de l’œuvre et impact requis.' };
+  }
+  const slug = slugify(`${subjectName}-${title}`);
+  const now = new Date().toISOString();
+  const mediaUrl = input.mediaUrl?.trim() || null;
+  const relatedTargetType = input.relatedTargetType ?? null;
+  const payload = {
+    slug,
+    person_name: subjectName,
+    person_role: null,
+    location_label: input.locationLabel?.trim() || null,
+    hook: (input.badgeTag?.trim() || impactDescription).slice(0, 180),
+    title,
+    cta_label: 'Découvrir',
+    cover_image_url: mediaUrl,
+    portrait_url: null,
+    story: null,
+    journey: null,
+    advice: input.coreQuote?.trim() || null,
+    favorite_pick: null,
+    useful_links: [],
+    period_label: null,
+    period_start: input.periodStart?.trim() || null,
+    period_end: input.periodEnd?.trim() || null,
+    is_active: input.activate === true,
+    country_code: countryCode,
+    category: null,
+    badge_tag: input.badgeTag?.trim() || null,
+    core_quote: input.coreQuote?.trim() || null,
+    impact_description: impactDescription,
+    media_url: mediaUrl,
+    related_target_type: relatedTargetType,
+    related_target_id: relatedTargetType ? input.relatedTargetId?.trim() || null : null,
+    related_target_slug: relatedTargetType ? input.relatedTargetSlug?.trim() || null : null,
+    updated_at: now,
+  };
+
+  if (input.id) {
+    const { error } = await supabase.from('creator_corner_features').update(payload).eq('id', input.id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
+  const { error } = await supabase.from('creator_corner_features').insert({
+    ...payload,
+    created_at: now,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function upsertAccueilChronique(
+  countryCode: string,
+  input: {
+    id?: string;
+    title: string;
+    body: string;
+    volumeLabel?: string;
+    footnote?: string;
+    ctaEnabled?: boolean;
+    contactPhone?: string;
+    contactEmail?: string;
+    targetType?: 'event' | 'spot' | 'tool' | null;
+    targetId?: string | null;
+    targetSlug?: string | null;
+    periodStart?: string | null;
+    periodEnd?: string | null;
+    activate?: boolean;
+  },
+): Promise<{ ok: boolean; error?: string }> {
+  const title = input.title.trim();
+  const body = input.body.trim();
+  if (!title || !body) return { ok: false, error: 'Titre et texte requis.' };
+
+  const ctaEnabled = input.ctaEnabled !== false;
+  const targetType = input.targetType ?? null;
+  if (ctaEnabled) {
+    if (!targetType || !input.targetId?.trim()) {
+      return { ok: false, error: 'Sélectionnez un contenu pour le bouton Découvrir.' };
+    }
+  } else if (!input.contactPhone?.trim() && !input.contactEmail?.trim()) {
+    return {
+      ok: false,
+      error: 'Sans bouton Découvrir, renseignez un téléphone ou un e-mail de contact.',
+    };
+  }
+
+  const slug = slugify(`${title}-${input.volumeLabel ?? isoWeekKey()}`);
+  const now = new Date().toISOString();
+  const payload = {
+    slug,
+    person_name: title,
+    person_role: null,
+    location_label: null,
+    hook: body,
+    title,
+    cta_label: 'Découvrir',
+    cta_enabled: ctaEnabled,
+    contact_phone: input.contactPhone?.trim() || null,
+    contact_email: input.contactEmail?.trim() || null,
+    cover_image_url: null,
+    portrait_url: null,
+    story: null,
+    journey: null,
+    advice: input.footnote?.trim() || null,
+    favorite_pick: null,
+    useful_links: [],
+    footnote: input.footnote?.trim() || null,
+    target_type: ctaEnabled ? targetType : targetType,
+    target_id: input.targetId?.trim() || null,
+    target_slug: input.targetSlug?.trim() || null,
+    period_label: input.volumeLabel?.trim() || null,
+    period_start: input.periodStart?.trim() || null,
+    period_end: input.periodEnd?.trim() || null,
+    is_active: input.activate === true,
+    country_code: countryCode,
+    updated_at: now,
+  };
+
+  if (input.id) {
+    const { error } = await supabase.from('chronique_features').update(payload).eq('id', input.id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
+  const { error } = await supabase.from('chronique_features').insert({
+    ...payload,
+    created_at: now,
   });
   if (error) return { ok: false, error: error.message };
   return { ok: true };

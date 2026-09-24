@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~227 / 378** cases cochées ≈ **60 %** *(23 sept. soir · Hub THE LOOP web perf + privilèges)* |
+| **Avancement smoke** | **~227 / 378** cases cochées ≈ **60 %** *(24 sept. · deploy Insights web + Accueil formulaires — retest testeur)* |
 | **Prochain test** | **📱 build 49+** : perf THE LOOP (formule + pagination) · **A4 set_password** · **💻 B4 waitlist** · octroi individuel |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -615,12 +615,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ## B1 — Navigation — toutes les routes
 
+> **B1 = smoke navigation** : chaque entrée du menu latéral **s’ouvre sans erreur** + **coup d’œil** sur les onglets listés ci-dessous (pas de CRUD profond — voir B2–B6). Cocher la colonne **Chargement** quand c’est OK pour toi.
+
 | Route | Page | Chargement | Actions clés | 🤖✓ |
 |-------|------|------------|--------------|-----|
-| `/insights` | Insights | [ ] | KPIs · graphiques | [x] |
-| `/accueil` | Accueil | [ ] | Hero · sondage · parcours · singulier | [x] |
+| `/insights` | Insights | [ ] | **Deploy 24 sept.** (`main` · fix clics événements · onglets Tous/Favoris/Clics/Étoiles/Notes · plébiscités par type · privilèges actifs · Accueil super-admin) — **à cocher après retest** | [x] |
+| `/accueil` | Accueil | [ ] | **Deploy 24 sept.** : sondage (question + choix) · parcours (étapes) · Singulier/Fragment (contenu lié · image URL/fichier) · logos — **à cocher après retest** | [x] |
 | `/onglets` | Onglets | [ ] | Visibilité tabs app | [x] |
-| `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* | [x] |
+| `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* · onglets **Contenu / Privilèges / À la une / Performances** — retest si besoin post-deploy Insights | [x] |
 | `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
 | `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
 | `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
@@ -728,8 +730,8 @@ Liens Param. → pages satellites :
 - [x] **💻** À la une *(23 sept. 2026 · **PASS web** (Accueil → À la une) · **📱🤖 Accueil slider** → **build 49+** + `20260937` · republier/archiver : suite B6)*
 - [ ] **💻** Archiver · republier (cycle de vie catalogue)
 - [ ] **💻** Transfert propriétaire THE LOOP ↔ partenaire
-- [ ] **💻** Accueil — hero · sondage · parcours · singulier · logos
-- [ ] **💻** Loop hub — sections éditoriales
+- [ ] **💻** Accueil — hero · sondage · parcours · singulier · logos *(24 sept. · formulaires enrichis deployés — **cocher après retest** : sondage 2+ choix · parcours 2+ étapes · liens catalogue · upload image)*
+- [x] **💻** Loop hub — onglets contenu / privilèges / à la une / performances *(23 sept. PASS · 24 sept. deploy Insights sans régression attendue)*
 
 ## B7 — Privilèges · TEAMS · Tirage
 
@@ -898,7 +900,7 @@ A4 partenaire : terminé build 48 (U20 notif retrait → après modération admi
 PACK A5-1 : PASS (U1–U3 super admin · U4 skip délégué)
 PACK A5-2 : partiel (U5–U17 · écrans existent · bugs data ci-dessous)
 A5 bugs smoke build 48 :
-  - Insights : KPI privilèges / validation ne remontent pas correctement (cache local grants)
+  - Insights : KPI privilèges / validation ne remontent pas correctement (cache local grants) · **💻 web** : fix clics events + UI alignée mobile (24 sept. deploy)
   - Utilisateurs : filtre « Sans activité » incohérent · seuil 30j → souhait 60j (2 mois)
   - Partenariats : cartes « . » jusqu’au refresh (cache sans refetch au focus)
   - THE LOOP hub : KPI contenu parfois 0 au 1er focus (race catalogue · TTL 90s)
@@ -932,6 +934,9 @@ Admin-web B6 Contenu (23 sept. 2026 · testeur) :
 Admin-web B0 session (24 sept. 2026 · testeur) :
   - **PASS 💻** : déconnexion / reconnexion · landing **Insights** · badge Demandes **4** = **2** partenariats (libellé onglet) + **2** idées (après ouverture onglet Idées)
   - **PASS 💻** : `/loop?tab=contenu` · **privilèges offerts** (liste liée contenu publié) · **à la une** · **performances** (formule clics×1 + favoris×5 + note×10 · vues Tous/type · pagination)
+Admin-web deploy (24 sept. 2026 · agent · `main`) :
+  - **💻 Insights** PR #28 mergé · **push `main`** → Netlify admin-web · retest : clics événements ≠ 0 · onglets métriques · privilèges catalogue actifs associés · onglet Accueil (super-admin)
+  - **💻 Accueil** (PR suivante) : sondage avec choix · parcours avec sélection étapes · Singulier/Fragment + picker contenu · logos URL/fichier local
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
   - **Reporté 📱🤖 build 49+** : retest perf mobile après binaire (alignement formule + pagination)
 Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
