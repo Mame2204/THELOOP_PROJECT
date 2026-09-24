@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~227 / 378** cases cochées ≈ **60 %** *(24 sept. · deploy Insights web + Accueil formulaires — retest testeur)* |
-| **Prochain test** | **📱 build 49+** : perf THE LOOP (formule + pagination) · **A4 set_password** · **💻 B4 waitlist** · octroi individuel |
+| **Avancement smoke** | **~245 / 378** cases cochées ≈ **65 %** *(24 sept. soir · testeur web Insights/Accueil/Users/Teams/Compta — PR #31 deploy)* |
+| **Prochain test** | **💻 web** : retest Accueil (logos · pickers parcours/Singulier/Fragment) · Insights **Privilèges** après reset tables · **📱 build 49+** (reste mobile) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -242,6 +242,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
+- [ ] `20260940_admin_benefit_grants_analytics_rpc.sql` — octrois individuels / tableau Insights privilèges *(à appliquer Supabase prod avant retest privilèges post-reset tables)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -619,22 +620,22 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Route | Page | Chargement | Actions clés | 🤖✓ |
 |-------|------|------------|--------------|-----|
-| `/insights` | Insights | [ ] | **Deploy 24 sept.** (`main` · fix clics événements · onglets Tous/Favoris/Clics/Étoiles/Notes · plébiscités par type · privilèges actifs · Accueil super-admin) — **à cocher après retest** | [x] |
-| `/accueil` | Accueil | [ ] | **Deploy 24 sept.** : sondage (question + choix) · parcours (étapes) · Singulier/Fragment (contenu lié · image URL/fichier) · logos — **à cocher après retest** | [x] |
+| `/insights` | Insights | [x] | **PASS 24 sept. soir** (testeur) · vue d’ensemble · événements · spots · outils · onglet Accueil · **Privilèges = retest** après reset tables + migration `20260940` | [x] |
+| `/accueil` | Accueil | [x] | **PASS partiel** : vue d’ensemble · sondage · à la une · **retest PR #31** : logos (re-save) · pickers édition parcours/Singulier/Fragment | [x] |
 | `/onglets` | Onglets | [ ] | Visibilité tabs app | [x] |
 | `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* · onglets **Contenu / Privilèges / À la une / Performances** — retest si besoin post-deploy Insights | [x] |
 | `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
 | `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
 | `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
 | `/contenu/editer/tool` | ContentEditor | [ ] | Créer / modifier outil | [x] |
-| `/users` | Users | [ ] | Liste · édition · invite | [x] |
+| `/users` | Users | [x] | **PASS 24 sept. soir** (testeur · navigation + usage courant) | [x] |
 | `/demandes` | Demandes | [ ] | Voir B2 | [x] |
 | `/privileges` | Privilèges | [ ] | Catalogue · activer | [x] |
-| `/teams` | TEAMS | [ ] | Overrides staff | [x] |
+| `/teams` | TEAMS | [x] | **PASS 24 sept. soir** (testeur) | [x] |
 | `/tirage` | Tirage | [ ] | Pool · lancer · historique | [x] |
 | `/pass` | PASS | [ ] | Catalogue · prix | [x] |
 | `/payments` | Paiements | [ ] | Liste · Resync | [x] |
-| `/compta` | Compta | [ ] | Export · analytics | [x] |
+| `/compta` | Compta | [x] | **PASS 24 sept. soir** (testeur · export déjà OK 23 sept.) | [x] |
 | `/notifications` | Notifications | [ ] | Voir B5 | [x] |
 | `/automation` | Automatisations | [ ] | Jobs · exécuter | [x] |
 | `/milestones` | Paliers | [ ] | Éditer · archiver | [x] |
@@ -730,14 +731,27 @@ Liens Param. → pages satellites :
 - [x] **💻** À la une *(23 sept. 2026 · **PASS web** (Accueil → À la une) · **📱🤖 Accueil slider** → **build 49+** + `20260937` · republier/archiver : suite B6)*
 - [ ] **💻** Archiver · republier (cycle de vie catalogue)
 - [ ] **💻** Transfert propriétaire THE LOOP ↔ partenaire
-- [ ] **💻** Accueil — hero · sondage · parcours · singulier · logos *(24 sept. · formulaires enrichis deployés — **cocher après retest** : sondage 2+ choix · parcours 2+ étapes · liens catalogue · upload image)*
+- [x] **💻** Accueil — **vue d’ensemble** · **sondage** · **à la une** *(24 sept. soir · testeur **PASS**)*
+- [ ] **💻** Accueil — **parcours** · **Singulier** · **Fragment** · **logos** *(24 sept. · édition contenu lié + image logo : **retest après deploy PR #31** · logos mobile = **build 49+**)*
 - [x] **💻** Loop hub — onglets contenu / privilèges / à la une / performances *(23 sept. PASS · 24 sept. deploy Insights sans régression attendue)*
+
+## B6b — Insights admin-web (détail onglets)
+
+> Retest testeur **24 sept. 2026 (soir)** · super admin · Guinée.
+
+- [x] **💻** Vue d’ensemble — macro événements / spots / outils · **Modèles associés** seul (KPI privilèges simplifié · PR #31)
+- [x] **💻** Onglet **Événements** — KPI statuts · listes Tous / Favoris / Clics
+- [x] **💻** Onglet **Spots** — idem
+- [x] **💻** Onglet **Outils** — idem
+- [x] **💻** Onglet **Accueil** (super-admin) — corners · chroniques · sondages · parcours (métriques clics / favoris etc.)
+- [ ] **💻** Onglet **Privilèges** — tableau octrois / consommés après **reset** `prime_benefit_grants` · `admin_benefit_draws` · redemptions *(retest en cours testeur · migration `20260940`)*
 
 ## B7 — Privilèges · TEAMS · Tirage
 
 - [ ] **💻** Privilèges — catalogue actif / inactif
 - [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif
-- [ ] **💻** TEAMS — toggle override par membre staff
+- [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
+- [ ] **💻** TEAMS — toggle override par membre staff *(CRUD profond non retesté)*
 - [ ] **💻** Tirage — pool éligibles > 0
 - [ ] **💻** Tirage — filtres rôle · scope contenu / standalone / promo
 - [ ] **💻** Tirage — lancer test → historique `draw_city`
@@ -937,6 +951,11 @@ Admin-web B0 session (24 sept. 2026 · testeur) :
 Admin-web deploy (24 sept. 2026 · agent · `main`) :
   - **💻 Insights** PR #28 mergé · **push `main`** → Netlify admin-web · retest : clics événements ≠ 0 · onglets métriques · privilèges catalogue actifs associés · onglet Accueil (super-admin)
   - **💻 Accueil** (PR suivante) : sondage avec choix · parcours avec sélection étapes · Singulier/Fragment + picker contenu · logos URL/fichier local
+Admin-web retest (24 sept. 2026 · soir · testeur) :
+  - **PASS 💻** : Insights (vue d’ensemble · events · spots · outils · Accueil) · Accueil (vue d’ensemble · sondage · à la une) · Contenu · Users · TEAMS · Compta
+  - **En cours 💻** : Insights onglet Privilèges (reset tables + jeu de test)
+  - **Retest post PR #31** : Accueil logos (Storage) · édition parcours/Singulier/Fragment (contenu lié pré-sélectionné)
+  - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
   - **Reporté 📱🤖 build 49+** : retest perf mobile après binaire (alignement formule + pagination)
 Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
