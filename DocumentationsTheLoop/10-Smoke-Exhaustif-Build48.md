@@ -47,7 +47,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **~245 / 378** cases cochées ≈ **65 %** *(24 sept. soir · testeur web Insights/Accueil/Users/Teams/Compta — PR #31 deploy)* |
-| **Prochain test** | **💻 web** : retest Accueil (logos · pickers parcours/Singulier/Fragment) · Insights **Privilèges** après reset tables · **📱 build 49+** (reste mobile) |
+| **Prochain test** | **💻 web** : onglet **PASS** (octroi manuel) · Accueil (logos · pickers) · **📱 build 49+** : **octroi individuel → validation partenaire** (FAIL connu build 48) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -620,7 +620,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Route | Page | Chargement | Actions clés | 🤖✓ |
 |-------|------|------------|--------------|-----|
-| `/insights` | Insights | [x] | **PASS 24 sept. soir** (testeur) · vue d’ensemble · événements · spots · outils · onglet Accueil · **Privilèges = retest** après reset tables + migration `20260940` | [x] |
+| `/insights` | Insights | [x] | **PASS 24 sept.** (testeur) · incl. onglet **Privilèges** après reset tables | [x] |
 | `/accueil` | Accueil | [x] | **PASS partiel** : vue d’ensemble · sondage · à la une · **retest PR #31** : logos (re-save) · pickers édition parcours/Singulier/Fragment | [x] |
 | `/onglets` | Onglets | [ ] | Visibilité tabs app | [x] |
 | `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* · onglets **Contenu / Privilèges / À la une / Performances** — retest si besoin post-deploy Insights | [x] |
@@ -630,10 +630,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/contenu/editer/tool` | ContentEditor | [ ] | Créer / modifier outil | [x] |
 | `/users` | Users | [x] | **PASS 24 sept. soir** (testeur · navigation + usage courant) | [x] |
 | `/demandes` | Demandes | [ ] | Voir B2 | [x] |
-| `/privileges` | Privilèges | [ ] | Catalogue · activer | [x] |
+| `/privileges` | Privilèges | [x] | **PASS 24 sept.** (testeur · module Privilèges web) | [x] |
 | `/teams` | TEAMS | [x] | **PASS 24 sept. soir** (testeur) | [x] |
-| `/tirage` | Tirage | [ ] | Pool · lancer · historique | [x] |
-| `/pass` | PASS | [ ] | Catalogue · prix | [x] |
+| `/tirage` | Tirage | [x] | **PASS 24 sept.** (testeur · tirage web) | [x] |
+| `/pass` | PASS | [ ] | **En cours testeur** · prix · octroi manuel | [x] |
 | `/payments` | Paiements | [ ] | Liste · Resync | [x] |
 | `/compta` | Compta | [x] | **PASS 24 sept. soir** (testeur · export déjà OK 23 sept.) | [x] |
 | `/notifications` | Notifications | [ ] | Voir B5 | [x] |
@@ -744,17 +744,16 @@ Liens Param. → pages satellites :
 - [x] **💻** Onglet **Spots** — idem
 - [x] **💻** Onglet **Outils** — idem
 - [x] **💻** Onglet **Accueil** (super-admin) — corners · chroniques · sondages · parcours (métriques clics / favoris etc.)
-- [ ] **💻** Onglet **Privilèges** — tableau octrois / consommés après **reset** `prime_benefit_grants` · `admin_benefit_draws` · redemptions *(retest en cours testeur · migration `20260940`)*
+- [x] **💻** Onglet **Privilèges** — KPI / tableau après reset tables *(24 sept. · testeur **PASS web**)*
 
 ## B7 — Privilèges · TEAMS · Tirage
 
-- [ ] **💻** Privilèges — catalogue actif / inactif
-- [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif
+- [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
+- [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif *(workflow modération / partenaire — pas retesté ce tour)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [ ] **💻** TEAMS — toggle override par membre staff *(CRUD profond non retesté)*
-- [ ] **💻** Tirage — pool éligibles > 0
-- [ ] **💻** Tirage — filtres rôle · scope contenu / standalone / promo
-- [ ] **💻** Tirage — lancer test → historique `draw_city`
+- [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
+- [ ] **💻** Tirage — détail filtres rôle · scope *(non découpé ce tour)*
 - [ ] **📱** Gagnant — notif « Nouveau privilège » (cross-platform)
 
 ## B8 — Automatisations · Paliers · Étoiles · Horaires
@@ -955,7 +954,9 @@ Admin-web retest (24 sept. 2026 · soir · testeur) :
   - **PASS 💻** : Insights (vue d’ensemble · events · spots · outils · Accueil) · Accueil (vue d’ensemble · sondage · à la une) · Contenu · Users · TEAMS · Compta
   - **En cours 💻** : Insights onglet Privilèges (reset tables + jeu de test)
   - **Retest post PR #31** : Accueil logos (Storage) · édition parcours/Singulier/Fragment (contenu lié pré-sélectionné)
-  - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile
+  - **PASS 💻** (24 sept. soir) : modules **Privilèges** + **Tirage** web
+  - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
+  - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
   - **Reporté 📱🤖 build 49+** : retest perf mobile après binaire (alignement formule + pagination)
 Mobile A0 (23 sept. 2026 · build 48 · 📱🤖) :
