@@ -47,7 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **~295 / 378** cases cochées ≈ **78 %** *(24 sept. soir · **admin-web ~90 %** hors modération/retraits/notifs B5 · B8 · contenu archiver/transfert)* |
-| **Prochain test** | **💻** Contenu archiver/republier · transfert · **B8** · **📱 build 49+** modération · retraits · notifs (boucle) · octroi scan |
+| **Prochain test** | **💻 uniquement (hors build 49)** : B6 archiver/transfert · **B8** · PASS prix/messages · **B9** délégué · liens Param. satellites |
+| **Bulle build 49+** | Notifs B5 · modération/retraits B2 · refus privilège partenaire 📱 · octroi scan · LoopX/slider · gros retests 📱🤖 |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -753,7 +754,9 @@ Liens Param. → pages satellites :
 ## B7 — Privilèges · TEAMS · Tirage
 
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
-- [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif *(workflow modération / partenaire — pas retesté ce tour)*
+- [x] **💻** Privilège standalone → **association partenaire + lieu** (contenu publié) · envoi validation *(24 sept. 2026 · testeur **PASS web** · picker lieux fix PR #33)*
+- [x] **📱** Partenaire **accepte** l’offre → catalogue actif côté admin *(24 sept. 2026 · testeur **PASS** · build 48)*
+- [ ] **📱** Partenaire **refuse** + motif *(24 sept. 2026 · **FAIL build 48** · RPC manquante + clavier · fix PR #34 · **retest build 49+** uniquement — **ne pas bloquer le PASS web**)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
@@ -972,8 +975,10 @@ Admin-web suite (24 sept. 2026 · testeur) :
   - **PASS 💻** Tirage : filtres par rôle
   - **⏸ build 49+** : Modération (refus/notif) · retraits · **Notifications B5** (boucle infinie)
   - **PASS 💻** Users : pagination · recherche
-  - **FAIL 💻** Privilèges création : lieux partenaire vides (fix web `privilege-partners` · organizer_id / master_id)
-  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · PASS prix/messages · privilège partenaire (retest post-fix)
+  - **PASS 💻** Privilèges : partenaire + lieu · envoi validation (web · picker PR #33)
+  - **PASS 📱** Partenaire **accepte** privilège (admin web)
+  - **FAIL 📱 · retest build 49+** : Partenaire **refuse** + motif (PR #34 · clavier + API)
+  - **Reste 💻 hors build 49** : B6 archiver/transfert · B8 · PASS prix/messages · B9 délégué
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
