@@ -1,3 +1,4 @@
+import { resolveMemberContentSlug } from './content-slugs';
 import { supabase } from './supabase';
 
 export const ACCUEIL_PAGE_SIZE = 20;
@@ -131,9 +132,16 @@ export async function setAccueilBlock(
   return { ok: true, sections: next };
 }
 
+export interface WalkStepInput {
+  targetType: 'event' | 'spot' | 'tool';
+  targetId: string;
+  title: string;
+}
+
 export interface AccueilPollRow {
   id: string;
   question: string;
+  optionLabels: string[];
   isActive: boolean;
   periodStart: string | null;
   periodEnd: string | null;
@@ -146,6 +154,9 @@ export interface AccueilWalkRow {
   isPublished: boolean;
   isFeaturedWeek: boolean;
   durationMinutes: number | null;
+  summary: string | null;
+  coverImageUrl: string | null;
+  steps: WalkStepInput[];
   updatedAt: string | null;
 }
 
@@ -153,6 +164,14 @@ export interface AccueilCornerRow {
   id: string;
   title: string;
   subjectName: string;
+  impactDescription: string;
+  locationLabel: string | null;
+  badgeTag: string | null;
+  coreQuote: string | null;
+  mediaUrl: string | null;
+  relatedTargetType: 'event' | 'spot' | 'tool' | null;
+  relatedTargetId: string | null;
+  relatedTargetSlug: string | null;
   isActive: boolean;
   periodStart: string | null;
   periodEnd: string | null;
@@ -161,7 +180,16 @@ export interface AccueilCornerRow {
 export interface AccueilChroniqueRow {
   id: string;
   title: string;
+  body: string;
   volumeLabel: string | null;
+  footnote: string | null;
+  ctaEnabled: boolean;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  targetType: 'event' | 'spot' | 'tool' | null;
+  targetId: string | null;
+  targetSlug: string | null;
+  locationLabel: string | null;
   isActive: boolean;
   periodStart: string | null;
   periodEnd: string | null;
@@ -176,11 +204,23 @@ export interface AccueilLogoRow {
   sortOrder: number;
 }
 
+function parsePollOptionLabels(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return '';
+      const row = item as { label?: string };
+      return typeof row.label === 'string' ? row.label.trim() : '';
+    })
+    .filter(Boolean);
+}
+
 export async function listAccueilPolls(countryCode: string): Promise<AccueilPollRow[]> {
+  const cc = countryCode.toUpperCase().slice(0, 2);
   const { data, error } = await supabase
     .from('home_polls')
-    .select('id, question, is_active, period_start, period_end, created_at')
-    .eq('country_code', countryCode)
+    .select('id, question, options, is_active, period_start, period_end, created_at')
+    .eq('country_code', cc)
     .order('created_at', { ascending: false })
     .limit(30);
   if (error) {
@@ -190,6 +230,7 @@ export async function listAccueilPolls(countryCode: string): Promise<AccueilPoll
   return (data ?? []).map((r) => ({
     id: String(r.id),
     question: String(r.question ?? ''),
+    optionLabels: parsePollOptionLabels(r.options),
     isActive: Boolean(r.is_active),
     periodStart: r.period_start ? String(r.period_start) : null,
     periodEnd: r.period_end ? String(r.period_end) : null,
@@ -230,7 +271,7 @@ export async function upsertAccueilPoll(
     options,
     week_key: isoWeekKey(),
     is_active: input.activate !== false,
-    country_code: countryCode,
+    country_code: countryCode.toUpperCase().slice(0, 2),
     period_start: input.periodStart?.trim() || null,
     period_end: input.periodEnd?.trim() || null,
     updated_at: new Date().toISOString(),
@@ -262,12 +303,6 @@ export async function createPoll(
     optionLabels: optionLabels ?? [],
     activate: true,
   });
-}
-
-export interface WalkStepInput {
-  targetType: 'event' | 'spot' | 'tool';
-  targetId: string;
-  title: string;
 }
 
 export async function upsertAccueilWalk(
@@ -380,6 +415,15 @@ export async function upsertAccueilCorner(
   const now = new Date().toISOString();
   const mediaUrl = input.mediaUrl?.trim() || null;
   const relatedTargetType = input.relatedTargetType ?? null;
+  let relatedTargetSlug = relatedTargetType ? input.relatedTargetSlug?.trim() || null : null;
+  if (relatedTargetType && input.relatedTargetId?.trim()) {
+    const resolved = await resolveMemberContentSlug(
+      countryCode,
+      relatedTargetType,
+      input.relatedTargetId.trim(),
+    );
+    if (resolved) relatedTargetSlug = resolved.slug;
+  }
   const payload = {
     slug,
     person_name: subjectName,
@@ -407,7 +451,7 @@ export async function upsertAccueilCorner(
     media_url: mediaUrl,
     related_target_type: relatedTargetType,
     related_target_id: relatedTargetType ? input.relatedTargetId?.trim() || null : null,
-    related_target_slug: relatedTargetType ? input.relatedTargetSlug?.trim() || null : null,
+    related_target_slug: relatedTargetSlug,
     updated_at: now,
   };
 
@@ -463,11 +507,20 @@ export async function upsertAccueilChronique(
 
   const slug = slugify(`${title}-${input.volumeLabel ?? isoWeekKey()}`);
   const now = new Date().toISOString();
+  let targetSlug = input.targetSlug?.trim() || null;
+  let locationLabel: string | null = null;
+  if (ctaEnabled && targetType && input.targetId?.trim()) {
+    const resolved = await resolveMemberContentSlug(countryCode, targetType, input.targetId.trim());
+    if (resolved) {
+      targetSlug = resolved.slug;
+      locationLabel = resolved.label;
+    }
+  }
   const payload = {
     slug,
     person_name: title,
     person_role: null,
-    location_label: null,
+    location_label: locationLabel,
     hook: body,
     title,
     cta_label: 'Découvrir',
@@ -484,7 +537,7 @@ export async function upsertAccueilChronique(
     footnote: input.footnote?.trim() || null,
     target_type: ctaEnabled ? targetType : targetType,
     target_id: input.targetId?.trim() || null,
-    target_slug: input.targetSlug?.trim() || null,
+    target_slug: targetSlug,
     period_label: input.volumeLabel?.trim() || null,
     period_start: input.periodStart?.trim() || null,
     period_end: input.periodEnd?.trim() || null,
@@ -525,11 +578,33 @@ export async function deletePoll(id: string): Promise<{ ok: boolean; error?: str
   return { ok: true };
 }
 
+function parseWalkSteps(raw: unknown): WalkStepInput[] {
+  if (!Array.isArray(raw)) return [];
+  const steps: WalkStepInput[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== 'object') continue;
+    const o = row as Record<string, unknown>;
+    const targetType = o.target_type ?? o.targetType;
+    const targetId = o.target_id ?? o.targetId;
+    if (targetType !== 'event' && targetType !== 'spot' && targetType !== 'tool') continue;
+    if (typeof targetId !== 'string' || !targetId.trim()) continue;
+    steps.push({
+      targetType,
+      targetId: targetId.trim(),
+      title: typeof o.title === 'string' ? o.title : 'Étape',
+    });
+  }
+  return steps;
+}
+
 export async function listAccueilWalks(countryCode: string): Promise<AccueilWalkRow[]> {
+  const cc = countryCode.toUpperCase().slice(0, 2);
   const { data, error } = await supabase
     .from('loop_walks')
-    .select('id, title, is_published, is_featured_week, duration_minutes, created_at')
-    .eq('country_code', countryCode)
+    .select(
+      'id, title, is_published, is_featured_week, duration_minutes, summary, cover_image_url, steps, created_at',
+    )
+    .eq('country_code', cc)
     .order('sort_order', { ascending: true })
     .limit(100);
   if (error) {
@@ -542,6 +617,9 @@ export async function listAccueilWalks(countryCode: string): Promise<AccueilWalk
     isPublished: Boolean(r.is_published),
     isFeaturedWeek: Boolean(r.is_featured_week),
     durationMinutes: r.duration_minutes != null ? Number(r.duration_minutes) : null,
+    summary: r.summary != null ? String(r.summary) : null,
+    coverImageUrl: r.cover_image_url != null ? String(r.cover_image_url) : null,
+    steps: parseWalkSteps(r.steps),
     updatedAt: r.created_at ? String(r.created_at) : null,
   }));
 }
@@ -598,7 +676,7 @@ export async function deleteWalk(id: string): Promise<{ ok: boolean; error?: str
 }
 
 const CORNER_LIST_SELECT =
-  'id, title, person_name, impact_description, is_active, period_start, period_end';
+  'id, title, person_name, impact_description, location_label, badge_tag, core_quote, media_url, related_target_type, related_target_id, related_target_slug, is_active, period_start, period_end';
 
 export async function listAccueilCorners(
   countryCode: string,
@@ -626,6 +704,17 @@ export async function listAccueilCorners(
       id: String(r.id),
       title: String(r.title ?? ''),
       subjectName: String(r.person_name ?? ''),
+      impactDescription: String(r.impact_description ?? ''),
+      locationLabel: r.location_label ? String(r.location_label) : null,
+      badgeTag: r.badge_tag ? String(r.badge_tag) : null,
+      coreQuote: r.core_quote ? String(r.core_quote) : null,
+      mediaUrl: r.media_url ? String(r.media_url) : null,
+      relatedTargetType:
+        r.related_target_type === 'event' || r.related_target_type === 'spot' || r.related_target_type === 'tool'
+          ? r.related_target_type
+          : null,
+      relatedTargetId: r.related_target_id ? String(r.related_target_id) : null,
+      relatedTargetSlug: r.related_target_slug ? String(r.related_target_slug) : null,
       isActive: Boolean(r.is_active),
       periodStart: r.period_start ? String(r.period_start) : null,
       periodEnd: r.period_end ? String(r.period_end) : null,
@@ -653,7 +742,7 @@ export async function deleteCorner(id: string): Promise<{ ok: boolean; error?: s
 }
 
 const CHRONIQUE_LIST_SELECT =
-  'id, title, hook, period_label, is_active, period_start, period_end';
+  'id, title, hook, period_label, footnote, advice, cta_enabled, contact_phone, contact_email, target_type, target_id, target_slug, location_label, is_active, period_start, period_end';
 
 export async function listAccueilChroniques(
   countryCode: string,
@@ -680,7 +769,19 @@ export async function listAccueilChroniques(
     items: (data ?? []).map((r) => ({
       id: String(r.id),
       title: String(r.title ?? ''),
+      body: String(r.hook ?? ''),
       volumeLabel: r.period_label ? String(r.period_label) : null,
+      footnote: r.footnote ? String(r.footnote) : r.advice ? String(r.advice) : null,
+      ctaEnabled: r.cta_enabled !== false,
+      contactPhone: r.contact_phone ? String(r.contact_phone) : null,
+      contactEmail: r.contact_email ? String(r.contact_email) : null,
+      targetType:
+        r.target_type === 'event' || r.target_type === 'spot' || r.target_type === 'tool'
+          ? r.target_type
+          : null,
+      targetId: r.target_id ? String(r.target_id) : null,
+      targetSlug: r.target_slug ? String(r.target_slug) : null,
+      locationLabel: r.location_label ? String(r.location_label) : null,
       isActive: Boolean(r.is_active),
       periodStart: r.period_start ? String(r.period_start) : null,
       periodEnd: r.period_end ? String(r.period_end) : null,
@@ -831,22 +932,72 @@ export async function createChroniqueSimple(
   return { ok: true };
 }
 
+export async function upsertAccueilLogo(
+  countryCode: string,
+  input: {
+    id?: string;
+    name: string;
+    logoUrl: string;
+    websiteUrl?: string;
+    isActive?: boolean;
+  },
+): Promise<{ ok: boolean; error?: string }> {
+  const name = input.name.trim();
+  const logoUrl = input.logoUrl.trim();
+  if (!name || !logoUrl) return { ok: false, error: 'Nom et image requis.' };
+
+  const cc = countryCode.toUpperCase().slice(0, 2);
+  const payload: Record<string, unknown> = {
+    name,
+    logo_url: logoUrl,
+    website_url: input.websiteUrl?.trim() || null,
+    is_active: input.isActive !== false,
+    country_code: cc,
+    updated_at: new Date().toISOString(),
+    source: 'manual',
+  };
+
+  async function writeInsert(extra: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> {
+    const { error } = await supabase.from('home_partner_logos').insert(extra);
+    if (!error) return { ok: true };
+    if (/source/i.test(error.message)) {
+      const { source: _s, ...withoutSource } = extra;
+      const retry = await supabase.from('home_partner_logos').insert(withoutSource);
+      if (!retry.error) return { ok: true };
+      return { ok: false, error: retry.error.message };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  if (input.id) {
+    const { error } = await supabase.from('home_partner_logos').update(payload).eq('id', input.id);
+    if (error) {
+      if (/source/i.test(error.message)) {
+        const { source: _s, ...withoutSource } = payload;
+        const retry = await supabase.from('home_partner_logos').update(withoutSource).eq('id', input.id);
+        if (retry.error) return { ok: false, error: retry.error.message };
+      } else {
+        return { ok: false, error: error.message };
+      }
+    }
+    return { ok: true };
+  }
+
+  const { count } = await supabase
+    .from('home_partner_logos')
+    .select('id', { count: 'exact', head: true })
+    .eq('country_code', cc);
+  const sortOrder = (count ?? 0) + 1;
+  return writeInsert({
+    id: crypto.randomUUID(),
+    ...payload,
+    sort_order: sortOrder,
+  });
+}
+
 export async function createLogo(
   countryCode: string,
   input: { name: string; logoUrl: string; websiteUrl?: string },
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!input.name.trim() || !input.logoUrl.trim()) {
-    return { ok: false, error: 'Nom et URL image requis.' };
-  }
-  const { error } = await supabase.from('home_partner_logos').insert({
-    id: crypto.randomUUID(),
-    name: input.name.trim(),
-    logo_url: input.logoUrl.trim(),
-    website_url: input.websiteUrl?.trim() || null,
-    country_code: countryCode,
-    is_active: true,
-    sort_order: 999,
-  });
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return upsertAccueilLogo(countryCode, { ...input, isActive: true });
 }

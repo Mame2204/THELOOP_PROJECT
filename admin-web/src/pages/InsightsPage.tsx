@@ -22,7 +22,7 @@ type EventMetricTab = 'all' | 'favorites' | 'clicks';
 type SpotMetricTab = 'all' | 'favorites' | 'clicks' | 'stars' | 'ratings';
 type PlatformMetricTab = 'all' | 'corner' | 'polls' | 'walks';
 
-const INSIGHTS_PAGE_SIZE = 20;
+const INSIGHTS_PAGE_SIZE = LOOP_PERF_PAGE_SIZE;
 
 export function InsightsPage() {
   const { profile } = useAuth();
@@ -71,6 +71,8 @@ export function InsightsPage() {
     setSpotMetric('all');
     setPlatformMetric('all');
     setListPage(0);
+    setBenefitsPage(0);
+    setPlatformPage(0);
   }
 
   const [data, setData] = useState<InsightsBundle | null>(null);
@@ -80,6 +82,8 @@ export function InsightsPage() {
   const [toolMetric, setToolMetric] = useState<SpotMetricTab>('all');
   const [platformMetric, setPlatformMetric] = useState<PlatformMetricTab>('all');
   const [listPage, setListPage] = useState(0);
+  const [benefitsPage, setBenefitsPage] = useState(0);
+  const [platformPage, setPlatformPage] = useState(0);
 
   const load = useCallback(async () => {
     setError(null);
@@ -138,6 +142,12 @@ export function InsightsPage() {
   const pagedEventList = eventList.slice(listPage * INSIGHTS_PAGE_SIZE, (listPage + 1) * INSIGHTS_PAGE_SIZE);
   const pagedSpotList = spotList.slice(listPage * INSIGHTS_PAGE_SIZE, (listPage + 1) * INSIGHTS_PAGE_SIZE);
   const pagedToolList = toolList.slice(listPage * INSIGHTS_PAGE_SIZE, (listPage + 1) * INSIGHTS_PAGE_SIZE);
+
+  const catalogStatsPaged = useMemo(() => {
+    if (!data) return [];
+    const start = benefitsPage * INSIGHTS_PAGE_SIZE;
+    return data.catalogStats.slice(start, start + INSIGHTS_PAGE_SIZE);
+  }, [data, benefitsPage]);
 
   return (
     <section>
@@ -359,7 +369,7 @@ export function InsightsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.catalogStats.map((s) => (
+                {catalogStatsPaged.map((s) => (
                   <tr key={s.catalogId}>
                     <td>
                       <strong>{s.title}</strong>
@@ -377,6 +387,13 @@ export function InsightsPage() {
               </p>
             ) : null}
           </div>
+          <ListPager
+            page={benefitsPage}
+            total={data.catalogStats.length}
+            pageSize={INSIGHTS_PAGE_SIZE}
+            onPageChange={setBenefitsPage}
+            label="catalogues"
+          />
         </>
       ) : null}
 
@@ -392,20 +409,56 @@ export function InsightsPage() {
               ] as const
             }
             active={platformMetric}
-            onChange={setPlatformMetric}
+            onChange={(m) => {
+              setPlatformMetric(m);
+              setPlatformPage(0);
+            }}
           />
           {platformMetric === 'all' || platformMetric === 'corner' ? (
             <>
-              <CornerList title="Le Singulier — clics" rows={data.platform.corners} />
-              <CornerList title="Le Fragment — clics" rows={data.platform.chroniques} />
+              <CornerList
+                title="Le Singulier — clics"
+                rows={data.platform.corners}
+                page={platformPage}
+                pageSize={INSIGHTS_PAGE_SIZE}
+              />
+              <CornerList
+                title="Le Fragment — clics"
+                rows={data.platform.chroniques}
+                page={platformPage}
+                pageSize={INSIGHTS_PAGE_SIZE}
+              />
             </>
           ) : null}
           {platformMetric === 'all' || platformMetric === 'polls' ? (
-            <PollList polls={data.platform.polls} />
+            <PollList polls={data.platform.polls} page={platformPage} pageSize={INSIGHTS_PAGE_SIZE} />
           ) : null}
           {platformMetric === 'all' || platformMetric === 'walks' ? (
-            <WalkList walks={data.platform.walks} />
+            <WalkList walks={data.platform.walks} page={platformPage} pageSize={INSIGHTS_PAGE_SIZE} />
           ) : null}
+          {(platformMetric === 'all' || platformMetric === 'corner' || platformMetric === 'polls' || platformMetric === 'walks') &&
+          (() => {
+            const platformTotal =
+              platformMetric === 'polls'
+                ? data.platform.polls.length
+                : platformMetric === 'walks'
+                  ? data.platform.walks.length
+                  : platformMetric === 'corner'
+                    ? Math.max(data.platform.corners.length, data.platform.chroniques.length)
+                    : data.platform.corners.length +
+                      data.platform.chroniques.length +
+                      data.platform.polls.length +
+                      data.platform.walks.length;
+            return platformTotal > INSIGHTS_PAGE_SIZE ? (
+              <ListPager
+                page={platformPage}
+                total={platformTotal}
+                pageSize={INSIGHTS_PAGE_SIZE}
+                onPageChange={setPlatformPage}
+                label="éléments"
+              />
+            ) : null;
+          })()}
         </>
       ) : null}
     </section>
@@ -526,7 +579,18 @@ function PerfRankList({ rows, rankOffset }: { rows: TeamLoopPerfRow[]; rankOffse
   );
 }
 
-function CornerList({ title, rows }: { title: string; rows: PlatformCornerRow[] }) {
+function CornerList({
+  title,
+  rows,
+  page,
+  pageSize,
+}: {
+  title: string;
+  rows: PlatformCornerRow[];
+  page: number;
+  pageSize: number;
+}) {
+  const slice = rows.slice(page * pageSize, (page + 1) * pageSize);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <h3 style={{ marginTop: 0 }}>{title}</h3>
@@ -534,7 +598,7 @@ function CornerList({ title, rows }: { title: string; rows: PlatformCornerRow[] 
         <p className="muted">Aucune fiche.</p>
       ) : (
         <ol className="top-list">
-          {rows.slice(0, LOOP_PERF_PAGE_SIZE).map((r) => (
+          {slice.map((r) => (
             <li key={r.id}>
               <span>
                 {r.title}
@@ -550,14 +614,23 @@ function CornerList({ title, rows }: { title: string; rows: PlatformCornerRow[] 
   );
 }
 
-function PollList({ polls }: { polls: PlatformPollRow[] }) {
+function PollList({
+  polls,
+  page,
+  pageSize,
+}: {
+  polls: PlatformPollRow[];
+  page: number;
+  pageSize: number;
+}) {
+  const slice = polls.slice(page * pageSize, (page + 1) * pageSize);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <h3 style={{ marginTop: 0 }}>Sondages — participation</h3>
       {polls.length === 0 ? (
         <p className="muted">Aucun sondage.</p>
       ) : (
-        polls.slice(0, 10).map((poll) => (
+        slice.map((poll) => (
           <div key={poll.id} style={{ marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #eee' }}>
             <strong>{poll.question}</strong>
             <p className="meta">
@@ -583,8 +656,17 @@ function PollList({ polls }: { polls: PlatformPollRow[] }) {
   );
 }
 
-function WalkList({ walks }: { walks: WalkInsightRow[] }) {
+function WalkList({
+  walks,
+  page,
+  pageSize,
+}: {
+  walks: WalkInsightRow[];
+  page: number;
+  pageSize: number;
+}) {
   const sorted = [...walks].sort((a, b) => b.clicks - a.clicks || b.favorites - a.favorites);
+  const slice = sorted.slice(page * pageSize, (page + 1) * pageSize);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <h3 style={{ marginTop: 0 }}>Parcours — engagement</h3>
@@ -592,7 +674,7 @@ function WalkList({ walks }: { walks: WalkInsightRow[] }) {
         <p className="muted">Aucun parcours publié.</p>
       ) : (
         <ol className="top-list">
-          {sorted.slice(0, LOOP_PERF_PAGE_SIZE).map((w) => (
+          {slice.map((w) => (
             <li key={w.id}>
               <span>
                 {w.title}

@@ -15,8 +15,8 @@ import {
   deleteCorner,
   deleteLogo,
   deletePoll,
-  createLogo,
   upsertAccueilChronique,
+  upsertAccueilLogo,
   upsertAccueilCorner,
   upsertAccueilPoll,
   upsertAccueilWalk,
@@ -167,6 +167,94 @@ export function AccueilPage() {
   const [newLogoName, setNewLogoName] = useState('');
   const [newLogoUrl, setNewLogoUrl] = useState('');
   const [newLogoWebsite, setNewLogoWebsite] = useState('');
+  const [newLogoActive, setNewLogoActive] = useState(true);
+
+  const [editingPollId, setEditingPollId] = useState<string | null>(null);
+  const [editingWalkId, setEditingWalkId] = useState<string | null>(null);
+  const [editingCornerId, setEditingCornerId] = useState<string | null>(null);
+  const [editingChroniqueId, setEditingChroniqueId] = useState<string | null>(null);
+  const [editingLogoId, setEditingLogoId] = useState<string | null>(null);
+
+  function fillPollForm(p: AccueilPollRow) {
+    setEditingPollId(p.id);
+    setPollQuestion(p.question);
+    setPollOptions(p.optionLabels.length >= 2 ? p.optionLabels : [...p.optionLabels, '', ''].slice(0, 2));
+    setPollActivate(p.isActive);
+    setTab('poll');
+  }
+
+  function fillWalkForm(w: AccueilWalkRow) {
+    setEditingWalkId(w.id);
+    setNewWalkTitle(w.title);
+    setNewWalkDuration(w.durationMinutes != null ? String(w.durationMinutes) : '');
+    setNewWalkSummary(w.summary ?? '');
+    setNewWalkCover(w.coverImageUrl ?? '');
+    setWalkSteps(w.steps);
+    setWalkFeatured(w.isFeaturedWeek);
+    setTab('walks');
+  }
+
+  function fillCornerForm(c: AccueilCornerRow) {
+    setEditingCornerId(c.id);
+    setNewCornerSubject(c.subjectName);
+    setNewCornerTitle(c.title);
+    setNewCornerImpact(c.impactDescription);
+    setNewCornerLocation(c.locationLabel ?? '');
+    setNewCornerBadge(c.badgeTag ?? '');
+    setNewCornerQuote(c.coreQuote ?? '');
+    setNewCornerMedia(c.mediaUrl ?? '');
+    setNewCornerActivate(c.isActive);
+    setCornerRelated(
+      c.relatedTargetType && c.relatedTargetId
+        ? {
+            targetType: c.relatedTargetType,
+            targetId: c.relatedTargetId,
+            targetSlug: c.relatedTargetSlug ?? c.relatedTargetId,
+            title: c.locationLabel ?? c.title,
+          }
+        : null,
+    );
+    setTab('corner');
+  }
+
+  function fillChroniqueForm(c: AccueilChroniqueRow) {
+    setEditingChroniqueId(c.id);
+    setNewChroniqueTitle(c.title);
+    setNewChroniqueBody(c.body);
+    setNewChroniqueVolume(c.volumeLabel ?? '');
+    setNewChroniqueFootnote(c.footnote ?? '');
+    setChroniqueCtaEnabled(c.ctaEnabled);
+    setChroniqueContactPhone(c.contactPhone ?? '');
+    setChroniqueContactEmail(c.contactEmail ?? '');
+    setNewChroniqueActivate(c.isActive);
+    setChroniqueTarget(
+      c.targetType && c.targetId
+        ? {
+            targetType: c.targetType,
+            targetId: c.targetId,
+            targetSlug: c.targetSlug ?? c.targetId,
+            title: c.locationLabel ?? c.title,
+          }
+        : null,
+    );
+    setTab('chronique');
+  }
+
+  function fillLogoForm(l: (typeof logos)[number]) {
+    setEditingLogoId(l.id);
+    setNewLogoName(l.name);
+    setNewLogoUrl(l.logoUrl);
+    setNewLogoWebsite(l.websiteUrl ?? '');
+    setNewLogoActive(l.isActive);
+    setTab('logos');
+  }
+
+  function resetPollForm() {
+    setEditingPollId(null);
+    setPollQuestion('');
+    setPollOptions(['', '']);
+    setPollActivate(true);
+  }
 
   const loadOverview = useCallback(async () => {
     setSections(await loadAppSections(countryCode));
@@ -474,7 +562,7 @@ export function AccueilPage() {
       {tab === 'poll' && canPoll ? (
         <>
           <div className="card" style={{ marginBottom: 12, maxWidth: 560 }}>
-            <h3>Nouveau sondage</h3>
+            <h3>{editingPollId ? 'Modifier le sondage' : 'Nouveau sondage'}</h3>
             <p className="meta">Question + au moins 2 choix (aligné mobile).</p>
             <div className="field">
               <label>Question</label>
@@ -523,6 +611,7 @@ export function AccueilPage() {
               onClick={() => {
                 setBusy(true);
                 void upsertAccueilPoll(countryCode, {
+                  id: editingPollId ?? undefined,
                   question: pollQuestion,
                   optionLabels: pollOptions,
                   activate: pollActivate,
@@ -530,11 +619,10 @@ export function AccueilPage() {
                   setBusy(false);
                   if (!r.ok) setMsg(r.error ?? 'Erreur');
                   else {
-                    setPollQuestion('');
-                    setPollOptions(['', '']);
+                    resetPollForm();
                     setMsg(
                       pollActivate
-                        ? 'Sondage créé et actif.'
+                        ? 'Sondage enregistré et actif.'
                         : 'Sondage enregistré (inactif).',
                     );
                     void loadPolls();
@@ -542,8 +630,13 @@ export function AccueilPage() {
                 });
               }}
             >
-              Enregistrer le sondage
+              {editingPollId ? 'Mettre à jour' : 'Enregistrer le sondage'}
             </button>
+            {editingPollId ? (
+              <button type="button" className="btn ghost small" style={{ marginLeft: 8 }} onClick={resetPollForm}>
+                Annuler
+              </button>
+            ) : null}
           </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -572,6 +665,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillPollForm(p)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -617,7 +713,7 @@ export function AccueilPage() {
       {tab === 'walks' && canWalks ? (
         <>
         <div className="card" style={{ maxWidth: 640, marginBottom: 12 }}>
-          <h3>Nouveau parcours</h3>
+          <h3>{editingWalkId ? 'Modifier le parcours' : 'Nouveau parcours'}</h3>
           <p className="meta">Minimum 2 étapes · contenu publié (événement, spot ou outil).</p>
           <div className="field">
             <label>Titre</label>
@@ -655,6 +751,7 @@ export function AccueilPage() {
               setBusy(true);
               const dur = Number.parseInt(newWalkDuration, 10);
               void upsertAccueilWalk(countryCode, {
+                id: editingWalkId ?? undefined,
                 title: newWalkTitle,
                 summary: newWalkSummary,
                 coverImageUrl: newWalkCover,
@@ -665,6 +762,7 @@ export function AccueilPage() {
                 setBusy(false);
                 if (!r.ok) setMsg(r.error ?? 'Erreur');
                 else {
+                  setEditingWalkId(null);
                   setNewWalkTitle('');
                   setNewWalkDuration('');
                   setNewWalkSummary('');
@@ -677,7 +775,7 @@ export function AccueilPage() {
               });
             }}
           >
-            Enregistrer le parcours
+            {editingWalkId ? 'Mettre à jour' : 'Enregistrer le parcours'}
           </button>
         </div>
         <div className="table-wrap">
@@ -711,6 +809,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillWalkForm(w)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -788,7 +889,7 @@ export function AccueilPage() {
       {tab === 'corner' && canCorner ? (
         <>
         <div className="card" style={{ maxWidth: 620, marginBottom: 12 }}>
-          <h3>Nouveau Singulier</h3>
+          <h3>{editingCornerId ? 'Modifier le Singulier' : 'Nouveau Singulier'}</h3>
           <div className="field"><label>Sujet (créateur)</label><input value={newCornerSubject} onChange={(e) => setNewCornerSubject(e.target.value)} /></div>
           <div className="field"><label>Titre de l’œuvre</label><input value={newCornerTitle} onChange={(e) => setNewCornerTitle(e.target.value)} /></div>
           <div className="field"><label>Lieu / contexte</label><input value={newCornerLocation} onChange={(e) => setNewCornerLocation(e.target.value)} /></div>
@@ -813,6 +914,7 @@ export function AccueilPage() {
           <button type="button" className="btn" disabled={busy} style={{ marginTop: 12 }} onClick={() => {
             setBusy(true);
             void upsertAccueilCorner(countryCode, {
+              id: editingCornerId ?? undefined,
               subjectName: newCornerSubject,
               title: newCornerTitle,
               impactDescription: newCornerImpact,
@@ -828,6 +930,7 @@ export function AccueilPage() {
               setBusy(false);
               if (!r.ok) setMsg(r.error ?? 'Erreur');
               else {
+                setEditingCornerId(null);
                 setNewCornerSubject('');
                 setNewCornerTitle('');
                 setNewCornerImpact('');
@@ -841,7 +944,7 @@ export function AccueilPage() {
                 void loadCorners();
               }
             });
-          }}>Enregistrer</button>
+          }}>{editingCornerId ? 'Mettre à jour' : 'Enregistrer'}</button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -870,6 +973,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillCornerForm(c)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -922,7 +1028,7 @@ export function AccueilPage() {
       {tab === 'chronique' && canChronique ? (
         <>
         <div className="card" style={{ maxWidth: 620, marginBottom: 12 }}>
-          <h3>Nouveau Fragment</h3>
+          <h3>{editingChroniqueId ? 'Modifier le Fragment' : 'Nouveau Fragment'}</h3>
           <div className="field"><label>Titre</label><input value={newChroniqueTitle} onChange={(e) => setNewChroniqueTitle(e.target.value)} /></div>
           <div className="field"><label>Volume / période (optionnel)</label><input value={newChroniqueVolume} onChange={(e) => setNewChroniqueVolume(e.target.value)} /></div>
           <div className="field"><label>Texte d’ambiance</label><textarea rows={4} value={newChroniqueBody} onChange={(e) => setNewChroniqueBody(e.target.value)} /></div>
@@ -965,6 +1071,7 @@ export function AccueilPage() {
           <button type="button" className="btn" disabled={busy} style={{ marginTop: 12 }} onClick={() => {
             setBusy(true);
             void upsertAccueilChronique(countryCode, {
+              id: editingChroniqueId ?? undefined,
               title: newChroniqueTitle,
               body: newChroniqueBody,
               volumeLabel: newChroniqueVolume,
@@ -980,6 +1087,7 @@ export function AccueilPage() {
               setBusy(false);
               if (!r.ok) setMsg(r.error ?? 'Erreur');
               else {
+                setEditingChroniqueId(null);
                 setNewChroniqueTitle('');
                 setNewChroniqueBody('');
                 setNewChroniqueVolume('');
@@ -992,7 +1100,7 @@ export function AccueilPage() {
                 void loadChroniques();
               }
             });
-          }}>Enregistrer</button>
+          }}>{editingChroniqueId ? 'Mettre à jour' : 'Enregistrer'}</button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -1021,6 +1129,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillChroniqueForm(c)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -1073,31 +1184,40 @@ export function AccueilPage() {
       {tab === 'logos' && canLogos ? (
         <>
         <div className="card" style={{ maxWidth: 480, marginBottom: 12 }}>
-          <h3>Nouveau logo</h3>
+          <h3>{editingLogoId ? 'Modifier le logo' : 'Nouveau logo'}</h3>
+          <p className="meta">Visible sur l’Accueil membre si actif et bloc « Logos partenaires » activé (vue d’ensemble).</p>
           <div className="field"><label>Nom partenaire</label><input value={newLogoName} onChange={(e) => setNewLogoName(e.target.value)} /></div>
           <div className="field">
             <label>Site web (optionnel)</label>
             <input value={newLogoWebsite} onChange={(e) => setNewLogoWebsite(e.target.value)} placeholder="https://…" />
           </div>
           <ImageOrUrlField label="Logo" value={newLogoUrl} onChange={setNewLogoUrl} />
+          <label className="check-inline" style={{ display: 'flex', marginTop: 8 }}>
+            <input type="checkbox" checked={newLogoActive} onChange={(e) => setNewLogoActive(e.target.checked)} />
+            Actif sur l’Accueil
+          </label>
           <button type="button" className="btn" disabled={busy} onClick={() => {
             setBusy(true);
-            void createLogo(countryCode, {
+            void upsertAccueilLogo(countryCode, {
+              id: editingLogoId ?? undefined,
               name: newLogoName,
               logoUrl: newLogoUrl,
               websiteUrl: newLogoWebsite,
+              isActive: newLogoActive,
             }).then((r) => {
               setBusy(false);
               if (!r.ok) setMsg(r.error ?? 'Erreur');
               else {
+                setEditingLogoId(null);
                 setNewLogoName('');
                 setNewLogoUrl('');
                 setNewLogoWebsite('');
-                setMsg('Logo créé.');
+                setNewLogoActive(true);
+                setMsg('Logo enregistré.');
                 void loadLogos();
               }
             });
-          }}>Créer</button>
+          }}>{editingLogoId ? 'Mettre à jour' : 'Créer'}</button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -1133,6 +1253,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillLogoForm(l)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"

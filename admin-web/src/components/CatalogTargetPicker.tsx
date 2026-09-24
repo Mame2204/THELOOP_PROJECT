@@ -6,6 +6,7 @@ import {
   type CatalogContentItem,
   type CatalogKind,
 } from '../lib/content';
+import { resolveMemberContentSlug } from '../lib/content-slugs';
 
 export type CatalogTargetType = 'event' | 'spot' | 'tool';
 
@@ -100,14 +101,17 @@ export function CatalogTargetPicker({
             type="button"
             className="btn ghost small"
             style={{ display: 'block', width: '100%', textAlign: 'left', borderRadius: 0 }}
-            onClick={() =>
-              onChange({
-                targetType: item.kind,
-                targetId: item.id,
-                targetSlug: item.id,
-                title: item.title,
-              })
-            }
+            onClick={() => {
+              void (async () => {
+                const resolved = await resolveMemberContentSlug(countryCode, item.kind, item.id);
+                onChange({
+                  targetType: item.kind,
+                  targetId: item.id,
+                  targetSlug: resolved?.slug ?? item.id,
+                  title: resolved?.label ?? item.title,
+                });
+              })();
+            }}
           >
             {item.title}
             {item.subtitle ? <span className="meta"> · {item.subtitle}</span> : null}
