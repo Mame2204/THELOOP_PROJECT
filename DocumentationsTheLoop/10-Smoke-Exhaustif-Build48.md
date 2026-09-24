@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~280 / 378** cases cochées ≈ **74 %** *(24 sept. · **Param. B3 largement PASS** · reste Demandes · Notifs · B8 · B9 partiel)* |
-| **Prochain test** | **📱 build 49+** : octroi individuel → validation partenaire · retest Accueil mobile (logos / slider) |
+| **Avancement smoke** | **~295 / 378** cases cochées ≈ **78 %** *(24 sept. soir · **admin-web ~90 %** hors modération/retraits/notifs B5 · B8 · contenu archiver/transfert)* |
+| **Prochain test** | **💻** Contenu archiver/republier · transfert · **B8** · **📱 build 49+** modération · retraits · notifs (boucle) · octroi scan |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -630,7 +630,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
 | `/contenu/editer/tool` | ContentEditor | [ ] | Créer / modifier outil | [x] |
 | `/users` | Users | [x] | **PASS 24 sept. soir** (testeur · navigation + usage courant) | [x] |
-| `/demandes` | Demandes | [ ] | Voir B2 | [x] |
+| `/demandes` | Demandes | [x] | **Partenariats + Idées PASS** · Modération/retraits → **build 49+** | [x] |
 | `/privileges` | Privilèges | [x] | **PASS 24 sept.** (testeur · module Privilèges web) | [x] |
 | `/teams` | TEAMS | [x] | **PASS 24 sept. soir** (testeur) | [x] |
 | `/tirage` | Tirage | [x] | **PASS 24 sept.** (testeur · tirage web) | [x] |
@@ -650,13 +650,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Onglet Partenariats
 - [x] **💻🤖✓** Chargement liste
-- [ ] **💻** Filtrer par statut (pending / to_contact / in_discussion / …)
-- [ ] **💻** Approuver demande → inviter partenaire depuis Users
-- [ ] **💻** Rejeter avec motif
+- [ ] **💻** Filtrer par statut (pending / to_contact / in_discussion / …) *(non découpé ce tour)*
+- [x] **💻** Approuver demande → inviter partenaire *(24 sept. 2026 · testeur **PASS** · même flux qu’Inviter depuis Users)*
+- [x] **💻** Rejeter avec motif *(24 sept. 2026 · testeur **PASS** · motif conservé dans fiche partenariat · **pas d’e-mail / push au demandeur** — attendu produit)*
 
 ### Onglet Modération
 
 > **Build 48** : valider OK · refuser / notif partenaire → reporter **build 49** (PR #7).  
+> **24 sept. testeur** : modération approfondie + **retraits** → **build 49+** (aligné bulle mobile).  
 > **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
 
 - [x] **💻🤖✓** Chargement soumissions pending
@@ -671,9 +672,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Onglet Idées
 - [x] **💻🤖✓** Chargement suggestions *(24 sept. 2026 · 2 pending visibles après clic onglet · compte dans badge menu)*
-- [ ] **💻** Filtrer statut / type
-- [ ] **💻** Changer statut idée
-- [ ] **💻** Ouvrir éditeur contenu prérempli
+- [x] **💻** Filtrer statut / type *(24 sept. 2026 · testeur **PASS** · usage courant)*
+- [x] **💻** Changer statut idée *(24 sept. 2026 · testeur **PASS** · **pas de retour automatique au membre proposant** — attendu)*
+- [x] **💻** Ouvrir éditeur contenu prérempli *(24 sept. 2026 · testeur **PASS** · workflow admin interne)*
 
 ## B3 — Paramètres (`/parametres`)
 
@@ -696,8 +697,8 @@ Liens Param. → pages satellites :
 ## B4 — Users · PASS · Paiements
 
 ### Users
-- [ ] **💻** Pagination · recherche
-- [ ] **💻** Éditer profil · rôle · suspendre
+- [ ] **💻** Pagination · recherche *(non découpé ce tour)*
+- [x] **💻** Éditer profil · rôle · suspendre *(24 sept. 2026 · testeur **PASS**)*
 - [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
@@ -713,6 +714,8 @@ Liens Param. → pages satellites :
 - [x] **💻** Analytics revenus (Compta) *(24 sept. 2026 · testeur **PASS** · montants · rapports · paniers moyens · pagination)*
 
 ## B5 — Notifications push (admin-web)
+
+> **⏸ BLOCKED build 49+** *(24 sept. testeur)* : boucle infinie notifs — smoke B5 reporté jusqu’au fix binaire / deploy.
 
 - [ ] **💻** Envoi **immédiat** audience Tous → `sent`
 - [ ] **💻** Audiences : Membres · Prime · Partenaires · Favoris · Anniversaires · Individuel
@@ -752,9 +755,9 @@ Liens Param. → pages satellites :
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
 - [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif *(workflow modération / partenaire — pas retesté ce tour)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
-- [ ] **💻** TEAMS — toggle override par membre staff *(CRUD profond non retesté)*
+- [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
-- [ ] **💻** Tirage — détail filtres rôle · scope *(non découpé ce tour)*
+- [x] **💻** Tirage — filtres **par rôle** · scope *(24 sept. 2026 · testeur **PASS**)*
 - [ ] **📱** Gagnant — notif « Nouveau privilège » (cross-platform)
 
 ## B8 — Automatisations · Paliers · Étoiles · Horaires
@@ -961,6 +964,14 @@ Admin-web retest (24 sept. 2026 · soir · testeur) :
 Admin-web B3 Paramètres (24 sept. 2026 · testeur) :
   - **PASS 💻** : Pays · Catégories · Légal · Plus (suggestion · inscriptions · activations · switches)
   - **PASS 💻** : Permissions — overrides **par admin délégué** · reconnexion · modules + hub THE LOOP cohérents avec cases cochées
+Admin-web suite (24 sept. 2026 · testeur) :
+  - **PASS 💻** Demandes **Partenariats** : approuver → inviter · rejeter + motif (sans mail demandeur)
+  - **PASS 💻** Demandes **Idées** : filtres · statuts · éditeur (sans retour auto au membre)
+  - **PASS 💻** Users : éditer profil · suspendre
+  - **PASS 💻** TEAMS : pack pays + overrides **par admin**
+  - **PASS 💻** Tirage : filtres par rôle
+  - **⏸ build 49+** : Modération (refus/notif) · retraits · **Notifications B5** (boucle infinie)
+  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · pagination Users · PASS prix/messages
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
