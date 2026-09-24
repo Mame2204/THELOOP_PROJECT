@@ -306,40 +306,37 @@ export async function listCampaignRecipientsPage(
   page: number,
   pageSize = CAMPAIGN_RECIPIENTS_PAGE_SIZE,
 ): Promise<{ items: CampaignRecipientRow[]; total: number }> {
-  const from = Math.max(0, page) * pageSize;
-  const to = from + pageSize - 1;
+  const offset = Math.max(0, page) * pageSize;
 
-  const { count, error: countErr } = await supabase
-    .from('user_notifications')
-    .select('id', { count: 'exact', head: true })
-    .eq('campaign_id', campaignId);
-  if (countErr) throw new Error(countErr.message);
-
-  const { data, error } = await supabase
-    .from('user_notifications')
-    .select('user_id, sent_at, recipient_phone, users(first_name, last_name, email, user_role)')
-    .eq('campaign_id', campaignId)
-    .order('sent_at', { ascending: false })
-    .range(from, to);
-  if (error) throw new Error(error.message);
-
-  const items: CampaignRecipientRow[] = (data ?? []).map((row) => {
-    const u = row.users as
-      | { first_name?: string | null; last_name?: string | null; email?: string | null; user_role?: string | null }
-      | null
-      | undefined;
-    return {
-      userId: row.user_id ? String(row.user_id) : null,
-      email: u?.email ? String(u.email) : null,
-      firstName: u?.first_name ? String(u.first_name) : null,
-      lastName: u?.last_name ? String(u.last_name) : null,
-      userRole: u?.user_role ? String(u.user_role) : null,
-      recipientPhone: row.recipient_phone ? String(row.recipient_phone) : null,
-      sentAt: row.sent_at ? String(row.sent_at) : null,
-    };
+  const { data, error } = await supabase.rpc('admin_list_campaign_recipients', {
+    p_campaign_id: campaignId,
+    p_limit: pageSize,
+    p_offset: offset,
   });
 
-  return { items, total: count ?? 0 };
+  if (error) {
+    if (/function.*does not exist|schema cache/i.test(error.message)) {
+      throw new Error(
+        'Fonction admin_list_campaign_recipients absente — appliquez la migration 20260942 sur Supabase.',
+      );
+    }
+    throw new Error(error.message);
+  }
+
+  const rows = (data ?? []) as Array<Record<string, unknown>>;
+  const total = rows.length ? Number(rows[0].total_count ?? 0) : 0;
+
+  const items: CampaignRecipientRow[] = rows.map((row) => ({
+    userId: row.user_id ? String(row.user_id) : null,
+    email: row.email ? String(row.email) : null,
+    firstName: row.first_name ? String(row.first_name) : null,
+    lastName: row.last_name ? String(row.last_name) : null,
+    userRole: row.user_role ? String(row.user_role) : null,
+    recipientPhone: row.recipient_phone ? String(row.recipient_phone) : null,
+    sentAt: row.sent_at ? String(row.sent_at) : null,
+  }));
+
+  return { items, total };
 }
 
 export async function cancelPushCampaign(id: string): Promise<{ ok: boolean; error?: string }> {
