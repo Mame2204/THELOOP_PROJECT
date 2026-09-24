@@ -46,8 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~299 / 378** cases cochées ≈ **79 %** *(24 sept. nuit · **admin-web ~93 %** hors modération/retraits · B8 · B6 archiver/transfert · B5 planif. optionnel)* |
-| **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier/annuler *(option)* · **📱 build 49+** modération · refus privilège · octroi scan |
+| **Avancement smoke** | **~262 / 387** checklists markdown ≈ **68 %** · **~323 / 500** toutes cases doc ≈ **65 %** *(25 sept. · voir métriques ci-dessous)* |
+| **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste surtout B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
+| **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier *(option)* · **📱 build 49+** modération · refus privilège · octroi scan · LoopX |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -56,6 +57,16 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
+
+### Métriques — pourquoi deux pourcentages ?
+
+| Libellé | Décompte | Rôle |
+|---------|----------|------|
+| **387 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **~262 cochées ≈ 68 %**. |
+| **500 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~323 cochées ≈ 65 %** — normal qu’il soit **plus bas**. |
+| **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **387** pour éviter la confusion. **Ce n’était pas un bug build 49.** |
+
+**Build 49+** = cases encore ouvertes qui **exigent un binaire mobile** ou des **notifs partenaire modération** — pas une erreur de comptage.
 
 ---
 
@@ -697,11 +708,7 @@ Liens Param. → pages satellites :
 ## B4 — Users · PASS · Paiements
 
 ### Users
-<<<<<<< HEAD
 - [x] **💻** Pagination · recherche *(24 sept. 2026 · testeur **PASS**)*
-=======
-- [ ] **💻** Pagination · recherche *(non découpé ce tour)*
->>>>>>> 2cc0e0a (docs(smoke): PASS partenariats · idées · users · TEAMS · tirage · B5 blocked 49)
 - [x] **💻** Éditer profil · rôle · suspendre *(24 sept. 2026 · testeur **PASS**)*
 - [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
@@ -719,15 +726,15 @@ Liens Param. → pages satellites :
 
 ## B5 — Notifications push (admin-web)
 
-> **24 sept. 2026 (nuit · testeur)** : envois **immédiats** **PASS** (rôles · favoris · anniversaire · e-mail ciblé · PR #36). Anniversaire : **0 dest.** attendu si aucun `birth_date` ce mois — retest quand un compte test aura une date dans le mois courant. **Planification / annulation** : non testées ce tour.
+> **25 sept. 2026 · testeur** : module **PASS** — immédiat (tous rôles dont **Prime**) · favoris · **anniversaire** (27 sept.) · e-mail ciblé · **historique paginé** · **panneau Détails destinataires** (RPC `20260942`/`20260943`) · actions **Supprimer** (0 dest.) / UI cohérente. **Planification cron +3 min** : optionnel · non testé ce tour.
 
-- [x] **💻** Envoi **immédiat** audience Tous / rôles → statut envoyé *(24 sept. 2026 · testeur **PASS**)*
-- [x] **💻** Audiences : Membres · Prime · Partenaires · **Favoris par catégorie** · **Anniversaires du mois** · **E-mails ciblés** *(24 sept. 2026 · testeur **PASS** · anniversaire **≥1 dest.** avec compte test 27 sept.)*
+- [x] **💻** Envoi **immédiat** audience Tous / rôles → statut envoyé *(25 sept. 2026 · testeur **PASS** · Prime inclus)*
+- [x] **💻** Audiences : Membres · Prime · Partenaires · **Favoris par catégorie** · **Anniversaires du mois** · **E-mails ciblés** *(25 sept. 2026 · testeur **PASS**)*
+- [x] **💻** Historique campagnes · pagination · badges statut · **Détails** liste destinataires *(25 sept. 2026 · testeur **PASS** · PR #39–#40)*
+- [x] **💻** **Supprimer** campagne (dont **0 dest.**) · actions contextuelles tableau *(25 sept. 2026 · testeur **PASS** UI)*
 - [ ] **💻** **Planifier** +3 min → **⏳** statut `sent`
 - [ ] **💻** Modifier campagne planifiée
-- [ ] **💻** **Annuler** → `cancelled`
-- [ ] **💻** **Supprimer** campagne
-- [ ] **💻** Historique · badges `sent` / `failed` / `cancelled`
+- [ ] **💻** **Annuler** → `cancelled` *(planifiée)*
 - [ ] **⏳** Pas de doublon push (1 campagne = 1 notif)
 
 > Détail : `07-Smoke-Push.md`
@@ -757,7 +764,9 @@ Liens Param. → pages satellites :
 ## B7 — Privilèges · TEAMS · Tirage
 
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
-- [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif *(workflow modération / partenaire — pas retesté ce tour)*
+- [x] **💻** Privilège → partenaire + lieu · envoi validation *(24 sept. **PASS web**)*
+- [x] **📱** Partenaire **accepte** *(24 sept. **PASS** build 48)*
+- [ ] **📱** Partenaire **refuse** + motif *(**retest build 49+** · PR #34)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
@@ -977,8 +986,8 @@ Admin-web suite (24 sept. 2026 · testeur) :
   - **⏸ build 49+** : Modération (refus/notif) · retraits · notifs **modération** partenaire
   - **PASS 💻** Users : pagination · recherche
   - **PASS 💻** Privilèges web : partenaire + lieu · validation · **📱 accepte** · **📱 refuse** → build 49+ (PR #34)
-  - **PASS 💻 B5 Notifications** (24 sept. nuit) : immédiat · tous rôles testés · favoris catégorie · anniversaire (0 dest. OK) · **e-mail ciblé** (PR #36 deploy)
-  - **Reste 💻** : B6 archiver/transfert · B8 · PASS prix/messages · B9 délégué · B5 planifier/modifier/annuler *(option)*
+  - **PASS 💻 B5 Notifications** (25 sept.) : immédiat (Prime inclus) · favoris · anniversaire 27 sept. · e-mail ciblé · **historique + Détails destinataires** (RPC 42/43)
+  - **Reste 💻** : B6 archiver/transfert · B8 · PASS prix/messages · B9 délégué · B5 planifier/annuler *(option)*
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
