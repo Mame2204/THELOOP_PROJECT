@@ -566,7 +566,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱** `AdminReferralSettingsScreen` — parrainage
 - [ ] **📱** `AdminAutomationJobsScreen` — automatisations · exécuter
 - [ ] **📱** `AdminNotificationsScreen` — campagnes push mobile
-- [ ] **📱** `AdminStandaloneBenefitScreen` — privilège standalone
+- [ ] **📱** `AdminStandaloneBenefitScreen` — standalone · création désactivée · toggle actifs / tous · aligné web
 - [ ] **📱** `AdminBenefitTypesScreen` — types (onglet standalone)
 - [ ] **📱** `AdminLegalScreen` — CGU & légal
 - [ ] **📱** `AdminOpeningHoursScreen` — horaires presets
@@ -644,7 +644,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/horaires` | Horaires | [ ] | Presets ouverture | [x] |
 | `/parametres` | Paramètres | [ ] | Voir B3 | [x] |
 | `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
-| `/privilege-standalone` | Standalone | [x] | **PASS création** · **CRUD texte / archive / suppr.** deploy en cours | [x] |
+| `/privilege-standalone` | Standalone | [x] | **CRUD** · liste = actifs (biblio octroi) · **création désactivée** · **Activer / Désactiver** | [ ] |
 
 ## B2 — Demandes (`/demandes`)
 
