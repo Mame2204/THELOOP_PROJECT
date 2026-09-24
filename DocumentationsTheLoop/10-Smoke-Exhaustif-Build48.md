@@ -47,7 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **~295 / 378** cases cochées ≈ **78 %** *(24 sept. soir · **admin-web ~90 %** hors modération/retraits/notifs B5 · B8 · contenu archiver/transfert)* |
-| **Prochain test** | **💻** Contenu archiver/republier · transfert · **B8** · **📱 build 49+** modération · retraits · notifs (boucle) · octroi scan |
+| **Prochain test** | **💻 hors build 49** : B6 archiver/transfert · **B8** · PASS prix/messages · **B9** délégué · liens Param. satellites |
+| **Bulle build 49+** | B5 notifs · B2 modération/retraits · **refus privilège partenaire 📱** · octroi scan · LoopX · slider Accueil · gros retests 📱🤖 |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -56,6 +57,29 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
+
+### Pack testeur — **💻 uniquement · sans build 49 · sans B5 push**
+
+> **Privilège partenaire (24 sept.)** : **💻 web** = proposition partenaire + lieu + envoi validation **PASS** · **📱 acceptation** **PASS** (build 48) · **📱 refus + motif** = **FAIL build 48** → **retest build 49+** (PR #34 · clavier + API Render) — ne pas bloquer le smoke web sur le refus mobile.
+
+| Priorité | ID smoke | Action | Compte | Ne pas faire |
+|----------|----------|--------|--------|--------------|
+| 1 | **B6** | Contenu : **archiver** puis **republier** un event/spot/outil déjà publié | super admin | — |
+| 1 | **B6** | Contenu : **transfert propriétaire** THE LOOP ↔ partenaire (aller-retour si possible) | super admin | — |
+| 2 | **B8** | `/automation` — liste jobs · **exécuter** un job manuel (sans campagne push) | super admin | pas B5 |
+| 2 | **B8** | `/milestones` — créer · éditer · archiver · onglet Archives | super admin | — |
+| 2 | **B8** | `/etoiles` — seuils spots / outils / parcours · enregistrer | super admin | — |
+| 2 | **B8** | `/horaires` — presets · assignation | super admin | — |
+| 3 | **B4 PASS** | Gestion PASS : **prix Guinée** · enregistrer | super admin | pas lancer campagne |
+| 3 | **B4 PASS** | Gestion PASS : écran **messages / modèles** (édition texte · sauvegarde) | super admin | pas envoi notif |
+| 4 | **B9** | Admin **délégué** : URL directe module **non coché** → refus / redirect | admin délégué | — |
+| 4 | **B9** | Délégué avec grant **modération** seule → `/demandes` modération OK | admin délégué | pas refus/notif partenaire |
+| 4 | **B9** | Délégué **sans** `manage_admins` / `pass_management` → `/parametres` sensibles et **Gestion PASS** inaccessibles | admin délégué | — |
+| 5 | **B3 liens** | Param. → ouvrir **`/automation` · `/milestones` · `/etoiles` · `/horaires`** (navigation + page charge) | super admin | **ne pas ouvrir `/notifications`** |
+| opt. | **B2** | Demandes **Partenariats** : filtre par statut | super admin | — |
+| opt. | **B2** | Modération : sous-onglets **Tous / Events / Spots / Outils** (filtres UI) | super admin | **ne pas valider/refuser** (notifs · build 49) |
+
+**Tout le reste non coché** dans ce doc est soit **📱🤖 build 49+**, soit **B5 / C1 push**, soit **modération/retraits avec notif partenaire**.
 
 ---
 
@@ -697,11 +721,7 @@ Liens Param. → pages satellites :
 ## B4 — Users · PASS · Paiements
 
 ### Users
-<<<<<<< HEAD
 - [x] **💻** Pagination · recherche *(24 sept. 2026 · testeur **PASS**)*
-=======
-- [ ] **💻** Pagination · recherche *(non découpé ce tour)*
->>>>>>> 2cc0e0a (docs(smoke): PASS partenariats · idées · users · TEAMS · tirage · B5 blocked 49)
 - [x] **💻** Éditer profil · rôle · suspendre *(24 sept. 2026 · testeur **PASS**)*
 - [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
@@ -757,7 +777,9 @@ Liens Param. → pages satellites :
 ## B7 — Privilèges · TEAMS · Tirage
 
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
-- [ ] **💻** Privilège associé contenu + partenaire → acceptation · catalogue actif *(workflow modération / partenaire — pas retesté ce tour)*
+- [x] **💻** Privilège → **partenaire + lieu** · envoi validation *(24 sept. 2026 · **PASS web**)*
+- [x] **📱** Partenaire **accepte** → catalogue actif *(24 sept. 2026 · **PASS** · build 48)*
+- [ ] **📱** Partenaire **refuse** + motif *(24 sept. 2026 · **FAIL build 48** · **retest build 49+** · PR #34 · **💻 workflow admin + acceptation 📱 OK** — seul le refus mobile attend le binaire)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
@@ -975,13 +997,11 @@ Admin-web suite (24 sept. 2026 · testeur) :
   - **PASS 💻** TEAMS : pack pays + overrides **par admin**
   - **PASS 💻** Tirage : filtres par rôle
   - **⏸ build 49+** : Modération (refus/notif) · retraits · **Notifications B5** (boucle infinie)
-<<<<<<< HEAD
   - **PASS 💻** Users : pagination · recherche
-  - **FAIL 💻** Privilèges création : lieux partenaire vides (fix web `privilege-partners` · organizer_id / master_id)
-  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · PASS prix/messages · privilège partenaire (retest post-fix)
-=======
-  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · pagination Users · PASS prix/messages
->>>>>>> 2cc0e0a (docs(smoke): PASS partenariats · idées · users · TEAMS · tirage · B5 blocked 49)
+  - **PASS 💻** Privilèges web : partenaire + lieu · validation envoyée
+  - **PASS 📱** Partenaire accepte (admin web)
+  - **FAIL 📱 · retest 49+** : Partenaire refuse + motif (PR #34)
+  - **Reste 💻 hors build 49** : B6 archiver/transfert · B8 · PASS prix/messages · B9 délégué
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
