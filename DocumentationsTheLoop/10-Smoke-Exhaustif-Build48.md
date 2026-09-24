@@ -632,8 +632,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/users` | Users | [x] | **PASS 24 sept. soir** (testeur · navigation + usage courant) | [x] |
 | `/demandes` | Demandes | [x] | **Partenariats + Idées PASS** · Modération/retraits → **build 49+** | [x] |
 | `/privileges` | Privilèges | [x] | **PASS 24 sept.** (testeur · module Privilèges web) | [x] |
-| `/teams` | TEAMS | [x] | **PASS 24 sept. soir** (testeur) | [x] |
-| `/tirage` | Tirage | [x] | **PASS 24 sept.** (testeur · tirage web) | [x] |
+| `/teams` | TEAMS | [x] | **PASS 24 sept.** · pack Admin + overrides **par admin** | [x] |
+| `/tirage` | Tirage | [x] | **PASS 24 sept.** · pool · lancer · **filtres rôle** | [x] |
 | `/pass` | PASS | [x] | **PASS 24 sept.** · octroi héritage gratuit limité · retrait → membre | [x] |
 | `/payments` | Paiements | [x] | **PASS 24 sept.** · liste transactions | [x] |
 | `/compta` | Compta | [x] | **PASS 24 sept.** · export CSV · revenus · paniers · pagination | [x] |
@@ -697,7 +697,7 @@ Liens Param. → pages satellites :
 ## B4 — Users · PASS · Paiements
 
 ### Users
-- [ ] **💻** Pagination · recherche *(non découpé ce tour)*
+- [x] **💻** Pagination · recherche *(24 sept. 2026 · testeur **PASS**)*
 - [x] **💻** Éditer profil · rôle · suspendre *(24 sept. 2026 · testeur **PASS**)*
 - [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
@@ -971,7 +971,9 @@ Admin-web suite (24 sept. 2026 · testeur) :
   - **PASS 💻** TEAMS : pack pays + overrides **par admin**
   - **PASS 💻** Tirage : filtres par rôle
   - **⏸ build 49+** : Modération (refus/notif) · retraits · **Notifications B5** (boucle infinie)
-  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · pagination Users · PASS prix/messages
+  - **PASS 💻** Users : pagination · recherche
+  - **FAIL 💻** Privilèges création : lieux partenaire vides (fix web `privilege-partners` · organizer_id / master_id)
+  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · PASS prix/messages · privilège partenaire (retest post-fix)
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
