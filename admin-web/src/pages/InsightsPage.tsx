@@ -321,15 +321,18 @@ export function InsightsPage() {
       {data && tab === 'benefits' && canBenefits ? (
         <>
           <p className="meta" style={{ marginTop: 0 }}>
-            Tableau : octrois <strong>individuels</strong> par modèle actif associé (partenaire + lieu). Les octrois
-            automatiques par rôle sont comptés dans les cartes ci-dessus, pas dans ce tableau.
+            Tous les modèles <strong>associés à un contenu</strong> (actifs ou non). Détail des octrois et consommations
+            par catalogue.
           </p>
           <div className="table-wrap" style={{ marginTop: 16 }}>
             <table className="data-table">
               <thead>
                 <tr>
                   <th>Catalogue</th>
-                  <th>Octroyés</th>
+                  <th>Statut modèle</th>
+                  <th>Octrois total</th>
+                  <th>Individuels</th>
+                  <th>Par rôle</th>
                   <th>Consommés</th>
                   <th>Non consommés</th>
                 </tr>
@@ -340,7 +343,10 @@ export function InsightsPage() {
                     <td>
                       <strong>{s.title}</strong>
                     </td>
+                    <td>{s.isActive ? 'Actif' : 'Inactif'}</td>
                     <td>{s.granted}</td>
+                    <td>{s.grantedIndividual}</td>
+                    <td>{s.grantedRole}</td>
                     <td>{s.used}</td>
                     <td>{s.unusedAssigned}</td>
                   </tr>
@@ -349,7 +355,7 @@ export function InsightsPage() {
             </table>
             {data.catalogStats.length === 0 ? (
               <p className="muted" style={{ padding: 16 }}>
-                Aucun privilège actif associé avec octroi enregistré.
+                Aucun modèle associé à un contenu partenaire pour ce pays.
               </p>
             ) : null}
           </div>
@@ -504,14 +510,24 @@ function TabKpiStrip({
     body = (
       <>
         <Kpi label="Modèles créés" value={d.catalogTotal} />
-        <Kpi label="Modèles actifs" value={d.catalogActive} />
+        {d.catalogActive !== d.catalogTotal ? (
+          <Kpi label="Modèles actifs" value={d.catalogActive} />
+        ) : null}
         <Kpi label="Actifs associés" value={d.catalogActiveAssociated} hint="Partenaire + contenu lié" />
-        <Kpi label="Octrois individuels" value={d.individual.granted} hint="Tirages / admin manuel" />
+        <Kpi label="Octrois individuels" value={d.individual.granted} hint="Admin / tirage ciblé" />
         <Kpi label="Octrois par rôle" value={d.roleEntitlement.granted} hint="Automatiques (member, prime…)" />
         <Kpi label="Octrois total" value={d.allGrants.granted} />
-        <Kpi label="En cours" value={d.allGrants.active} />
-        <Kpi label="Consommés" value={d.allGrants.consumed} hint="Tous types d’octroi" />
-        <Kpi label="Expirés" value={d.allGrants.expired} />
+        <Kpi
+          label="Non consommés"
+          value={d.allGrants.active}
+          hint="Octroi actif ou en attente de validation partenaire"
+        />
+        <Kpi label="Consommés" value={d.allGrants.consumed} hint="Usage enregistré (date d’utilisation)" />
+        <Kpi
+          label="Expirés sans usage"
+          value={d.allGrants.expired}
+          hint="Validité dépassée sans consommation"
+        />
       </>
     );
   } else if (tab === 'platform' && canPlatform) {
