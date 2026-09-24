@@ -242,7 +242,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
-- [ ] `20260940_admin_benefit_grants_analytics_rpc.sql` — octrois individuels / tableau Insights privilèges *(à appliquer Supabase prod avant retest privilèges post-reset tables)*
+- [ ] `20260940_admin_benefit_grants_analytics_rpc.sql` — RPC octrois Insights *(à appliquer Supabase prod)*
+- [ ] `20260941_admin_read_all_benefit_grants.sql` — admin lit tous les octrois (KPI Insights sans RPC) *(à appliquer Supabase prod)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -744,7 +745,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Onglet **Spots** — idem
 - [x] **💻** Onglet **Outils** — idem
 - [x] **💻** Onglet **Accueil** (super-admin) — corners · chroniques · sondages · parcours (métriques clics / favoris etc.)
-- [x] **💻** Onglet **Privilèges** — KPI / tableau après reset tables *(24 sept. · testeur **PASS web**)*
+- [ ] **💻** Onglet **Privilèges** — KPI octrois / consommés *(24 sept. · **FAIL** KPI à 0 · fix RLS + analytics · migrations `20260940`+`20260941` · retest après deploy)*
 
 ## B7 — Privilèges · TEAMS · Tirage
 
