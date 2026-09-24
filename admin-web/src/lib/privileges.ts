@@ -931,6 +931,8 @@ export async function createBenefitCatalogItem(input: {
   countryCode: string;
   partnerName?: string | null;
   benefitPurpose?: string;
+  /** Défaut `true` — standalone Paramètres passe `false` (activation manuelle). */
+  isActive?: boolean;
 }): Promise<{ ok: boolean; localId?: string; error?: string }> {
   const localId = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -938,7 +940,7 @@ export async function createBenefitCatalogItem(input: {
     local_id: localId,
     title: input.title.trim(),
     description: input.description.trim(),
-    is_active: true,
+    is_active: input.isActive ?? true,
     country_code: input.countryCode,
     offering_partners: input.partnerName
       ? [{ displayName: input.partnerName, partnerId: EXTERNAL_PARTNER_ID }]

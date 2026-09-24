@@ -66,10 +66,11 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
   const [quantity, setQuantity] = useState('1');
   const [maxUses, setMaxUses] = useState('1');
   const [saving, setSaving] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
 
   const load = useCallback(async () => {
     const [list, typeList] = await Promise.all([
-      listStandaloneTheLoopBenefits(false),
+      listStandaloneTheLoopBenefits(!showInactive),
       listBenefitTypes(true),
     ]);
     setItems(list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
@@ -81,7 +82,7 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
       if (activeTypes[0].defaultQuantity != null) setQuantity(String(activeTypes[0].defaultQuantity));
       if (activeTypes[0].defaultMaxUses != null) setMaxUses(String(activeTypes[0].defaultMaxUses));
     }
-  }, [typeId]);
+  }, [typeId, showInactive]);
 
   const { run } = useFocusLoad(
     async () => {
@@ -295,14 +296,18 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
         quantityPerGrant: kind === 'quantity' ? Number(quantity) || null : null,
         maxUsesPerGrant: kind === 'usage_limit' ? Number(maxUses) || null : null,
         countryCode,
-        isActive: true,
+        isActive: false,
       });
       setTitle('');
       setDescription('');
       setValidity('30');
       setShowCreate(false);
+      setShowInactive(true);
       await load();
-      Alert.alert('Créé', 'Privilège THE LOOP ajouté à la liste (actif).');
+      Alert.alert(
+        'Créé',
+        'Privilège enregistré en désactivé. Activez-le dans la liste pour l’octroi ou le tirage.',
+      );
     } catch (e) {
       Alert.alert('Erreur', e instanceof Error ? e.message : 'Création impossible.');
     } finally {
@@ -342,7 +347,8 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
         {menuTab === 'benefit' ? (
           <>
         <Text style={[styles.hint, { color: shell.pageKicker }]}>
-          Privilèges rattachés à « THE LOOP » uniquement. Pour un privilège chez un partenaire : Control Tower → Privilèges THE LOOP.
+          Privilèges rattachés à « THE LOOP » uniquement. Création désactivée par défaut — seuls les privilèges activés
+          remontent dans la bibliothèque d’octroi (Control Tower → Privilèges).
         </Text>
 
         <Pressable
@@ -437,10 +443,21 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
               disabled={saving}
               onPress={() => void handleCreate()}
             >
-              <Text style={styles.submitText}>{saving ? 'Création…' : 'Créer et activer'}</Text>
+              <Text style={styles.submitText}>{saving ? 'Création…' : 'Créer'}</Text>
             </Pressable>
           </View>
         ) : null}
+
+        <View style={styles.toggleRow}>
+          <TogglePill
+            value={showInactive}
+            onChange={setShowInactive}
+            activeLabel="Tous"
+            inactiveLabel="Actifs seulement"
+            activeColor={ADMIN_THEME.accent}
+            shell={shell}
+          />
+        </View>
 
         <Text style={[styles.section, { color: shell.pageKicker }]}>
           Liste ({items.length})
@@ -459,7 +476,7 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
                     {item.title}
                   </Text>
                   <Text style={[styles.statusChip, { color: item.isActive ? ADMIN_THEME.accent : shell.pageKicker }]}>
-                    {item.isActive ? 'Actif' : 'Inactif'}
+                    {item.isActive ? 'Actif' : 'Désactivé'}
                   </Text>
                 </View>
                 <Text style={[styles.cardMeta, { color: shell.pageKicker }]} numberOfLines={2}>
@@ -475,8 +492,8 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
               <TogglePill
                 value={item.isActive}
                 onChange={(next) => void handleToggleActive(item, next)}
-                activeLabel="Actif"
-                inactiveLabel="Inactif"
+                activeLabel="Activé"
+                inactiveLabel="Désactivé"
                 activeColor={ADMIN_THEME.accent}
                 shell={shell}
               />
@@ -567,8 +584,8 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
                   <TogglePill
                     value={editActive}
                     onChange={setEditActive}
-                    activeLabel="Actif"
-                    inactiveLabel="Inactif"
+                    activeLabel="Activé"
+                    inactiveLabel="Désactivé"
                     activeColor={ADMIN_THEME.accent}
                     shell={shell}
                   />

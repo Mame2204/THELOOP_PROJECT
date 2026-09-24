@@ -5,18 +5,19 @@ import {
   deleteBenefitCatalogItem,
   isStandaloneTheLoopBenefit,
   listBenefitCatalog,
+  listStandaloneBenefits,
   updateBenefitCatalogItem,
   type BenefitCatalogRow,
 } from '../lib/privileges';
 
-function standaloneItems(items: BenefitCatalogRow[], showArchived: boolean): BenefitCatalogRow[] {
-  return items.filter((i) => isStandaloneTheLoopBenefit(i) && (showArchived || i.isActive));
+function allStandaloneItems(items: BenefitCatalogRow[]): BenefitCatalogRow[] {
+  return items.filter((i) => isStandaloneTheLoopBenefit(i));
 }
 
 export function StandaloneBenefitPage() {
   const { countryCode, countryLabel } = useAdminCountry();
   const [catalog, setCatalog] = useState<BenefitCatalogRow[]>([]);
-  const [showArchived, setShowArchived] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isPromoCode, setIsPromoCode] = useState(false);
@@ -24,7 +25,10 @@ export function StandaloneBenefitPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const items = useMemo(() => standaloneItems(catalog, showArchived), [catalog, showArchived]);
+  const items = useMemo(
+    () => (showInactive ? allStandaloneItems(catalog) : listStandaloneBenefits(catalog)),
+    [catalog, showInactive],
+  );
 
   const load = useCallback(async () => {
     const res = await listBenefitCatalog(countryCode);
@@ -58,7 +62,11 @@ export function StandaloneBenefitPage() {
           <h2>Privilèges standalone</h2>
           <p className="meta">
             Modèles THE LOOP sans lieu partenaire — utilisables pour octroi, tirage ou association depuis{' '}
-            <strong>Privilèges</strong>. Pays : {countryLabel}.
+            <strong>Privilèges</strong> lorsqu’ils sont <strong>activés</strong>. Pays : {countryLabel}.
+          </p>
+          <p className="meta">
+            Par défaut, un nouveau privilège est <strong>désactivé</strong> : activez-le ici pour qu’il apparaisse dans
+            la bibliothèque d’octroi (même règle que les avantages actifs ailleurs).
           </p>
         </div>
       </header>
@@ -133,6 +141,7 @@ export function StandaloneBenefitPage() {
                 countryCode,
                 partnerName: 'THE LOOP',
                 benefitPurpose: isPromoCode ? 'promo_code' : 'standard',
+                isActive: false,
               }).then((r) => {
                 setBusy(false);
                 if (!r.ok) {
@@ -140,7 +149,8 @@ export function StandaloneBenefitPage() {
                   return;
                 }
                 resetForm();
-                setMsg('Privilège créé.');
+                setMsg('Privilège créé (désactivé). Activez-le dans la liste pour l’octroi.');
+                setShowInactive(true);
                 void load();
               });
             }}
@@ -156,8 +166,8 @@ export function StandaloneBenefitPage() {
       </div>
 
       <label className="check-inline" style={{ display: 'flex', marginBottom: 12 }}>
-        <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
-        Afficher les privilèges archivés
+        <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
+        Afficher aussi les privilèges désactivés
       </label>
 
       <div className="table-wrap">
@@ -173,7 +183,7 @@ export function StandaloneBenefitPage() {
           <tbody>
             {items.map((i) => (
               <tr key={i.localId}>
-                <td>{i.isActive ? 'Actif' : 'Archivé'}</td>
+                <td>{i.isActive ? 'Actif' : 'Désactivé'}</td>
                 <td>
                   <strong>{i.title}</strong>
                   <div className="meta">{i.description || '—'}</div>
@@ -189,20 +199,20 @@ export function StandaloneBenefitPage() {
                       className="btn small ghost"
                       disabled={busy}
                       onClick={() => {
-                        if (!window.confirm(`Archiver « ${i.title} » ? Il ne sera plus proposé à l’octroi.`)) return;
+                        if (!window.confirm(`Désactiver « ${i.title} » ? Il ne sera plus proposé à l’octroi.`)) return;
                         setBusy(true);
                         void updateBenefitCatalogItem(i.localId, { isActive: false }, i).then((r) => {
                           setBusy(false);
-                          if (!r.ok) setMsg(r.error ?? 'Archivage impossible');
+                          if (!r.ok) setMsg(r.error ?? 'Désactivation impossible');
                           else {
-                            setMsg('Privilège archivé.');
+                            setMsg('Privilège désactivé.');
                             if (editingId === i.localId) resetForm();
                             void load();
                           }
                         });
                       }}
                     >
-                      Archiver
+                      Désactiver
                     </button>
                   ) : (
                     <button
@@ -213,15 +223,15 @@ export function StandaloneBenefitPage() {
                         setBusy(true);
                         void updateBenefitCatalogItem(i.localId, { isActive: true }, i).then((r) => {
                           setBusy(false);
-                          if (!r.ok) setMsg(r.error ?? 'Réactivation impossible');
+                          if (!r.ok) setMsg(r.error ?? 'Activation impossible');
                           else {
-                            setMsg('Privilège réactivé.');
+                            setMsg('Privilège activé — visible dans la bibliothèque d’octroi.');
                             void load();
                           }
                         });
                       }}
                     >
-                      Réactiver
+                      Activer
                     </button>
                   )}{' '}
                   <button
@@ -257,7 +267,7 @@ export function StandaloneBenefitPage() {
         </table>
         {items.length === 0 ? (
           <p className="muted" style={{ padding: 16 }}>
-            Aucun privilège standalone{showArchived ? '' : ' actif'}.
+            Aucun privilège standalone{showInactive ? '' : ' actif'}.
           </p>
         ) : null}
       </div>
