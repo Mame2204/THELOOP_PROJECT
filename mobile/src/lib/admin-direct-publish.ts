@@ -24,6 +24,7 @@ export interface AdminEventDirectInput {
   spotId?: string | null;
   entryPrice?: number | null;
   isInvitationOnly?: boolean;
+  isLoopX?: boolean;
   infoUrl?: string | null;
   websiteUrl?: string | null;
   instagramUrl?: string | null;
@@ -172,6 +173,12 @@ function toolPayload(input: AdminToolDirectInput): Record<string, unknown> {
   };
 }
 
+async function applyEventLoopXFlag(eventId: string, isLoopX: boolean): Promise<string | null> {
+  if (!isLoopX || !supabase) return null;
+  const { error } = await supabase.from('events').update({ is_loop_x: true }).eq('id', eventId);
+  return error?.message ?? null;
+}
+
 export async function createAdminEventDirect(input: AdminEventDirectInput): Promise<AdminDirectPublishResult> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase', table: 'events' };
   if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'events' };
@@ -185,7 +192,16 @@ export async function createAdminEventDirect(input: AdminEventDirectInput): Prom
     return { ok: false, reason: error.message, table: 'events' };
   }
 
-  return { ok: true, id: data ? String(data) : undefined, table: 'events' };
+  const eventId = data ? String(data) : undefined;
+  if (eventId && input.isLoopX) {
+    const loopError = await applyEventLoopXFlag(eventId, true);
+    if (loopError) {
+      console.warn('[AdminDirect] event is_loop_x:', loopError);
+      return { ok: false, reason: loopError, table: 'events' };
+    }
+  }
+
+  return { ok: true, id: eventId, table: 'events' };
 }
 
 export async function createAdminEstablishmentDirect(input: AdminSpotDirectInput): Promise<AdminDirectPublishResult> {

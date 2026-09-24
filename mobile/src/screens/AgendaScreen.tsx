@@ -21,12 +21,12 @@ import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
 import { useCategoryLabels } from '@/context/CategoryLabelsContext';
 import { getCategoryOptions } from '@/lib/admin-categories-store';
 import { DEFAULT_SECTIONS, getAppSections } from '@/lib/app-sections-store';
-import type { EventCategory } from '@/types';
+import { canViewPrimeContent, type EventCategory } from '@/types';
 import type { TabScreenProps } from '@/navigation/types';
 
 type Props = TabScreenProps<'Agenda'>;
 
-type AgendaFilter = EventCategory | 'all' | string;
+type AgendaFilter = EventCategory | 'all' | 'loopx' | string;
 
 export function AgendaScreen({ navigation }: Props) {
   const [eventFilter, setEventFilter] = useState<AgendaFilter>('all');
@@ -34,8 +34,9 @@ export function AgendaScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
   const [blocks, setBlocks] = useState(DEFAULT_SECTIONS.agenda);
   const [pullRefreshing, setPullRefreshing] = useState(false);
-  const { isLoading, publicEvents, refresh, activeCountryCode } = useContent();
-  const { role } = useAuthContext();
+  const { isLoading, publicEvents, primeEvents, refresh, activeCountryCode } = useContent();
+  const { role, user } = useAuthContext();
+  const canViewExclusive = canViewPrimeContent(role, user);
   const { shell } = useMemberTheme();
   const { isEventFavorite, toggleEventFavorite } = useFavorites();
 
@@ -59,9 +60,16 @@ export function AgendaScreen({ navigation }: Props) {
   useEffect(() => {
     if (!categoriesReady) return;
     void getCategoryOptions('event').then((cats) => {
-      setAgendaFilters([{ value: 'all', label: 'Tous' }, ...cats.map((c) => ({ value: c.id, label: c.label }))]);
+      const filters: Array<{ value: AgendaFilter; label: string }> = [
+        { value: 'all', label: 'Tous' },
+        ...cats.map((c) => ({ value: c.id, label: c.label })),
+      ];
+      if (canViewExclusive) {
+        filters.push({ value: 'loopx', label: 'LoopX' });
+      }
+      setAgendaFilters(filters);
     });
-  }, [categoriesReady, revision]);
+  }, [categoriesReady, revision, canViewExclusive]);
 
   const onFavorite = (id: string) => {
     if (role === 'USER_ANONYMOUS') {
@@ -71,20 +79,29 @@ export function AgendaScreen({ navigation }: Props) {
     void toggleEventFavorite(id);
   };
 
+  const catalogEvents = useMemo(() => {
+    if (!canViewExclusive) return publicEvents;
+    const publicIds = new Set(publicEvents.map((event) => event.id));
+    const primeOnly = primeEvents.filter((event) => !publicIds.has(event.id));
+    return [...publicEvents, ...primeOnly];
+  }, [publicEvents, primeEvents, canViewExclusive]);
+
   const rows = useMemo(() => {
     const visibleEvents = filterEventsByActiveCategories(
-      publicEvents,
+      catalogEvents,
       activeEventFilter,
       inactiveEventFilter,
       categoriesReady,
     );
-    const filtered = visibleEvents.filter(
-      (e) => eventFilter === 'all' || e.category === eventFilter,
-    );
+    const filtered = visibleEvents.filter((event) => {
+      if (eventFilter === 'all') return true;
+      if (eventFilter === 'loopx') return event.visibility === 'prime';
+      return event.category === eventFilter;
+    });
     const searched = filterEventsByQuery(filtered, query);
     const upcoming = filterUpcomingEvents(searched);
     return buildAgendaListRows(upcoming);
-  }, [publicEvents, activeEventFilter, inactiveEventFilter, categoriesReady, eventFilter, query]);
+  }, [catalogEvents, activeEventFilter, inactiveEventFilter, categoriesReady, eventFilter, query]);
 
   const onRefresh = useCallback(async () => {
     setPullRefreshing(true);
@@ -144,7 +161,11 @@ export function AgendaScreen({ navigation }: Props) {
       }
       ListEmptyComponent={
         <Text style={[styles.empty, { color: shell.pageKicker }]}>
-          {hasSearch ? `Aucun événement pour « ${query.trim()} ».` : 'Aucun événement à venir dans cette catégorie.'}
+          {hasSearch
+            ? `Aucun événement pour « ${query.trim()} ».`
+            : eventFilter === 'loopx'
+              ? 'Aucun événement LoopX à venir.'
+              : 'Aucun événement à venir dans cette catégorie.'}
         </Text>
       }
     />

@@ -27,6 +27,7 @@ export interface StagingEvent {
   spotId: string | null;
   entryPrice: number | null;
   isInvitationOnly?: boolean;
+  isLoopX?: boolean;
   currency: string;
   infoUrl: string | null;
   instagramUrl: string | null;
