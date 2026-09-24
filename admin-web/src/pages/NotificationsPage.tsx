@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type MouseEvent } from 'react';
-import { CampaignRecipientsDialog } from '../components/CampaignRecipientsDialog';
+import { CampaignRecipientsPanel } from '../components/CampaignRecipientsPanel';
 import { ListPager } from '../components/ListPager';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
@@ -330,6 +330,8 @@ export function NotificationsPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {msg ? <p className="muted">{msg}</p> : null}
 
+      <div className={`notifications-layout${detailCampaign ? ' has-detail' : ''}`}>
+        <div className="notifications-main">
       <div className="card notifications-form-card">
         <h3>{editingId ? 'Modifier la campagne' : 'Envoyer'}</h3>
         {editingId ? (
@@ -481,7 +483,7 @@ export function NotificationsPage() {
                 return (
                   <tr
                     key={r.id}
-                    className="notifications-campaign-row"
+                    className={`notifications-campaign-row${detailCampaign?.id === r.id ? ' row-selected' : ''}`}
                     onClick={() => openDetails(r)}
                   >
                     <td>
@@ -520,10 +522,12 @@ export function NotificationsPage() {
           label="campagnes"
         />
       </div>
+        </div>
 
-      {detailCampaign ? (
-        <CampaignRecipientsDialog campaign={detailCampaign} onClose={() => setDetailCampaign(null)} />
-      ) : null}
+        {detailCampaign ? (
+          <CampaignRecipientsPanel campaign={detailCampaign} onClose={() => setDetailCampaign(null)} />
+        ) : null}
+      </div>
     </section>
   );
 }
