@@ -722,7 +722,7 @@ Liens Param. → pages satellites :
 > **24 sept. 2026 (nuit · testeur)** : envois **immédiats** **PASS** (rôles · favoris · anniversaire · e-mail ciblé · PR #36). Anniversaire : **0 dest.** attendu si aucun `birth_date` ce mois — retest quand un compte test aura une date dans le mois courant. **Planification / annulation** : non testées ce tour.
 
 - [x] **💻** Envoi **immédiat** audience Tous / rôles → statut envoyé *(24 sept. 2026 · testeur **PASS**)*
-- [x] **💻** Audiences : Membres · Prime · Partenaires · **Favoris par catégorie** · **Anniversaires du mois** · **E-mails ciblés** *(24 sept. 2026 · testeur **PASS** · anniversaire = logique OK · 0 dest. sans anniversaire en base)*
+- [x] **💻** Audiences : Membres · Prime · Partenaires · **Favoris par catégorie** · **Anniversaires du mois** · **E-mails ciblés** *(24 sept. 2026 · testeur **PASS** · anniversaire **≥1 dest.** avec compte test 27 sept.)*
 - [ ] **💻** **Planifier** +3 min → **⏳** statut `sent`
 - [ ] **💻** Modifier campagne planifiée
 - [ ] **💻** **Annuler** → `cancelled`
