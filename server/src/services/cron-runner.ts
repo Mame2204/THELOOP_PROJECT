@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { resolveIndividualUserIds } from './notification-individual-target.js';
 import { deliverPushToUserIds } from './push-delivery.js';
 
 export interface CronRunResult {
@@ -131,22 +132,17 @@ async function distributeIndividualCampaign(
   supabase: SupabaseClient,
   campaign: PushCampaignRow,
 ): Promise<{ userIds: string[]; count: number; error?: string }> {
-  const phone = campaign.target_phone?.trim();
-  if (!phone) return { userIds: [], count: 0, error: 'Téléphone manquant.' };
+  const raw = campaign.target_phone?.trim();
+  if (!raw) return { userIds: [], count: 0, error: 'E-mail ou cible manquante.' };
 
-  let query = supabase.from('users').select('id').limit(20);
-  if (campaign.country_code) {
-    query = query.eq('country_code', campaign.country_code.toUpperCase());
+  try {
+    const userIds = await resolveIndividualUserIds(supabase, raw, campaign.country_code);
+    if (!userIds.length) return { userIds: [], count: 0 };
+    return insertInboxForUsers(supabase, userIds, campaign, 'individual');
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { userIds: [], count: 0, error: message };
   }
-  const suffix = phone.slice(-9);
-  const { data: users, error } = await query.or(
-    `phone_number.eq.${phone},phone_number.ilike.%${suffix}`,
-  );
-  if (error) return { userIds: [], count: 0, error: error.message };
-
-  const userIds = (users ?? []).map((u) => String(u.id)).filter((id) => /^[0-9a-f-]{36}$/i.test(id));
-  if (!userIds.length) return { userIds: [], count: 0 };
-  return insertInboxForUsers(supabase, userIds, campaign, 'individual');
 }
 
 async function processPushCampaign(
