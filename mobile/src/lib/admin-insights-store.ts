@@ -10,12 +10,35 @@ import { listAllLoopWalksForAdmin } from '@/lib/loop-walks-store';
 import { getAllWalkClickCounts, getAllWalkFavoriteCounts, getAllWalkRatingStats } from '@/lib/walk-engagement-store';
 import { countSpotFavorites } from '@/lib/spot-stars-store';
 import { getBenefitOverviewKpis, getCatalogUsageStats, type BenefitOverviewKpis, type CatalogUsageStat } from '@/lib/prime-benefits-store';
-import { countDashboardActiveCatalogBenefits } from '@/lib/benefit-catalog-store';
+import {
+  countDashboardActiveCatalogBenefits,
+  isPartnerAssociatedBenefit,
+  isStandaloneTheLoopBenefit,
+  listBenefitCatalog,
+} from '@/lib/benefit-catalog-store';
 import { getEventCategoryLabel, getSpotCategoryLabel, getToolCategoryLabel, refreshCategoryLabelsCache } from '@/lib/category-labels-cache';
 import type { EventCategory } from '@/types';
 
 const LOCAL_FAV_KEY = 'loop_local_favorite_counts_v1';
 const INSIGHTS_CACHE = 'loop_admin_insights_v3';
+const ACCUEIL_INSIGHTS_TOP = 5;
+
+async function filterInsightsCatalogBenefitStats(
+  stats: CatalogUsageStat[],
+  countryCode?: string,
+): Promise<CatalogUsageStat[]> {
+  const items = await listBenefitCatalog(false);
+  const cc = countryCode?.toUpperCase().slice(0, 2);
+  const scoped = cc
+    ? items.filter((c) => !c.countryCode || c.countryCode.toUpperCase().slice(0, 2) === cc)
+    : items;
+  const allowed = new Set(
+    scoped
+      .filter((c) => c.isActive && isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c))
+      .map((c) => c.id),
+  );
+  return stats.filter((s) => allowed.has(s.catalogId) && s.granted > 0);
+}
 
 export type FullAdminInsights = Awaited<ReturnType<typeof buildFullAdminInsights>>;
 
@@ -721,6 +744,10 @@ async function buildFullAdminInsights(
     fetchEventClickCountsFromDb(events),
     includePlatformInsights ? getAccueilEngagementInsights(countryCode) : Promise.resolve({ corners: [], chroniques: [], polls: [] }),
   ]);
+  const catalogStatsFiltered = await filterInsightsCatalogBenefitStats(
+    catalogBenefitStats,
+    countryCode,
+  );
   const walkFavCounts = Object.fromEntries(
     Object.entries(walkFavAll).filter(([id]) => walkIds.has(id)),
   );
@@ -869,10 +896,10 @@ async function buildFullAdminInsights(
     ),
     benefitKpis,
     validatedCatalogActive,
-    catalogBenefitStats,
-    cornersByClicks: accueilInsights.corners,
-    chroniquesByClicks: accueilInsights.chroniques,
-    pollInsights: accueilInsights.polls,
+    catalogBenefitStats: catalogStatsFiltered,
+    cornersByClicks: accueilInsights.corners.slice(0, ACCUEIL_INSIGHTS_TOP),
+    chroniquesByClicks: accueilInsights.chroniques.slice(0, ACCUEIL_INSIGHTS_TOP),
+    pollInsights: accueilInsights.polls.slice(0, ACCUEIL_INSIGHTS_TOP),
   };
 }
 

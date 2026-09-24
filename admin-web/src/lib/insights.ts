@@ -409,9 +409,9 @@ export async function loadInsights(
       }),
     ]);
 
-  const catalogStats = filterActiveAssociatedCatalogStats(catalogStatsRaw, catalogList.items)
-    .filter((s) => s.granted > 0 || s.isActive)
-    .slice(0, 30);
+  const catalogStats = filterActiveAssociatedCatalogStats(catalogStatsRaw, catalogList.items).filter(
+    (s) => s.granted > 0,
+  );
 
   const contentTypeUsage = buildContentTypeUsage(
     perf.events,

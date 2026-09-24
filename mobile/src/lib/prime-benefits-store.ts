@@ -243,6 +243,20 @@ async function loadAllFromStorage(): Promise<PrimeBenefit[]> {
   }
 }
 
+/** Octrois pour KPI Insights admin — source Supabase complète quand disponible. */
+async function loadGrantsForAdminAnalytics(): Promise<PrimeBenefit[]> {
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    try {
+      const { fetchAllRemotePrimeBenefits } = await import('@/lib/prime-benefits-sync');
+      const remote = await fetchAllRemotePrimeBenefits();
+      if (remote.length) return refreshStatuses(remote);
+    } catch (e) {
+      console.warn('[PrimeBenefits] analytics remote:', e);
+    }
+  }
+  return refreshStatuses(await loadAllFromStorage());
+}
+
 async function loadAll(): Promise<PrimeBenefit[]> {
   const local = refreshStatuses(await loadAllFromStorage());
   if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
@@ -1781,7 +1795,7 @@ export interface BenefitOverviewKpis {
 }
 
 export async function getBenefitOverviewKpis(countryCode?: string): Promise<BenefitOverviewKpis> {
-  let all = refreshStatuses(await loadAll()).filter((b) => !b.roleEntitlement);
+  let all = (await loadGrantsForAdminAnalytics()).filter((b) => !b.roleEntitlement);
   if (countryCode) {
     const cc = countryCode.toUpperCase().slice(0, 2);
     all = all.filter(
@@ -1813,7 +1827,7 @@ export interface CatalogUsageStat {
 
 export async function getCatalogUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
   await purgeOrphanPrimeBenefits();
-  const allBenefits = refreshStatuses(await loadAll());
+  const allBenefits = await loadGrantsForAdminAnalytics();
   const cc = countryCode?.toUpperCase().slice(0, 2);
   const all = cc
     ? allBenefits.filter(

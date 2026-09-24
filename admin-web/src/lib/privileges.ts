@@ -61,6 +61,95 @@ export interface GrantRow {
   countryCode: string | null;
   createdAt: string | null;
   expiresAt: string | null;
+  usedAt?: string | null;
+}
+
+type MemberGrantAnalyticsRow = {
+  catalogLocalId: string;
+  status: string;
+  usedAt: string | null;
+  expiresAt: string | null;
+  grantCountryCode: string | null;
+};
+
+function normalizeGrantCountry(code?: string | null): string | undefined {
+  if (!code) return undefined;
+  return code.toUpperCase().slice(0, 2);
+}
+
+/** Filtre pays aligné mobile : octrois sans pays restent visibles. */
+function grantMatchesAnalyticsCountry(row: MemberGrantAnalyticsRow, countryCode?: string): boolean {
+  if (!countryCode) return true;
+  const filter = normalizeGrantCountry(countryCode);
+  if (!filter) return true;
+  const grantCc = normalizeGrantCountry(row.grantCountryCode);
+  if (!grantCc) return true;
+  return grantCc === filter;
+}
+
+/** Statut effectif (used_at, expiration) — même logique que mobile mapRemoteRow + refreshStatuses. */
+export function effectiveGrantStatus(row: {
+  status: string;
+  usedAt: string | null;
+  expiresAt: string | null;
+}): string {
+  const raw = row.status ?? '';
+  if (raw === 'pending_validation') {
+    return row.usedAt ? 'used' : 'pending_validation';
+  }
+  if (raw === 'expired_unused' || raw === 'used') return raw;
+  if (row.usedAt && raw !== 'expired_unused') return 'used';
+  if (row.expiresAt) {
+    const exp = new Date(row.expiresAt).getTime();
+    if (!Number.isNaN(exp) && exp < Date.now()) {
+      return row.usedAt ? 'used' : 'expired_unused';
+    }
+  }
+  return raw || 'active';
+}
+
+function catalogLocalIdMatchesGrant(catalog: BenefitCatalogRow, grantCatalogId: string): boolean {
+  if (!grantCatalogId) return false;
+  return grantCatalogId === catalog.localId || grantCatalogId === catalog.id;
+}
+
+async function listMemberGrantsForAnalytics(countryCode?: string): Promise<MemberGrantAnalyticsRow[]> {
+  const richSelect =
+    'catalog_local_id, status, used_at, expires_at, role_entitlement, grant_country_code';
+  let q = supabase
+    .from('prime_benefit_grants')
+    .select(richSelect)
+    .is('role_entitlement', null)
+    .limit(5000);
+
+  const { data, error } = await q;
+  if (error) {
+    const plain = await supabase
+      .from('prime_benefit_grants')
+      .select('catalog_local_id, status, expires_at, role_entitlement, grant_country_code')
+      .is('role_entitlement', null)
+      .limit(5000);
+    if (plain.error) return [];
+    return (plain.data ?? [])
+      .map((r) => ({
+        catalogLocalId: String(r.catalog_local_id ?? ''),
+        status: String(r.status ?? ''),
+        usedAt: null,
+        expiresAt: r.expires_at ? String(r.expires_at) : null,
+        grantCountryCode: r.grant_country_code ? String(r.grant_country_code) : null,
+      }))
+      .filter((row) => grantMatchesAnalyticsCountry(row, countryCode));
+  }
+
+  return (data ?? [])
+    .map((r) => ({
+      catalogLocalId: String(r.catalog_local_id ?? ''),
+      status: String(r.status ?? ''),
+      usedAt: r.used_at ? String(r.used_at) : null,
+      expiresAt: r.expires_at ? String(r.expires_at) : null,
+      grantCountryCode: r.grant_country_code ? String(r.grant_country_code) : null,
+    }))
+    .filter((row) => grantMatchesAnalyticsCountry(row, countryCode));
 }
 
 export interface CatalogUsageStat {
@@ -586,60 +675,40 @@ export async function revokeGrant(localId: string): Promise<{ ok: boolean; error
 }
 
 export async function getBenefitKpis(countryCode?: string): Promise<BenefitKpis> {
-  const grantedQ = supabase.from('prime_benefit_grants').select('id', { count: 'exact', head: true });
-  const activeQ = supabase
-    .from('prime_benefit_grants')
-    .select('id', { count: 'exact', head: true })
-    .in('status', ['active', 'pending_validation']);
-  const expiredQ = supabase
-    .from('prime_benefit_grants')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'expired_unused');
-  const usedQ = supabase
-    .from('prime_benefit_grants')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'used');
-
-  const [grantedRes, activeRes, expiredRes, usedRes] = await Promise.all([
-    countryCode ? grantedQ.eq('grant_country_code', countryCode) : grantedQ,
-    countryCode ? activeQ.eq('grant_country_code', countryCode) : activeQ,
-    countryCode ? expiredQ.eq('grant_country_code', countryCode) : expiredQ,
-    countryCode ? usedQ.eq('grant_country_code', countryCode) : usedQ,
-  ]);
-
-  if (grantedRes.error && activeRes.error) {
-    const { items } = await listRecentGrants(countryCode);
-    return {
-      granted: items.length,
-      active: items.filter((i) => i.status === 'active' || i.status === 'pending_validation').length,
-      expired: items.filter((i) => i.status === 'expired_unused').length,
-      consumed: items.filter((i) => i.status === 'used').length,
-    };
-  }
-
+  const grants = await listMemberGrantsForAnalytics(countryCode);
+  const statuses = grants.map((g) =>
+    effectiveGrantStatus({ status: g.status, usedAt: g.usedAt, expiresAt: g.expiresAt }),
+  );
   return {
-    granted: grantedRes.count ?? 0,
-    active: activeRes.count ?? 0,
-    expired: expiredRes.count ?? 0,
-    consumed: usedRes.count ?? 0,
+    granted: grants.length,
+    active: statuses.filter((s) => s === 'active' || s === 'pending_validation').length,
+    expired: statuses.filter((s) => s === 'expired_unused').length,
+    consumed: statuses.filter((s) => s === 'used').length,
   };
 }
 
 export async function getCatalogUsageStats(
   countryCode?: string,
 ): Promise<CatalogUsageStat[]> {
-  const [{ items: catalog }, { items: grants }] = await Promise.all([
+  const [grants, { items: catalog }] = await Promise.all([
+    listMemberGrantsForAnalytics(countryCode),
     listBenefitCatalog(countryCode),
-    listRecentGrants(countryCode),
   ]);
 
   return catalog
     .map((c) => {
-      const related = grants.filter((g) => g.catalogLocalId === c.localId || g.catalogLocalId === c.id);
-      const used = related.filter((g) => g.status === 'used').length;
-      const unusedAssigned = related.filter(
-        (g) => g.status === 'active' || g.status === 'pending_validation',
-      ).length;
+      const related = grants.filter((g) => catalogLocalIdMatchesGrant(c, g.catalogLocalId));
+      let used = 0;
+      let unusedAssigned = 0;
+      for (const g of related) {
+        const status = effectiveGrantStatus({
+          status: g.status,
+          usedAt: g.usedAt,
+          expiresAt: g.expiresAt,
+        });
+        if (status === 'used') used += 1;
+        if (status === 'active' || status === 'pending_validation') unusedAssigned += 1;
+      }
       return {
         catalogId: c.localId,
         title: c.title,
@@ -649,7 +718,7 @@ export async function getCatalogUsageStats(
         isActive: c.isActive,
       };
     })
-    .sort((a, b) => b.used - a.used || b.granted - a.granted);
+    .sort((a, b) => b.used - a.used || b.granted - a.granted || a.title.localeCompare(b.title, 'fr'));
 }
 
 export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
@@ -1106,34 +1175,7 @@ export function filterActiveAssociatedCatalogStats(
 }
 
 export async function getIndividualUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
-  let q = supabase
-    .from('prime_benefit_grants')
-    .select('catalog_local_id, status, role_entitlement')
-    .is('role_entitlement', null)
-    .limit(5000);
-  if (countryCode) q = q.eq('grant_country_code', countryCode);
-  const { data: grants } = await q;
-  const { items: catalog } = await listBenefitCatalog(countryCode);
-
-  return catalog
-    .map((c) => {
-      const related = (grants ?? []).filter((g) => String(g.catalog_local_id) === c.localId);
-      const used = related.filter((g) => g.status === 'used').length;
-      const unusedAssigned = related.filter(
-        (g) => g.status === 'active' || g.status === 'pending_validation',
-      ).length;
-      if (related.length === 0) return null;
-      return {
-        catalogId: c.localId,
-        title: c.title,
-        granted: related.length,
-        used,
-        unusedAssigned,
-        isActive: c.isActive,
-      };
-    })
-    .filter((s): s is CatalogUsageStat => s !== null)
-    .sort((a, b) => b.used - a.used || b.granted - a.granted);
+  return (await getCatalogUsageStats(countryCode)).filter((s) => s.granted > 0);
 }
 
 export async function grantRoleBenefitEntitlements(input: {

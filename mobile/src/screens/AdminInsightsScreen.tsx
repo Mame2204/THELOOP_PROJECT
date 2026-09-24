@@ -469,7 +469,7 @@ export function AdminInsightsScreen({ navigation }: Props) {
         <>
           <View style={styles.kpiGrid}>
             <AdminKpiCard label="Octroyés" value={String(data.benefitKpis.granted)} shell={shell} accent="#8b5cf6" style={styles.kpiThird} />
-            <AdminKpiCard label="Actifs" value={String(data.benefitKpis.active)} shell={shell} accent="#34d399" style={styles.kpiThird} />
+            <AdminKpiCard label="En cours" value={String(data.benefitKpis.active)} shell={shell} accent="#34d399" style={styles.kpiThird} />
             <AdminKpiCard label="Consommés" value={String(data.benefitKpis.consumed)} shell={shell} accent="#06b6d4" style={styles.kpiThird} />
             <AdminKpiCard label="Expirés" value={String(data.benefitKpis.expired)} shell={shell} accent="#f87171" style={styles.kpiThird} />
           </View>
@@ -567,7 +567,7 @@ function BenefitKpisBlock({
           <Text style={[styles.section, { color: shell.pageKicker }]}>Privilèges — validation</Text>
           <View style={styles.kpiGrid}>
             <AdminKpiCard label="Octroyés" value={String(kpis.granted)} shell={shell} accent="#8b5cf6" style={styles.kpiThird} />
-            <AdminKpiCard label="Actifs" value={String(kpis.active)} shell={shell} accent="#34d399" style={styles.kpiThird} />
+            <AdminKpiCard label="En cours" value={String(kpis.active)} shell={shell} accent="#34d399" style={styles.kpiThird} />
             <AdminKpiCard label="Consommés" value={String(kpis.consumed)} shell={shell} accent="#06b6d4" style={styles.kpiThird} />
             <AdminKpiCard label="Expirés" value={String(kpis.expired)} shell={shell} accent="#f87171" style={styles.kpiThird} />
           </View>

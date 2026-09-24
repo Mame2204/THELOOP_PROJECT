@@ -23,6 +23,7 @@ type SpotMetricTab = 'all' | 'favorites' | 'clicks' | 'stars' | 'ratings';
 type PlatformMetricTab = 'all' | 'corner' | 'polls' | 'walks';
 
 const INSIGHTS_PAGE_SIZE = LOOP_PERF_PAGE_SIZE;
+const ACCUEIL_INSIGHTS_TOP = 5;
 
 export function InsightsPage() {
   const { profile } = useAuth();
@@ -72,7 +73,6 @@ export function InsightsPage() {
     setPlatformMetric('all');
     setListPage(0);
     setBenefitsPage(0);
-    setPlatformPage(0);
   }
 
   const [data, setData] = useState<InsightsBundle | null>(null);
@@ -83,7 +83,6 @@ export function InsightsPage() {
   const [platformMetric, setPlatformMetric] = useState<PlatformMetricTab>('all');
   const [listPage, setListPage] = useState(0);
   const [benefitsPage, setBenefitsPage] = useState(0);
-  const [platformPage, setPlatformPage] = useState(0);
 
   const load = useCallback(async () => {
     setError(null);
@@ -224,19 +223,36 @@ export function InsightsPage() {
 
       {data ? (
         <div className="kpi-grid" style={{ marginBottom: 16 }}>
-          <Kpi label="Événements publiés" value={data.counts.events} />
-          <Kpi label="Spots publiés" value={data.counts.spots} />
-          <Kpi label="Outils publiés" value={data.counts.tools} />
-          <Kpi label="Parcours" value={data.counts.walks} />
-          <Kpi
-            label="Privilèges actifs"
-            value={data.validatedCatalogActive}
-            hint="Partenaire + lieu associés"
-          />
-          {canBenefits ? (
+          {tab === 'overview' ? (
             <>
-              <Kpi label="Octrois" value={data.benefitKpis.granted} />
+              <Kpi label="Événements publiés" value={data.counts.events} />
+              <Kpi label="Spots publiés" value={data.counts.spots} />
+              <Kpi label="Outils publiés" value={data.counts.tools} />
+              <Kpi label="Parcours publiés" value={data.counts.walks} />
+            </>
+          ) : null}
+          {tab === 'events' ? <Kpi label="Événements publiés" value={data.counts.events} /> : null}
+          {tab === 'spots' ? <Kpi label="Spots publiés" value={data.counts.spots} /> : null}
+          {tab === 'tools' ? <Kpi label="Outils publiés" value={data.counts.tools} /> : null}
+          {tab === 'platform' ? (
+            <>
+              <Kpi label="Parcours publiés" value={data.counts.walks} />
+              <Kpi label="Fiches Singulier" value={data.platform.corners.length} hint="Top 5 par clics ci-dessous" />
+              <Kpi label="Fragments" value={data.platform.chroniques.length} hint="Top 5 par clics ci-dessous" />
+              <Kpi label="Sondages" value={data.platform.polls.length} hint="Top 5 récents ci-dessous" />
+            </>
+          ) : null}
+          {tab === 'benefits' ? (
+            <>
+              <Kpi
+                label="Modèles actifs"
+                value={data.validatedCatalogActive}
+                hint="Catalogue actif, partenaire et lieu associés"
+              />
+              <Kpi label="Octrois membres" value={data.benefitKpis.granted} hint="Hors droits par rôle" />
               <Kpi label="Consommés" value={data.benefitKpis.consumed} />
+              <Kpi label="En cours" value={data.benefitKpis.active} />
+              <Kpi label="Expirés" value={data.benefitKpis.expired} />
             </>
           ) : null}
         </div>
@@ -245,15 +261,21 @@ export function InsightsPage() {
       {data && tab === 'overview' && canOverview ? (
         <>
           <EngagementByType rows={data.contentTypeUsage} />
-          <div className="card" style={{ marginTop: 16 }}>
-            <h3 style={{ marginTop: 0 }}>Privilèges — validation</h3>
-            <div className="kpi-grid">
-              <Kpi label="Octroyés" value={data.benefitKpis.granted} />
-              <Kpi label="Actifs" value={data.benefitKpis.active} />
-              <Kpi label="Consommés" value={data.benefitKpis.consumed} />
-              <Kpi label="Expirés" value={data.benefitKpis.expired} />
+          {canBenefits ? (
+            <div className="card" style={{ marginTop: 16 }}>
+              <h3 style={{ marginTop: 0 }}>Octrois membres</h3>
+              <p className="meta" style={{ marginTop: 0 }}>
+                Comptage aligné sur la consommation réelle (date d&apos;utilisation), hors avantages automatiques
+                par rôle.
+              </p>
+              <div className="kpi-grid">
+                <Kpi label="Octrois" value={data.benefitKpis.granted} />
+                <Kpi label="En cours" value={data.benefitKpis.active} />
+                <Kpi label="Consommés" value={data.benefitKpis.consumed} />
+                <Kpi label="Expirés" value={data.benefitKpis.expired} />
+              </div>
             </div>
-          </div>
+          ) : null}
         </>
       ) : null}
 
@@ -348,15 +370,8 @@ export function InsightsPage() {
 
       {data && tab === 'benefits' && canBenefits ? (
         <>
-          <div className="kpi-grid">
-            <Kpi label="Octroyés" value={data.benefitKpis.granted} />
-            <Kpi label="Actifs" value={data.benefitKpis.active} />
-            <Kpi label="Expirés" value={data.benefitKpis.expired} />
-            <Kpi label="Utilisés" value={data.benefitKpis.consumed} />
-          </div>
-          <p className="meta" style={{ marginTop: 8 }}>
-            Catalogue affiché : privilèges <strong>actifs</strong> avec partenaire / lieu associé (hors modèles
-            Paramètres seuls).
+          <p className="meta" style={{ marginTop: 0 }}>
+            Tableau : modèles <strong>actifs</strong> avec partenaire / lieu associé ayant au moins un octroi membre.
           </p>
           <div className="table-wrap" style={{ marginTop: 16 }}>
             <table className="data-table">
@@ -364,8 +379,8 @@ export function InsightsPage() {
                 <tr>
                   <th>Catalogue</th>
                   <th>Octroyés</th>
-                  <th>Utilisés</th>
-                  <th>En cours</th>
+                  <th>Consommés</th>
+                  <th>Non consommés</th>
                 </tr>
               </thead>
               <tbody>
@@ -409,56 +424,39 @@ export function InsightsPage() {
               ] as const
             }
             active={platformMetric}
-            onChange={(m) => {
-              setPlatformMetric(m);
-              setPlatformPage(0);
-            }}
+            onChange={(m) => setPlatformMetric(m)}
           />
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Chaque bloc affiche le <strong>top {ACCUEIL_INSIGHTS_TOP}</strong> (pas de pagination).
+          </p>
           {platformMetric === 'all' || platformMetric === 'corner' ? (
             <>
               <CornerList
-                title="Le Singulier — clics"
+                title={`Le Singulier — top ${ACCUEIL_INSIGHTS_TOP} clics`}
                 rows={data.platform.corners}
-                page={platformPage}
-                pageSize={INSIGHTS_PAGE_SIZE}
+                limit={ACCUEIL_INSIGHTS_TOP}
               />
               <CornerList
-                title="Le Fragment — clics"
+                title={`Le Fragment — top ${ACCUEIL_INSIGHTS_TOP} clics`}
                 rows={data.platform.chroniques}
-                page={platformPage}
-                pageSize={INSIGHTS_PAGE_SIZE}
+                limit={ACCUEIL_INSIGHTS_TOP}
               />
             </>
           ) : null}
           {platformMetric === 'all' || platformMetric === 'polls' ? (
-            <PollList polls={data.platform.polls} page={platformPage} pageSize={INSIGHTS_PAGE_SIZE} />
+            <PollList
+              polls={data.platform.polls}
+              limit={ACCUEIL_INSIGHTS_TOP}
+              title={`Sondages — top ${ACCUEIL_INSIGHTS_TOP} (récents)`}
+            />
           ) : null}
           {platformMetric === 'all' || platformMetric === 'walks' ? (
-            <WalkList walks={data.platform.walks} page={platformPage} pageSize={INSIGHTS_PAGE_SIZE} />
+            <WalkList
+              walks={data.platform.walks}
+              limit={ACCUEIL_INSIGHTS_TOP}
+              title={`Parcours — top ${ACCUEIL_INSIGHTS_TOP} clics`}
+            />
           ) : null}
-          {(platformMetric === 'all' || platformMetric === 'corner' || platformMetric === 'polls' || platformMetric === 'walks') &&
-          (() => {
-            const platformTotal =
-              platformMetric === 'polls'
-                ? data.platform.polls.length
-                : platformMetric === 'walks'
-                  ? data.platform.walks.length
-                  : platformMetric === 'corner'
-                    ? Math.max(data.platform.corners.length, data.platform.chroniques.length)
-                    : data.platform.corners.length +
-                      data.platform.chroniques.length +
-                      data.platform.polls.length +
-                      data.platform.walks.length;
-            return platformTotal > INSIGHTS_PAGE_SIZE ? (
-              <ListPager
-                page={platformPage}
-                total={platformTotal}
-                pageSize={INSIGHTS_PAGE_SIZE}
-                onPageChange={setPlatformPage}
-                label="éléments"
-              />
-            ) : null;
-          })()}
         </>
       ) : null}
     </section>
@@ -582,15 +580,13 @@ function PerfRankList({ rows, rankOffset }: { rows: TeamLoopPerfRow[]; rankOffse
 function CornerList({
   title,
   rows,
-  page,
-  pageSize,
+  limit,
 }: {
   title: string;
   rows: PlatformCornerRow[];
-  page: number;
-  pageSize: number;
+  limit: number;
 }) {
-  const slice = rows.slice(page * pageSize, (page + 1) * pageSize);
+  const slice = rows.slice(0, limit);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <h3 style={{ marginTop: 0 }}>{title}</h3>
@@ -616,17 +612,17 @@ function CornerList({
 
 function PollList({
   polls,
-  page,
-  pageSize,
+  limit,
+  title,
 }: {
   polls: PlatformPollRow[];
-  page: number;
-  pageSize: number;
+  limit: number;
+  title: string;
 }) {
-  const slice = polls.slice(page * pageSize, (page + 1) * pageSize);
+  const slice = polls.slice(0, limit);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <h3 style={{ marginTop: 0 }}>Sondages — participation</h3>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
       {polls.length === 0 ? (
         <p className="muted">Aucun sondage.</p>
       ) : (
@@ -658,18 +654,18 @@ function PollList({
 
 function WalkList({
   walks,
-  page,
-  pageSize,
+  limit,
+  title,
 }: {
   walks: WalkInsightRow[];
-  page: number;
-  pageSize: number;
+  limit: number;
+  title: string;
 }) {
   const sorted = [...walks].sort((a, b) => b.clicks - a.clicks || b.favorites - a.favorites);
-  const slice = sorted.slice(page * pageSize, (page + 1) * pageSize);
+  const slice = sorted.slice(0, limit);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <h3 style={{ marginTop: 0 }}>Parcours — engagement</h3>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
       {sorted.length === 0 ? (
         <p className="muted">Aucun parcours publié.</p>
       ) : (
