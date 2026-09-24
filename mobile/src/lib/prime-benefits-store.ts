@@ -243,10 +243,58 @@ async function loadAllFromStorage(): Promise<PrimeBenefit[]> {
   }
 }
 
-/** Octrois pour KPI Insights admin — source Supabase complète quand disponible. */
-async function loadGrantsForAdminAnalytics(): Promise<PrimeBenefit[]> {
+function mapAnalyticsRpcRow(row: Record<string, unknown>): PrimeBenefit {
+  const usedAt = row.used_at ? String(row.used_at) : null;
+  const rawStatus = row.status as PrimeBenefit['status'];
+  const roleRaw = row.role_entitlement ? String(row.role_entitlement) : null;
+  const roleEntitlement =
+    roleRaw === 'member' || roleRaw === 'prime' || roleRaw === 'admin' || roleRaw === 'partner'
+      ? roleRaw
+      : null;
+  const localId = String(row.local_id ?? crypto.randomUUID());
+  const status: PrimeBenefit['status'] =
+    usedAt && rawStatus !== 'expired_unused' ? 'used' : rawStatus;
+  return normalizeBenefit({
+    id: localId,
+    userId: '00000000-0000-0000-0000-000000000000',
+    userPhone: null,
+    catalogId: String(row.catalog_local_id ?? row.catalog_id ?? ''),
+    title: '—',
+    description: '',
+    partnerName: null,
+    benefitKind: 'unlimited',
+    quantityTotal: null,
+    quantityUsed: 0,
+    maxUses: null,
+    usesCount: usedAt ? 1 : 0,
+    status,
+    grantedAt: new Date(0).toISOString(),
+    expiresAt: row.expires_at ? String(row.expires_at) : new Date(0).toISOString(),
+    usedAt,
+    grantedBy: roleEntitlement ? 'role-entitlement' : 'admin',
+    grantAudience: (row.grant_audience as PrimeBenefit['grantAudience']) ?? 'individual',
+    customNote: null,
+    grantBatchId: null,
+    grantCountryCode: row.grant_country_code ? String(row.grant_country_code) : null,
+    grantCity: null,
+    roleEntitlement,
+    validityDays: null,
+    validityStartsOnActivation: false,
+    activatedAt: null,
+  });
+}
+
+/** Octrois pour KPI Insights admin — RPC admin puis fallback table. */
+async function loadGrantsForAdminAnalytics(countryCode?: string): Promise<PrimeBenefit[]> {
   if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
     try {
+      const { data, error } = await supabase.rpc('list_admin_benefit_grants_analytics', {
+        p_country_code: countryCode ?? null,
+      });
+      if (!error && data?.length) {
+        return refreshStatuses((data as Record<string, unknown>[]).map(mapAnalyticsRpcRow));
+      }
+      if (error) console.warn('[PrimeBenefits] analytics rpc:', error.message);
       const { fetchAllRemotePrimeBenefits } = await import('@/lib/prime-benefits-sync');
       const remote = await fetchAllRemotePrimeBenefits();
       if (remote.length) return refreshStatuses(remote);
@@ -255,6 +303,13 @@ async function loadGrantsForAdminAnalytics(): Promise<PrimeBenefit[]> {
     }
   }
   return refreshStatuses(await loadAllFromStorage());
+}
+
+function isRoleEntitlementBenefit(b: PrimeBenefit): boolean {
+  if (b.id.startsWith('role-ben-')) return true;
+  if (b.grantAudience === 'individual') return false;
+  if (b.roleEntitlement) return true;
+  return false;
 }
 
 async function loadAll(): Promise<PrimeBenefit[]> {
@@ -1824,9 +1879,9 @@ export async function getBenefitInsightsDetails(countryCode?: string): Promise<B
   const { countDashboardActiveCatalogBenefits, listBenefitCatalog } = await import(
     '@/lib/benefit-catalog-store'
   );
-  let all = filterGrantsByCountry(await loadGrantsForAdminAnalytics(), countryCode);
-  const individual = all.filter((b) => !b.roleEntitlement);
-  const role = all.filter((b) => b.roleEntitlement);
+  let all = filterGrantsByCountry(await loadGrantsForAdminAnalytics(countryCode), countryCode);
+  const individual = all.filter((b) => !isRoleEntitlementBenefit(b));
+  const role = all.filter((b) => isRoleEntitlementBenefit(b));
   const cc = countryCode?.toUpperCase().slice(0, 2);
   const catalogAll = await listBenefitCatalog(false);
   const catalog = cc
@@ -1852,6 +1907,8 @@ export interface CatalogUsageStat {
   catalogId: string;
   title: string;
   granted: number;
+  grantedIndividual: number;
+  grantedRole: number;
   /** Affectés au membre et utilisés */
   used: number;
   /** Affectés au membre mais pas encore utilisés (active / pending_validation) */
@@ -1865,7 +1922,7 @@ export interface CatalogUsageStat {
 
 export async function getCatalogUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
   await purgeOrphanPrimeBenefits();
-  const allBenefits = await loadGrantsForAdminAnalytics();
+  const allBenefits = await loadGrantsForAdminAnalytics(countryCode);
   const cc = countryCode?.toUpperCase().slice(0, 2);
   const all = cc
     ? allBenefits.filter(
@@ -1884,6 +1941,8 @@ export async function getCatalogUsageStats(countryCode?: string): Promise<Catalo
       catalogId: item.id,
       title: item.title,
       granted: 0,
+      grantedIndividual: 0,
+      grantedRole: 0,
       used: 0,
       unusedAssigned: 0,
       unassignedActive: item.isActive ? 1 : 0,
@@ -1894,10 +1953,11 @@ export async function getCatalogUsageStats(countryCode?: string): Promise<Catalo
 
   for (const benefit of all) {
     if (!catalogIds.has(benefit.catalogId)) continue;
-    if (benefit.roleEntitlement) continue;
     const stat = byCatalog.get(benefit.catalogId);
     if (!stat) continue;
     stat.granted += 1;
+    if (isRoleEntitlementBenefit(benefit)) stat.grantedRole += 1;
+    else stat.grantedIndividual += 1;
     if (benefit.status === 'used') stat.used += 1;
     if (benefit.status === 'active' || benefit.status === 'pending_validation') {
       stat.unusedAssigned += 1;

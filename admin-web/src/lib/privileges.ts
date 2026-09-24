@@ -65,12 +65,15 @@ export interface GrantRow {
 }
 
 type GrantAnalyticsRow = {
+  localId: string;
   catalogLocalId: string;
+  catalogId: string | null;
   status: string;
   usedAt: string | null;
   expiresAt: string | null;
   grantCountryCode: string | null;
   roleEntitlement: string | null;
+  grantAudience: string | null;
 };
 
 export interface BenefitInsightsDetails {
@@ -121,9 +124,10 @@ export function effectiveGrantStatus(row: {
   return raw || 'active';
 }
 
-function catalogLocalIdMatchesGrant(catalog: BenefitCatalogRow, grantCatalogId: string): boolean {
-  if (!grantCatalogId) return false;
-  return grantCatalogId === catalog.localId || grantCatalogId === catalog.id;
+function catalogMatchesGrant(catalog: BenefitCatalogRow, grant: GrantAnalyticsRow): boolean {
+  const keys = [grant.catalogLocalId, grant.catalogId].filter(Boolean) as string[];
+  if (!keys.length) return false;
+  return keys.some((k) => k === catalog.localId || k === catalog.id);
 }
 
 function mapGrantAnalyticsRow(
@@ -131,25 +135,46 @@ function mapGrantAnalyticsRow(
   usedAt: string | null,
 ): GrantAnalyticsRow {
   const roleRaw = r.role_entitlement;
+  const catalogIdRaw = r.catalog_id;
   return {
+    localId: String(r.local_id ?? ''),
     catalogLocalId: String(r.catalog_local_id ?? ''),
+    catalogId: catalogIdRaw ? String(catalogIdRaw) : null,
     status: String(r.status ?? ''),
     usedAt,
     expiresAt: r.expires_at ? String(r.expires_at) : null,
     grantCountryCode: r.grant_country_code ? String(r.grant_country_code) : null,
     roleEntitlement: roleRaw ? String(roleRaw) : null,
+    grantAudience: r.grant_audience ? String(r.grant_audience) : null,
   };
 }
 
 async function listAllGrantsForAnalytics(countryCode?: string): Promise<GrantAnalyticsRow[]> {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('list_admin_benefit_grants_analytics', {
+    p_country_code: countryCode ?? null,
+  });
+
+  if (!rpcError && rpcData) {
+    return (rpcData as Record<string, unknown>[]).map((r) =>
+      mapGrantAnalyticsRow(
+        r,
+        r.used_at ? String(r.used_at) : null,
+      ),
+    );
+  }
+
+  if (rpcError) {
+    console.warn('[privileges] list_admin_benefit_grants_analytics:', rpcError.message);
+  }
+
   const richSelect =
-    'catalog_local_id, status, used_at, expires_at, role_entitlement, grant_country_code';
+    'local_id, catalog_local_id, catalog_id, status, used_at, expires_at, role_entitlement, grant_country_code, grant_audience';
   const { data, error } = await supabase.from('prime_benefit_grants').select(richSelect).limit(5000);
 
   if (error) {
     const plain = await supabase
       .from('prime_benefit_grants')
-      .select('catalog_local_id, status, expires_at, role_entitlement, grant_country_code')
+      .select('local_id, catalog_local_id, status, expires_at, role_entitlement, grant_country_code, grant_audience')
       .limit(5000);
     if (plain.error) return [];
     return (plain.data ?? [])
@@ -167,8 +192,15 @@ async function listAllGrantsForAnalytics(countryCode?: string): Promise<GrantAna
     .filter((row) => grantMatchesAnalyticsCountry(row, countryCode));
 }
 
+function isRoleEntitlementGrant(row: GrantAnalyticsRow): boolean {
+  if (row.localId.startsWith('role-ben-')) return true;
+  if (row.grantAudience === 'individual') return false;
+  if (row.roleEntitlement) return true;
+  return false;
+}
+
 function isIndividualGrant(row: GrantAnalyticsRow): boolean {
-  return !row.roleEntitlement;
+  return !isRoleEntitlementGrant(row);
 }
 
 function computeBenefitKpisFromGrants(grants: GrantAnalyticsRow[]): BenefitKpis {
@@ -205,6 +237,8 @@ export interface CatalogUsageStat {
   catalogId: string;
   title: string;
   granted: number;
+  grantedIndividual: number;
+  grantedRole: number;
   used: number;
   unusedAssigned: number;
   isActive: boolean;
@@ -735,14 +769,17 @@ export async function getCatalogUsageStats(
     listAllGrantsForAnalytics(countryCode),
     listBenefitCatalog(countryCode),
   ]);
-  const grants = allGrants.filter(isIndividualGrant);
 
   return catalog
     .map((c) => {
-      const related = grants.filter((g) => catalogLocalIdMatchesGrant(c, g.catalogLocalId));
+      const related = allGrants.filter((g) => catalogMatchesGrant(c, g));
       let used = 0;
       let unusedAssigned = 0;
+      let grantedIndividual = 0;
+      let grantedRole = 0;
       for (const g of related) {
+        if (isIndividualGrant(g)) grantedIndividual += 1;
+        else grantedRole += 1;
         const status = effectiveGrantStatus({
           status: g.status,
           usedAt: g.usedAt,
@@ -755,6 +792,8 @@ export async function getCatalogUsageStats(
         catalogId: c.localId,
         title: c.title,
         granted: related.length,
+        grantedIndividual,
+        grantedRole,
         used,
         unusedAssigned,
         isActive: c.isActive,
@@ -1202,18 +1241,27 @@ export async function countDashboardActiveCatalogBenefits(countryCode?: string):
   }).length;
 }
 
-export function filterActiveAssociatedCatalogStats(
+/** Privilèges liés à un contenu partenaire (actifs ou non). */
+export function filterAssociatedCatalogStats(
   stats: CatalogUsageStat[],
   catalog: BenefitCatalogRow[],
 ): CatalogUsageStat[] {
   const allowed = new Set(
     catalog
-      .filter(
-        (c) => c.isActive && isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c),
-      )
+      .filter((c) => isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c))
       .map((c) => c.localId),
   );
-  return stats.filter((s) => allowed.has(s.catalogId));
+  return stats
+    .filter((s) => allowed.has(s.catalogId))
+    .sort((a, b) => b.granted - a.granted || b.used - a.used || a.title.localeCompare(b.title, 'fr'));
+}
+
+/** @deprecated utiliser filterAssociatedCatalogStats */
+export function filterActiveAssociatedCatalogStats(
+  stats: CatalogUsageStat[],
+  catalog: BenefitCatalogRow[],
+): CatalogUsageStat[] {
+  return filterAssociatedCatalogStats(stats, catalog);
 }
 
 export async function getIndividualUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {

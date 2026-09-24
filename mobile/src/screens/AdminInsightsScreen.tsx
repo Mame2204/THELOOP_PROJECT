@@ -586,16 +586,18 @@ function InsightSectionKpis({
     );
   } else if (section === 'benefits') {
     title = 'Privilèges';
+    cards.push({ label: 'Modèles créés', value: String(d.catalogTotal), accent: '#8b5cf6' });
+    if (d.catalogActive !== d.catalogTotal) {
+      cards.push({ label: 'Modèles actifs', value: String(d.catalogActive) });
+    }
     cards.push(
-      { label: 'Modèles créés', value: String(d.catalogTotal), accent: '#8b5cf6' },
-      { label: 'Modèles actifs', value: String(d.catalogActive) },
       { label: 'Actifs associés', value: String(d.catalogActiveAssociated) },
       { label: 'Octrois individuels', value: String(d.individual.granted) },
       { label: 'Octrois par rôle', value: String(d.roleEntitlement.granted) },
       { label: 'Octrois total', value: String(d.allGrants.granted) },
-      { label: 'En cours', value: String(d.allGrants.active), accent: '#34d399' },
+      { label: 'Non consommés', value: String(d.allGrants.active), accent: '#34d399' },
       { label: 'Consommés', value: String(d.allGrants.consumed), accent: '#06b6d4' },
-      { label: 'Expirés', value: String(d.allGrants.expired), accent: '#f87171' },
+      { label: 'Expirés sans usage', value: String(d.allGrants.expired), accent: '#f87171' },
     );
   } else if (section === 'platform' && showAccueil) {
     title = 'Accueil — volumes';
@@ -656,21 +658,22 @@ function BenefitKpisBlock({
           </View>
         </>
       ) : null}
-      {!compact && stats.filter((s) => s.granted > 0).length > 0 ? (
+      {!compact && stats.length > 0 ? (
         <>
-          <Text style={[styles.section, { color: shell.pageKicker, marginTop: 8 }]}>Par catalogue</Text>
-          {stats
-            .filter((s) => s.granted > 0)
-            .map((stat) => (
-              <View key={stat.catalogId} style={adminCardStyle(shell)}>
-                <Text style={[styles.leaderItem, { color: shell.pageTitle, fontWeight: '700' }]} numberOfLines={2}>
-                  {stat.title}
-                </Text>
-                <Text style={[styles.meta, { color: shell.pageKicker }]}>
-                  {stat.granted} octroyé{stat.granted > 1 ? 's' : ''} · {stat.used} consommé{stat.used > 1 ? 's' : ''} · {stat.unusedAssigned} non consommé{stat.unusedAssigned > 1 ? 's' : ''}
-                </Text>
-              </View>
-            ))}
+          <Text style={[styles.section, { color: shell.pageKicker, marginTop: 8 }]}>Modèles associés</Text>
+          {stats.map((stat) => (
+            <View key={stat.catalogId} style={adminCardStyle(shell)}>
+              <Text style={[styles.leaderItem, { color: shell.pageTitle, fontWeight: '700' }]} numberOfLines={2}>
+                {stat.title}
+                {!stat.isActive ? ' · inactif' : ''}
+              </Text>
+              <Text style={[styles.meta, { color: shell.pageKicker }]}>
+                {stat.granted} octroi{stat.granted > 1 ? 's' : ''} ({stat.grantedIndividual ?? 0} ind. ·{' '}
+                {stat.grantedRole ?? 0} rôle) · {stat.used} consommé{stat.used > 1 ? 's' : ''} ·{' '}
+                {stat.unusedAssigned} non consommé{stat.unusedAssigned > 1 ? 's' : ''}
+              </Text>
+            </View>
+          ))}
         </>
       ) : null}
     </>

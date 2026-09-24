@@ -26,7 +26,7 @@ import { getEventCategoryLabel, getSpotCategoryLabel, getToolCategoryLabel, refr
 import type { EventCategory } from '@/types';
 
 const LOCAL_FAV_KEY = 'loop_local_favorite_counts_v1';
-const INSIGHTS_CACHE = 'loop_admin_insights_v4';
+const INSIGHTS_CACHE = 'loop_admin_insights_v5';
 const ACCUEIL_INSIGHTS_TOP = 5;
 
 async function filterInsightsCatalogBenefitStats(
@@ -40,10 +40,12 @@ async function filterInsightsCatalogBenefitStats(
     : items;
   const allowed = new Set(
     scoped
-      .filter((c) => c.isActive && isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c))
+      .filter((c) => isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c))
       .map((c) => c.id),
   );
-  return stats.filter((s) => allowed.has(s.catalogId) && s.granted > 0);
+  return stats
+    .filter((s) => allowed.has(s.catalogId))
+    .sort((a, b) => b.granted - a.granted || b.used - a.used || a.title.localeCompare(b.title, 'fr'));
 }
 
 export type FullAdminInsights = Awaited<ReturnType<typeof buildFullAdminInsights>>;

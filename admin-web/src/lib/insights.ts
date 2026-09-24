@@ -1,5 +1,5 @@
 import {
-  filterActiveAssociatedCatalogStats,
+  filterAssociatedCatalogStats,
   getBenefitInsightsDetails,
   getCatalogUsageStats,
   listBenefitCatalog,
@@ -509,9 +509,7 @@ export async function loadInsights(
   const benefitKpis = benefitDetails.allGrants;
   const validatedCatalogActive = benefitDetails.catalogActiveAssociated;
 
-  const catalogStats = filterActiveAssociatedCatalogStats(catalogStatsRaw, catalogList.items).filter(
-    (s) => s.granted > 0,
-  );
+  const catalogStats = filterAssociatedCatalogStats(catalogStatsRaw, catalogList.items);
 
   const contentTypeUsage = buildContentTypeUsage(
     perf.events,
