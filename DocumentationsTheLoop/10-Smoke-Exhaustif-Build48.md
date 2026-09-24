@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **263 / 388** ≈ **68 %** global · **Web 74/109 (68 %)** · **iOS 110/181 (61 %)** · **Android 87/152 (57 %)** |
+| **Avancement smoke** | **273 / 388** ≈ **70 %** global · **Web 75/109 (69 %)** · **iOS 110/181 (61 %)** · **Android 96/152 (63 %)** |
 | **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
 | **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier *(option)* · **📱 build 49+** modération · refus privilège · octroi scan · LoopX |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
@@ -62,7 +62,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **388 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **263 / 388 ≈ 68 %**. |
+| **388 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **273 / 388 ≈ 70 %**. |
 | **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
@@ -72,10 +72,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Plateforme | Coché | Total | % | Commentaire |
 |------------|------:|------:|---:|-------------|
-| **💻 Web** | **74** | **109** | **68 %** | Lignes `💻` + colonne test inventaire routes (24 pages). |
+| **💻 Web** | **75** | **109** | **69 %** | Lignes `💻` + colonne test inventaire routes (24 pages). |
 | **📱 iOS** | **110** | **181** | **61 %** | Lignes `📱` + lignes `📱🤖` + colonne 📱 tableaux Phase 1 / C1 (18). |
-| **🤖 Android** | **87** | **152** | **57 %** | Lignes `🤖` + lignes `📱🤖` + colonne 🤖 tableaux (18) — **retard parité** vs iOS. |
-| **Global (1 ligne = 1 case)** | **263** | **388** | **68 %** | Une case cochée une seule fois, toutes plateformes confondues. |
+| **🤖 Android** | **96** | **152** | **63 %** | Lignes `🤖` + lignes `📱🤖` + colonne 🤖 tableaux (18) — parité **liste A** testeur 24 sept. |
+| **Global (1 ligne = 1 case)** | **273** | **388** | **70 %** | Une case cochée une seule fois, toutes plateformes confondues. |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
@@ -317,7 +317,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48 · e-mail invite + MDP · connecté)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
 - [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
@@ -379,13 +379,13 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `SpotDetailScreen` — depuis Spots / Accueil *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `CreatorCornerDetailScreen` — Le Singulier *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48)*
 - [x] **📱** `FragmentDetailScreen` — Le Fragment *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48)*
 - [x] **📱** `LoopWalksListScreen` + `LoopWalkDetailScreen` — parcours *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48)*
 - [x] **📱** `PartnerPublicScreen` — depuis parcours *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48)*
 
 ### Compte & services
 - [x] **📱** `EditProfilScreen` — modifier nom / photo *(20 sept. 2026 · build 48 · compte membre perso)*
@@ -397,7 +397,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `ReferralScreen` — parrainage · code · compteur filleuls *(20 sept. 2026 · build 48 · compte membre perso)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · code + compteur filleuls · membre + Prime)*
 - [x] **📱** `SuggestionScreen` — envoyer idée *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48 · testeur OK)*
 - [x] **📱** `PrimeScreen` — boutique PASS · forfaits + prix · bouton paiement *(20 sept. 2026 · build 48 · gate achat PASS ON · compte membre perso)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · **📱🤖** boutique visible · achat OK)*
 - [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
@@ -425,11 +425,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · **violet/indigo** — pas or · OK mobile actuel)*
 - [x] **📱** Filtre **LoopX** (Agenda) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu PR #4 / prochain build)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(24 sept. · testeur : **build 49+** · ne pas cocher avant binaire)*
 - [x] **📱** Filtre **Loop Prime** (Spots) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu prochain build)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(24 sept. · testeur : **build 49+**)*
 - [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(24 sept. · testeur : **build 49+**)*
 - [x] **📱** Favoris via menu profil (pas seulement bottom nav) *(20 sept. 2026 · build 48 · compte carte membre Prime · **écart mobile** — aucune entrée Favoris dans Profil · accès via **bottom nav** comme membre · spec PWA = menu profil Prime)*
 - [x] **🤖** **PASS écart** *(22 sept. 2026 · build 48 · **pas de favoris via Profil** · favoris via nav — conforme mobile)*
 
@@ -510,7 +510,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Validation privilèges
 - [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48 · saisie code établissement OK)*
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR membre *(20 sept. 2026 · build 48 · A4-U22 PASS · validation identité OK depuis Pro connecté)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android · scan Prime sans « Utiliser » puis avec privilège — OK)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — accepter / refuser *(20 sept. 2026 · build 48 · A4-U23 PASS)*
@@ -558,7 +558,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter *(20 sept. 2026 · build 48 · **FAIL partiel** · noms « . » au 1er affichage · OK après pull refresh · cache-first)*
 - [ ] **🤖** Idem
 - [x] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser *(20 sept. 2026 · build 48 · **PACK A5-3 OK** · U18 approuver · U19 refuser+motif · U20 retrait approuvé · U21 retrait refusé)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(24 sept. 2026 · Android · **écran / liste OK** · **approuver · refuser soumission KO** → **build 49+** · aligné 💻 modération reportée)*
 - [ ] **📱** `AdminSuggestionsScreen` — idées communauté
 - [ ] **🤖** Idem
 
@@ -823,7 +823,7 @@ Liens Param. → pages satellites :
 ## C2 — Auth transversal
 
 - [x] **📱** Login → Accueil · logout → Auth bloqué *(login + logout membre OK · build 48 · 20 sept. 2026)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(24 sept. 2026 · build 48 · connexion · Accueil · déconnexion → Auth)*
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
 - [x] **📱** Mot de passe oublié → **e-mail reçu** *(23 sept. 2026 · build 48)*
@@ -1009,7 +1009,11 @@ Serveur (23 sept. 2026) :
   - **Fix cron** : plus d’alerte « Paiement bloqué » toutes les 5 min sur intent **abandon** (reconcile d’abord · alerte seulement si Djomy payé · dedup DB)
 A2 compte & services (23 sept. 2026 · build 48 · **📱🤖**) :
   - Paramètres · cloche/notifs · parrainage (code + compteur filleuls membre/Prime) · boutique PASS · paiement PASS · Mon PASS — **PASS**
-  - **SuggestionScreen** (envoyer idée) — **⏸** à tester
+  - **SuggestionScreen** (envoyer idée) — **PASS 🤖** (24 sept. 2026)
+Parité Android liste A (24 sept. 2026 · testeur · build 48) :
+  - **PASS 🤖** : activate invité · Singulier · Fragment · parcours · PartnerPublic · suggestion · code établissement · login/déconnexion
+  - **Déjà PASS 🤖** : Pro ? Rejoindre / PartnerApply (23 sept.)
+  - **⏸ build 49+ 🤖** : LoopX · Loop Prime · contenu prime · modération admin **valider/refuser**
 Auth MDP (23 sept. 2026 · build 48) :
   - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
   - **Oubli MDP** : e-mail OK · lien → **page auth-callback 📱🤖** (normal · pas d’auto-app) · **CGU / Politique 📱🤖 PASS**
