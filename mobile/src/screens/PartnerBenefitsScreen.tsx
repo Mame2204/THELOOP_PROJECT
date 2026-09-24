@@ -1,5 +1,17 @@
 import { useCallback, useMemo, useState, useRef } from 'react';
-import { Alert, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { useFocusLoad } from '@/hooks/useFocusLoad';
@@ -36,9 +48,21 @@ function statusColor(status: PartnerBenefitOffer['status']): string {
   return '#94a3b8';
 }
 
+function formatPartnerRespondError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  if (/rpc_partner_respond_missing|backend_respond_failed|offer_not_found/i.test(raw)) {
+    return 'Enregistrement impossible pour le moment. Vérifiez la connexion et réessayez — si le problème persiste, contactez THE LOOP.';
+  }
+  if (raw.includes('backend_unreachable')) {
+    return 'Serveur inaccessible. Vérifiez votre connexion et réessayez.';
+  }
+  return raw || 'Refus impossible — vérifiez votre connexion.';
+}
+
 export function PartnerBenefitsScreen({ navigation }: Props) {
   const { role, user } = useAuthContext();
   const { shell } = useMemberTheme();
+  const insets = useSafeAreaInsets();
   const [offers, setOffers] = useState<PartnerBenefitOffer[]>([]);
   const [activeCatalog, setActiveCatalog] = useState<Array<{ catalogId: string; title: string; description: string }>>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -221,10 +245,7 @@ export function PartnerBenefitsScreen({ navigation }: Props) {
       await load();
       Alert.alert('Refus enregistré', 'THE LOOP a été notifié avec votre motif.');
     } catch (err) {
-      Alert.alert(
-        'Erreur',
-        err instanceof Error ? err.message : 'Refus impossible — vérifiez votre connexion.',
-      );
+      Alert.alert('Erreur', formatPartnerRespondError(err));
     }
   }
 
@@ -500,29 +521,50 @@ export function PartnerBenefitsScreen({ navigation }: Props) {
 
       <Modal visible={rejectOffer != null} transparent animationType="slide" onRequestClose={() => setRejectOffer(null)}>
         <View style={styles.modalBackdrop}>
-          <View style={[styles.modalSheet, { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder }]}>
-            <Text style={[styles.modalTitle, { color: shell.pageTitle }]}>Refuser le privilège</Text>
-            <Text style={[styles.meta, { color: shell.pageKicker, marginBottom: 12 }]}>
-              {rejectOffer ? `« ${rejectOffer.catalogTitle} » — THE LOOP recevra votre motif.` : ''}
-            </Text>
-            <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
-            <TextInput
-              style={inputStyle}
-              value={rejectReason}
-              onChangeText={setRejectReason}
-              placeholder="Ex. conditions incompatibles, période non disponible…"
-              placeholderTextColor={shell.pageKicker}
-              multiline
-              textAlignVertical="top"
-              autoFocus
-            />
-            <Pressable style={[styles.btn, { backgroundColor: '#ef4444' }]} onPress={() => void confirmReject()}>
-              <Text style={styles.btnText}>Confirmer le refus</Text>
-            </Pressable>
-            <Pressable style={styles.modalClose} onPress={() => setRejectOffer(null)}>
-              <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>Annuler</Text>
-            </Pressable>
-          </View>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+            style={{ flex: 1, justifyContent: 'flex-end' }}
+          >
+            <View
+              style={[
+                styles.modalSheet,
+                {
+                  backgroundColor: shell.pageBg,
+                  borderColor: shell.filterInactiveBorder,
+                  marginBottom: Math.max(insets.bottom, 12),
+                  maxHeight: '88%',
+                },
+              ]}
+            >
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 8 }}
+              >
+                <Text style={[styles.modalTitle, { color: shell.pageTitle }]}>Refuser le privilège</Text>
+                <Text style={[styles.meta, { color: shell.pageKicker, marginBottom: 12 }]}>
+                  {rejectOffer ? `« ${rejectOffer.catalogTitle} » — THE LOOP recevra votre motif.` : ''}
+                </Text>
+                <Text style={[styles.label, { color: shell.pageKicker }]}>Motif du refus *</Text>
+                <TextInput
+                  style={inputStyle}
+                  value={rejectReason}
+                  onChangeText={setRejectReason}
+                  placeholder="Ex. conditions incompatibles, période non disponible…"
+                  placeholderTextColor={shell.pageKicker}
+                  multiline
+                  textAlignVertical="top"
+                />
+                <Pressable style={[styles.btn, { backgroundColor: '#ef4444' }]} onPress={() => void confirmReject()}>
+                  <Text style={styles.btnText}>Confirmer le refus</Text>
+                </Pressable>
+                <Pressable style={styles.modalClose} onPress={() => setRejectOffer(null)}>
+                  <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>Annuler</Text>
+                </Pressable>
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </>
