@@ -288,21 +288,36 @@ function mapAnalyticsRpcRow(row: Record<string, unknown>): PrimeBenefit {
 async function loadGrantsForAdminAnalytics(countryCode?: string): Promise<PrimeBenefit[]> {
   if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
     try {
-      const { data, error } = await supabase.rpc('list_admin_benefit_grants_analytics', {
-        p_country_code: countryCode ?? null,
-      });
-      if (!error && data?.length) {
-        return refreshStatuses((data as Record<string, unknown>[]).map(mapAnalyticsRpcRow));
+      const loadRpc = async (cc: string | null) => {
+        const { data, error } = await supabase.rpc('list_admin_benefit_grants_analytics', {
+          p_country_code: cc,
+        });
+        if (error) {
+          console.warn('[PrimeBenefits] analytics rpc:', error.message);
+          return null;
+        }
+        return refreshStatuses((data ?? []).map((row) => mapAnalyticsRpcRow(row as Record<string, unknown>)));
+      };
+
+      const fromRpc = await loadRpc(countryCode ?? null);
+      if (fromRpc !== null) {
+        return fromRpc;
       }
-      if (error) console.warn('[PrimeBenefits] analytics rpc:', error.message);
+      const fromRpcAll = countryCode ? await loadRpc(null) : null;
+      if (fromRpcAll !== null) {
+        return filterGrantsByCountry(fromRpcAll, countryCode);
+      }
+
       const { fetchAllRemotePrimeBenefits } = await import('@/lib/prime-benefits-sync');
       const remote = await fetchAllRemotePrimeBenefits();
-      if (remote.length) return refreshStatuses(remote);
+      if (remote.length) {
+        return refreshStatuses(filterGrantsByCountry(remote, countryCode));
+      }
     } catch (e) {
       console.warn('[PrimeBenefits] analytics remote:', e);
     }
   }
-  return refreshStatuses(await loadAllFromStorage());
+  return refreshStatuses(filterGrantsByCountry(await loadAllFromStorage(), countryCode));
 }
 
 function isRoleEntitlementBenefit(b: PrimeBenefit): boolean {
@@ -1875,11 +1890,28 @@ function computeBenefitOverviewKpis(benefits: PrimeBenefit[]): BenefitOverviewKp
   };
 }
 
+async function countValidatedRedemptionsForInsights(): Promise<number> {
+  if (!isSupabaseConfigured() || !supabase) return 0;
+  const { count, error } = await supabase
+    .from('benefit_redemptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'validated');
+  if (error) {
+    console.warn('[PrimeBenefits] validated redemptions count:', error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
 export async function getBenefitInsightsDetails(countryCode?: string): Promise<BenefitInsightsDetails> {
   const { countDashboardActiveCatalogBenefits, listBenefitCatalog } = await import(
     '@/lib/benefit-catalog-store'
   );
-  let all = filterGrantsByCountry(await loadGrantsForAdminAnalytics(countryCode), countryCode);
+  const [allRaw, validatedRedemptions] = await Promise.all([
+    loadGrantsForAdminAnalytics(countryCode),
+    countValidatedRedemptionsForInsights(),
+  ]);
+  let all = filterGrantsByCountry(allRaw, countryCode);
   const individual = all.filter((b) => !isRoleEntitlementBenefit(b));
   const role = all.filter((b) => isRoleEntitlementBenefit(b));
   const cc = countryCode?.toUpperCase().slice(0, 2);
@@ -1888,13 +1920,17 @@ export async function getBenefitInsightsDetails(countryCode?: string): Promise<B
     ? catalogAll.filter((c) => (c.countryCode ?? '').toUpperCase().slice(0, 2) === cc)
     : catalogAll;
   const catalogActiveAssociated = await countDashboardActiveCatalogBenefits(countryCode);
+  const allKpis = computeBenefitOverviewKpis(all);
+  if (validatedRedemptions > allKpis.consumed) {
+    allKpis.consumed = validatedRedemptions;
+  }
   return {
     catalogTotal: catalog.length,
     catalogActive: catalog.filter((c) => c.isActive).length,
     catalogActiveAssociated,
     individual: computeBenefitOverviewKpis(individual),
     roleEntitlement: computeBenefitOverviewKpis(role),
-    allGrants: computeBenefitOverviewKpis(all),
+    allGrants: allKpis,
   };
 }
 

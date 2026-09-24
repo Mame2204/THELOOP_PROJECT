@@ -149,22 +149,32 @@ function mapGrantAnalyticsRow(
   };
 }
 
-async function listAllGrantsForAnalytics(countryCode?: string): Promise<GrantAnalyticsRow[]> {
-  const { data: rpcData, error: rpcError } = await supabase.rpc('list_admin_benefit_grants_analytics', {
-    p_country_code: countryCode ?? null,
+function mapRpcGrantRows(rows: Record<string, unknown>[]): GrantAnalyticsRow[] {
+  return rows.map((r) =>
+    mapGrantAnalyticsRow(r, r.used_at ? String(r.used_at) : null),
+  );
+}
+
+async function tryAnalyticsRpc(pCountryCode: string | null): Promise<GrantAnalyticsRow[] | null> {
+  const { data, error } = await supabase.rpc('list_admin_benefit_grants_analytics', {
+    p_country_code: pCountryCode,
   });
-
-  if (!rpcError && rpcData) {
-    return (rpcData as Record<string, unknown>[]).map((r) =>
-      mapGrantAnalyticsRow(
-        r,
-        r.used_at ? String(r.used_at) : null,
-      ),
-    );
+  if (error) {
+    console.warn('[privileges] list_admin_benefit_grants_analytics:', error.message);
+    return null;
   }
+  return mapRpcGrantRows((data ?? []) as Record<string, unknown>[]);
+}
 
-  if (rpcError) {
-    console.warn('[privileges] list_admin_benefit_grants_analytics:', rpcError.message);
+async function listAllGrantsForAnalytics(countryCode?: string): Promise<GrantAnalyticsRow[]> {
+  const cc = countryCode?.trim() ? countryCode : null;
+  const fromRpc = await tryAnalyticsRpc(cc);
+  if (fromRpc !== null) {
+    return fromRpc;
+  }
+  const fromRpcAll = cc ? await tryAnalyticsRpc(null) : null;
+  if (fromRpcAll !== null) {
+    return fromRpcAll.filter((row) => grantMatchesAnalyticsCountry(row, countryCode));
   }
 
   const richSelect =
@@ -174,11 +184,21 @@ async function listAllGrantsForAnalytics(countryCode?: string): Promise<GrantAna
   if (error) {
     const plain = await supabase
       .from('prime_benefit_grants')
-      .select('local_id, catalog_local_id, status, expires_at, role_entitlement, grant_country_code, grant_audience')
+      .select(
+        'local_id, catalog_local_id, status, used_at, expires_at, role_entitlement, grant_country_code, grant_audience',
+      )
       .limit(5000);
-    if (plain.error) return [];
+    if (plain.error) {
+      console.warn('[privileges] prime_benefit_grants analytics select:', plain.error.message);
+      return [];
+    }
     return (plain.data ?? [])
-      .map((r) => mapGrantAnalyticsRow(r as Record<string, unknown>, null))
+      .map((r) =>
+        mapGrantAnalyticsRow(
+          r as Record<string, unknown>,
+          (r as { used_at?: string | null }).used_at ? String((r as { used_at: string }).used_at) : null,
+        ),
+      )
       .filter((row) => grantMatchesAnalyticsCountry(row, countryCode));
   }
 
@@ -190,6 +210,19 @@ async function listAllGrantsForAnalytics(countryCode?: string): Promise<GrantAna
       ),
     )
     .filter((row) => grantMatchesAnalyticsCountry(row, countryCode));
+}
+
+/** Consommations enregistrées côté validation partenaire (filet si grant.used_at absent en base). */
+async function countValidatedRedemptionsForAnalytics(_countryCode?: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('benefit_redemptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'validated');
+  if (error) {
+    console.warn('[privileges] benefit_redemptions validated count:', error.message);
+    return 0;
+  }
+  return count ?? 0;
 }
 
 function isRoleEntitlementGrant(row: GrantAnalyticsRow): boolean {
@@ -216,20 +249,25 @@ function computeBenefitKpisFromGrants(grants: GrantAnalyticsRow[]): BenefitKpis 
 }
 
 export async function getBenefitInsightsDetails(countryCode?: string): Promise<BenefitInsightsDetails> {
-  const [{ items: catalog }, catalogActiveAssociated, allGrants] = await Promise.all([
+  const [{ items: catalog }, catalogActiveAssociated, allGrants, validatedRedemptions] = await Promise.all([
     listBenefitCatalog(countryCode),
     countDashboardActiveCatalogBenefits(countryCode),
     listAllGrantsForAnalytics(countryCode),
+    countValidatedRedemptionsForAnalytics(countryCode),
   ]);
   const individualGrants = allGrants.filter(isIndividualGrant);
   const roleGrants = allGrants.filter((g) => !isIndividualGrant(g));
+  const allKpis = computeBenefitKpisFromGrants(allGrants);
+  if (validatedRedemptions > allKpis.consumed) {
+    allKpis.consumed = validatedRedemptions;
+  }
   return {
     catalogTotal: catalog.length,
     catalogActive: catalog.filter((c) => c.isActive).length,
     catalogActiveAssociated,
     individual: computeBenefitKpisFromGrants(individualGrants),
     roleEntitlement: computeBenefitKpisFromGrants(roleGrants),
-    allGrants: computeBenefitKpisFromGrants(allGrants),
+    allGrants: allKpis,
   };
 }
 
