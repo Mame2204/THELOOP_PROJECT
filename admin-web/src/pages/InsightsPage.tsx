@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ListPager } from '../components/ListPager';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,7 @@ type SpotMetricTab = 'all' | 'favorites' | 'clicks' | 'stars' | 'ratings';
 type PlatformMetricTab = 'all' | 'corner' | 'polls' | 'walks';
 
 const INSIGHTS_PAGE_SIZE = LOOP_PERF_PAGE_SIZE;
+const ACCUEIL_INSIGHTS_TOP = 5;
 
 export function InsightsPage() {
   const { profile } = useAuth();
@@ -72,7 +73,6 @@ export function InsightsPage() {
     setPlatformMetric('all');
     setListPage(0);
     setBenefitsPage(0);
-    setPlatformPage(0);
   }
 
   const [data, setData] = useState<InsightsBundle | null>(null);
@@ -83,7 +83,6 @@ export function InsightsPage() {
   const [platformMetric, setPlatformMetric] = useState<PlatformMetricTab>('all');
   const [listPage, setListPage] = useState(0);
   const [benefitsPage, setBenefitsPage] = useState(0);
-  const [platformPage, setPlatformPage] = useState(0);
 
   const load = useCallback(async () => {
     setError(null);
@@ -222,38 +221,11 @@ export function InsightsPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {!data ? <p className="muted">Chargement…</p> : null}
 
-      {data ? (
-        <div className="kpi-grid" style={{ marginBottom: 16 }}>
-          <Kpi label="Événements publiés" value={data.counts.events} />
-          <Kpi label="Spots publiés" value={data.counts.spots} />
-          <Kpi label="Outils publiés" value={data.counts.tools} />
-          <Kpi label="Parcours" value={data.counts.walks} />
-          <Kpi
-            label="Privilèges actifs"
-            value={data.validatedCatalogActive}
-            hint="Partenaire + lieu associés"
-          />
-          {canBenefits ? (
-            <>
-              <Kpi label="Octrois" value={data.benefitKpis.granted} />
-              <Kpi label="Consommés" value={data.benefitKpis.consumed} />
-            </>
-          ) : null}
-        </div>
-      ) : null}
+      {data ? <TabKpiStrip tab={tab} data={data} canPlatform={canPlatform} canBenefits={canBenefits} /> : null}
 
       {data && tab === 'overview' && canOverview ? (
         <>
           <EngagementByType rows={data.contentTypeUsage} />
-          <div className="card" style={{ marginTop: 16 }}>
-            <h3 style={{ marginTop: 0 }}>Privilèges — validation</h3>
-            <div className="kpi-grid">
-              <Kpi label="Octroyés" value={data.benefitKpis.granted} />
-              <Kpi label="Actifs" value={data.benefitKpis.active} />
-              <Kpi label="Consommés" value={data.benefitKpis.consumed} />
-              <Kpi label="Expirés" value={data.benefitKpis.expired} />
-            </div>
-          </div>
         </>
       ) : null}
 
@@ -348,15 +320,9 @@ export function InsightsPage() {
 
       {data && tab === 'benefits' && canBenefits ? (
         <>
-          <div className="kpi-grid">
-            <Kpi label="Octroyés" value={data.benefitKpis.granted} />
-            <Kpi label="Actifs" value={data.benefitKpis.active} />
-            <Kpi label="Expirés" value={data.benefitKpis.expired} />
-            <Kpi label="Utilisés" value={data.benefitKpis.consumed} />
-          </div>
-          <p className="meta" style={{ marginTop: 8 }}>
-            Catalogue affiché : privilèges <strong>actifs</strong> avec partenaire / lieu associé (hors modèles
-            Paramètres seuls).
+          <p className="meta" style={{ marginTop: 0 }}>
+            Tableau : octrois <strong>individuels</strong> par modèle actif associé (partenaire + lieu). Les octrois
+            automatiques par rôle sont comptés dans les cartes ci-dessus, pas dans ce tableau.
           </p>
           <div className="table-wrap" style={{ marginTop: 16 }}>
             <table className="data-table">
@@ -364,8 +330,8 @@ export function InsightsPage() {
                 <tr>
                   <th>Catalogue</th>
                   <th>Octroyés</th>
-                  <th>Utilisés</th>
-                  <th>En cours</th>
+                  <th>Consommés</th>
+                  <th>Non consommés</th>
                 </tr>
               </thead>
               <tbody>
@@ -409,56 +375,39 @@ export function InsightsPage() {
               ] as const
             }
             active={platformMetric}
-            onChange={(m) => {
-              setPlatformMetric(m);
-              setPlatformPage(0);
-            }}
+            onChange={(m) => setPlatformMetric(m)}
           />
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Chaque bloc affiche le <strong>top {ACCUEIL_INSIGHTS_TOP}</strong> (pas de pagination).
+          </p>
           {platformMetric === 'all' || platformMetric === 'corner' ? (
             <>
               <CornerList
-                title="Le Singulier — clics"
+                title={`Le Singulier — top ${ACCUEIL_INSIGHTS_TOP} clics`}
                 rows={data.platform.corners}
-                page={platformPage}
-                pageSize={INSIGHTS_PAGE_SIZE}
+                limit={ACCUEIL_INSIGHTS_TOP}
               />
               <CornerList
-                title="Le Fragment — clics"
+                title={`Le Fragment — top ${ACCUEIL_INSIGHTS_TOP} clics`}
                 rows={data.platform.chroniques}
-                page={platformPage}
-                pageSize={INSIGHTS_PAGE_SIZE}
+                limit={ACCUEIL_INSIGHTS_TOP}
               />
             </>
           ) : null}
           {platformMetric === 'all' || platformMetric === 'polls' ? (
-            <PollList polls={data.platform.polls} page={platformPage} pageSize={INSIGHTS_PAGE_SIZE} />
+            <PollList
+              polls={data.platform.polls}
+              limit={ACCUEIL_INSIGHTS_TOP}
+              title={`Sondages — top ${ACCUEIL_INSIGHTS_TOP} (récents)`}
+            />
           ) : null}
           {platformMetric === 'all' || platformMetric === 'walks' ? (
-            <WalkList walks={data.platform.walks} page={platformPage} pageSize={INSIGHTS_PAGE_SIZE} />
+            <WalkList
+              walks={data.platform.walks}
+              limit={ACCUEIL_INSIGHTS_TOP}
+              title={`Parcours — top ${ACCUEIL_INSIGHTS_TOP} clics`}
+            />
           ) : null}
-          {(platformMetric === 'all' || platformMetric === 'corner' || platformMetric === 'polls' || platformMetric === 'walks') &&
-          (() => {
-            const platformTotal =
-              platformMetric === 'polls'
-                ? data.platform.polls.length
-                : platformMetric === 'walks'
-                  ? data.platform.walks.length
-                  : platformMetric === 'corner'
-                    ? Math.max(data.platform.corners.length, data.platform.chroniques.length)
-                    : data.platform.corners.length +
-                      data.platform.chroniques.length +
-                      data.platform.polls.length +
-                      data.platform.walks.length;
-            return platformTotal > INSIGHTS_PAGE_SIZE ? (
-              <ListPager
-                page={platformPage}
-                total={platformTotal}
-                pageSize={INSIGHTS_PAGE_SIZE}
-                onPageChange={setPlatformPage}
-                label="éléments"
-              />
-            ) : null;
-          })()}
         </>
       ) : null}
     </section>
@@ -471,6 +420,119 @@ function Kpi({ label, value, hint }: { label: string; value: number; hint?: stri
       <div className="meta">{label}</div>
       <strong>{value}</strong>
       {hint ? <div className="meta">{hint}</div> : null}
+    </div>
+  );
+}
+
+function TabKpiStrip({
+  tab,
+  data,
+  canPlatform,
+  canBenefits,
+}: {
+  tab: Tab;
+  data: InsightsBundle;
+  canPlatform: boolean;
+  canBenefits: boolean;
+}) {
+  const d = data.benefitDetails;
+  const macro = (kind: keyof InsightsBundle['contentMacro']) => data.contentMacro[kind];
+
+  let title = 'Indicateurs';
+  let body: ReactNode = null;
+
+  if (tab === 'overview') {
+    title = 'Vue d’ensemble — macro';
+    body = (
+      <>
+        <Kpi label="Événements publiés" value={macro('events').published} />
+        <Kpi label="Spots publiés" value={macro('spots').published} />
+        <Kpi label="Outils publiés" value={macro('tools').published} />
+        {canBenefits ? (
+          <>
+            <Kpi label="Modèles privilèges" value={d.catalogTotal} hint="Créés dans le catalogue" />
+            <Kpi label="Modèles associés" value={d.catalogActiveAssociated} hint="Actifs + partenaire / lieu" />
+            <Kpi label="Octrois (total)" value={d.allGrants.granted} hint="Individuels + par rôle" />
+            <Kpi label="Consommés (total)" value={d.allGrants.consumed} />
+          </>
+        ) : null}
+        {canPlatform ? (
+          <>
+            <Kpi label="Le Singulier" value={data.platformCounts.corners} hint="Fiches" />
+            <Kpi label="Le Fragment" value={data.platformCounts.chroniques} hint="Fiches" />
+            <Kpi label="Sondages" value={data.platformCounts.polls} />
+            <Kpi label="Parcours publiés" value={data.platformCounts.walksPublished} />
+          </>
+        ) : null}
+      </>
+    );
+  } else if (tab === 'events') {
+    title = 'Événements — statuts';
+    const m = macro('events');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'spots') {
+    title = 'Spots — statuts';
+    const m = macro('spots');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'tools') {
+    title = 'Outils — statuts';
+    const m = macro('tools');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'benefits' && canBenefits) {
+    title = 'Privilèges — catalogue & octrois';
+    body = (
+      <>
+        <Kpi label="Modèles créés" value={d.catalogTotal} />
+        <Kpi label="Modèles actifs" value={d.catalogActive} />
+        <Kpi label="Actifs associés" value={d.catalogActiveAssociated} hint="Partenaire + contenu lié" />
+        <Kpi label="Octrois individuels" value={d.individual.granted} hint="Tirages / admin manuel" />
+        <Kpi label="Octrois par rôle" value={d.roleEntitlement.granted} hint="Automatiques (member, prime…)" />
+        <Kpi label="Octrois total" value={d.allGrants.granted} />
+        <Kpi label="En cours" value={d.allGrants.active} />
+        <Kpi label="Consommés" value={d.allGrants.consumed} hint="Tous types d’octroi" />
+        <Kpi label="Expirés" value={d.allGrants.expired} />
+      </>
+    );
+  } else if (tab === 'platform' && canPlatform) {
+    title = 'Accueil — volumes';
+    body = (
+      <>
+        <Kpi label="Le Singulier" value={data.platformCounts.corners} />
+        <Kpi label="Le Fragment" value={data.platformCounts.chroniques} />
+        <Kpi label="Sondages" value={data.platformCounts.polls} />
+        <Kpi label="Parcours publiés" value={data.platformCounts.walksPublished} />
+        <Kpi label="Logos partenaires" value={data.platformCounts.logos} />
+      </>
+    );
+  }
+
+  if (!body) return null;
+
+  return (
+    <div className="card" style={{ marginBottom: 16 }}>
+      <h3 style={{ marginTop: 0, marginBottom: 8 }}>{title}</h3>
+      <div className="kpi-grid">{body}</div>
     </div>
   );
 }
@@ -582,15 +644,13 @@ function PerfRankList({ rows, rankOffset }: { rows: TeamLoopPerfRow[]; rankOffse
 function CornerList({
   title,
   rows,
-  page,
-  pageSize,
+  limit,
 }: {
   title: string;
   rows: PlatformCornerRow[];
-  page: number;
-  pageSize: number;
+  limit: number;
 }) {
-  const slice = rows.slice(page * pageSize, (page + 1) * pageSize);
+  const slice = rows.slice(0, limit);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <h3 style={{ marginTop: 0 }}>{title}</h3>
@@ -616,17 +676,17 @@ function CornerList({
 
 function PollList({
   polls,
-  page,
-  pageSize,
+  limit,
+  title,
 }: {
   polls: PlatformPollRow[];
-  page: number;
-  pageSize: number;
+  limit: number;
+  title: string;
 }) {
-  const slice = polls.slice(page * pageSize, (page + 1) * pageSize);
+  const slice = polls.slice(0, limit);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <h3 style={{ marginTop: 0 }}>Sondages — participation</h3>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
       {polls.length === 0 ? (
         <p className="muted">Aucun sondage.</p>
       ) : (
@@ -658,18 +718,18 @@ function PollList({
 
 function WalkList({
   walks,
-  page,
-  pageSize,
+  limit,
+  title,
 }: {
   walks: WalkInsightRow[];
-  page: number;
-  pageSize: number;
+  limit: number;
+  title: string;
 }) {
   const sorted = [...walks].sort((a, b) => b.clicks - a.clicks || b.favorites - a.favorites);
-  const slice = sorted.slice(page * pageSize, (page + 1) * pageSize);
+  const slice = sorted.slice(0, limit);
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <h3 style={{ marginTop: 0 }}>Parcours — engagement</h3>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
       {sorted.length === 0 ? (
         <p className="muted">Aucun parcours publié.</p>
       ) : (

@@ -243,6 +243,20 @@ async function loadAllFromStorage(): Promise<PrimeBenefit[]> {
   }
 }
 
+/** Octrois pour KPI Insights admin — source Supabase complète quand disponible. */
+async function loadGrantsForAdminAnalytics(): Promise<PrimeBenefit[]> {
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    try {
+      const { fetchAllRemotePrimeBenefits } = await import('@/lib/prime-benefits-sync');
+      const remote = await fetchAllRemotePrimeBenefits();
+      if (remote.length) return refreshStatuses(remote);
+    } catch (e) {
+      console.warn('[PrimeBenefits] analytics remote:', e);
+    }
+  }
+  return refreshStatuses(await loadAllFromStorage());
+}
+
 async function loadAll(): Promise<PrimeBenefit[]> {
   const local = refreshStatuses(await loadAllFromStorage());
   if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
@@ -1780,20 +1794,58 @@ export interface BenefitOverviewKpis {
   consumed: number;
 }
 
-export async function getBenefitOverviewKpis(countryCode?: string): Promise<BenefitOverviewKpis> {
-  let all = refreshStatuses(await loadAll()).filter((b) => !b.roleEntitlement);
-  if (countryCode) {
-    const cc = countryCode.toUpperCase().slice(0, 2);
-    all = all.filter(
-      (b) => !b.grantCountryCode || b.grantCountryCode.toUpperCase().slice(0, 2) === cc,
-    );
-  }
+export interface BenefitInsightsDetails {
+  catalogTotal: number;
+  catalogActive: number;
+  catalogActiveAssociated: number;
+  individual: BenefitOverviewKpis;
+  roleEntitlement: BenefitOverviewKpis;
+  allGrants: BenefitOverviewKpis;
+}
+
+function filterGrantsByCountry(all: PrimeBenefit[], countryCode?: string): PrimeBenefit[] {
+  if (!countryCode) return all;
+  const cc = countryCode.toUpperCase().slice(0, 2);
+  return all.filter(
+    (b) => !b.grantCountryCode || b.grantCountryCode.toUpperCase().slice(0, 2) === cc,
+  );
+}
+
+function computeBenefitOverviewKpis(benefits: PrimeBenefit[]): BenefitOverviewKpis {
   return {
-    granted: all.length,
-    active: all.filter((b) => b.status === 'active' || b.status === 'pending_validation').length,
-    expired: all.filter((b) => b.status === 'expired_unused').length,
-    consumed: all.filter((b) => b.status === 'used').length,
+    granted: benefits.length,
+    active: benefits.filter((b) => b.status === 'active' || b.status === 'pending_validation').length,
+    expired: benefits.filter((b) => b.status === 'expired_unused').length,
+    consumed: benefits.filter((b) => b.status === 'used').length,
   };
+}
+
+export async function getBenefitInsightsDetails(countryCode?: string): Promise<BenefitInsightsDetails> {
+  const { countDashboardActiveCatalogBenefits, listBenefitCatalog } = await import(
+    '@/lib/benefit-catalog-store'
+  );
+  let all = filterGrantsByCountry(await loadGrantsForAdminAnalytics(), countryCode);
+  const individual = all.filter((b) => !b.roleEntitlement);
+  const role = all.filter((b) => b.roleEntitlement);
+  const cc = countryCode?.toUpperCase().slice(0, 2);
+  const catalogAll = await listBenefitCatalog(false);
+  const catalog = cc
+    ? catalogAll.filter((c) => (c.countryCode ?? '').toUpperCase().slice(0, 2) === cc)
+    : catalogAll;
+  const catalogActiveAssociated = await countDashboardActiveCatalogBenefits(countryCode);
+  return {
+    catalogTotal: catalog.length,
+    catalogActive: catalog.filter((c) => c.isActive).length,
+    catalogActiveAssociated,
+    individual: computeBenefitOverviewKpis(individual),
+    roleEntitlement: computeBenefitOverviewKpis(role),
+    allGrants: computeBenefitOverviewKpis(all),
+  };
+}
+
+export async function getBenefitOverviewKpis(countryCode?: string): Promise<BenefitOverviewKpis> {
+  const details = await getBenefitInsightsDetails(countryCode);
+  return details.allGrants;
 }
 
 export interface CatalogUsageStat {
@@ -1813,7 +1865,7 @@ export interface CatalogUsageStat {
 
 export async function getCatalogUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
   await purgeOrphanPrimeBenefits();
-  const allBenefits = refreshStatuses(await loadAll());
+  const allBenefits = await loadGrantsForAdminAnalytics();
   const cc = countryCode?.toUpperCase().slice(0, 2);
   const all = cc
     ? allBenefits.filter(
