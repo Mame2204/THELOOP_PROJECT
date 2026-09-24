@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~270 / 378** cases cochées ≈ **71 %** *(24 sept. · tour admin-web quasi complet · standalone CRUD en cours)* |
+| **Avancement smoke** | **~272 / 378** cases cochées ≈ **72 %** *(24 sept. · admin-web cœur OK · reste Demandes · Notifs · Param. · B8 · B9)* |
 | **Prochain test** | **📱 build 49+** : octroi individuel → validation partenaire · retest Accueil mobile (logos / slider) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -644,7 +644,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/horaires` | Horaires | [ ] | Presets ouverture | [x] |
 | `/parametres` | Paramètres | [ ] | Voir B3 | [x] |
 | `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
-| `/privilege-standalone` | Standalone | [x] | **CRUD** · liste = actifs (biblio octroi) · **création désactivée** · **Activer / Désactiver** | [ ] |
+| `/privilege-standalone` | Standalone | [x] | **PASS 24 sept.** · CRUD · création **désactivée** · **Activer / Désactiver** · biblio octroi = actifs | [x] |
 
 ## B2 — Demandes (`/demandes`)
 
@@ -956,6 +956,7 @@ Admin-web retest (24 sept. 2026 · soir · testeur) :
   - **En cours 💻** : Insights onglet Privilèges (reset tables + jeu de test)
   - **Retest post PR #31** : Accueil logos (Storage) · édition parcours/Singulier/Fragment (contenu lié pré-sélectionné)
   - **PASS 💻** (24 sept. soir) : modules **Privilèges** + **Tirage** web
+  - **PASS 💻** (24 sept. soir) : **Privilèges standalone** (`/privilege-standalone`) · Activer / Désactiver · création inactive par défaut
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
