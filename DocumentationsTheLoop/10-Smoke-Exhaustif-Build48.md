@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **273 / 388** ≈ **70 %** global · **Web 75/109 (69 %)** · **iOS 110/181 (61 %)** · **Android 96/152 (63 %)** |
+| **Avancement smoke** | **272 / 388** ≈ **70 %** global · **Web 75/109 (69 %)** · **iOS 110/181 (61 %)** · **Android 95/152 (63 %)** |
 | **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
 | **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier *(option)* · **📱 build 49+** modération · refus privilège · octroi scan · LoopX |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
@@ -62,7 +62,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **388 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **273 / 388 ≈ 70 %**. |
+| **388 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **272 / 388 ≈ 70 %**. |
 | **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
@@ -74,8 +74,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |------------|------:|------:|---:|-------------|
 | **💻 Web** | **75** | **109** | **69 %** | Lignes `💻` + colonne test inventaire routes (24 pages). |
 | **📱 iOS** | **110** | **181** | **61 %** | Lignes `📱` + lignes `📱🤖` + colonne 📱 tableaux Phase 1 / C1 (18). |
-| **🤖 Android** | **96** | **152** | **63 %** | Lignes `🤖` + lignes `📱🤖` + colonne 🤖 tableaux (18) — parité **liste A** testeur 24 sept. |
-| **Global (1 ligne = 1 case)** | **273** | **388** | **70 %** | Une case cochée une seule fois, toutes plateformes confondues. |
+| **🤖 Android** | **95** | **152** | **63 %** | Lignes `🤖` + lignes `📱🤖` + colonne 🤖 tableaux (18) — parité **liste A** testeur 24 sept. |
+| **Global (1 ligne = 1 case)** | **272** | **388** | **70 %** | Une case cochée une seule fois, toutes plateformes confondues. |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
