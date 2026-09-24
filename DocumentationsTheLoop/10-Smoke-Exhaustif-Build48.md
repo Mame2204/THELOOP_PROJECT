@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~295 / 378** cases cochées ≈ **78 %** *(24 sept. soir · **admin-web ~90 %** hors modération/retraits/notifs B5 · B8 · contenu archiver/transfert)* |
-| **Prochain test** | **💻** Contenu archiver/republier · transfert · **B8** · **📱 build 49+** modération · retraits · notifs (boucle) · octroi scan |
+| **Avancement smoke** | **~299 / 378** cases cochées ≈ **79 %** *(24 sept. nuit · **admin-web ~93 %** hors modération/retraits · B8 · B6 archiver/transfert · B5 planif. optionnel)* |
+| **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier/annuler *(option)* · **📱 build 49+** modération · refus privilège · octroi scan |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -637,7 +637,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/pass` | PASS | [x] | **PASS 24 sept.** · octroi héritage gratuit limité · retrait → membre | [x] |
 | `/payments` | Paiements | [x] | **PASS 24 sept.** · liste transactions | [x] |
 | `/compta` | Compta | [x] | **PASS 24 sept.** · export CSV · revenus · paniers · pagination | [x] |
-| `/notifications` | Notifications | [ ] | Voir B5 | [x] |
+| `/notifications` | Notifications | [x] | **PASS 24 sept.** · envoi immédiat · rôles · favoris · anniversaire · e-mail ciblé (PR #36) | [x] |
 | `/automation` | Automatisations | [ ] | Jobs · exécuter | [x] |
 | `/milestones` | Paliers | [ ] | Éditer · archiver | [x] |
 | `/etoiles` | Étoiles | [ ] | Spots / outils / parcours | [x] |
@@ -688,7 +688,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | **Plus** | Bouton suggestion · inscriptions · activations · switches | [x] *(24 sept. 2026 · testeur **PASS** · Djomy / catalogue PASS / standalone / onglets déjà couverts ailleurs)* |
 
 Liens Param. → pages satellites :
-- [ ] **💻** `/notifications` accessible depuis Param.
+- [x] **💻** `/notifications` accessible depuis Param. *(24 sept. 2026 · testeur **PASS** · campagnes immédiates)*
 - [ ] **💻** `/automation` accessible
 - [ ] **💻** `/milestones` accessible
 - [ ] **💻** `/etoiles` accessible
@@ -719,10 +719,10 @@ Liens Param. → pages satellites :
 
 ## B5 — Notifications push (admin-web)
 
-> **⏸ BLOCKED build 49+** *(24 sept. testeur)* : boucle infinie notifs — smoke B5 reporté jusqu’au fix binaire / deploy.
+> **24 sept. 2026 (nuit · testeur)** : envois **immédiats** **PASS** (rôles · favoris · anniversaire · e-mail ciblé · PR #36). Anniversaire : **0 dest.** attendu si aucun `birth_date` ce mois — retest quand un compte test aura une date dans le mois courant. **Planification / annulation** : non testées ce tour.
 
-- [ ] **💻** Envoi **immédiat** audience Tous → `sent`
-- [ ] **💻** Audiences : Membres · Prime · Partenaires · Favoris · Anniversaires · Individuel
+- [x] **💻** Envoi **immédiat** audience Tous / rôles → statut envoyé *(24 sept. 2026 · testeur **PASS**)*
+- [x] **💻** Audiences : Membres · Prime · Partenaires · **Favoris par catégorie** · **Anniversaires du mois** · **E-mails ciblés** *(24 sept. 2026 · testeur **PASS** · anniversaire = logique OK · 0 dest. sans anniversaire en base)*
 - [ ] **💻** **Planifier** +3 min → **⏳** statut `sent`
 - [ ] **💻** Modifier campagne planifiée
 - [ ] **💻** **Annuler** → `cancelled`
@@ -974,14 +974,11 @@ Admin-web suite (24 sept. 2026 · testeur) :
   - **PASS 💻** Users : éditer profil · suspendre
   - **PASS 💻** TEAMS : pack pays + overrides **par admin**
   - **PASS 💻** Tirage : filtres par rôle
-  - **⏸ build 49+** : Modération (refus/notif) · retraits · **Notifications B5** (boucle infinie)
-<<<<<<< HEAD
+  - **⏸ build 49+** : Modération (refus/notif) · retraits · notifs **modération** partenaire
   - **PASS 💻** Users : pagination · recherche
-  - **FAIL 💻** Privilèges création : lieux partenaire vides (fix web `privilege-partners` · organizer_id / master_id)
-  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · PASS prix/messages · privilège partenaire (retest post-fix)
-=======
-  - **Reste 💻** : Contenu archiver/republier · transfert propriétaire · B8 · pagination Users · PASS prix/messages
->>>>>>> 2cc0e0a (docs(smoke): PASS partenariats · idées · users · TEAMS · tirage · B5 blocked 49)
+  - **PASS 💻** Privilèges web : partenaire + lieu · validation · **📱 accepte** · **📱 refuse** → build 49+ (PR #34)
+  - **PASS 💻 B5 Notifications** (24 sept. nuit) : immédiat · tous rôles testés · favoris catégorie · anniversaire (0 dest. OK) · **e-mail ciblé** (PR #36 deploy)
+  - **Reste 💻** : B6 archiver/transfert · B8 · PASS prix/messages · B9 délégué · B5 planifier/modifier/annuler *(option)*
   - **FAIL 📱🤖 build 48** (confirmé testeur) : **octroi individuel** → « Utiliser » membre OK · **validation partenaire** (scan) KO · migrations `20260935`/`20260936` en prod · fix mobile **build 49+**
   - **Reporté 📱🤖 build 49+** : ruban logos Accueil membre · slider à la une · perf THE LOOP mobile · validation octroi individuel
   - **Produit** : notes membres masquées fiches publiques (`MEMBER_ESTABLISHMENT_RATINGS_ENABLED=false`) · code conservé
