@@ -1081,6 +1081,30 @@ export function listGrantableCatalog(items: BenefitCatalogRow[]): BenefitCatalog
   return items.filter((item) => item.isActive && isPartnerAssociatedBenefit(item));
 }
 
+/** KPI Insights — catalogue actif avec partenaire / lieu associé (hors modèles Paramètres seuls). */
+export async function countDashboardActiveCatalogBenefits(countryCode?: string): Promise<number> {
+  const { items } = await listBenefitCatalog(countryCode);
+  return items.filter((item) => {
+    if (!item.isActive) return false;
+    if (isStandaloneTheLoopBenefit(item)) return false;
+    return isPartnerAssociatedBenefit(item);
+  }).length;
+}
+
+export function filterActiveAssociatedCatalogStats(
+  stats: CatalogUsageStat[],
+  catalog: BenefitCatalogRow[],
+): CatalogUsageStat[] {
+  const allowed = new Set(
+    catalog
+      .filter(
+        (c) => c.isActive && isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c),
+      )
+      .map((c) => c.localId),
+  );
+  return stats.filter((s) => allowed.has(s.catalogId));
+}
+
 export async function getIndividualUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
   let q = supabase
     .from('prime_benefit_grants')

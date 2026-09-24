@@ -1,5 +1,19 @@
+import {
+  countDashboardActiveCatalogBenefits,
+  filterActiveAssociatedCatalogStats,
+  getBenefitKpis,
+  getCatalogUsageStats,
+  listBenefitCatalog,
+  type BenefitKpis,
+  type CatalogUsageStat,
+} from './privileges';
+import { sortLoopPerfRows, type LoopPerfMetricTab } from './loop-perf-sort';
+import type { LoopPerfScoreWeights } from './loop-perf-score-weights';
+import {
+  loadCatalogPerformance,
+  type TeamLoopPerfRow,
+} from './team-loop-performance';
 import { supabase } from './supabase';
-import { getBenefitKpis, getCatalogUsageStats, type BenefitKpis, type CatalogUsageStat } from './privileges';
 
 export interface InsightRow {
   id: string;
@@ -12,188 +26,427 @@ export interface CatalogCounts {
   events: number;
   spots: number;
   tools: number;
+  walks: number;
+}
+
+export type ContentTypeUsageKind =
+  | 'event'
+  | 'spot'
+  | 'tool'
+  | 'walk'
+  | 'corner'
+  | 'chronique'
+  | 'poll';
+
+export interface ContentTypeUsageRow {
+  kind: ContentTypeUsageKind;
+  label: string;
+  totalFavorites: number;
+  totalClicks: number;
+  totalRatingCount: number;
+  ratingAvg: number;
+  itemCount: number;
+}
+
+export interface PlatformCornerRow {
+  id: string;
+  title: string;
+  personName: string;
+  clickCount: number;
+  isActive: boolean;
+}
+
+export interface PlatformPollOptionRow {
+  optionId: string;
+  label: string;
+  voteCount: number;
+  voteRate: number;
+}
+
+export interface PlatformPollRow {
+  id: string;
+  question: string;
+  isActive: boolean;
+  viewCount: number;
+  responseCount: number;
+  responseRate: number;
+  userParticipationRate: number;
+  options: PlatformPollOptionRow[];
+}
+
+export interface WalkInsightRow {
+  id: string;
+  title: string;
+  clicks: number;
+  favorites: number;
+  stars: number;
+  ratingAvg: number;
+  ratingCount: number;
+  displayLine: string;
 }
 
 export interface InsightsBundle {
   counts: CatalogCounts;
+  /** Top 10 clics (rétrocompat). */
   eventsByClicks: InsightRow[];
   spotsByClicks: InsightRow[];
   toolsByClicks: InsightRow[];
-  /** Hub THE LOOP — tri composite (aligné AdminLoopStats mobile). */
   eventsByEngagement: InsightRow[];
   spotsByEngagement: InsightRow[];
   toolsByEngagement: InsightRow[];
+  perf: {
+    events: TeamLoopPerfRow[];
+    spots: TeamLoopPerfRow[];
+    tools: TeamLoopPerfRow[];
+    weights: LoopPerfScoreWeights;
+  };
+  contentTypeUsage: ContentTypeUsageRow[];
+  validatedCatalogActive: number;
   benefitKpis: BenefitKpis;
   catalogStats: CatalogUsageStat[];
+  platform: {
+    corners: PlatformCornerRow[];
+    chroniques: PlatformCornerRow[];
+    polls: PlatformPollRow[];
+    walks: WalkInsightRow[];
+  };
   error?: string;
 }
 
-function engagementScore(row: {
-  click_count?: number | null;
-  favorite_count?: number | null;
-  star_count?: number | null;
-}): number {
-  const clicks = Number(row.click_count ?? 0);
-  const favorites = Number(row.favorite_count ?? 0);
-  const stars = Number(row.star_count ?? 0);
-  return favorites + clicks + stars * 5;
+const TEAM_ORIGINS = ['admin', 'loop'];
+const TOP_LEGACY = 10;
+const TOP_INSIGHTS = 5;
+
+function toInsightRows(
+  rows: TeamLoopPerfRow[],
+  metric: 'clicks' | 'engagement',
+  weights: LoopPerfScoreWeights,
+): InsightRow[] {
+  const sorted =
+    metric === 'clicks' ? sortLoopPerfRows(rows, 'clicks', weights) : sortLoopPerfRows(rows, 'all', weights);
+  return sorted.slice(0, TOP_LEGACY).map((r) => ({
+    id: r.id,
+    title: r.title,
+    metric: metric === 'clicks' ? r.clicks : r.sortScore,
+    subtitle: r.displayLine,
+  }));
 }
 
-async function topByClicks(
-  table: 'events' | 'establishments' | 'tools',
-  countryCode: string,
-  titleCol: 'title' | 'name',
-  origins?: string[],
-): Promise<InsightRow[]> {
-  let q = supabase
-    .from(table)
-    .select(`id, ${titleCol}, click_count, favorite_count, star_count, content_origin, country_code, content_status`)
-    .eq('country_code', countryCode)
-    .order('click_count', { ascending: false })
-    .limit(10);
-
-  const { data, error } = await q;
-  if (error) {
-    // events/establishments : created_at en prod (pas updated_at)
-    const orderCol = table === 'tools' ? 'updated_at' : 'created_at';
-    const fallback = await supabase
-      .from(table)
-      .select(`id, ${titleCol}, content_origin, country_code, ${orderCol}`)
-      .eq('country_code', countryCode)
-      .order(orderCol, { ascending: false })
-      .limit(10);
-    return (fallback.data ?? [])
-      .filter((r) => {
-        if (!origins?.length) return true;
-        return origins.includes(String(r.content_origin ?? '').toLowerCase());
-      })
-      .map((r) => ({
-        id: String(r.id),
-        title: String((r as Record<string, unknown>)[titleCol] ?? '—'),
-        metric: 0,
-      }));
-  }
-
-  return (data ?? [])
-    .filter((r) => {
-      if (!origins?.length) return true;
-      return origins.includes(String(r.content_origin ?? '').toLowerCase());
-    })
-    .map((r) => ({
-      id: String(r.id),
-      title: String((r as Record<string, unknown>)[titleCol] ?? '—'),
-      metric: Number(r.click_count ?? 0),
-      subtitle: r.content_origin ? String(r.content_origin) : null,
-    }));
-}
-
-async function topByEngagement(
-  table: 'events' | 'establishments' | 'tools',
-  countryCode: string,
-  titleCol: 'title' | 'name',
-  origins?: string[],
-): Promise<InsightRow[]> {
-  let q = supabase
-    .from(table)
-    .select(
-      `id, ${titleCol}, click_count, favorite_count, star_count, rating_avg, rating_count, content_origin, country_code, content_status, category_slugs`,
-    )
-    .eq('country_code', countryCode)
-    .eq('content_status', 'published')
-    .limit(80);
-
-  if (table === 'establishments') {
-    q = q.not('category_slugs', 'cs', '{tools}');
-  }
-
-  const { data, error } = await q;
-  if (error) {
-    return topByClicks(table, countryCode, titleCol, origins);
-  }
-
-  const rows = (data ?? []).filter((r) => {
-    if (!origins?.length) return true;
-    return origins.includes(String(r.content_origin ?? '').toLowerCase());
+function buildContentTypeUsage(
+  events: TeamLoopPerfRow[],
+  spots: TeamLoopPerfRow[],
+  tools: TeamLoopPerfRow[],
+  walks: WalkInsightRow[],
+  platform: InsightsBundle['platform'],
+): ContentTypeUsageRow[] {
+  const sum = (rows: TeamLoopPerfRow[]) => ({
+    fav: rows.reduce((s, r) => s + r.favorites, 0),
+    clicks: rows.reduce((s, r) => s + r.clicks, 0),
+    ratingCount: rows.reduce((s, r) => s + r.ratingCount, 0),
+    ratingSum: rows.reduce((s, r) => s + r.ratingAvg * r.ratingCount, 0),
   });
 
-  rows.sort((a, b) => engagementScore(b) - engagementScore(a));
+  const ev = sum(events);
+  const sp = sum(spots);
+  const tl = sum(tools);
+  const wk = {
+    fav: walks.reduce((s, r) => s + r.favorites, 0),
+    clicks: walks.reduce((s, r) => s + r.clicks, 0),
+    ratingCount: walks.reduce((s, r) => s + r.ratingCount, 0),
+    ratingSum: walks.reduce((s, r) => s + r.ratingAvg * r.ratingCount, 0),
+  };
 
-  return rows.slice(0, 10).map((r) => {
-    const clicks = Number(r.click_count ?? 0);
-    const favorites = Number(r.favorite_count ?? 0);
-    const stars = Number(r.star_count ?? 0);
-    const ratingCount = Number(r.rating_count ?? 0);
-    const ratingAvg = Number(r.rating_avg ?? 0);
-    const subtitleParts = [
-      `${favorites} fav.`,
-      `${clicks} clics`,
-      stars > 0 ? `${stars} ★` : null,
-      ratingCount > 0 ? `${ratingAvg.toFixed(1)}/5 (${ratingCount})` : null,
-    ].filter(Boolean);
+  const base: ContentTypeUsageRow[] = [
+    {
+      kind: 'event',
+      label: 'Événements',
+      totalFavorites: ev.fav,
+      totalClicks: ev.clicks,
+      totalRatingCount: 0,
+      ratingAvg: 0,
+      itemCount: events.length,
+    },
+    {
+      kind: 'spot',
+      label: 'Spots',
+      totalFavorites: sp.fav,
+      totalClicks: sp.clicks,
+      totalRatingCount: sp.ratingCount,
+      ratingAvg: sp.ratingCount > 0 ? sp.ratingSum / sp.ratingCount : 0,
+      itemCount: spots.length,
+    },
+    {
+      kind: 'tool',
+      label: 'Outils',
+      totalFavorites: tl.fav,
+      totalClicks: tl.clicks,
+      totalRatingCount: tl.ratingCount,
+      ratingAvg: tl.ratingCount > 0 ? tl.ratingSum / tl.ratingCount : 0,
+      itemCount: tools.length,
+    },
+    {
+      kind: 'walk',
+      label: 'Parcours',
+      totalFavorites: wk.fav,
+      totalClicks: wk.clicks,
+      totalRatingCount: wk.ratingCount,
+      ratingAvg: wk.ratingCount > 0 ? wk.ratingSum / wk.ratingCount : 0,
+      itemCount: walks.length,
+    },
+  ];
+
+  const extra: ContentTypeUsageRow[] = [];
+  if (platform.corners.length) {
+    extra.push({
+      kind: 'corner',
+      label: 'Le Singulier',
+      totalFavorites: 0,
+      totalClicks: platform.corners.reduce((s, c) => s + c.clickCount, 0),
+      totalRatingCount: 0,
+      ratingAvg: 0,
+      itemCount: platform.corners.length,
+    });
+  }
+  if (platform.chroniques.length) {
+    extra.push({
+      kind: 'chronique',
+      label: 'Le Fragment',
+      totalFavorites: 0,
+      totalClicks: platform.chroniques.reduce((s, c) => s + c.clickCount, 0),
+      totalRatingCount: 0,
+      ratingAvg: 0,
+      itemCount: platform.chroniques.length,
+    });
+  }
+  if (platform.polls.length) {
+    const votes = platform.polls.reduce((s, p) => s + p.responseCount, 0);
+    const users = platform.polls.find((p) => p.viewCount > 0)?.viewCount ?? 0;
+    extra.push({
+      kind: 'poll',
+      label: 'Sondages',
+      totalFavorites: votes,
+      totalClicks: 0,
+      totalRatingCount: users,
+      ratingAvg: users > 0 ? (votes / users) * 100 : 0,
+      itemCount: platform.polls.length,
+    });
+  }
+
+  return [...base, ...extra].sort(
+    (a, b) =>
+      b.totalFavorites - a.totalFavorites
+      || b.totalClicks - a.totalClicks
+      || b.totalRatingCount - a.totalRatingCount
+      || b.ratingAvg - a.ratingAvg,
+  );
+}
+
+function parsePollOptions(raw: unknown): Array<{ id: string; label: string }> {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const row = item as Record<string, unknown>;
+      const id = typeof row.id === 'string' ? row.id : null;
+      const label = typeof row.label === 'string' ? row.label : null;
+      if (!id || !label) return null;
+      return { id, label };
+    })
+    .filter((o): o is { id: string; label: string } => o !== null);
+}
+
+async function loadPlatformInsights(countryCode: string): Promise<InsightsBundle['platform']> {
+  const cc = countryCode.toUpperCase().slice(0, 2);
+
+  const [cornersRes, chroniquesRes, pollsRes, walksRes, usersRes] = await Promise.all([
+    supabase
+      .from('creator_corner_features')
+      .select('id, title, person_name, click_count, is_active')
+      .eq('country_code', cc)
+      .order('click_count', { ascending: false })
+      .limit(100),
+    supabase
+      .from('chronique_features')
+      .select('id, title, person_name, click_count, is_active')
+      .eq('country_code', cc)
+      .order('click_count', { ascending: false })
+      .limit(100),
+    supabase
+      .from('home_polls')
+      .select('id, question, options, is_active, view_count')
+      .eq('country_code', cc)
+      .order('created_at', { ascending: false })
+      .limit(100),
+    supabase
+      .from('loop_walks')
+      .select(
+        'id, title, click_count, favorite_count, star_count, rating_avg, rating_count, is_published',
+      )
+      .eq('country_code', cc)
+      .eq('is_published', true)
+      .limit(200),
+    supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('country_code', cc),
+  ]);
+
+  const corners: PlatformCornerRow[] = (cornersRes.data ?? []).map((r) => ({
+    id: String(r.id),
+    title: String(r.title ?? ''),
+    personName: String(r.person_name ?? ''),
+    clickCount: Number(r.click_count ?? 0),
+    isActive: Boolean(r.is_active),
+  }));
+
+  const chroniques: PlatformCornerRow[] = (chroniquesRes.data ?? []).map((r) => ({
+    id: String(r.id),
+    title: String(r.title ?? ''),
+    personName: String(r.person_name ?? ''),
+    clickCount: Number(r.click_count ?? 0),
+    isActive: Boolean(r.is_active),
+  }));
+
+  const pollRows = pollsRes.data ?? [];
+  const pollIds = pollRows.map((r) => String(r.id));
+  const votesByPoll: Record<string, Record<string, number>> = {};
+  if (pollIds.length) {
+    const { data: voteRows } = await supabase
+      .from('home_poll_votes')
+      .select('poll_id, option_id')
+      .in('poll_id', pollIds);
+    for (const vote of voteRows ?? []) {
+      const pollId = String(vote.poll_id);
+      const opt = String(vote.option_id);
+      if (!votesByPoll[pollId]) votesByPoll[pollId] = {};
+      votesByPoll[pollId][opt] = (votesByPoll[pollId][opt] ?? 0) + 1;
+    }
+  }
+
+  const totalUsers = usersRes.count ?? 0;
+  const polls: PlatformPollRow[] = pollRows.map((pollRow) => {
+    const pollId = String(pollRow.id);
+    const options = parsePollOptions(pollRow.options);
+    const counts = votesByPoll[pollId] ?? {};
+    const responseCount = Object.values(counts).reduce((sum, c) => sum + c, 0);
+    const viewCount = Number(pollRow.view_count ?? 0);
     return {
-      id: String(r.id),
-      title: String((r as Record<string, unknown>)[titleCol] ?? '—'),
-      metric: engagementScore(r),
-      subtitle: subtitleParts.join(' · '),
+      id: pollId,
+      question: String(pollRow.question ?? ''),
+      isActive: Boolean(pollRow.is_active),
+      viewCount,
+      responseCount,
+      responseRate: viewCount > 0 ? (responseCount / viewCount) * 100 : 0,
+      userParticipationRate: totalUsers > 0 ? (responseCount / totalUsers) * 100 : 0,
+      options: options.map((opt) => ({
+        optionId: opt.id,
+        label: opt.label,
+        voteCount: counts[opt.id] ?? 0,
+        voteRate: responseCount > 0 ? ((counts[opt.id] ?? 0) / responseCount) * 100 : 0,
+      })),
     };
   });
+
+  const walks: WalkInsightRow[] = (walksRes.data ?? []).map((w) => {
+    const clicks = Number(w.click_count ?? 0);
+    const favorites = Number(w.favorite_count ?? 0);
+    const ratingAvg = Number(w.rating_avg ?? 0);
+    const ratingCount = Number(w.rating_count ?? 0);
+    const stars = Number(w.star_count ?? 0);
+    const ratingMeta =
+      ratingCount > 0
+        ? `${ratingAvg.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}/5 · ${ratingCount} avis`
+        : '0 avis';
+    return {
+      id: String(w.id),
+      title: String(w.title ?? 'Parcours'),
+      clicks,
+      favorites,
+      stars,
+      ratingAvg,
+      ratingCount,
+      displayLine: `${favorites} favori${favorites > 1 ? 's' : ''} · ${clicks} clic${clicks > 1 ? 's' : ''} · ${stars}★ · ${ratingMeta}`,
+    };
+  });
+
+  if (cornersRes.error || chroniquesRes.error || pollsRes.error || walksRes.error) {
+    console.warn('[insights] platform', [
+      cornersRes.error?.message,
+      chroniquesRes.error?.message,
+      pollsRes.error?.message,
+      walksRes.error?.message,
+    ].filter(Boolean).join(' · '));
+  }
+
+  return { corners, chroniques, polls, walks };
 }
 
-async function countTable(
-  table: 'events' | 'establishments' | 'tools',
-  countryCode: string,
-  origins?: string[],
-): Promise<number> {
-  let q = supabase
-    .from(table)
-    .select('id', { count: 'exact', head: true })
-    .eq('country_code', countryCode)
-    .eq('content_status', 'published');
-  if (origins?.length) q = q.in('content_origin', origins);
-  const { count } = await q;
-  return count ?? 0;
+export function pickTopPerfRows(
+  rows: TeamLoopPerfRow[],
+  metric: LoopPerfMetricTab,
+  weights: LoopPerfScoreWeights,
+  limit = TOP_INSIGHTS,
+): TeamLoopPerfRow[] {
+  return sortLoopPerfRows(rows, metric, weights).slice(0, limit);
 }
 
 export async function loadInsights(
   countryCode: string,
-  options?: { teamOnly?: boolean },
+  options?: { teamOnly?: boolean; includePlatform?: boolean },
 ): Promise<InsightsBundle> {
-  const origins = options?.teamOnly ? ['admin', 'loop'] : undefined;
-  const [
-    events,
-    spots,
-    tools,
-    eventsByClicks,
-    spotsByClicks,
-    toolsByClicks,
-    eventsByEngagement,
-    spotsByEngagement,
-    toolsByEngagement,
-    benefitKpis,
-    catalogStats,
-  ] = await Promise.all([
-    countTable('events', countryCode, origins),
-    countTable('establishments', countryCode, origins),
-    countTable('tools', countryCode, origins),
-    topByClicks('events', countryCode, 'title', origins),
-    topByClicks('establishments', countryCode, 'name', origins),
-    topByClicks('tools', countryCode, 'name', origins),
-    topByEngagement('events', countryCode, 'title', origins),
-    topByEngagement('establishments', countryCode, 'name', origins),
-    topByEngagement('tools', countryCode, 'name', origins),
-    getBenefitKpis(countryCode),
-    getCatalogUsageStats(countryCode),
-  ]);
+  const origins = options?.teamOnly ? TEAM_ORIGINS : undefined;
+  const includePlatform = options?.includePlatform !== false;
+
+  const [perf, benefitKpis, catalogStatsRaw, validatedCatalogActive, catalogList, platform] =
+    await Promise.all([
+      loadCatalogPerformance(countryCode, origins ? { origins } : undefined),
+      getBenefitKpis(countryCode),
+      getCatalogUsageStats(countryCode),
+      countDashboardActiveCatalogBenefits(countryCode),
+      listBenefitCatalog(countryCode),
+      includePlatform ? loadPlatformInsights(countryCode) : Promise.resolve({
+        corners: [],
+        chroniques: [],
+        polls: [],
+        walks: [] as WalkInsightRow[],
+      }),
+    ]);
+
+  const catalogStats = filterActiveAssociatedCatalogStats(catalogStatsRaw, catalogList.items)
+    .filter((s) => s.granted > 0 || s.isActive)
+    .slice(0, 30);
+
+  const contentTypeUsage = buildContentTypeUsage(
+    perf.events,
+    perf.spots,
+    perf.tools,
+    platform.walks,
+    platform,
+  );
+
+  const errors = perf.error ? [perf.error] : [];
 
   return {
-    counts: { events, spots, tools },
-    eventsByClicks,
-    spotsByClicks,
-    toolsByClicks,
-    eventsByEngagement,
-    spotsByEngagement,
-    toolsByEngagement,
+    counts: {
+      events: perf.events.length,
+      spots: perf.spots.length,
+      tools: perf.tools.length,
+      walks: platform.walks.length,
+    },
+    eventsByClicks: toInsightRows(perf.events, 'clicks', perf.weights),
+    spotsByClicks: toInsightRows(perf.spots, 'clicks', perf.weights),
+    toolsByClicks: toInsightRows(perf.tools, 'clicks', perf.weights),
+    eventsByEngagement: toInsightRows(perf.events, 'engagement', perf.weights),
+    spotsByEngagement: toInsightRows(perf.spots, 'engagement', perf.weights),
+    toolsByEngagement: toInsightRows(perf.tools, 'engagement', perf.weights),
+    perf: {
+      events: perf.events,
+      spots: perf.spots,
+      tools: perf.tools,
+      weights: perf.weights,
+    },
+    contentTypeUsage,
+    validatedCatalogActive,
     benefitKpis,
-    catalogStats: catalogStats.slice(0, 15),
+    catalogStats,
+    platform,
+    error: errors.length ? errors.join(' · ') : undefined,
   };
 }

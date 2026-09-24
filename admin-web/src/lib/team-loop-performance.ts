@@ -21,10 +21,6 @@ export interface TeamLoopPerfRow {
 
 const TEAM_ORIGINS = ['admin', 'loop'];
 
-function isTeamOrigin(origin: string | null | undefined): boolean {
-  return TEAM_ORIGINS.includes(String(origin ?? '').toLowerCase());
-}
-
 /** Identique `content-mappers.ts` (mobile) : `admin_star_override ?? star_count ?? 3`. */
 function resolveStarCount(row: {
   admin_star_override?: number | null;
@@ -60,7 +56,10 @@ function finalizeRows(
   }));
 }
 
-export async function loadTeamLoopPerformance(countryCode: string): Promise<{
+export async function loadCatalogPerformance(
+  countryCode: string,
+  options?: { origins?: string[] },
+): Promise<{
   events: TeamLoopPerfRow[];
   spots: TeamLoopPerfRow[];
   tools: TeamLoopPerfRow[];
@@ -70,16 +69,17 @@ export async function loadTeamLoopPerformance(countryCode: string): Promise<{
   const cc = countryCode.toUpperCase().slice(0, 2);
   const errors: string[] = [];
   const weights = await loadLoopPerfScoreWeights(cc);
+  const originFilter = options?.origins?.map((o) => o.toLowerCase());
 
-  const eventsRes = await supabase
+  let eventsQ = supabase
     .from('events')
     .select('id, title, click_count, favorite_count, content_origin, country_code, is_active, content_status')
     .eq('country_code', cc)
     .eq('content_status', 'published')
-    .eq('is_active', true)
-    .in('content_origin', TEAM_ORIGINS);
+    .eq('is_active', true);
+  if (originFilter?.length) eventsQ = eventsQ.in('content_origin', originFilter);
 
-  const spotsRes = await supabase
+  let spotsQ = supabase
     .from('establishments')
     .select(
       'id, name, click_count, favorite_count, star_count, admin_star_override, rating_avg, rating_count, content_origin, country_code, is_active, content_status, category_slugs',
@@ -87,25 +87,32 @@ export async function loadTeamLoopPerformance(countryCode: string): Promise<{
     .eq('country_code', cc)
     .eq('content_status', 'published')
     .eq('is_active', true)
-    .in('content_origin', TEAM_ORIGINS)
     .not('category_slugs', 'cs', '{tools}');
+  if (originFilter?.length) spotsQ = spotsQ.in('content_origin', originFilter);
 
-  const toolsRes = await supabase
+  let toolsQ = supabase
     .from('tools')
     .select(
       'id, name, click_count, favorite_count, star_count, admin_star_override, rating_avg, rating_count, content_origin, country_code, is_active, content_status',
     )
     .eq('country_code', cc)
     .eq('content_status', 'published')
-    .eq('is_active', true)
-    .in('content_origin', TEAM_ORIGINS);
+    .eq('is_active', true);
+  if (originFilter?.length) toolsQ = toolsQ.in('content_origin', originFilter);
+
+  const [eventsRes, spotsRes, toolsRes] = await Promise.all([eventsQ, spotsQ, toolsQ]);
 
   if (eventsRes.error) errors.push(eventsRes.error.message);
   if (spotsRes.error) errors.push(spotsRes.error.message);
   if (toolsRes.error) errors.push(toolsRes.error.message);
 
+  const matchesOrigin = (origin: string | null | undefined): boolean => {
+    if (!originFilter?.length) return true;
+    return originFilter.includes(String(origin ?? '').toLowerCase());
+  };
+
   const eventRows: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore'>[] = (eventsRes.data ?? [])
-    .filter((r) => isTeamOrigin(r.content_origin))
+    .filter((r) => matchesOrigin(r.content_origin))
     .map((r) => ({
       id: String(r.id),
       kind: 'event' as const,
@@ -118,7 +125,7 @@ export async function loadTeamLoopPerformance(countryCode: string): Promise<{
     }));
 
   const spotRows: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore'>[] = (spotsRes.data ?? [])
-    .filter((r) => isTeamOrigin(r.content_origin))
+    .filter((r) => matchesOrigin(r.content_origin))
     .map((r) => {
       const stars = resolveStarCount(r);
       return {
@@ -134,7 +141,7 @@ export async function loadTeamLoopPerformance(countryCode: string): Promise<{
     });
 
   const toolRows: Omit<TeamLoopPerfRow, 'displayLine' | 'sortScore'>[] = (toolsRes.data ?? [])
-    .filter((r) => isTeamOrigin(r.content_origin))
+    .filter((r) => matchesOrigin(r.content_origin))
     .map((r) => {
       const stars = resolveStarCount(r);
       return {
@@ -156,4 +163,15 @@ export async function loadTeamLoopPerformance(countryCode: string): Promise<{
     weights,
     error: errors.length ? errors.join(' · ') : undefined,
   };
+}
+
+/** Contenus THE LOOP (origines admin + loop) — onglet Performances du hub. */
+export async function loadTeamLoopPerformance(countryCode: string): Promise<{
+  events: TeamLoopPerfRow[];
+  spots: TeamLoopPerfRow[];
+  tools: TeamLoopPerfRow[];
+  weights: LoopPerfScoreWeights;
+  error?: string;
+}> {
+  return loadCatalogPerformance(countryCode, { origins: TEAM_ORIGINS });
 }
