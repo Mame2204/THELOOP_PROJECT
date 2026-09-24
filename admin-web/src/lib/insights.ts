@@ -1,9 +1,9 @@
 import {
-  countDashboardActiveCatalogBenefits,
   filterActiveAssociatedCatalogStats,
-  getBenefitKpis,
+  getBenefitInsightsDetails,
   getCatalogUsageStats,
   listBenefitCatalog,
+  type BenefitInsightsDetails,
   type BenefitKpis,
   type CatalogUsageStat,
 } from './privileges';
@@ -27,6 +27,27 @@ export interface CatalogCounts {
   spots: number;
   tools: number;
   walks: number;
+}
+
+export interface ContentStatusMacro {
+  published: number;
+  archived: number;
+  deactivated: number;
+  draft: number;
+}
+
+export interface ContentMacroCounts {
+  events: ContentStatusMacro;
+  spots: ContentStatusMacro;
+  tools: ContentStatusMacro;
+}
+
+export interface PlatformCounts {
+  corners: number;
+  chroniques: number;
+  polls: number;
+  walksPublished: number;
+  logos: number;
 }
 
 export type ContentTypeUsageKind =
@@ -101,9 +122,12 @@ export interface InsightsBundle {
     weights: LoopPerfScoreWeights;
   };
   contentTypeUsage: ContentTypeUsageRow[];
+  contentMacro: ContentMacroCounts;
   validatedCatalogActive: number;
   benefitKpis: BenefitKpis;
+  benefitDetails: BenefitInsightsDetails;
   catalogStats: CatalogUsageStat[];
+  platformCounts: PlatformCounts;
   platform: {
     corners: PlatformCornerRow[];
     chroniques: PlatformCornerRow[];
@@ -116,6 +140,48 @@ export interface InsightsBundle {
 const TEAM_ORIGINS = ['admin', 'loop'];
 const TOP_LEGACY = 10;
 const TOP_INSIGHTS = 5;
+
+const EMPTY_STATUS_MACRO: ContentStatusMacro = {
+  published: 0,
+  archived: 0,
+  deactivated: 0,
+  draft: 0,
+};
+
+async function countContentStatusForTable(
+  table: 'events' | 'establishments' | 'tools',
+  countryCode: string,
+  spotToolsOnly?: 'spots' | 'tools',
+): Promise<ContentStatusMacro> {
+  const cc = countryCode.toUpperCase().slice(0, 2);
+  let q = supabase.from(table).select('content_status').eq('country_code', cc);
+  if (table === 'establishments' && spotToolsOnly === 'spots') {
+    q = q.not('category_slugs', 'cs', '{tools}');
+  }
+  if (table === 'establishments' && spotToolsOnly === 'tools') {
+    q = q.contains('category_slugs', ['tools']);
+  }
+  const { data, error } = await q.limit(8000);
+  if (error) return { ...EMPTY_STATUS_MACRO };
+  const macro = { ...EMPTY_STATUS_MACRO };
+  for (const row of data ?? []) {
+    const status = String((row as { content_status?: string }).content_status ?? 'draft');
+    if (status === 'published') macro.published += 1;
+    else if (status === 'archived') macro.archived += 1;
+    else if (status === 'deactivated') macro.deactivated += 1;
+    else macro.draft += 1;
+  }
+  return macro;
+}
+
+async function loadContentMacroCounts(countryCode: string): Promise<ContentMacroCounts> {
+  const [events, spots, tools] = await Promise.all([
+    countContentStatusForTable('events', countryCode),
+    countContentStatusForTable('establishments', countryCode, 'spots'),
+    countContentStatusForTable('tools', countryCode),
+  ]);
+  return { events, spots, tools };
+}
 
 function toInsightRows(
   rows: TeamLoopPerfRow[],
@@ -255,10 +321,13 @@ function parsePollOptions(raw: unknown): Array<{ id: string; label: string }> {
     .filter((o): o is { id: string; label: string } => o !== null);
 }
 
-async function loadPlatformInsights(countryCode: string): Promise<InsightsBundle['platform']> {
+async function loadPlatformInsights(countryCode: string): Promise<{
+  platform: InsightsBundle['platform'];
+  platformCounts: PlatformCounts;
+}> {
   const cc = countryCode.toUpperCase().slice(0, 2);
 
-  const [cornersRes, chroniquesRes, pollsRes, walksRes, usersRes] = await Promise.all([
+  const [cornersRes, chroniquesRes, pollsRes, walksRes, logosRes, usersRes] = await Promise.all([
     supabase
       .from('creator_corner_features')
       .select('id, title, person_name, click_count, is_active')
@@ -285,6 +354,10 @@ async function loadPlatformInsights(countryCode: string): Promise<InsightsBundle
       .eq('country_code', cc)
       .eq('is_published', true)
       .limit(200),
+    supabase
+      .from('home_partner_logos')
+      .select('id', { count: 'exact', head: true })
+      .eq('country_code', cc),
     supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('country_code', cc),
   ]);
 
@@ -375,7 +448,18 @@ async function loadPlatformInsights(countryCode: string): Promise<InsightsBundle
     ].filter(Boolean).join(' · '));
   }
 
-  return { corners, chroniques, polls, walks };
+  const platformCounts: PlatformCounts = {
+    corners: corners.length,
+    chroniques: chroniques.length,
+    polls: polls.length,
+    walksPublished: walks.length,
+    logos: logosRes.count ?? 0,
+  };
+
+  return {
+    platform: { corners, chroniques, polls, walks },
+    platformCounts,
+  };
 }
 
 export function pickTopPerfRows(
@@ -394,20 +478,36 @@ export async function loadInsights(
   const origins = options?.teamOnly ? TEAM_ORIGINS : undefined;
   const includePlatform = options?.includePlatform !== false;
 
-  const [perf, benefitKpis, catalogStatsRaw, validatedCatalogActive, catalogList, platform] =
+  const [perf, benefitDetails, catalogStatsRaw, catalogList, contentMacro, platformBundle] =
     await Promise.all([
       loadCatalogPerformance(countryCode, origins ? { origins } : undefined),
-      getBenefitKpis(countryCode),
+      getBenefitInsightsDetails(countryCode),
       getCatalogUsageStats(countryCode),
-      countDashboardActiveCatalogBenefits(countryCode),
       listBenefitCatalog(countryCode),
-      includePlatform ? loadPlatformInsights(countryCode) : Promise.resolve({
-        corners: [],
-        chroniques: [],
-        polls: [],
-        walks: [] as WalkInsightRow[],
-      }),
+      loadContentMacroCounts(countryCode),
+      includePlatform
+        ? loadPlatformInsights(countryCode)
+        : Promise.resolve({
+            platform: {
+              corners: [],
+              chroniques: [],
+              polls: [],
+              walks: [] as WalkInsightRow[],
+            },
+            platformCounts: {
+              corners: 0,
+              chroniques: 0,
+              polls: 0,
+              walksPublished: 0,
+              logos: 0,
+            },
+          }),
     ]);
+
+  const platform = platformBundle.platform;
+  const platformCounts = platformBundle.platformCounts;
+  const benefitKpis = benefitDetails.allGrants;
+  const validatedCatalogActive = benefitDetails.catalogActiveAssociated;
 
   const catalogStats = filterActiveAssociatedCatalogStats(catalogStatsRaw, catalogList.items).filter(
     (s) => s.granted > 0,
@@ -443,9 +543,12 @@ export async function loadInsights(
       weights: perf.weights,
     },
     contentTypeUsage,
+    contentMacro,
     validatedCatalogActive,
     benefitKpis,
+    benefitDetails,
     catalogStats,
+    platformCounts,
     platform,
     error: errors.length ? errors.join(' · ') : undefined,
   };

@@ -12,6 +12,8 @@ import type {
   CornerInsight,
   PollInsight,
 } from '@/lib/admin-types';
+import type { Event } from '@/types';
+import type { HomeLocation } from '@/lib/demo-data';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAdminCountry } from '@/context/AdminCountryContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
@@ -223,64 +225,6 @@ export function AdminInsightsScreen({ navigation }: Props) {
       />
       <AdminCountryBar shell={shell} compact />
 
-      <View style={styles.kpiGrid}>
-        <AdminKpiCard label="Événements" value={String(scopedEvents.length)} shell={shell} style={styles.kpiThird} />
-        <AdminKpiCard label="Spots" value={String(pureSpots.length)} shell={shell} accent="#06b6d4" style={styles.kpiThird} />
-        <AdminKpiCard label="Outils" value={String(tools.length)} shell={shell} accent="#10b981" style={styles.kpiThird} />
-        <AdminKpiCard
-          label="Parcours"
-          value={String(data?.walksByFavorites?.length ?? 0)}
-          hint="Tous"
-          shell={shell}
-          accent="#f59e0b"
-          style={styles.kpiThird}
-        />
-        <AdminKpiCard
-          label="Privilèges"
-          value={String(data?.validatedCatalogActive ?? 0)}
-          hint="Actifs · partenaire + lieu"
-          shell={shell}
-          accent="#8b5cf6"
-          style={styles.kpiThird}
-        />
-        <AdminKpiCard
-          label="Partenariats"
-          value={String(partnershipApproved)}
-          hint="Validés"
-          shell={shell}
-          accent="#fbbf24"
-          style={styles.kpiThird}
-        />
-        {isSuperAdmin && !teamOnly && data ? (
-          <>
-            <AdminKpiCard
-              label="Le Singulier"
-              value={String(data.cornersByClicks.length)}
-              hint="Fiches créées"
-              shell={shell}
-              accent="#ec4899"
-              style={styles.kpiThird}
-            />
-            <AdminKpiCard
-              label="Le Fragment"
-              value={String(data.chroniquesByClicks?.length ?? 0)}
-              hint="Articles créés"
-              shell={shell}
-              accent="#14b8a6"
-              style={styles.kpiThird}
-            />
-            <AdminKpiCard
-              label="Sondages"
-              value={String(data.pollInsights.length)}
-              hint="Tous"
-              shell={shell}
-              accent="#8b5cf6"
-              style={styles.kpiThird}
-            />
-          </>
-        ) : null}
-      </View>
-
       {!teamOnly ? (
       <View style={styles.quickRow}>
         <Pressable
@@ -331,10 +275,21 @@ export function AdminInsightsScreen({ navigation }: Props) {
         </View>
       ) : null}
 
+      {data ? (
+        <InsightSectionKpis
+          section={section}
+          data={data}
+          events={scopedEvents}
+          spots={pureSpots}
+          tools={tools}
+          showAccueil={isSuperAdmin && !teamOnly}
+          shell={shell}
+        />
+      ) : null}
+
       {section === 'overview' && data ? (
         <>
           <EngagementByTypeBlock rows={data.contentTypeUsage} shell={shell} />
-          <BenefitKpisBlock kpis={data.benefitKpis} stats={data.catalogBenefitStats} shell={shell} compact />
         </>
       ) : null}
 
@@ -466,15 +421,7 @@ export function AdminInsightsScreen({ navigation }: Props) {
       ) : null}
 
       {section === 'benefits' && data ? (
-        <>
-          <View style={styles.kpiGrid}>
-            <AdminKpiCard label="Octroyés" value={String(data.benefitKpis.granted)} shell={shell} accent="#8b5cf6" style={styles.kpiThird} />
-            <AdminKpiCard label="En cours" value={String(data.benefitKpis.active)} shell={shell} accent="#34d399" style={styles.kpiThird} />
-            <AdminKpiCard label="Consommés" value={String(data.benefitKpis.consumed)} shell={shell} accent="#06b6d4" style={styles.kpiThird} />
-            <AdminKpiCard label="Expirés" value={String(data.benefitKpis.expired)} shell={shell} accent="#f87171" style={styles.kpiThird} />
-          </View>
-          <BenefitKpisBlock kpis={data.benefitKpis} stats={data.catalogBenefitStats} shell={shell} hideKpis />
-        </>
+        <BenefitKpisBlock kpis={data.benefitKpis} stats={data.catalogBenefitStats} shell={shell} hideKpis />
       ) : null}
 
       {section !== 'overview' && !data ? (
@@ -545,6 +492,142 @@ function EngagementByTypeBlock({
 
 function formatPct(value: number): string {
   return `${value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+}
+
+type ContentStatusKey = 'draft' | 'published' | 'deactivated' | 'archived';
+
+function countContentStatuses(
+  items: Array<{ contentStatus?: ContentStatusKey }>,
+): Record<ContentStatusKey, number> {
+  const out: Record<ContentStatusKey, number> = {
+    draft: 0,
+    published: 0,
+    deactivated: 0,
+    archived: 0,
+  };
+  for (const item of items) {
+    const key = item.contentStatus ?? 'draft';
+    out[key] += 1;
+  }
+  return out;
+}
+
+function InsightSectionKpis({
+  section,
+  data,
+  events,
+  spots,
+  tools,
+  showAccueil,
+  shell,
+}: {
+  section: InsightSection;
+  data: NonNullable<Awaited<ReturnType<typeof getFullAdminInsights>>>;
+  events: Event[];
+  spots: HomeLocation[];
+  tools: HomeLocation[];
+  showAccueil: boolean;
+  shell: ReturnType<typeof useMemberTheme>['shell'];
+}) {
+  const d = data.benefitDetails;
+  const pc = data.platformCounts;
+
+  let title = 'Indicateurs';
+  const cards: Array<{ label: string; value: string; hint?: string; accent?: string }> = [];
+
+  if (section === 'overview') {
+    title = 'Vue d’ensemble';
+    const ev = countContentStatuses(events);
+    const sp = countContentStatuses(spots);
+    const tl = countContentStatuses(tools);
+    cards.push(
+      { label: 'Événements publiés', value: String(ev.published) },
+      { label: 'Spots publiés', value: String(sp.published), accent: '#06b6d4' },
+      { label: 'Outils publiés', value: String(tl.published), accent: '#10b981' },
+      { label: 'Modèles privilèges', value: String(d.catalogTotal), accent: '#8b5cf6' },
+      { label: 'Modèles associés', value: String(d.catalogActiveAssociated), accent: '#8b5cf6' },
+      { label: 'Octrois (total)', value: String(d.allGrants.granted) },
+      { label: 'Consommés', value: String(d.allGrants.consumed) },
+    );
+    if (showAccueil) {
+      cards.push(
+        { label: 'Le Singulier', value: String(pc.corners), accent: '#ec4899' },
+        { label: 'Le Fragment', value: String(pc.chroniques), accent: '#14b8a6' },
+        { label: 'Sondages', value: String(pc.polls) },
+        { label: 'Parcours', value: String(pc.walksPublished), accent: '#f59e0b' },
+      );
+    }
+  } else if (section === 'events') {
+    title = 'Événements — statuts';
+    const m = countContentStatuses(events);
+    cards.push(
+      { label: 'Publiés', value: String(m.published) },
+      { label: 'Archivés', value: String(m.archived) },
+      { label: 'Désactivés', value: String(m.deactivated) },
+      { label: 'Brouillons', value: String(m.draft) },
+    );
+  } else if (section === 'spots') {
+    title = 'Spots — statuts';
+    const m = countContentStatuses(spots);
+    cards.push(
+      { label: 'Publiés', value: String(m.published), accent: '#06b6d4' },
+      { label: 'Archivés', value: String(m.archived) },
+      { label: 'Désactivés', value: String(m.deactivated) },
+      { label: 'Brouillons', value: String(m.draft) },
+    );
+  } else if (section === 'tools') {
+    title = 'Outils — statuts';
+    const m = countContentStatuses(tools);
+    cards.push(
+      { label: 'Publiés', value: String(m.published), accent: '#10b981' },
+      { label: 'Archivés', value: String(m.archived) },
+      { label: 'Désactivés', value: String(m.deactivated) },
+      { label: 'Brouillons', value: String(m.draft) },
+    );
+  } else if (section === 'benefits') {
+    title = 'Privilèges';
+    cards.push(
+      { label: 'Modèles créés', value: String(d.catalogTotal), accent: '#8b5cf6' },
+      { label: 'Modèles actifs', value: String(d.catalogActive) },
+      { label: 'Actifs associés', value: String(d.catalogActiveAssociated) },
+      { label: 'Octrois individuels', value: String(d.individual.granted) },
+      { label: 'Octrois par rôle', value: String(d.roleEntitlement.granted) },
+      { label: 'Octrois total', value: String(d.allGrants.granted) },
+      { label: 'En cours', value: String(d.allGrants.active), accent: '#34d399' },
+      { label: 'Consommés', value: String(d.allGrants.consumed), accent: '#06b6d4' },
+      { label: 'Expirés', value: String(d.allGrants.expired), accent: '#f87171' },
+    );
+  } else if (section === 'platform' && showAccueil) {
+    title = 'Accueil — volumes';
+    cards.push(
+      { label: 'Le Singulier', value: String(pc.corners), accent: '#ec4899' },
+      { label: 'Le Fragment', value: String(pc.chroniques), accent: '#14b8a6' },
+      { label: 'Sondages', value: String(pc.polls) },
+      { label: 'Parcours publiés', value: String(pc.walksPublished), accent: '#f59e0b' },
+      { label: 'Logos', value: String(pc.logos) },
+    );
+  }
+
+  if (!cards.length) return null;
+
+  return (
+    <View style={[styles.hero, { backgroundColor: shell.filterInactiveBg, borderColor: shell.tabIndicator, marginBottom: 12 }]}>
+      <Text style={[styles.heroTitle, { color: shell.tabIndicator }]}>{title}</Text>
+      <View style={styles.kpiGrid}>
+        {cards.map((c) => (
+          <AdminKpiCard
+            key={c.label}
+            label={c.label}
+            value={c.value}
+            hint={c.hint}
+            shell={shell}
+            accent={c.accent}
+            style={styles.kpiThird}
+          />
+        ))}
+      </View>
+    </View>
+  );
 }
 
 function BenefitKpisBlock({

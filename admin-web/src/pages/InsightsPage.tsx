@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ListPager } from '../components/ListPager';
 import { useAuth } from '../context/AuthContext';
@@ -221,61 +221,11 @@ export function InsightsPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {!data ? <p className="muted">Chargement…</p> : null}
 
-      {data ? (
-        <div className="kpi-grid" style={{ marginBottom: 16 }}>
-          {tab === 'overview' ? (
-            <>
-              <Kpi label="Événements publiés" value={data.counts.events} />
-              <Kpi label="Spots publiés" value={data.counts.spots} />
-              <Kpi label="Outils publiés" value={data.counts.tools} />
-              <Kpi label="Parcours publiés" value={data.counts.walks} />
-            </>
-          ) : null}
-          {tab === 'events' ? <Kpi label="Événements publiés" value={data.counts.events} /> : null}
-          {tab === 'spots' ? <Kpi label="Spots publiés" value={data.counts.spots} /> : null}
-          {tab === 'tools' ? <Kpi label="Outils publiés" value={data.counts.tools} /> : null}
-          {tab === 'platform' ? (
-            <>
-              <Kpi label="Parcours publiés" value={data.counts.walks} />
-              <Kpi label="Fiches Singulier" value={data.platform.corners.length} hint="Top 5 par clics ci-dessous" />
-              <Kpi label="Fragments" value={data.platform.chroniques.length} hint="Top 5 par clics ci-dessous" />
-              <Kpi label="Sondages" value={data.platform.polls.length} hint="Top 5 récents ci-dessous" />
-            </>
-          ) : null}
-          {tab === 'benefits' ? (
-            <>
-              <Kpi
-                label="Modèles actifs"
-                value={data.validatedCatalogActive}
-                hint="Catalogue actif, partenaire et lieu associés"
-              />
-              <Kpi label="Octrois membres" value={data.benefitKpis.granted} hint="Hors droits par rôle" />
-              <Kpi label="Consommés" value={data.benefitKpis.consumed} />
-              <Kpi label="En cours" value={data.benefitKpis.active} />
-              <Kpi label="Expirés" value={data.benefitKpis.expired} />
-            </>
-          ) : null}
-        </div>
-      ) : null}
+      {data ? <TabKpiStrip tab={tab} data={data} canPlatform={canPlatform} canBenefits={canBenefits} /> : null}
 
       {data && tab === 'overview' && canOverview ? (
         <>
           <EngagementByType rows={data.contentTypeUsage} />
-          {canBenefits ? (
-            <div className="card" style={{ marginTop: 16 }}>
-              <h3 style={{ marginTop: 0 }}>Octrois membres</h3>
-              <p className="meta" style={{ marginTop: 0 }}>
-                Comptage aligné sur la consommation réelle (date d&apos;utilisation), hors avantages automatiques
-                par rôle.
-              </p>
-              <div className="kpi-grid">
-                <Kpi label="Octrois" value={data.benefitKpis.granted} />
-                <Kpi label="En cours" value={data.benefitKpis.active} />
-                <Kpi label="Consommés" value={data.benefitKpis.consumed} />
-                <Kpi label="Expirés" value={data.benefitKpis.expired} />
-              </div>
-            </div>
-          ) : null}
         </>
       ) : null}
 
@@ -371,7 +321,8 @@ export function InsightsPage() {
       {data && tab === 'benefits' && canBenefits ? (
         <>
           <p className="meta" style={{ marginTop: 0 }}>
-            Tableau : modèles <strong>actifs</strong> avec partenaire / lieu associé ayant au moins un octroi membre.
+            Tableau : octrois <strong>individuels</strong> par modèle actif associé (partenaire + lieu). Les octrois
+            automatiques par rôle sont comptés dans les cartes ci-dessus, pas dans ce tableau.
           </p>
           <div className="table-wrap" style={{ marginTop: 16 }}>
             <table className="data-table">
@@ -469,6 +420,119 @@ function Kpi({ label, value, hint }: { label: string; value: number; hint?: stri
       <div className="meta">{label}</div>
       <strong>{value}</strong>
       {hint ? <div className="meta">{hint}</div> : null}
+    </div>
+  );
+}
+
+function TabKpiStrip({
+  tab,
+  data,
+  canPlatform,
+  canBenefits,
+}: {
+  tab: Tab;
+  data: InsightsBundle;
+  canPlatform: boolean;
+  canBenefits: boolean;
+}) {
+  const d = data.benefitDetails;
+  const macro = (kind: keyof InsightsBundle['contentMacro']) => data.contentMacro[kind];
+
+  let title = 'Indicateurs';
+  let body: ReactNode = null;
+
+  if (tab === 'overview') {
+    title = 'Vue d’ensemble — macro';
+    body = (
+      <>
+        <Kpi label="Événements publiés" value={macro('events').published} />
+        <Kpi label="Spots publiés" value={macro('spots').published} />
+        <Kpi label="Outils publiés" value={macro('tools').published} />
+        {canBenefits ? (
+          <>
+            <Kpi label="Modèles privilèges" value={d.catalogTotal} hint="Créés dans le catalogue" />
+            <Kpi label="Modèles associés" value={d.catalogActiveAssociated} hint="Actifs + partenaire / lieu" />
+            <Kpi label="Octrois (total)" value={d.allGrants.granted} hint="Individuels + par rôle" />
+            <Kpi label="Consommés (total)" value={d.allGrants.consumed} />
+          </>
+        ) : null}
+        {canPlatform ? (
+          <>
+            <Kpi label="Le Singulier" value={data.platformCounts.corners} hint="Fiches" />
+            <Kpi label="Le Fragment" value={data.platformCounts.chroniques} hint="Fiches" />
+            <Kpi label="Sondages" value={data.platformCounts.polls} />
+            <Kpi label="Parcours publiés" value={data.platformCounts.walksPublished} />
+          </>
+        ) : null}
+      </>
+    );
+  } else if (tab === 'events') {
+    title = 'Événements — statuts';
+    const m = macro('events');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'spots') {
+    title = 'Spots — statuts';
+    const m = macro('spots');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'tools') {
+    title = 'Outils — statuts';
+    const m = macro('tools');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'benefits' && canBenefits) {
+    title = 'Privilèges — catalogue & octrois';
+    body = (
+      <>
+        <Kpi label="Modèles créés" value={d.catalogTotal} />
+        <Kpi label="Modèles actifs" value={d.catalogActive} />
+        <Kpi label="Actifs associés" value={d.catalogActiveAssociated} hint="Partenaire + contenu lié" />
+        <Kpi label="Octrois individuels" value={d.individual.granted} hint="Tirages / admin manuel" />
+        <Kpi label="Octrois par rôle" value={d.roleEntitlement.granted} hint="Automatiques (member, prime…)" />
+        <Kpi label="Octrois total" value={d.allGrants.granted} />
+        <Kpi label="En cours" value={d.allGrants.active} />
+        <Kpi label="Consommés" value={d.allGrants.consumed} hint="Tous types d’octroi" />
+        <Kpi label="Expirés" value={d.allGrants.expired} />
+      </>
+    );
+  } else if (tab === 'platform' && canPlatform) {
+    title = 'Accueil — volumes';
+    body = (
+      <>
+        <Kpi label="Le Singulier" value={data.platformCounts.corners} />
+        <Kpi label="Le Fragment" value={data.platformCounts.chroniques} />
+        <Kpi label="Sondages" value={data.platformCounts.polls} />
+        <Kpi label="Parcours publiés" value={data.platformCounts.walksPublished} />
+        <Kpi label="Logos partenaires" value={data.platformCounts.logos} />
+      </>
+    );
+  }
+
+  if (!body) return null;
+
+  return (
+    <div className="card" style={{ marginBottom: 16 }}>
+      <h3 style={{ marginTop: 0, marginBottom: 8 }}>{title}</h3>
+      <div className="kpi-grid">{body}</div>
     </div>
   );
 }
