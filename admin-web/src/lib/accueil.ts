@@ -1,4 +1,5 @@
 import { resolveMemberContentSlug } from './content-slugs';
+import { ensurePublicAccueilImageUrl } from './media-upload';
 import { supabase } from './supabase';
 
 export const ACCUEIL_PAGE_SIZE = 20;
@@ -943,8 +944,14 @@ export async function upsertAccueilLogo(
   },
 ): Promise<{ ok: boolean; error?: string }> {
   const name = input.name.trim();
-  const logoUrl = input.logoUrl.trim();
-  if (!name || !logoUrl) return { ok: false, error: 'Nom et image requis.' };
+  const rawLogoUrl = input.logoUrl.trim();
+  if (!name || !rawLogoUrl) return { ok: false, error: 'Nom et image requis.' };
+
+  const uploaded = await ensurePublicAccueilImageUrl(rawLogoUrl);
+  if (uploaded.error && rawLogoUrl.startsWith('data:')) {
+    return { ok: false, error: uploaded.error };
+  }
+  const logoUrl = uploaded.url;
 
   const cc = countryCode.toUpperCase().slice(0, 2);
   const payload: Record<string, unknown> = {

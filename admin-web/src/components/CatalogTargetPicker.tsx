@@ -51,6 +51,12 @@ export function CatalogTargetPicker({
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (value && allowedKinds.includes(value.targetType)) {
+      setKind(value.targetType);
+    }
+  }, [value, allowedKinds]);
+
   const filtered = items.filter((i) => {
     const q = query.trim().toLowerCase();
     if (!q) return true;

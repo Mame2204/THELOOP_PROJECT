@@ -53,10 +53,19 @@ export function partnerMatchesContent(
  * Pas de génération auto depuis avantages / contenus.
  * Cache v3 : plus de filtre `source` (cassait le fetch si colonne absente / PostgREST).
  */
-const LOGOS_CACHE = 'loop_home_partner_logos_v3';
+const LOGOS_CACHE = 'loop_home_partner_logos_v4';
 
 function logosScope(countryCode?: string): string {
   return `home_logos_${(countryCode ?? 'GN').toUpperCase()}`;
+}
+
+function withLogoCacheBuster(logoUrl: string, updatedAt: unknown): string {
+  const base = logoUrl.trim();
+  if (!base || base.startsWith('data:')) return base;
+  const stamp = typeof updatedAt === 'string' ? updatedAt.trim() : '';
+  if (!stamp) return base;
+  const version = encodeURIComponent(stamp.slice(0, 19));
+  return base.includes('?') ? `${base}&v=${version}` : `${base}?v=${version}`;
 }
 
 function mapCuratedRows(data: Array<Record<string, unknown>>): HomePartnerLogo[] {
@@ -66,7 +75,7 @@ function mapCuratedRows(data: Array<Record<string, unknown>>): HomePartnerLogo[]
       id: String(row.id),
       partnerId: String(row.id),
       name: String(row.name),
-      logoUrl: String(row.logo_url),
+      logoUrl: withLogoCacheBuster(String(row.logo_url), row.updated_at),
       websiteUrl: row.website_url ? String(row.website_url) : null,
       sortOrder: Number(row.sort_order ?? 0),
     }))
@@ -87,7 +96,7 @@ async function fetchCuratedLogos(countryCode?: string): Promise<HomePartnerLogo[
     // Ne pas filtrer/sélectionner `source` : colonne optionnelle selon migrations appliquées.
     let query = supabase!
       .from('home_partner_logos')
-      .select('id, name, logo_url, website_url, sort_order, country_code')
+      .select('id, name, logo_url, website_url, sort_order, country_code, updated_at')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
       .limit(40);

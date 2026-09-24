@@ -455,12 +455,7 @@ function TabKpiStrip({
         <Kpi label="Spots publiés" value={macro('spots').published} />
         <Kpi label="Outils publiés" value={macro('tools').published} />
         {canBenefits ? (
-          <>
-            <Kpi label="Modèles privilèges" value={d.catalogTotal} hint="Créés dans le catalogue" />
-            <Kpi label="Modèles associés" value={d.catalogActiveAssociated} hint="Actifs + partenaire / lieu" />
-            <Kpi label="Octrois (total)" value={d.allGrants.granted} hint="Individuels + par rôle" />
-            <Kpi label="Consommés (total)" value={d.allGrants.consumed} />
-          </>
+          <Kpi label="Modèles associés" value={d.catalogActiveAssociated} hint="Actifs + partenaire / lieu" />
         ) : null}
         {canPlatform ? (
           <>

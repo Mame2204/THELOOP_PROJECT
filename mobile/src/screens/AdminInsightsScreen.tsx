@@ -544,10 +544,7 @@ function InsightSectionKpis({
       { label: 'Événements publiés', value: String(ev.published) },
       { label: 'Spots publiés', value: String(sp.published), accent: '#06b6d4' },
       { label: 'Outils publiés', value: String(tl.published), accent: '#10b981' },
-      { label: 'Modèles privilèges', value: String(d.catalogTotal), accent: '#8b5cf6' },
       { label: 'Modèles associés', value: String(d.catalogActiveAssociated), accent: '#8b5cf6' },
-      { label: 'Octrois (total)', value: String(d.allGrants.granted) },
-      { label: 'Consommés', value: String(d.allGrants.consumed) },
     );
     if (showAccueil) {
       cards.push(

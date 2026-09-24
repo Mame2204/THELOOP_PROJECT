@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
+import { normalizeWalkStepInputs, resolveCatalogTargetRef } from '../lib/content-slugs';
 import { CatalogTargetPicker, type CatalogTargetSelection } from '../components/CatalogTargetPicker';
 import { ImageOrUrlField } from '../components/ImageOrUrlField';
 import { ListPager } from '../components/ListPager';
@@ -190,6 +191,7 @@ export function AccueilPage() {
     setNewWalkSummary(w.summary ?? '');
     setNewWalkCover(w.coverImageUrl ?? '');
     setWalkSteps(w.steps);
+    void normalizeWalkStepInputs(countryCode, w.steps).then(setWalkSteps);
     setWalkFeatured(w.isFeaturedWeek);
     setTab('walks');
   }
@@ -204,16 +206,24 @@ export function AccueilPage() {
     setNewCornerQuote(c.coreQuote ?? '');
     setNewCornerMedia(c.mediaUrl ?? '');
     setNewCornerActivate(c.isActive);
-    setCornerRelated(
-      c.relatedTargetType && c.relatedTargetId
-        ? {
-            targetType: c.relatedTargetType,
-            targetId: c.relatedTargetId,
-            targetSlug: c.relatedTargetSlug ?? c.relatedTargetId,
-            title: c.locationLabel ?? c.title,
-          }
-        : null,
-    );
+    setCornerRelated(null);
+    if (c.relatedTargetType && (c.relatedTargetId || c.relatedTargetSlug)) {
+      void resolveCatalogTargetRef(
+        countryCode,
+        c.relatedTargetType,
+        c.relatedTargetId,
+        c.relatedTargetSlug,
+      ).then((resolved) => {
+        if (resolved) {
+          setCornerRelated({
+            targetType: resolved.targetType,
+            targetId: resolved.targetId,
+            targetSlug: resolved.targetSlug,
+            title: resolved.title,
+          });
+        }
+      });
+    }
     setTab('corner');
   }
 
@@ -227,16 +237,19 @@ export function AccueilPage() {
     setChroniqueContactPhone(c.contactPhone ?? '');
     setChroniqueContactEmail(c.contactEmail ?? '');
     setNewChroniqueActivate(c.isActive);
-    setChroniqueTarget(
-      c.targetType && c.targetId
-        ? {
-            targetType: c.targetType,
-            targetId: c.targetId,
-            targetSlug: c.targetSlug ?? c.targetId,
-            title: c.locationLabel ?? c.title,
-          }
-        : null,
-    );
+    setChroniqueTarget(null);
+    if (c.targetType && (c.targetId || c.targetSlug)) {
+      void resolveCatalogTargetRef(countryCode, c.targetType, c.targetId, c.targetSlug).then((resolved) => {
+        if (resolved) {
+          setChroniqueTarget({
+            targetType: resolved.targetType,
+            targetId: resolved.targetId,
+            targetSlug: resolved.targetSlug,
+            title: resolved.title,
+          });
+        }
+      });
+    }
     setTab('chronique');
   }
 
@@ -1191,7 +1204,12 @@ export function AccueilPage() {
             <label>Site web (optionnel)</label>
             <input value={newLogoWebsite} onChange={(e) => setNewLogoWebsite(e.target.value)} placeholder="https://…" />
           </div>
-          <ImageOrUrlField label="Logo" value={newLogoUrl} onChange={setNewLogoUrl} />
+          <ImageOrUrlField
+            label="Logo"
+            value={newLogoUrl}
+            onChange={setNewLogoUrl}
+            hint="Les fichiers locaux sont envoyés sur le stockage public pour l’app mobile."
+          />
           <label className="check-inline" style={{ display: 'flex', marginTop: 8 }}>
             <input type="checkbox" checked={newLogoActive} onChange={(e) => setNewLogoActive(e.target.checked)} />
             Actif sur l’Accueil
