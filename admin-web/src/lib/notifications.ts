@@ -1,4 +1,5 @@
 import { deliverPushToUsers } from './api';
+import { resolveIndividualUserIds } from './notification-individual-target';
 import { supabase } from './supabase';
 
 export type PushCampaignStatus = 'draft' | 'scheduled' | 'sent' | 'cancelled' | 'failed';
@@ -25,7 +26,7 @@ export const AUDIENCE_LABELS: Record<NotificationAudience, string> = {
   admin: 'Administrateurs',
   favorites: 'Favoris par catégorie',
   birthday: 'Anniversaires du mois',
-  individual: 'Numéros ciblés',
+  individual: 'E-mails ciblés',
 };
 
 const CAMPAIGN_STATUS_LABELS: Record<string, string> = {
@@ -286,14 +287,7 @@ async function distributePushCampaignNow(input: {
   const favTools = input.favoriteToolCategories ?? [];
 
   if (audience === 'individual') {
-    const phone = input.targetPhone!.trim();
-    const { data: users } = await supabase
-      .from('users')
-      .select('id')
-      .eq('country_code', countryCode)
-      .or(`phone_number.eq.${phone},phone_number.ilike.%${phone.slice(-9)}`)
-      .limit(20);
-    const userIds = (users ?? []).map((u) => String(u.id));
+    const userIds = await resolveIndividualUserIds(supabase, input.targetPhone!.trim(), countryCode);
     return distributeInboxAndPush({ userIds, title, message, audience, campaignId: id });
   }
   if (audience === 'favorites') {
@@ -340,7 +334,7 @@ export async function updatePushCampaign(
   const message = input.message.trim();
   if (!title || !message) return { ok: false, error: 'Titre et message requis.' };
   if (input.audience === 'individual' && !input.targetPhone?.trim()) {
-    return { ok: false, error: 'Téléphone requis pour un envoi individuel.' };
+    return { ok: false, error: 'E-mail requis pour un envoi individuel (séparateur ;).' };
   }
   if (
     input.audience === 'favorites' &&
@@ -462,7 +456,7 @@ export async function sendPushCampaign(input: {
   const message = input.message.trim();
   if (!title || !message) return { ok: false, error: 'Titre et message requis.' };
   if (input.audience === 'individual' && !input.targetPhone?.trim()) {
-    return { ok: false, error: 'Téléphone requis pour un envoi individuel.' };
+    return { ok: false, error: 'E-mail requis pour un envoi individuel (séparateur ;).' };
   }
   if (
     input.audience === 'favorites' &&

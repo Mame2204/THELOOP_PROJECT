@@ -8,6 +8,11 @@ import { loadUserFavorites } from '@/lib/favorites-store';
 import type { HomeLocation } from '@/lib/demo-data';
 import { isToolLocation } from '@/lib/location-kind-utils';
 import { listRegistryUsers, type RegistryUser } from '@/lib/user-registry-store';
+import {
+  isEmailTarget,
+  parseIndividualTargets,
+  resolveIndividualUserIds,
+} from '@/lib/notification-individual-target';
 import { normalizePhone } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { undefinedIfNull } from '@/lib/supabase-types';
@@ -1323,6 +1328,39 @@ export async function distributeNotification(input: {
   const message = input.message.trim();
   const campaignId = resolveCampaignIdForInsert(input.campaignId);
 
+  if (
+    input.audience === 'individual' &&
+    isSupabaseConfigured() &&
+    supabase &&
+    (await canUseRemoteNotifications())
+  ) {
+    await ensureNotificationAuthSession();
+    try {
+      const userIds = await resolveIndividualUserIds(
+        supabase,
+        input.targetPhone ?? '',
+        input.countryCode ?? 'GN',
+      );
+      if (userIds.length) {
+        const sentAt = new Date().toISOString();
+        const rowsToInsert: NotificationInsertRow[] = userIds.map((userId) => ({
+          user_id: userId,
+          recipient_phone: null,
+          title,
+          message,
+          audience: input.audience,
+          sent_at: sentAt,
+          ...(campaignId ? { campaign_id: campaignId } : {}),
+        }));
+        await insertNotificationsRemote(rowsToInsert);
+        await deliverPushToAdminUserIds(userIds, title, message, input.audience);
+        return userIds.length;
+      }
+    } catch (err) {
+      console.warn('[Notifications] individual remote:', err instanceof Error ? err.message : err);
+    }
+  }
+
   // Diffusion serveur (tous types de campagnes rôle) — pas de limite registre client.
   const serverAudiences: NotificationAudience[] = [
     'all',
@@ -1380,11 +1418,18 @@ export async function distributeNotification(input: {
   const guestPhones: string[] = [];
 
   if (input.audience === 'individual') {
-    const phones = parsePhones(input.targetPhone);
-    recipients = users.filter(
-      (u) => u.phoneNumber && phones.some((p) => phonesMatch(u.phoneNumber, p)) && inCountry(u) && inCity(u),
-    );
-    // Pas d’envoi aux sans-compte en ciblage individuel manuel (uniquement comptes connus)
+    const targets = parseIndividualTargets(input.targetPhone);
+    const emails = new Set(targets.filter(isEmailTarget).map((t) => t.toLowerCase()));
+    const phones = targets
+      .filter((t) => !isEmailTarget(t))
+      .map((p) => normalizePhone(p))
+      .filter(Boolean);
+    recipients = users.filter((u) => {
+      if (!inCountry(u) || !inCity(u)) return false;
+      if (u.email && emails.has(u.email.trim().toLowerCase())) return true;
+      if (u.phoneNumber && phones.some((p) => phonesMatch(u.phoneNumber, p))) return true;
+      return false;
+    });
   } else if (input.audience === 'guests_phone') {
     const phones = parsePhones(input.targetPhone);
     if (phones.length) {

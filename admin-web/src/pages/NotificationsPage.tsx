@@ -132,7 +132,7 @@ export function NotificationsPage() {
       return;
     }
     if (audience === 'individual' && !targetPhone.trim()) {
-      setMsg('Numéro(s) requis pour un envoi individuel.');
+      setMsg('E-mail(s) requis pour un envoi individuel (séparateur ;).');
       return;
     }
     if (
@@ -305,13 +305,17 @@ export function NotificationsPage() {
 
           {audience === 'individual' ? (
             <div className="field">
-              <label>Numéros (séparateur ;)</label>
+              <label>E-mails (séparateur ;)</label>
               <input
+                type="text"
                 value={targetPhone}
                 onChange={(e) => setTargetPhone(e.target.value)}
-                placeholder="+22462000001; +22462000002"
+                placeholder="membre@theloop.gn; prime@theloop.gn"
+                autoComplete="off"
               />
-              <p className="meta">Un ou plusieurs numéros — uniquement des comptes existants.</p>
+              <p className="meta">
+                Un ou plusieurs e-mails de comptes actifs (pays admin). Les numéros restent acceptés en secours.
+              </p>
             </div>
           ) : null}
 
