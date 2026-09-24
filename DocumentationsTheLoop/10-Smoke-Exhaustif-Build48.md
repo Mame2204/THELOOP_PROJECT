@@ -320,10 +320,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(24 sept. 2026 · build 48 · e-mail invite + MDP · connecté)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
-- [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
-- [ ] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(retest post-deploy auth-callback)*
-- [ ] **🤖** Idem
+- [x] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(24 sept. 2026 · testeur **PASS** · fix auth-callback)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS**)*
+- [x] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(24 sept. 2026 · testeur **PASS**)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS**)*
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** CGU / Politique confidentialité (modales) *(23 sept. 2026 · build 48)*
@@ -338,8 +338,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android)*
-- [ ] **📱** `PartnerLoginScreen` — connexion jeton SPOT *(deep link / nav manuelle)*
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerLoginScreen` — connexion jeton SPOT *(24 sept. 2026 · **N/A produit** — entrée **retirée** · connexion partenaire = **e-mail / MDP** uniquement)*
+- [x] **🤖** Idem *(24 sept. 2026 · **N/A**)*
 
 ### Bloqué sans connexion
 - [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
@@ -404,8 +404,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · en cours + en attente · membre achat MTN)*
 - [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · **📱🤖** OM / MTN · PASS + notif cloche · cron ~5 min · retour app Android PR #9)*
 - [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(23 sept. 2026 · build 48 · **PASS** en file + **notif cloche** · sync différée cron · abandon 1ʳᵉ tentative = ligne sans débit)*
-- [ ] **📱** `MyBenefitsScreen` — Mes privilèges *(si entrée UI / notif)*
-- [ ] **🤖** Idem
+- [x] **📱** `MyBenefitsScreen` — Mes privilèges *(24 sept. 2026 · **N/A** — pas d’écran dédié · privilèges sur **fiche détail** · **PASS 📱🤖** cf. A3)*
+- [x] **🤖** Idem *(24 sept. 2026 · **N/A** · privilèges fiches OK)*
 
 ### Interactions
 - [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 48)*
@@ -459,8 +459,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Notifs cloche Prime — **en attente validation** + **privilège validé** *(23 sept. 2026 · build 48 · après « Utiliser » puis validation partenaire · **📱 iOS + 🤖 Android**)*
 - [x] **📱** `MyBenefitsScreen` — liste privilèges actifs *(20 sept. 2026 · build 48 · **BLOCKED / N/A** — écran « Mes privilèges » sans entrée UI visible dans l’app · privilèges consultés sur **fiche détail**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **N/A** — pas d’entrée menu · cohérent build 48)*
-- [ ] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(23 sept. 2026 · **FAIL** build 48 · SQL `20260935`+`20260936` **OK** · **retest build 49+** + PR #13 mobile)*
-- [ ] **🤖** Idem
+- [ ] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(23 sept. 2026 · **FAIL mobile** build 48 · **💻 web PASS** testeur 24 sept. · retest **📱🤖 build 49+**)*
+- [ ] **🤖** Idem *(24 sept. · **non testé** device · web OK)*
 
 ---
 
@@ -494,19 +494,19 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Annuler soumission pending *(20 sept. 2026 · build 48 · A4-U14 PASS partiel · user incertain sur effet visible)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · A4-U14 PASS)*
 - [x] **📱** Événement · spot existant (liste publiés) *(20 sept. 2026 · build 48 · A4-U15 PASS · badge **Publié** dans Mes contenus · pas d’onglet séparé)*
-- [ ] **🤖** Idem *(⏸ **N/A** — rien en **Publié** tant que modération admin · normal)*
-- [x] **📱** Voir rejet + motif · resoumettre *(20 sept. 2026 · build 48 · A4-U16 PASS · **motif dans la liste** pas dans l’écran détail · resoumission OK)*
-- [ ] **🤖** Idem *(⏸ reporté avec A4-4 complet)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS** · badge **Publié** / Mes contenus OK)*
+- [x] **📱** Voir rejet + motif · resoumettre *(20 sept. 2026 · build 48 · A4-U16 PASS historique · **retest 24 sept. : refus + motif KO** → build 49+)*
+- [ ] **🤖** Idem *(24 sept. · **aligné 📱** · refus/motif **KO** · build 49+)*
 - [x] **📱** Intervenant sans titre (régression speakers) *(20 sept. 2026 · build 48 · A4-U17 PASS)*
-- [ ] **🤖** Idem *(⏸ reporté)*
+- [x] **🤖** Idem *(24 sept. 2026 · testeur **PASS**)*
 
 ### Retraits
-- [x] **📱** Demander retrait contenu publié *(20 sept. 2026 · build 48 · A4-U18 PASS)*
-- [ ] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · reprendre après modération admin)*
+- [x] **📱** Demander retrait contenu publié *(20 sept. 2026 · build 48 · A4-U18 PASS historique · **retest 24 sept. : KO** · boucle motif / modération → **build 49+**)*
+- [ ] **🤖** Idem *(24 sept. · **KO** · build 49+)*
 - [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
-- [ ] **🤖** Idem *(⏸ idem A4-5)*
-- [ ] **📱** Notif approve / refuse retrait
-- [ ] **🤖** Idem
+- [ ] **🤖** Idem *(24 sept. · **build 49+** avec flux retrait)*
+- [ ] **📱** Notif approve / refuse retrait *(24 sept. · **build 49+** · boucle motif)*
+- [ ] **🤖** Idem *(24 sept. · **build 49+**)*
 
 ### Validation privilèges
 - [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
@@ -540,12 +540,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Module | Écran | 📱 | 🤖 |
 |--------|-------|----|----|
-| Insights | `AdminInsightsScreen` | [x] FAIL partiel | [ ] |
-| Accueil | `AdminAccueilScreen` | [x] PASS | [ ] |
+| Insights | `AdminInsightsScreen` | [x] FAIL partiel | [x] *(24 sept. · **PASS** navigation)* |
+| Accueil | `AdminAccueilScreen` | [x] PASS | [x] *(24 sept. · **PASS**)* |
 | Onglets & Espace Pro | `AdminRubriqueScreen` | [x] PASS | [ ] |
-| Hub THE LOOP | `AdminLoopScreen` | [x] PASS *(sauf création hub · retest perf 📱49+)* | [ ] |
-| Contenu | `AdminContentScreen` | [x] PASS | [ ] |
-| Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [ ] |
+| Hub THE LOOP | `AdminLoopScreen` | [x] PASS *(sauf création hub · retest perf 📱49+)* | [x] *(24 sept. · **PASS**)* |
+| Contenu | `AdminContentScreen` | [x] PASS | [x] *(24 sept. · **PASS**)* |
+| Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [x] *(24 sept. · **PASS** navigation)* |
 | Demandes | `AdminDemandesScreen` | [x] FAIL partiel | [ ] |
 | Privilèges THE LOOP | `AdminPrimeBenefitsScreen` | [x] PASS | [ ] |
 | Privilèges TEAMS | `AdminStaffBenefitsScreen` | [x] FAIL partiel | [ ] |
@@ -559,8 +559,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem
 - [x] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser *(20 sept. 2026 · build 48 · **PACK A5-3 OK** · U18 approuver · U19 refuser+motif · U20 retrait approuvé · U21 retrait refusé)*
 - [ ] **🤖** Idem *(24 sept. 2026 · Android · **écran / liste OK** · **approuver · refuser soumission KO** → **build 49+** · aligné 💻 modération reportée)*
-- [ ] **📱** `AdminSuggestionsScreen` — idées communauté
-- [ ] **🤖** Idem
+- [x] **📱** `AdminSuggestionsScreen` — idées communauté *(24 sept. 2026 · testeur **PASS**)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS**)*
 
 ### Hub THE LOOP (stack)
 - [x] **📱** `AdminLoopContentScreen` — **Mon contenu** THE LOOP (liste complète) *(23 sept. 2026 · build 48 · **PASS**)*
@@ -575,8 +575,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `AdminLoopStatsScreen` — performances *(23 sept. 2026 · build 48 · **PASS** · retest **build 49+** : score clics×1+favoris×5+note×10 · pagination 20)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS** · idem retest build 49+)*
 - [x] **💻** Performances web `/loop?tab=stats` *(23 sept. 2026 soir · **PASS** · Tous/Events/Spots/Outils · tri métrique · score engagement · pagination 20 · notes publiques off = 0 avis)*
-- [ ] **📱** `PartnerSubmissionScreen` — **création** event/spot/outil depuis hub THE LOOP *(non testé · 23 sept.)*
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerSubmissionScreen` — **création** event/spot/outil depuis hub THE LOOP *(24 sept. 2026 · testeur **PASS**)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS**)*
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR **depuis compte admin** (hub THE LOOP) *(23 sept. 2026 · **PASS**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 
@@ -830,11 +830,11 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** Lien e-mail → page **auth-callback** (choix app / web) *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · même UX que iOS)*
-- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app**
-- [ ] **🤖** Idem *(retest post-deploy auth-callback)*
+- [x] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(24 sept. 2026 · testeur **PASS**)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS**)*
 - [x] **💻** Invitation admin-web → activation · bon rôle *(23 sept. 2026 · **PASS** mail + **PASS** activate in-app · rôle membre · prénom défaut selon rôle après migration `20260939`)*
-- [ ] **📱** Partenaire invité → connexion → Espace Pro
-- [ ] **🤖** Idem
+- [x] **📱** Partenaire invité → connexion → Espace Pro *(24 sept. 2026 · testeur **PASS** · filleul / invite partenaire)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS**)*
 
 ## C3 — Contact & support
 
@@ -883,8 +883,8 @@ Liens Param. → pages satellites :
 ## D3 — Onglets masqués (AdminRubrique)
 
 - [ ] **💻** Désactiver onglet Agenda → app masque tab
-- [ ] **📱** Membre ne voit plus Agenda
-- [ ] **🤖** Idem
+- [x] **📱** Membre ne voit plus Agenda *(24 sept. 2026 · testeur **PASS** · onglet masqué admin)*
+- [x] **🤖** Idem *(24 sept. 2026 · **PASS** · parité iPhone)*
 - [ ] **💻** Réactiver → tab revient
 
 ---
@@ -1014,6 +1014,12 @@ Parité Android liste A (24 sept. 2026 · testeur · build 48) :
   - **PASS 🤖** : activate invité · Singulier · Fragment · parcours · PartnerPublic · suggestion · code établissement · login/déconnexion
   - **Déjà PASS 🤖** : Pro ? Rejoindre / PartnerApply (23 sept.)
   - **⏸ build 49+ 🤖** : LoopX · Loop Prime · contenu prime · modération admin **valider/refuser**
+Session testeur (24 sept. 2026 · suite) :
+  - **PASS 📱🤖** : recovery **set_password** + « Ouvrir l’application » · **N/A** jeton SPOT · privilèges = **fiches** (pas écran Mes privilèges)
+  - **PASS 🤖** : sidebar admin Insights · Accueil · Hub LOOP · Contenu · Users · suggestions · création hub THE LOOP · onglet Agenda masqué · partenaire invité
+  - **PASS 🤖** : Mes contenus **Publié** · intervenant sans titre
+  - **💻 PASS / 📱⏸** : octroi individuel (web OK · mobile build 49+)
+  - **KO build 49+** : refus soumission + motif · demande retrait (boucle motif)
 Auth MDP (23 sept. 2026 · build 48) :
   - Login · **signup (gate ON)** · **MDP profil** — **PASS 📱🤖**
   - **Oubli MDP** : e-mail OK · lien → **page auth-callback 📱🤖** (normal · pas d’auto-app) · **CGU / Politique 📱🤖 PASS**
