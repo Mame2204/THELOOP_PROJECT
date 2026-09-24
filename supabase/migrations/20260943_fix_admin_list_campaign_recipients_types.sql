@@ -1,4 +1,4 @@
--- Liste des destinataires d'une campagne push (contourne RLS user_notifications pour les admins).
+-- Fix : « structure of query does not match function result type » (casts explicites TEXT / TIMESTAMPTZ).
 
 CREATE OR REPLACE FUNCTION public.admin_list_campaign_recipients(
   p_campaign_id UUID,
@@ -59,6 +59,3 @@ $$;
 
 REVOKE ALL ON FUNCTION public.admin_list_campaign_recipients(UUID, INT, INT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_list_campaign_recipients(UUID, INT, INT) TO authenticated;
-
-COMMENT ON FUNCTION public.admin_list_campaign_recipients IS
-  'Console admin : destinataires inbox d''une campagne admin_push_campaigns (pagination).';
