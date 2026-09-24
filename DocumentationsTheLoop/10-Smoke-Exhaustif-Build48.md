@@ -46,8 +46,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~245 / 378** cases cochées ≈ **65 %** *(24 sept. soir · testeur web Insights/Accueil/Users/Teams/Compta — PR #31 deploy)* |
-| **Prochain test** | **💻 web** : onglet **PASS** (octroi manuel) · Accueil (logos · pickers) · **📱 build 49+** : **octroi individuel → validation partenaire** (FAIL connu build 48) |
+| **Avancement smoke** | **~270 / 378** cases cochées ≈ **71 %** *(24 sept. · tour admin-web quasi complet · standalone CRUD en cours)* |
+| **Prochain test** | **📱 build 49+** : octroi individuel → validation partenaire · retest Accueil mobile (logos / slider) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -242,8 +242,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260935_individual_grant_redemption_materialize.sql` — octroi individuel + « Utiliser » *(23 sept. 2026 · OK · **retest device requis**)*
 - [x] `20260936_partner_validation_partner_match.sql` — validation partenaire (rapprochement code / établissement) *(23 sept. 2026 · **OK Supabase** · retest device après **build mobile 49+**)*
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
-- [ ] `20260940_admin_benefit_grants_analytics_rpc.sql` — RPC octrois Insights *(à appliquer Supabase prod)*
-- [ ] `20260941_admin_read_all_benefit_grants.sql` — admin lit tous les octrois (KPI Insights sans RPC) *(à appliquer Supabase prod)*
+- [x] `20260940_admin_benefit_grants_analytics_rpc.sql` — RPC octrois Insights *(24 sept. 2026 · **OK Supabase prod** · testeur)*
+- [x] `20260941_admin_read_all_benefit_grants.sql` — admin lit tous les octrois *(24 sept. 2026 · **OK Supabase prod** · KPI Insights Privilèges PASS)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -622,8 +622,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | Route | Page | Chargement | Actions clés | 🤖✓ |
 |-------|------|------------|--------------|-----|
 | `/insights` | Insights | [x] | **PASS 24 sept.** (testeur) · incl. onglet **Privilèges** après reset tables | [x] |
-| `/accueil` | Accueil | [x] | **PASS partiel** : vue d’ensemble · sondage · à la une · **retest PR #31** : logos (re-save) · pickers édition parcours/Singulier/Fragment | [x] |
-| `/onglets` | Onglets | [ ] | Visibilité tabs app | [x] |
+| `/accueil` | Accueil | [x] | **PASS 24 sept.** (testeur · Accueil web complet post PR #31) | [x] |
+| `/onglets` | Onglets | [x] | **PASS 24 sept.** (testeur) | [x] |
 | `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* · onglets **Contenu / Privilèges / À la une / Performances** — retest si besoin post-deploy Insights | [x] |
 | `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
 | `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
@@ -634,17 +634,17 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/privileges` | Privilèges | [x] | **PASS 24 sept.** (testeur · module Privilèges web) | [x] |
 | `/teams` | TEAMS | [x] | **PASS 24 sept. soir** (testeur) | [x] |
 | `/tirage` | Tirage | [x] | **PASS 24 sept.** (testeur · tirage web) | [x] |
-| `/pass` | PASS | [ ] | **En cours testeur** · prix · octroi manuel | [x] |
-| `/payments` | Paiements | [ ] | Liste · Resync | [x] |
-| `/compta` | Compta | [x] | **PASS 24 sept. soir** (testeur · export déjà OK 23 sept.) | [x] |
+| `/pass` | PASS | [x] | **PASS 24 sept.** · octroi héritage gratuit limité · retrait → membre | [x] |
+| `/payments` | Paiements | [x] | **PASS 24 sept.** · liste transactions | [x] |
+| `/compta` | Compta | [x] | **PASS 24 sept.** · export CSV · revenus · paniers · pagination | [x] |
 | `/notifications` | Notifications | [ ] | Voir B5 | [x] |
 | `/automation` | Automatisations | [ ] | Jobs · exécuter | [x] |
 | `/milestones` | Paliers | [ ] | Éditer · archiver | [x] |
 | `/etoiles` | Étoiles | [ ] | Spots / outils / parcours | [x] |
 | `/horaires` | Horaires | [ ] | Presets ouverture | [x] |
 | `/parametres` | Paramètres | [ ] | Voir B3 | [x] |
-| `/types-privileges` | Types privilèges | [ ] | CRUD types | [x] |
-| `/privilege-standalone` | Standalone | [ ] | Avantage seul | [x] |
+| `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
+| `/privilege-standalone` | Standalone | [x] | **PASS création** · **CRUD texte / archive / suppr.** deploy en cours | [x] |
 
 ## B2 — Demandes (`/demandes`)
 
@@ -702,15 +702,15 @@ Liens Param. → pages satellites :
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
 ### PASS
-- [ ] **💻** Prix Guinée · enregistrer
-- [ ] **💻** Octroi manuel PASS
-- [ ] **💻** Messages / modèles notification
+- [x] **💻** Octroi manuel PASS *(24 sept. 2026 · héritage gratuit limité · utilisateur passe Prime puis retrait OK)*
+- [ ] **💻** Prix Guinée · enregistrer *(non retesté ce tour)*
+- [ ] **💻** Messages / modèles notification *(non retesté)*
 
 ### Paiements & Compta
 - [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
 - [x] **💻** **Resync** + libellé contextuel · colonne **Vérifié Djomy** · onglet **Sans débit** · pagination 20/ligne *(23 sept. 2026 · **test super admin OK** · abandon « Sans débit » + hint Resync)*
 - [x] **💻** Export CSV *(23 sept. 2026 · super admin · export marchés / compta **OK**)*
-- [ ] **💻** Analytics revenus (Compta)
+- [x] **💻** Analytics revenus (Compta) *(24 sept. 2026 · testeur **PASS** · montants · rapports · paniers moyens · pagination)*
 
 ## B5 — Notifications push (admin-web)
 
@@ -733,7 +733,7 @@ Liens Param. → pages satellites :
 - [ ] **💻** Archiver · republier (cycle de vie catalogue)
 - [ ] **💻** Transfert propriétaire THE LOOP ↔ partenaire
 - [x] **💻** Accueil — **vue d’ensemble** · **sondage** · **à la une** *(24 sept. soir · testeur **PASS**)*
-- [ ] **💻** Accueil — **parcours** · **Singulier** · **Fragment** · **logos** *(24 sept. · édition contenu lié + image logo : **retest après deploy PR #31** · logos mobile = **build 49+**)*
+- [x] **💻** Accueil — formulaires complets *(24 sept. · testeur **PASS web**)*
 - [x] **💻** Loop hub — onglets contenu / privilèges / à la une / performances *(23 sept. PASS · 24 sept. deploy Insights sans régression attendue)*
 
 ## B6b — Insights admin-web (détail onglets)
@@ -745,7 +745,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Onglet **Spots** — idem
 - [x] **💻** Onglet **Outils** — idem
 - [x] **💻** Onglet **Accueil** (super-admin) — corners · chroniques · sondages · parcours (métriques clics / favoris etc.)
-- [ ] **💻** Onglet **Privilèges** — KPI octrois / consommés *(24 sept. · **FAIL** KPI à 0 · fix RLS + analytics · migrations `20260940`+`20260941` · retest après deploy)*
+- [x] **💻** Onglet **Privilèges** — KPI octrois / consommés *(24 sept. · **PASS** après migrations `20260940`+`20260941`)*
 
 ## B7 — Privilèges · TEAMS · Tirage
 
