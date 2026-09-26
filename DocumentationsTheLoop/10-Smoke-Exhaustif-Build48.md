@@ -66,9 +66,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | ID | Action | Prérequis |
 |----|--------|-----------|
-| **W-6** | `/etoiles` — modifier poids clics / favoris / notes → **Enregistrer** | Migration Supabase **`20260944_spot_star_settings_rls_is_admin.sql`** en prod |
-| **W-11b** | `/pass` → Messages — **Modifier** (ou clic ligne) → **Enregistrer** | Deploy admin-web PR #44 + **hard refresh** |
-| **W-19** | `/pass` → Ops catalogue — **activer / désactiver / archiver** un forfait | — |
+| ~~**W-6**~~ | ~~Étoiles~~ — **PASS 26 sept.** (migration `20260944` + poids OK) | — |
+| ~~**W-11b**~~ | ~~Messages Modifier~~ — **PASS 26 sept.** | — |
+| **W-19b** | `/pass` → Catalogue — **Désactiver** forfait *(retest post-fix RPC + layout)* | Deploy admin-web |
+| ~~**W-19**~~ | Activer / archiver forfait · **Retirer** octroi — **PASS 26 sept.** | — |
 | **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
 | **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
 | **B9-1** | Compte **admin délégué** — ouvrir une URL **sans** permission → refus clair | Overrides Param. → Permissions |
@@ -683,7 +684,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/notifications` | Notifications | [x] | **PASS 24 sept.** · envoi immédiat · rôles · favoris · anniversaire · e-mail ciblé (PR #36) | [x] |
 | `/automation` | Automatisations | [x] | **PASS 26 sept.** · W-4 | [x] |
 | `/milestones` | Paliers | [x] | **PASS 26 sept.** · W-5 | [x] |
-| `/etoiles` | Étoiles | [ ] | **FAIL 26 sept.** · W-6 · RLS `20260944` | [x] |
+| `/etoiles` | Étoiles | [x] | **PASS 26 sept.** · W-6 · `20260944` + poids | [x] |
 | `/horaires` | Horaires | [x] | **PASS 26 sept.** · W-7 | [x] |
 | `/parametres` | Paramètres | [x] | **PASS 24 sept.** · B3 Gates · Pays · Catég. · Légal · Plus · Permissions (par admin) | [x] |
 | `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
@@ -734,7 +735,7 @@ Liens Param. → pages satellites :
 - [x] **💻** `/notifications` accessible depuis Param. *(24 sept. 2026 · testeur **PASS** · campagnes immédiates)*
 - [x] **💻** `/automation` accessible *(26 sept. 2026 · **PASS** · W-4 · liste jobs · exécuter sans erreur)*
 - [x] **💻** `/milestones` accessible *(26 sept. · **PASS** · W-5 · créer palier)*
-- [ ] **💻** `/etoiles` accessible *(26 sept. · **FAIL** · W-6 · poids clics/favoris/notes · **Enregistrer** KO · fix RLS `20260944` + retest après deploy Supabase)*
+- [x] **💻** `/etoiles` accessible *(26 sept. · **PASS** · W-6 · migration `20260944` · poids enregistrés)*
 - [x] **💻** `/horaires` accessible *(26 sept. · **PASS** · W-7 · presets · enregistrer)*
 
 ## B4 — Users · PASS · Paiements
@@ -750,9 +751,10 @@ Liens Param. → pages satellites :
 - [x] **💻** Prix Guinée · enregistrer *(26 sept. 2026 · testeur **PASS** · W-10 · onglet Prix)*
 - [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · testeur **PASS**)*
 - [x] **💻** Messages — **archiver** modèle *(26 sept. · testeur **PASS**)*
-- [ ] **💻** Messages — **modifier** un modèle (bouton **Modifier** ou clic ligne → formulaire → **Enregistrer**) *(26 sept. · **FAIL** UI · fix PR #44 · **retest post-deploy**)*
+- [x] **💻** Messages — **modifier** un modèle *(26 sept. · **PASS** · W-11b)*
 - [x] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
-- [ ] **💻** Catalogue PASS — activer / désactiver / archiver forfait *(26 sept. · **non testé** ce tour)*
+- [x] **💻** Catalogue PASS — activer / **archiver** forfait · **Retirer** octroi *(26 sept. · **PASS**)*
+- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** · + chevauchement sticky formulaire · fix RPC `admin_set_app_setting` + CSS · **retest W-19b**)*
 - [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement)*
 
 ### Paiements & Compta
@@ -812,7 +814,7 @@ Liens Param. → pages satellites :
 
 - [x] **💻** Automation — liste jobs · exécuter manuellement *(26 sept. 2026 · **PASS** · W-4)*
 - [x] **💻** Paliers — créer · éditer · archiver · voir Archives *(26 sept. · **PASS** · W-5 · créer OK)*
-- [ ] **💻** Étoiles — poids clics / favoris / notes *(26 sept. · **FAIL** · W-6 · migration `20260944` · retest post-prod)*
+- [x] **💻** Étoiles — poids clics / favoris / notes *(26 sept. · **PASS** · W-6)*
 - [x] **💻** Horaires — presets · assignation *(26 sept. · **PASS** · W-7)*
 
 ## B9 — Admin délégué (permissions réduites)
@@ -1060,7 +1062,9 @@ Admin-web (26 sept. 2026 · testeur · session W) :
 Admin-web (26 sept. 2026 · testeur · suite) :
   - **PASS** octroi manuel PASS — héritage + **retrait** (confirmé testeur · ne pas refaire)
   - **PASS** Users · Paiements · Compta · Privilèges · TEAMS · Tirage — déjà couverts 24 sept. (ne pas refaire)
-  - **Paramètres** : déjà PASS 24–26 sept. (pas un bloc « à parcourir » — seul **W-6 Étoiles** reste)
+  - **Paramètres** : déjà PASS 24–26 sept.
+  - **PASS** W-6 Étoiles · W-11b Messages modifier · archiver forfait · retirer octroi
+  - **FAIL** catalogue **Désactiver** + tableaux octroi sous formulaire création PASS (fix en cours)
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
