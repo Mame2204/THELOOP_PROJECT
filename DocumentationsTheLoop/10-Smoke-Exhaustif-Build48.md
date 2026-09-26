@@ -96,9 +96,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Plateforme | Coché | Total | % | Commentaire |
 |------------|------:|------:|---:|-------------|
 | **💻 Web** | **74** | **109** | **68 %** | Lignes `💻` + colonne test inventaire routes (24 pages). |
-| **📱 iOS** | **110** | **181** | **61 %** | Lignes `📱` + lignes `📱🤖` + colonne 📱 tableaux Phase 1 / C1 (18). |
-| **🤖 Android** | **87** | **152** | **57 %** | Lignes `🤖` + lignes `📱🤖` + colonne 🤖 tableaux (18) — **retard parité** vs iOS. |
-| **Global (1 ligne = 1 case)** | **263** | **388** | **68 %** | Une case cochée une seule fois, toutes plateformes confondues. |
+| **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
+| **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
+| **🤖 Android** | **~94** | **~140** | **~67 %** | Lignes `- [ ]` contenant `🤖` — **~4 pts** derrière iOS. |
+| **Global (1 ligne = 1 case)** | **~272** | **388** | **~70 %** | Web bouclé · gros reste = **mobile** + **build 49+**. |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
@@ -1072,7 +1073,7 @@ Admin-web (26 sept. 2026 · deploy #45) :
 Admin-web (26 sept. 2026 · testeur · B9 + B5) :
   - **PASS B9-1** : `/pass` → redirect **Insights**
   - **PASS B9-3** : menu délégué = Contenu · THE LOOP · Accueil · Insights (vue d’ensemble seule)
-  - **SKIP B9-2** : modération cochée mais **pas** module Demandes → pas d’onglet modération
+  - **PASS B9-2** (soir) : Demandes + modération · badge · approuver · event **Agenda** OK
   - **PASS W-12/W-13** : notif planifiée · modifier · détails · annuler · supprimer
   - **UX** : bandeau **Prénom Nom · e-mail** (deploy suivant)
 
