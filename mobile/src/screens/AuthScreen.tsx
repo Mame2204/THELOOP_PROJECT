@@ -856,11 +856,15 @@ export function AuthScreen({ navigation, route }: Props) {
               ? `Si un compte existe pour ${normalizeEmail(email)}, un lien de réinitialisation vient d'être envoyé.`
               : `Un message de confirmation a été envoyé à ${normalizeEmail(email)}. Ouvrez le lien pour activer votre compte, puis reconnectez-vous.`}
           </Text>
-          {mode !== 'reset' ? (
+          {mode === 'reset' ? (
+            <Text style={[styles.cardSubtitle, { color: shell.pageKicker, marginTop: 8 }]}>
+              Ouvrez le dernier e-mail reçu (pas un ancien lien). Touchez le bouton dans le message — THE LOOP doit s’ouvrir. Choisissez votre mot de passe dans l’app. Si vous préférez le web, touchez « Continuer sur le web » sur la page qui s’affiche (un seul chemin par e-mail).
+            </Text>
+          ) : (
             <Text style={[styles.cardSubtitle, { color: shell.pageKicker, marginTop: 8 }]}>
               Pensez à vérifier votre dossier spam ou courrier indésirable.
             </Text>
-          ) : null}
+          )}
           {mode !== 'reset' ? (
             <Text style={[styles.verifyHint, { color: shell.pageKicker }]}>
               Test Expo Go : le lien doit commencer par exp:// et ouvrir Expo Go. Après clic, vous devez être connecté automatiquement — sinon connectez-vous à la main (e-mail déjà confirmé). Metro tunnel doit rester actif.
