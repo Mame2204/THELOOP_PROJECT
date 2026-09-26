@@ -98,10 +98,8 @@ import { isPhoneDeactivated } from '@/lib/deactivated-users-store';
 import { applyPasswordResetAfterOtp } from '@/lib/admin-invite-store';
 import { consumePasswordReset, findPendingPasswordReset } from '@/lib/password-reset-store';
 import { isValidOtp } from '@/lib/otp-auth';
-import { loadPartnerUserFromDatabase } from '@/lib/partner-user-resolve';
-import { bootstrapPartnerSupabaseAuth } from '@/lib/partner-spot-auth';
 import { bootstrapPlatformRoles } from '@/lib/platform-roles-store';
-import { clearPartnerSpotSession, loadPartnerSpotSession, savePartnerSpotSession } from '@/lib/partner-session-store';
+import { clearPartnerSpotSession, loadPartnerSpotSession } from '@/lib/partner-session-store';
 import {
   accountLoginBlockedMessage,
   isAccountAccessAllowedForSession,
