@@ -125,12 +125,14 @@ export function AdminSpotStarsScreen({ navigation, route }: Props) {
     return [...spotLocations, ...toolLocations];
   }, [entityTab, spotLocations, toolLocations]);
 
+  const { hasSubPermission } = useAdminPermissions();
+  const canSettings = hasSubPermission('spot_stars', 'spot_stars_settings');
+
   const visibleMenuTabs = useFilteredAdminTabs('spot_stars', [
     { id: 'grant' as const, label: 'Octroi manuel', permission: 'spot_stars_grant' },
     { id: 'top' as const, label: 'Top étoilés', permission: 'spot_stars_top' },
+    ...(canSettings ? [{ id: 'settings' as const, label: 'Formule & paliers', permission: 'spot_stars_settings' as const }] : []),
   ]);
-  const { hasSubPermission } = useAdminPermissions();
-  const canSettings = hasSubPermission('spot_stars', 'spot_stars_settings');
 
   const [menuTab, setMenuTab] = useState<MenuTab>(initialTab);
 
@@ -228,9 +230,6 @@ export function AdminSpotStarsScreen({ navigation, route }: Props) {
     if (role === 'ADMIN') void loadSettings();
   }, [role, loadSettings]);
 
-  useEffect(() => {
-    if (!settingsOnly && menuTab === 'settings') setMenuTab('grant');
-  }, [settingsOnly, menuTab]);
 
   useEffect(() => {
     if (role === 'ADMIN' && menuTab === 'top') void loadTopSpots();
@@ -290,7 +289,13 @@ export function AdminSpotStarsScreen({ navigation, route }: Props) {
         ratingWeight: Number(ratingWeight) || 10,
         tiers,
       });
+      await loadSettings();
       Alert.alert('Enregistré', 'Paramètres de calcul des étoiles mis à jour.');
+    } catch (err) {
+      Alert.alert(
+        'Erreur',
+        err instanceof Error ? err.message : 'Impossible d’enregistrer les réglages étoiles.',
+      );
     } finally {
       setSaving(false);
     }
@@ -395,7 +400,7 @@ export function AdminSpotStarsScreen({ navigation, route }: Props) {
 
           <AdminTabMenu
             tabs={visibleMenuTabs}
-            active={menuTab === 'settings' ? 'grant' : menuTab}
+            active={menuTab}
             onChange={setMenuTab}
             shell={shell}
             accent="#fbbf24"

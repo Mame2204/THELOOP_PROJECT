@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAdminCountry } from '../context/AdminCountryContext';
+import { DEFAULT_SPOT_STAR_TIERS, type SpotStarTier } from '../lib/spot-star-tiers';
 import { supabase } from '../lib/supabase';
 
 interface StarSettings {
@@ -7,6 +8,7 @@ interface StarSettings {
   clickWeight: number;
   favoriteWeight: number;
   ratingWeight: number;
+  tiers: SpotStarTier[];
 }
 
 interface StarRow {
@@ -21,6 +23,7 @@ const DEFAULTS: StarSettings = {
   clickWeight: 1,
   favoriteWeight: 5,
   ratingWeight: 10,
+  tiers: DEFAULT_SPOT_STAR_TIERS,
 };
 
 type Tab = 'spot' | 'tool' | 'walk';
@@ -30,6 +33,21 @@ const TAB_LABELS: Record<Tab, string> = {
   tool: 'Outils',
   walk: 'Parcours',
 };
+
+async function loadTiersForSettings(settingsId: string): Promise<SpotStarTier[]> {
+  const { data: tiers } = await supabase
+    .from('spot_star_tiers')
+    .select('min_score, max_score, star_count, sort_order')
+    .eq('settings_id', settingsId)
+    .order('sort_order', { ascending: true })
+    .limit(15);
+  if (!tiers?.length) return DEFAULT_SPOT_STAR_TIERS.map((t) => ({ ...t }));
+  return tiers.map((t) => ({
+    minScore: Number(t.min_score ?? 0),
+    maxScore: t.max_score == null ? null : Number(t.max_score),
+    starCount: Number(t.star_count ?? 1),
+  }));
+}
 
 export function SpotStarsPage() {
   const { countryCode, countryLabel } = useAdminCountry();
@@ -46,11 +64,13 @@ export function SpotStarsPage() {
       .eq('country_code', countryCode)
       .maybeSingle();
     if (row) {
+      const tiers = await loadTiersForSettings(String(row.id));
       setSettings({
         id: String(row.id),
         clickWeight: Number(row.click_weight ?? 1),
         favoriteWeight: Number(row.favorite_weight ?? 5),
         ratingWeight: Number(row.rating_weight ?? 10),
+        tiers,
       });
       return;
     }
@@ -60,14 +80,16 @@ export function SpotStarsPage() {
       .is('country_code', null)
       .maybeSingle();
     if (global) {
+      const tiers = await loadTiersForSettings(String(global.id));
       setSettings({
         id: String(global.id),
         clickWeight: Number(global.click_weight ?? 1),
         favoriteWeight: Number(global.favorite_weight ?? 5),
         ratingWeight: Number(global.rating_weight ?? 10),
+        tiers,
       });
     } else {
-      setSettings(DEFAULTS);
+      setSettings({ ...DEFAULTS, tiers: DEFAULT_SPOT_STAR_TIERS.map((t) => ({ ...t })) });
     }
   }, [countryCode]);
 
@@ -131,6 +153,18 @@ export function SpotStarsPage() {
     void load();
   }, [load]);
 
+  function updateTier(index: number, field: keyof SpotStarTier, value: string) {
+    setSettings((prev) => {
+      const tiers = [...prev.tiers];
+      const tier = { ...tiers[index] };
+      if (field === 'starCount') tier.starCount = Math.min(5, Math.max(1, Number(value) || 1));
+      else if (field === 'minScore') tier.minScore = Math.max(0, Number(value) || 0);
+      else if (field === 'maxScore') tier.maxScore = value.trim() === '' ? null : Math.max(0, Number(value) || 0);
+      tiers[index] = tier;
+      return { ...prev, tiers };
+    });
+  }
+
   async function save() {
     setBusy(true);
     setMsg(null);
@@ -141,15 +175,47 @@ export function SpotStarsPage() {
       rating_weight: settings.ratingWeight,
       updated_at: new Date().toISOString(),
     };
+    let settingsId = settings.id;
     let error;
-    if (settings.id) {
-      ({ error } = await supabase.from('spot_star_settings').update(payload).eq('id', settings.id));
+    if (settingsId) {
+      ({ error } = await supabase.from('spot_star_settings').update(payload).eq('id', settingsId));
     } else {
-      ({ error } = await supabase.from('spot_star_settings').insert(payload));
+      const { data, error: insErr } = await supabase
+        .from('spot_star_settings')
+        .insert(payload)
+        .select('id')
+        .maybeSingle();
+      error = insErr;
+      settingsId = data?.id ? String(data.id) : null;
     }
+    if (error || !settingsId) {
+      setBusy(false);
+      setMsg(error?.message ?? 'Enregistrement impossible.');
+      return;
+    }
+
+    const { error: delErr } = await supabase.from('spot_star_tiers').delete().eq('settings_id', settingsId);
+    if (delErr) {
+      setBusy(false);
+      setMsg(delErr.message);
+      return;
+    }
+    const { error: tierErr } = await supabase.from('spot_star_tiers').insert(
+      settings.tiers.map((tier, index) => ({
+        settings_id: settingsId,
+        min_score: tier.minScore,
+        max_score: tier.maxScore,
+        star_count: tier.starCount,
+        sort_order: index + 1,
+      })),
+    );
     setBusy(false);
-    setMsg(error ? error.message : 'Réglages étoiles enregistrés.');
-    if (!error) void load();
+    if (tierErr) {
+      setMsg(tierErr.message);
+      return;
+    }
+    setMsg('Réglages étoiles enregistrés (poids + paliers).');
+    void load();
   }
 
   async function setStars(id: string, stars: number) {
@@ -165,6 +231,10 @@ export function SpotStarsPage() {
     setMsg(error ? error.message : 'Étoiles mises à jour.');
     if (!error) void loadTop();
   }
+
+  const cw = settings.clickWeight;
+  const fw = settings.favoriteWeight;
+  const rw = settings.ratingWeight;
 
   return (
     <section>
@@ -192,9 +262,12 @@ export function SpotStarsPage() {
 
       <div className="split-pane form-list-stack">
         <div className="card">
-          <h3>Poids (clics · favoris · notes)</h3>
+          <h3>Formule de calcul</h3>
+          <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+            score = (clics × {cw}) + (favoris × {fw}) + (moyenne notes × {rw})
+          </p>
           <div className="field">
-            <label>Clics</label>
+            <label>Poids clics</label>
             <input
               type="number"
               value={settings.clickWeight}
@@ -204,7 +277,7 @@ export function SpotStarsPage() {
             />
           </div>
           <div className="field">
-            <label>Favoris</label>
+            <label>Poids favoris</label>
             <input
               type="number"
               value={settings.favoriteWeight}
@@ -214,7 +287,7 @@ export function SpotStarsPage() {
             />
           </div>
           <div className="field">
-            <label>Notes</label>
+            <label>Poids notes (moyenne /5)</label>
             <input
               type="number"
               value={settings.ratingWeight}
@@ -223,6 +296,44 @@ export function SpotStarsPage() {
               }
             />
           </div>
+
+          <h3 style={{ marginTop: 20 }}>Paliers score → étoiles</h3>
+          {settings.tiers.map((tier, index) => (
+            <div
+              key={index}
+              className="field"
+              style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}
+            >
+              <input
+                type="number"
+                aria-label="Score min"
+                value={tier.minScore}
+                onChange={(e) => updateTier(index, 'minScore', e.target.value)}
+                style={{ width: 72 }}
+              />
+              <span className="muted">→</span>
+              <input
+                type="number"
+                aria-label="Score max"
+                placeholder="∞"
+                value={tier.maxScore == null ? '' : tier.maxScore}
+                onChange={(e) => updateTier(index, 'maxScore', e.target.value)}
+                style={{ width: 72 }}
+              />
+              <span className="muted">=</span>
+              <input
+                type="number"
+                aria-label="Nombre d'étoiles"
+                min={1}
+                max={5}
+                value={tier.starCount}
+                onChange={(e) => updateTier(index, 'starCount', e.target.value)}
+                style={{ width: 56 }}
+              />
+              <span>★</span>
+            </div>
+          ))}
+
           <button type="button" className="btn" disabled={busy} onClick={() => void save()}>
             Enregistrer
           </button>

@@ -617,7 +617,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           if (result.kind === 'recovery') {
             beginPasswordRecovery();
-            await applySessionRef.current(data.session);
+            // Ne pas appeler applySession ici : évite refresh / navigation qui invalident la session recovery.
             if (__DEV__) console.log('[Auth] recovery — saisie nouveau mot de passe');
             return;
           }
@@ -1520,6 +1520,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(msg || 'Impossible d’enregistrer le nouveau mot de passe.');
     }
     endPasswordRecovery();
+    await applySessionRef.current(activeSession);
     await fulfillPendingWelcomeRef.current(activeSession.user);
     // Marquer invitation admin si présente
     const email = activeSession.user.email;

@@ -138,23 +138,23 @@ export async function getSpotStarSettings(countryCode?: string | null): Promise<
         .eq('settings_id', data.id)
         .order('sort_order', { ascending: true })
         .limit(15);
-      if (tiers?.length) {
-        const settings: SpotStarSettings = {
-          id: data.id,
-          countryCode: data.country_code,
-          clickWeight: data.click_weight,
-          favoriteWeight: data.favorite_weight,
-          ratingWeight: data.rating_weight ?? 10,
-          tiers: tiers.map((t) => ({
-            minScore: t.min_score,
-            maxScore: t.max_score,
-            starCount: t.star_count,
-          })),
-        };
-        await saveLocalSettings(countryCode ?? null, settings);
-        settingsMemory.set(memKey, { at: Date.now(), settings });
-        return settings;
-      }
+      const settings: SpotStarSettings = {
+        id: data.id,
+        countryCode: data.country_code,
+        clickWeight: data.click_weight,
+        favoriteWeight: data.favorite_weight,
+        ratingWeight: data.rating_weight ?? 10,
+        tiers: tiers?.length
+          ? tiers.map((t) => ({
+              minScore: t.min_score,
+              maxScore: t.max_score,
+              starCount: t.star_count,
+            }))
+          : [...DEFAULT_TIERS],
+      };
+      await saveLocalSettings(countryCode ?? null, settings);
+      settingsMemory.set(memKey, { at: Date.now(), settings });
+      return settings;
     }
   }
 
@@ -184,7 +184,8 @@ export async function saveSpotStarSettings(settings: SpotStarSettings): Promise<
 
   let settingsId = settings.id;
   if (settingsId) {
-    await supabase.from('spot_star_settings').update(payload).eq('id', settingsId);
+    const { error } = await supabase.from('spot_star_settings').update(payload).eq('id', settingsId);
+    if (error) throw new Error(error.message);
   } else {
     const existingQuery = settings.countryCode
       ? supabase.from('spot_star_settings').select('id').eq('country_code', settings.countryCode).maybeSingle()
@@ -193,17 +194,23 @@ export async function saveSpotStarSettings(settings: SpotStarSettings): Promise<
 
     if (existing?.id) {
       settingsId = existing.id;
-      await supabase.from('spot_star_settings').update(payload).eq('id', settingsId);
+      const { error } = await supabase.from('spot_star_settings').update(payload).eq('id', settingsId);
+      if (error) throw new Error(error.message);
     } else {
-      const { data } = await supabase.from('spot_star_settings').insert(payload).select('id').maybeSingle();
+      const { data, error } = await supabase.from('spot_star_settings').insert(payload).select('id').maybeSingle();
+      if (error) throw new Error(error.message);
       settingsId = data?.id;
     }
   }
 
-  if (!settingsId) return;
+  if (!settingsId) {
+    throw new Error('Enregistrement impossible (paramètres étoiles).');
+  }
 
-  await supabase.from('spot_star_tiers').delete().eq('settings_id', settingsId);
-  await supabase.from('spot_star_tiers').insert(
+  const { error: delErr } = await supabase.from('spot_star_tiers').delete().eq('settings_id', settingsId);
+  if (delErr) throw new Error(delErr.message);
+
+  const { error: insErr } = await supabase.from('spot_star_tiers').insert(
     settings.tiers.map((tier, index) => ({
       settings_id: settingsId,
       min_score: tier.minScore,
@@ -212,6 +219,12 @@ export async function saveSpotStarSettings(settings: SpotStarSettings): Promise<
       sort_order: index + 1,
     })),
   );
+  if (insErr) throw new Error(insErr.message);
+
+  settingsMemory.set(settingsKey(settings.countryCode ?? null), {
+    at: Date.now(),
+    settings: { ...settings, id: settingsId },
+  });
 }
 
 export async function countSpotFavorites(): Promise<Record<string, number>> {

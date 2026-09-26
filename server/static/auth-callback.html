@@ -194,7 +194,12 @@
       }
 
       function buildDeepLink(paramString) {
-        return paramString ? 'theloop://auth/callback#' + paramString : 'theloop://auth/callback';
+        if (!paramString) return 'theloop://auth/callback';
+        // Android Intent perd souvent le fragment # — privilégier la query pour token_hash / PKCE.
+        if (paramString.indexOf('token_hash=') >= 0 || paramString.indexOf('code=') >= 0) {
+          return 'theloop://auth/callback?' + paramString;
+        }
+        return 'theloop://auth/callback#' + paramString;
       }
 
       function buildLoginDeepLink() {
