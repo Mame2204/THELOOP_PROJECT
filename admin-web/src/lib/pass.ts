@@ -348,6 +348,13 @@ export async function countActiveGrantsForCatalog(catalogId: string): Promise<nu
     if (catalogId === HERITAGE_CATALOG_ID) {
       const kind = String(row.pass_kind ?? '').toLowerCase();
       if (kind === 'heritage' || cid === HERITAGE_CATALOG_ID) n += 1;
+      continue;
+    }
+    if (catalogId === INTERMEDIATE_CATALOG_ID) {
+      const kind = String(row.pass_kind ?? '').toLowerCase();
+      if (kind.includes('intermediaire') || /intermediaire/i.test(cid) || /intermediaire/i.test(String(row.label ?? ''))) {
+        n += 1;
+      }
     }
   }
   return n;
