@@ -13,7 +13,6 @@ export type RootStackParamList = {
   PassPayment: { period: PrimeBillingPeriod };
   PartnerApply: undefined;
   Suggestion: undefined;
-  PartnerLogin: undefined;
   PartnerValidationCode: undefined;
   PartnerBenefitScan: {
     partnerId: string;

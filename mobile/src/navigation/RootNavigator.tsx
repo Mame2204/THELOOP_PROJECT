@@ -239,14 +239,6 @@ export function RootNavigator() {
                 options={{ title: 'Partenariat' }}
               />
               <Stack.Screen
-                name="PartnerLogin"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerLoginScreen').PartnerLoginScreen,
-                  'PartnerLogin',
-                )}
-                options={{ title: 'Connexion Pro' }}
-              />
-              <Stack.Screen
                 name="PartnerValidationCode"
                 getComponent={requireScreen(
                   () => require('@/screens/PartnerValidationCodeScreen').PartnerValidationCodeScreen,
@@ -399,14 +391,6 @@ export function RootNavigator() {
               'Suggestion',
             )}
             options={{ title: 'Suggestion' }}
-          />
-          <Stack.Screen
-            name="PartnerLogin"
-            getComponent={requireScreen(
-              () => require('@/screens/PartnerLoginScreen').PartnerLoginScreen,
-              'PartnerLogin',
-            )}
-            options={{ title: 'Connexion Pro' }}
           />
           <Stack.Screen
             name="PartnerValidationCode"

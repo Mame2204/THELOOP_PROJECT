@@ -135,7 +135,16 @@
       var successOpenApp = document.getElementById('successOpenApp');
       var successInstall = document.getElementById('successInstall');
 
-      var sessionState = { accessToken: '', refreshToken: '', kind: 'invite', paramString: '', deepLink: '', memberEmail: '' };
+      var sessionState = {
+        accessToken: '',
+        refreshToken: '',
+        kind: 'invite',
+        paramString: '',
+        deepLink: '',
+        memberEmail: '',
+        tokenHash: '',
+        authCode: '',
+      };
       var usedWebPath = false;
       var webActivationComplete = false;
 
@@ -297,16 +306,63 @@
         message.textContent = "THE LOOP est installée ? Ouvrez l'app. Sinon, continuez sur le web pour choisir votre mot de passe.";
       }
 
-      function showWebForm() {
+      function revealWebPasswordForm() {
         usedWebPath = true;
         choiceEl.style.display = 'none';
         pwdForm.style.display = 'block';
         appFallback.style.display = 'none';
         if (successPanel) successPanel.style.display = 'none';
         title.textContent = 'Nouveau mot de passe';
-        message.textContent = 'Choisissez votre mot de passe ci-dessous. Ensuite, ouvrez THE LOOP sur votre téléphone pour vous connecter.';
+        message.textContent =
+          'Choisissez votre mot de passe ci-dessous. Ensuite, ouvrez THE LOOP sur votre téléphone pour vous connecter.';
         errEl.style.display = 'none';
         okEl.style.display = 'none';
+      }
+
+      /** Web : valide le lien (token_hash / PKCE) puis affiche le formulaire — sans consommer le hash avant ouverture app. */
+      function showWebForm() {
+        if (sessionState.tokenHash && !sessionState.accessToken) {
+          message.textContent = 'Validation du lien en cours…';
+          verifyTokenHash(sessionState.tokenHash, sessionState.kind)
+            .then(function (session) {
+              sessionState.tokenHash = '';
+              var at = session.access_token;
+              var rt = session.refresh_token;
+              if (!at || !rt) throw new Error('Session invalide après validation.');
+              sessionState.accessToken = at;
+              sessionState.refreshToken = rt;
+              revealWebPasswordForm();
+            })
+            .catch(function (err) {
+              title.textContent = 'Lien invalide ou expiré';
+              message.textContent = err.message || "Demandez un nouvel e-mail depuis THE LOOP.";
+              choiceEl.style.display = 'none';
+              pwdForm.style.display = 'none';
+            });
+          return;
+        }
+        if (sessionState.authCode && !sessionState.accessToken) {
+          message.textContent = 'Validation du lien en cours…';
+          exchangeCode(sessionState.authCode)
+            .then(function (session) {
+              sessionState.authCode = '';
+              sessionState.accessToken = session.access_token;
+              sessionState.refreshToken = session.refresh_token;
+              revealWebPasswordForm();
+            })
+            .catch(function (err) {
+              title.textContent = 'Lien incomplet';
+              message.textContent = (err.message || 'Ce lien ne peut pas être validé ici.')
+                + " Demandez un nouvel e-mail de réinitialisation.";
+              choiceEl.style.display = 'none';
+            });
+          return;
+        }
+        if (!sessionState.accessToken) {
+          showErr('Session absente. Rouvrez le lien du mail ou choisissez « Ouvrir l’application ».');
+          return;
+        }
+        revealWebPasswordForm();
       }
 
       function showWebActivationSuccess() {
@@ -470,34 +526,29 @@
       }
 
       if (tokenHash) {
-        message.textContent = 'Validation du lien en cours…';
-        verifyTokenHash(tokenHash, kind)
-          .then(function (session) {
-            clearStuckGuard();
-            var at = session.access_token;
-            var rt = session.refresh_token;
-            if (!at || !rt) throw new Error('Session invalide après validation.');
-            var ps = 'type=' + kind + '&access_token=' + encodeURIComponent(at) + '&refresh_token=' + encodeURIComponent(rt);
-            beginSession(at, rt, kind, ps);
-          })
-          .catch(function (err) {
-            clearStuckGuard();
-            title.textContent = 'Lien invalide ou expiré';
-            message.textContent = err.message || "Demandez un nouvel e-mail depuis l'administrateur THE LOOP.";
-          });
+        clearStuckGuard();
+        sessionState.tokenHash = tokenHash;
+        sessionState.kind = kind;
+        var pendingHashParams = 'type=' + kind + '&token_hash=' + encodeURIComponent(tokenHash);
+        sessionState.paramString = pendingHashParams;
+        sessionState.deepLink = buildDeepLink(pendingHashParams);
+        title.textContent = kind === 'recovery' ? 'Réinitialiser le mot de passe' : 'Activer votre compte';
+        message.textContent =
+          "THE LOOP est installée ? Touchez « Ouvrir l'application » pour définir votre mot de passe dans l'app. Sinon « Continuer sur le web ».";
+        showChoiceScreen();
         return;
       }
 
       if (code && !accessToken) {
-        exchangeCode(code)
-          .then(function (session) {
-            beginSession(session.access_token, session.refresh_token, kind, paramString);
-          })
-          .catch(function (err) {
-            title.textContent = 'Lien incomplet';
-            message.textContent = (err.message || 'Ce lien ne peut pas être validé ici.')
-              + " Demandez à l'équipe THE LOOP de renvoyer l'invitation (nouveau modèle d'e-mail).";
-          });
+        clearStuckGuard();
+        sessionState.authCode = code;
+        sessionState.kind = kind;
+        sessionState.paramString = paramString;
+        sessionState.deepLink = buildDeepLink(paramString);
+        title.textContent = kind === 'recovery' ? 'Réinitialiser le mot de passe' : 'Activer votre compte';
+        message.textContent =
+          "THE LOOP est installée ? Ouvrez l'app. Sinon, continuez sur le web pour choisir votre mot de passe.";
+        showChoiceScreen();
         return;
       }
 

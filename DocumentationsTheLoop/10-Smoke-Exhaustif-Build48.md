@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **~282 / 388** ≈ **73 %** global · **Web ~88/90 💻 (≈98 %)** · **iOS ~116/164** · **Android ~104/140** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Lot M-BOTH-1** (Auth hors build 49) puis **M-BOTH-2** (Param. admin mobile) — **📱 puis 🤖** |
+| **Prochain test** | **Retest M1-U2** après deploy API Render · puis **M-BOTH-2** (Param. admin mobile) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -85,10 +85,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | # | Action | Attendu |
 |---|--------|---------|
-| **M1-U1** | Membre : logout → pile Auth bloquée | Pas d’Accueil sans login |
-| **M1-U2** | Recovery e-mail → page callback → **« Ouvrir l’application »** → **set_password in-app** | MDP changé · login OK |
-| **M1-U3** | `PartnerLoginScreen` — connexion jeton **SPOT** (nav ou deep link) | Espace Pro partenaire |
-| **M1-U4** | Inscription complète (gate ON) : mail → lien → connecté | Optionnel si déjà couvert |
+| ~~**M1-U1**~~ | ~~Logout membre~~ — **PASS 26 sept.** 📱🤖 · retour **Accueil sans session** (visiteur) — OK testeur | — |
+| **M1-U2** | Recovery → **« Ouvrir l’application »** → **set_password in-app** | **FAIL 26 sept.** · session expirée · web `session_id` JWT · **fix** page auth-callback (deploy Render) |
+| ~~**M1-U3**~~ | ~~Connexion SPOT~~ — **N/A** · entrée **retirée** app mobile (partenaire = **e-mail / MDP** uniquement) | — |
+| **M1-U4** | Inscription complète (gate ON) : mail → lien → connecté | Optionnel |
 
 **M-BOTH-2 — Admin mobile · Paramètres satellites (~25 min · 📱 puis 🤖)**
 
@@ -138,7 +138,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Bloc | Statut |
 |------|--------|
 | A1 sans compte | ✅ |
-| A2 membre (nav · fiches · compte · interactions) | ✅ **📱🤖** *(détails Accueil · Singulier · Fragment · parcours · Partner public · idée · **26 sept. 🤖**)*
+| A2 membre (nav · fiches · compte · interactions) | ✅ **📱🤖** *(détails Accueil · Singulier · Fragment · parcours · Partner public · idée · **26 sept. 🤖**)* |
 | A2 PassPayment / MyBenefits | ⏸ voir **A2-U1 / A2-U2** |
 | A3 Prime (thème · Mon PASS · privilèges · nav) | ✅ |
 | A3 LoopX / spots prime / contenu prime | 🔒 BLOCKED prochain build |
@@ -390,8 +390,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · idem Android)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — validation privilège membre *(23 sept. 2026 · privilège **inclus Prime** · scan après « Utiliser » · avantage coché · validé)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android)*
-- [ ] **📱** `PartnerLoginScreen` — connexion jeton SPOT *(deep link / nav manuelle)*
-- [ ] **🤖** Idem
+- [x] **📱🤖** ~~`PartnerLoginScreen` SPOT~~ — **N/A** *(26 sept. 2026 · écran retiré · pas de porte d’entrée jeton · partenaire via e-mail / MDP)*
 
 ### Bloqué sans connexion
 - [x] **📱** Pas Accueil / Agenda / Spots / Outils / Favoris / Profil *(20 sept. 2026 · build 48)*
@@ -879,8 +878,8 @@ Liens Param. → pages satellites :
 
 ## C2 — Auth transversal
 
-- [x] **📱** Login → Accueil · logout → Auth bloqué *(login + logout membre OK · build 48 · 20 sept. 2026)*
-- [ ] **🤖** Logout → Auth bloqué *(M-BOTH-1 · M1-U1)*
+- [x] **📱** Login → Accueil · logout → Accueil visiteur *(build 48 · **M1-U1 PASS 26 sept.**)*
+- [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · déconnexion → Accueil sans login)*
 - [x] **📱🤖** Compte **suspendu** → login refusé + message *(26 sept. 2026 · **PASS 🤖** · admin suspend · déconnexion · reconnect · message blocage)*
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
@@ -888,8 +887,8 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** Lien e-mail → page **auth-callback** (choix app / web) *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · même UX que iOS)*
-- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app**
-- [ ] **🤖** Idem *(retest post-deploy auth-callback)*
+- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(26 sept. **FAIL** · session expirée app · web JWT session_id · retest post-deploy Render)*
+- [ ] **🤖** Idem *(26 sept. **FAIL** · même cause · fix auth-callback)*
 - [x] **💻** Invitation admin-web → activation · bon rôle *(23 sept. 2026 · **PASS** mail + **PASS** activate in-app · rôle membre · prénom défaut selon rôle après migration `20260939`)*
 - [ ] **📱** Partenaire invité → connexion → Espace Pro
 - [ ] **🤖** Idem
@@ -1115,6 +1114,11 @@ Mobile (26 sept. 2026 · testeur · **Lot A Android** · build 48 · hors build 
   - **PASS A5 🤖** : hub **Demandes** (partenariats + modération)
   - **PASS 🤖** : **transfert contenu** THE LOOP ↔ partenaire (codes validation · parité iPhone)
   - **Suite agent** : **M-BOTH-1** Auth · **M-BOTH-2** Param. admin mobile
+Mobile (26 sept. 2026 · testeur · **M-BOTH-1**) :
+  - **PASS M1-U1** 📱🤖 : déconnexion membre → **Accueil sans login** (comportement validé)
+  - **FAIL M1-U2** 📱🤖 : oubli MDP · mail OK · lien OK · **set_password** → « session expirée » · web → `session_id` JWT
+  - **N/A M1-U3** : pas d’entrée SPOT dans l’app · retrait écran + API context mobile
+  - **Fix** : auth-callback ne consomme plus `token_hash` avant « Ouvrir l’app » · deploy **Render** requis · retest M1-U2
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
