@@ -821,7 +821,7 @@ Liens Param. → pages satellites :
 
 > Compte `admin` (non super) avec overrides **par utilisateur** (écran Param. → Permissions).
 
-- [x] **💻** Login admin délégué → sidebar / modules alignés sur le jeu sauvegardé *(24 sept. 2026 · testeur **PASS** · reconnexion après edit permissions)*
+- [x] **💻** Login admin délégué → sidebar / modules alignés sur le jeu sauvegardé *(24 sept. · **retest 26 sept. connexion OK** · reconnexion après edit permissions)*
 - [x] **💻** Hub **THE LOOP** — tuiles visibles seulement si modules cochés (`content`, `featured`, `insights`, `prime_benefits`…) *(24 sept. 2026 · **PASS** · pas un bug catalogue)*
 - [ ] **💻** Module **sans** permission → refus / redirect explicite
 - [ ] **💻** Modération OK si grant `moderation`
@@ -1064,7 +1064,10 @@ Admin-web (26 sept. 2026 · testeur · suite) :
   - **PASS** Users · Paiements · Compta · Privilèges · TEAMS · Tirage — déjà couverts 24 sept. (ne pas refaire)
   - **Paramètres** : déjà PASS 24–26 sept.
   - **PASS** W-6 Étoiles · W-11b Messages modifier · archiver forfait · retirer octroi
-  - **FAIL** catalogue **Désactiver** + tableaux octroi sous formulaire création PASS (fix en cours)
+  - **FAIL** catalogue **Désactiver** + tableaux octroi sous formulaire création PASS → fix **PR #45** deploy **26 sept.**
+Admin-web (26 sept. 2026 · deploy #45) :
+  - **PASS** connexion **admin délégué** web (testeur · ne pas refaire)
+  - **Retest** : **W-19b** Désactiver forfait + scroll octroi sans chevauchement (hard refresh)
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
