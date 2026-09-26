@@ -616,7 +616,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const sessionFromLink = result.session;
         recoverySessionRef.current = sessionFromLink;
         rememberRecoverySession(sessionFromLink);
-        const { data } = await supabase.auth.getSession();
+        const { data } = await authClient.auth.getSession();
         const activeSession = data.session ?? sessionFromLink;
         if (activeSession) {
           if (result.kind === 'invite') {
@@ -669,9 +669,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    void Linking.getInitialURL().then((url) => void handleDeepLink(url));
+    void Linking.getInitialURL().then((url) => {
+      void handleDeepLink(url).catch((err: unknown) => {
+        console.warn('[Auth] getInitialURL deep link:', err instanceof Error ? err.message : err);
+      });
+    });
     const subscription = Linking.addEventListener('url', ({ url }) => {
-      void handleDeepLink(url);
+      void handleDeepLink(url).catch((err: unknown) => {
+        console.warn('[Auth] url deep link:', err instanceof Error ? err.message : err);
+      });
     });
 
     let appStateSub: { remove: () => void } | undefined;

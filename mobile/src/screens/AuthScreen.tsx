@@ -1010,6 +1010,7 @@ export function AuthScreen({ navigation, route }: Props) {
             dateOnly
             flat
             maximumDate={new Date()}
+            shell={shell}
           />
 
           <Pressable

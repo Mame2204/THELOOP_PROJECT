@@ -30,6 +30,7 @@ import { countPendingSuggestions } from '@/lib/suggestions-store';
 import { isTeamContentOrigin } from '@/lib/content-origin';
 import { navigateRoot } from '@/lib/navigation-utils';
 import type { AdminPermissionId } from '@/lib/admin-permissions';
+import type { CatalogUsageStat } from '@/lib/prime-benefits-store';
 import { useAdminPermissions } from '@/context/AdminPermissionsContext';
 import { useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -637,7 +638,7 @@ function BenefitKpisBlock({
   hideKpis = false,
 }: {
   kpis: { granted: number; active: number; expired: number; consumed: number };
-  stats: Array<{ catalogId: string; title: string; granted: number; used: number; unusedAssigned: number }>;
+  stats: CatalogUsageStat[];
   shell: ReturnType<typeof useMemberTheme>['shell'];
   compact?: boolean;
   hideKpis?: boolean;
