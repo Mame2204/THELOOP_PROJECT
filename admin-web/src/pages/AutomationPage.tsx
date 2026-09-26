@@ -145,7 +145,7 @@ export function AutomationPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {msg ? <p className="muted">{msg}</p> : null}
 
-      <div className="split-pane">
+      <div className="split-pane form-list-stack">
         <div className="card">
           <h3>Nouveau job</h3>
           <div className="field">

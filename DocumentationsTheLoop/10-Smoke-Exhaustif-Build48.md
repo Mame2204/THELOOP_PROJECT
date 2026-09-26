@@ -475,7 +475,7 @@ Liens Param. → pages satellites :
 - [ ] **💻** `/notifications` accessible depuis Param.
 - [x] **💻** `/automation` accessible *(26 sept. 2026 · **PASS** · W-4 · liste jobs · exécuter sans erreur)*
 - [x] **💻** `/milestones` accessible *(26 sept. · **PASS** · W-5 · créer palier)*
-- [x] **💻** `/etoiles` accessible *(26 sept. · **FAIL partiel** · W-6 · page OK · **Enregistrer** poids ne persiste pas — bug à traiter)*
+- [ ] **💻** `/etoiles` accessible *(26 sept. · **FAIL** · W-6 · poids clics/favoris/notes · **Enregistrer** KO · fix RLS `20260944` + retest après deploy Supabase)*
 - [x] **💻** `/horaires` accessible *(26 sept. · **PASS** · W-7 · presets · enregistrer)*
 
 ## B4 — Users · PASS · Paiements
@@ -489,12 +489,11 @@ Liens Param. → pages satellites :
 ### PASS
 - [x] **💻** Prix Guinée · enregistrer *(26 sept. 2026 · testeur **PASS** · W-10 · onglet Prix)*
 - [ ] **💻** Octroi manuel PASS *(onglet Ops · recherche membre · accorder)*
-- [x] **💻** Messages / modèles notification — **création** *(26 sept. · **PASS** · W-11 · Ajouter modèle)*
-- [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · **PASS**)*
-- [x] **💻** Messages — **archiver** modèle *(26 sept. · **PASS**)*
-- [ ] **💻** Messages — **éditer** titre / corps d’un modèle existant *(26 sept. · **non testé** · optionnel)*
-- [ ] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
-- [ ] **💻** Catalogue PASS — activer / désactiver / archiver forfait *(26 sept. · **PASS** si fait avec messages)*
+- [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · testeur **PASS**)*
+- [x] **💻** Messages — **archiver** modèle *(26 sept. · testeur **PASS**)*
+- [ ] **💻** Messages — **modifier** un modèle (bouton **Modifier** ou clic ligne → formulaire → **Enregistrer**) *(26 sept. · **FAIL** UI absente · fix admin-web + retest)*
+- [ ] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops — smoke optionnel)*
+- [ ] **💻** Catalogue PASS — activer / désactiver / archiver forfait *(26 sept. · **non testé** ce tour · même boutons que messages)*
 - [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — pas de bouton Supprimer · seulement archiver)*
 
 ### Paiements & Compta
@@ -539,7 +538,7 @@ Liens Param. → pages satellites :
 
 - [x] **💻** Automation — liste jobs · exécuter manuellement *(26 sept. 2026 · **PASS** · W-4)*
 - [x] **💻** Paliers — créer · éditer · archiver · voir Archives *(26 sept. · **PASS** · W-5 · créer OK)*
-- [ ] **💻** Étoiles — seuils spots / outils / parcours *(26 sept. · **FAIL** · W-6 · enregistrement poids)*
+- [ ] **💻** Étoiles — poids clics / favoris / notes *(26 sept. · **FAIL** · W-6 · migration `20260944` · retest post-prod)*
 - [x] **💻** Horaires — presets · assignation *(26 sept. · **PASS** · W-7)*
 
 ## B9 — Admin délégué (permissions réduites)
@@ -659,8 +658,10 @@ Branch / commit :
 
 Admin-web (26 sept. 2026 · testeur · session W) :
   - **PASS** B0 W-1–W-3 · B8 automation · paliers · horaires · B6 W-8/W-9 · PASS prix · messages création + activer/désactiver + archiver · catalogue création
-  - **FAIL** `/etoiles` — enregistrer les poids (clics/favoris/notes) ne persiste pas
-  - **⏸** B5 planifier/annuler notifs · édition texte modèles PASS · octroi manuel PASS
+  - **FAIL** `/etoiles` — enregistrer poids (RLS super_admin · `20260944`)
+  - **FAIL** PASS messages — pas de **Modifier** (fix UI admin-web deploy)
+  - **UX** pages Paramètres : formulaire **au-dessus**, liste **en dessous** (`form-list-stack`)
+  - **⏸** B5 planifier/annuler · octroi manuel PASS
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
