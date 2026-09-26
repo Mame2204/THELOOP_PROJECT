@@ -240,8 +240,8 @@ export function AdminUsersScreen({ navigation }: Props) {
           'id, email, first_name, last_name, phone_number, user_role, is_active, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at',
           { count: staleMode ? undefined : 'exact' },
         )
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .order('created_at', { ascending: false });
+      fallback = staleMode ? fallback.limit(500) : fallback.range(from, to);
       if (countryCode) fallback = fallback.or(`country_code.eq.${countryCode},country_code.is.null`);
       if (!isSuperAdmin) fallback = fallback.not('user_role', 'in', '(admin,super_admin)');
       if (statusFilter === 'active') fallback = fallback.eq('is_active', true);
