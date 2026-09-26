@@ -383,14 +383,14 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 - [ ] **📱** Tirage — lancer · historique · notif gagnant
 - [ ] **📱** Push immédiat audience Tous
 - [ ] **📱** Push planifié · annuler
-- [ ] **📱** Transfert contenu THE LOOP ↔ partenaire
-- [ ] **📱** Publier / archiver contenu
+- [x] **📱** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · partenaire + THE LOOP · super admin + délégué)*
+- [x] **📱** Publier / archiver contenu *(26 sept. · **PASS web** catalogue · mobile aligné transfert)*
 - [ ] **🤖** Idem pour chaque action
 
 ### Transfert contenu (code validation)
-- [ ] **📱** THE LOOP → partenaire : code **partenaire** à la consommation
-- [ ] **📱** Partenaire → THE LOOP : code **équipe THE LOOP**
-- [ ] **🤖** Idem
+- [x] **📱** THE LOOP → partenaire : code **partenaire** à la consommation *(26 sept. 2026 · **PASS**)*
+- [x] **📱** Partenaire → THE LOOP : code **équipe THE LOOP** *(26 sept. · **PASS**)*
+- [ ] **🤖** Idem *(26 sept. · à confirmer si même session Android admin)*
 
 ---
 
@@ -512,10 +512,10 @@ Liens Param. → pages satellites :
 
 ## B6 — Contenu & éditorial
 
-- [ ] **💻** Filtrer events / spots / outils / archivés
-- [ ] **💻** Créer event · spot · outil (ContentEditor)
-- [ ] **💻** À la une · archiver · republier
-- [ ] **💻** Transfert propriétaire THE LOOP ↔ partenaire
+- [x] **💻** Filtrer events / spots / outils / archivés *(26 sept. 2026 · testeur **PASS**)*
+- [x] **💻** Créer event · spot · outil (ContentEditor) *(26 sept. · **PASS** · brouillon · publier · retirer)*
+- [x] **💻** À la une · archiver · republier *(26 sept. · **PASS** · désactiver / archiver / cycle de vie)*
+- [x] **💻** Transfert propriétaire THE LOOP ↔ partenaire *(26 sept. · **N/A web** — pas d’UI transfert admin-web · **PASS 📱** admin mobile · cf. A5 transfert)*
 - [ ] **💻** Accueil — hero · sondage · parcours · singulier · logos
 - [ ] **💻** Loop hub — sections éditoriales
 
@@ -619,10 +619,10 @@ Liens Param. → pages satellites :
 
 ## D3 — Onglets masqués (AdminRubrique)
 
-- [ ] **💻** Désactiver onglet Agenda → app masque tab
-- [ ] **📱** Membre ne voit plus Agenda
-- [ ] **🤖** Idem
-- [ ] **💻** Réactiver → tab revient
+- [x] **💻** Désactiver onglet Agenda → app masque tab *(26 sept. 2026 · testeur **PASS** · `/onglets`)*
+- [x] **📱** Membre ne voit plus Agenda *(26 sept. · **PASS**)*
+- [x] **🤖** Idem *(26 sept. · **PASS** · parité iPhone)*
+- [x] **💻** Réactiver → tab revient *(26 sept. · **PASS**)*
 
 ---
 
