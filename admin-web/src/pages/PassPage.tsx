@@ -103,11 +103,12 @@ export function PassPage() {
     const [c, g] = await Promise.all([loadPassCatalog(countryCode), listActiveGrants(countryCode)]);
     setCatalog(c);
     setGrants(g);
-    if (!grantCatalogId) {
+    setGrantCatalogId((current) => {
+      if (current && c.some((x) => x.id === current && x.status === 'active')) return current;
       const first = c.find((x) => x.status === 'active' && x.id !== INTERMEDIATE_CATALOG_ID);
-      if (first) setGrantCatalogId(first.id);
-    }
-  }, [countryCode, grantCatalogId]);
+      return first?.id ?? '';
+    });
+  }, [countryCode]);
 
   const reloadPrices = useCallback(async () => {
     const [p, s] = await Promise.all([loadPassPrices(countryCode), loadShopSettings(countryCode)]);
@@ -137,16 +138,22 @@ export function PassPage() {
     return () => window.clearTimeout(t);
   }, [grantQuery, countryCode]);
 
-  async function persistCatalog(next: PassCatalogEntry[]) {
+  async function persistCatalog(
+    next: PassCatalogEntry[],
+    successMsg = 'Catalogue enregistré.',
+  ): Promise<PassCatalogEntry[] | null> {
     setBusy(true);
     const res = await savePassCatalog(countryCode, next);
-    setBusy(false);
     if (!res.ok) {
+      setBusy(false);
       setMsg(res.error ?? 'Erreur catalogue');
-      return;
+      return null;
     }
-    setCatalog(next);
-    setMsg('Catalogue enregistré.');
+    const fresh = await loadPassCatalog(countryCode);
+    setBusy(false);
+    setCatalog(fresh);
+    setMsg(successMsg);
+    return fresh;
   }
 
   async function handleSaveEntry(e: FormEvent) {
@@ -167,6 +174,8 @@ export function PassPage() {
               label: draft.label.trim(),
               description: draft.description.trim(),
               updatedAt: now,
+              /** Statut catalogue : uniquement via Activer / Désactiver / Archiver (pas le formulaire). */
+              status: c.status,
               purchasableInShop:
                 editingId === HERITAGE_CATALOG_ID ? false : draft.purchasableInShop,
             }
@@ -194,7 +203,7 @@ export function PassPage() {
           : c,
       );
     }
-    await persistCatalog(next);
+    await persistCatalog(next, editingId ? 'PASS enregistré.' : 'PASS créé.');
     setEditingId(null);
     setDraft(newCatalogDraft());
   }
@@ -202,14 +211,36 @@ export function PassPage() {
   async function setStatus(entry: PassCatalogEntry, status: PassCatalogEntry['status']) {
     if (status !== 'active' && entry.status === 'active') {
       const n = await countActiveGrantsForCatalog(entry.id);
-      if (n > 0 && !window.confirm(`${n} PASS actifs sur ce catalogue. Continuer ?`)) return;
+      if (n > 0) {
+        const ok = window.confirm(
+          `${n} membre(s) ont encore « ${entry.label} » actif. Désactiver quand même cette entrée catalogue ? (Les PASS déjà octroyés restent actifs jusqu’à retrait.)`,
+        );
+        if (!ok) {
+          setMsg('Désactivation annulée.');
+          return;
+        }
+      }
     }
     const next = catalog.map((c) =>
       c.id === entry.id ? { ...c, status, updatedAt: new Date().toISOString() } : c,
     );
-    await persistCatalog(next);
+    const label =
+      status === 'inactive'
+        ? `« ${entry.label} » désactivé dans le catalogue.`
+        : status === 'archived'
+          ? `« ${entry.label} » archivé.`
+          : `« ${entry.label} » réactivé.`;
+    const fresh = await persistCatalog(next, label);
+    if (!fresh) return;
+    const after = fresh.find((c) => c.id === entry.id);
+    if (after && after.status !== status) {
+      setMsg(
+        `Échec : le statut n’a pas été enregistré (lu « ${after.status} », attendu « ${status} »).`,
+      );
+      return;
+    }
     if (editingId === entry.id) {
-      setDraft((d) => ({ ...d, status }));
+      setDraft((d) => ({ ...d, status: after?.status ?? status }));
     }
     if (status === 'archived' && editingId === entry.id) {
       setEditingId(null);

@@ -95,15 +95,16 @@ async function fetchSetting<T>(key: string, legacyKey?: string): Promise<T | nul
 }
 
 async function upsertSetting(key: string, value: unknown): Promise<{ ok: boolean; error?: string }> {
+  const jsonValue = JSON.parse(JSON.stringify(value)) as unknown;
   const { error: rpcError } = await supabase.rpc('admin_set_app_setting', {
     p_key: key,
-    p_value: value,
+    p_value: jsonValue,
   });
   if (!rpcError) return { ok: true };
 
   const { error } = await supabase.from('app_settings').upsert({
     key,
-    value,
+    value: jsonValue,
     updated_at: nowIso(),
   });
   if (error) return { ok: false, error: error.message };
@@ -154,9 +155,21 @@ function defaultPrices(countryCode: string): PassPriceMap {
   return { monthly: 850_000, quarterly: 2_400_000, annual: 8_500_000, lifetime: 25_000_000 };
 }
 
+function parseCatalogStatus(raw: unknown): PassCatalogStatus {
+  if (raw === 'inactive' || raw === 'archived') return raw;
+  return 'active';
+}
+
+function normalizeCatalogEntry(raw: PassCatalogEntry): PassCatalogEntry {
+  return {
+    ...raw,
+    status: parseCatalogStatus(raw.status),
+  };
+}
+
 function normalizeCatalog(list: PassCatalogEntry[]): PassCatalogEntry[] {
   const builtins = defaultCatalog();
-  const byId = new Map(list.map((e) => [e.id, e]));
+  const byId = new Map(list.map((e) => [e.id, normalizeCatalogEntry(e)]));
   for (const b of builtins) {
     if (!byId.has(b.id)) byId.set(b.id, b);
   }
@@ -176,8 +189,16 @@ export async function loadPassCatalog(countryCode: string): Promise<PassCatalogE
 export async function savePassCatalog(
   countryCode: string,
   catalog: PassCatalogEntry[],
-): Promise<{ ok: boolean; error?: string }> {
-  return upsertSetting(remoteKey('pass_catalog_v1', countryCode), normalizeCatalog(catalog));
+): Promise<{ ok: boolean; error?: string; catalog?: PassCatalogEntry[] }> {
+  const normalized = normalizeCatalog(catalog);
+  const key = remoteKey('pass_catalog_v1', countryCode);
+  const res = await upsertSetting(key, normalized);
+  if (!res.ok) return res;
+  if (countryCode.toUpperCase() === 'GN') {
+    const legacy = await upsertSetting('pass_catalog_v1', normalized);
+    if (!legacy.ok) return legacy;
+  }
+  return { ok: true, catalog: normalized };
 }
 
 export function computeExpiry(validityDays: number | null, from = new Date()): string | null {
@@ -311,13 +332,25 @@ export async function listActiveGrants(countryCode?: string): Promise<ActiveGran
 }
 
 export async function countActiveGrantsForCatalog(catalogId: string): Promise<number> {
-  const { count, error } = await supabase
+  const { data, error } = await supabase
     .from('user_pass_grants')
-    .select('id', { count: 'exact', head: true })
+    .select('pass_catalog_id, pass_kind, label')
     .eq('status', 'active')
-    .eq('pass_catalog_id', catalogId);
-  if (error) return 0;
-  return count ?? 0;
+    .limit(500);
+  if (error || !data) return 0;
+  let n = 0;
+  for (const row of data) {
+    const cid = row.pass_catalog_id ? String(row.pass_catalog_id) : '';
+    if (cid === catalogId) {
+      n += 1;
+      continue;
+    }
+    if (catalogId === HERITAGE_CATALOG_ID) {
+      const kind = String(row.pass_kind ?? '').toLowerCase();
+      if (kind === 'heritage' || cid === HERITAGE_CATALOG_ID) n += 1;
+    }
+  }
+  return n;
 }
 
 export async function searchGrantTargets(
