@@ -219,6 +219,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const syncAuthUserProfileRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
   const fulfillPendingWelcomeRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
 
+  /** Dernier lien auth/callback (recovery) — retentative verifyOtp à la saisie du MDP si session absente. */
+  const recoveryLinkUrlRef = useRef<string | null>(null);
+
   const beginPasswordRecovery = useCallback(() => {
     passwordRecoveryPendingRef.current = true;
     setPasswordRecoveryPending(true);
@@ -584,6 +587,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (!url.includes('auth/callback')) return;
+      recoveryLinkUrlRef.current = url;
       const paramHint = describeAuthUrlParams(url);
       if (__DEV__) {
         console.log('[Auth] deep link reçu:', url.split('#')[0].split('?')[0], '|', paramHint);
@@ -1486,8 +1490,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) {
       return;
     }
+    // Lien e-mail → theloop:// (build natif) : évite la page web qui consomme / perd le token_hash (PKCE).
     const { error } = await supabase.auth.resetPasswordForEmail(check.email, {
-      redirectTo: getAuthMemberFacingRedirectUrl(),
+      redirectTo: getAuthEmailRedirectUrl(),
     });
     if (error) {
       const rateLimit = parseAuthEmailRateLimit(error);
@@ -1503,10 +1508,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (newPassword.trim().length < 8) {
       throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
     }
-    const activeSession = (await supabase.auth.getSession()).data.session;
+    let activeSession = (await supabase.auth.getSession()).data.session;
+    if (!activeSession && recoveryLinkUrlRef.current) {
+      const retry = await completeAuthSessionFromUrl(recoveryLinkUrlRef.current);
+      if (retry.ok) {
+        activeSession = (await supabase.auth.getSession()).data.session;
+        if (retry.kind === 'recovery') beginPasswordRecovery();
+      }
+    }
     if (!activeSession) {
       throw new Error(
-        'Lien expiré ou session perdue. Demandez un nouvel e-mail, ouvrez-le sur ce téléphone et choisissez « Ouvrir l’application » avant « Continuer sur le web ».',
+        'Lien expiré ou session perdue. Demandez un **nouvel** e-mail depuis l’app, ouvrez le lien **dans le mail** (pas l’aperçu) — l’app doit s’ouvrir seule.',
       );
     }
     const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
@@ -1519,6 +1531,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       throw new Error(msg || 'Impossible d’enregistrer le nouveau mot de passe.');
     }
+    recoveryLinkUrlRef.current = null;
     endPasswordRecovery();
     await applySessionRef.current(activeSession);
     await fulfillPendingWelcomeRef.current(activeSession.user);

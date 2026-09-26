@@ -262,77 +262,79 @@ export function SpotStarsPage() {
 
       <div className="split-pane form-list-stack">
         <div className="card">
-          <h3>Formule de calcul</h3>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-            score = (clics × {cw}) + (favoris × {fw}) + (moyenne notes × {rw})
-          </p>
-          <div className="field">
-            <label>Poids clics</label>
-            <input
-              type="number"
-              value={settings.clickWeight}
-              onChange={(e) =>
-                setSettings((s) => ({ ...s, clickWeight: Number(e.target.value) || 0 }))
-              }
-            />
-          </div>
-          <div className="field">
-            <label>Poids favoris</label>
-            <input
-              type="number"
-              value={settings.favoriteWeight}
-              onChange={(e) =>
-                setSettings((s) => ({ ...s, favoriteWeight: Number(e.target.value) || 0 }))
-              }
-            />
-          </div>
-          <div className="field">
-            <label>Poids notes (moyenne /5)</label>
-            <input
-              type="number"
-              value={settings.ratingWeight}
-              onChange={(e) =>
-                setSettings((s) => ({ ...s, ratingWeight: Number(e.target.value) || 0 }))
-              }
-            />
-          </div>
-
-          <h3 style={{ marginTop: 20 }}>Paliers score → étoiles</h3>
-          {settings.tiers.map((tier, index) => (
-            <div
-              key={index}
-              className="field"
-              style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}
-            >
-              <input
-                type="number"
-                aria-label="Score min"
-                value={tier.minScore}
-                onChange={(e) => updateTier(index, 'minScore', e.target.value)}
-                style={{ width: 72 }}
-              />
-              <span className="muted">→</span>
-              <input
-                type="number"
-                aria-label="Score max"
-                placeholder="∞"
-                value={tier.maxScore == null ? '' : tier.maxScore}
-                onChange={(e) => updateTier(index, 'maxScore', e.target.value)}
-                style={{ width: 72 }}
-              />
-              <span className="muted">=</span>
-              <input
-                type="number"
-                aria-label="Nombre d'étoiles"
-                min={1}
-                max={5}
-                value={tier.starCount}
-                onChange={(e) => updateTier(index, 'starCount', e.target.value)}
-                style={{ width: 56 }}
-              />
-              <span>★</span>
+          <div className="stars-settings-grid">
+            <div>
+              <h3>Formule de calcul</h3>
+              <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+                score = (clics × {cw}) + (favoris × {fw}) + (moyenne notes × {rw})
+              </p>
+              <div className="field">
+                <label>Poids clics</label>
+                <input
+                  type="number"
+                  value={settings.clickWeight}
+                  onChange={(e) =>
+                    setSettings((s) => ({ ...s, clickWeight: Number(e.target.value) || 0 }))
+                  }
+                />
+              </div>
+              <div className="field">
+                <label>Poids favoris</label>
+                <input
+                  type="number"
+                  value={settings.favoriteWeight}
+                  onChange={(e) =>
+                    setSettings((s) => ({ ...s, favoriteWeight: Number(e.target.value) || 0 }))
+                  }
+                />
+              </div>
+              <div className="field">
+                <label>Poids notes (moyenne /5)</label>
+                <input
+                  type="number"
+                  value={settings.ratingWeight}
+                  onChange={(e) =>
+                    setSettings((s) => ({ ...s, ratingWeight: Number(e.target.value) || 0 }))
+                  }
+                />
+              </div>
             </div>
-          ))}
+
+            <div>
+              <h3>Paliers score → étoiles</h3>
+              <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+                Score min → max = nombre d&apos;étoiles affichées (vide = sans limite).
+              </p>
+              {settings.tiers.map((tier, index) => (
+                <div key={index} className="stars-tier-row">
+                  <input
+                    type="number"
+                    aria-label="Score min"
+                    value={tier.minScore}
+                    onChange={(e) => updateTier(index, 'minScore', e.target.value)}
+                  />
+                  <span className="muted">→</span>
+                  <input
+                    type="number"
+                    aria-label="Score max"
+                    placeholder="∞"
+                    value={tier.maxScore == null ? '' : tier.maxScore}
+                    onChange={(e) => updateTier(index, 'maxScore', e.target.value)}
+                  />
+                  <span className="muted">=</span>
+                  <input
+                    type="number"
+                    aria-label="Nombre d'étoiles"
+                    min={1}
+                    max={5}
+                    value={tier.starCount}
+                    onChange={(e) => updateTier(index, 'starCount', e.target.value)}
+                  />
+                  <span>★</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <button type="button" className="btn" disabled={busy} onClick={() => void save()}>
             Enregistrer

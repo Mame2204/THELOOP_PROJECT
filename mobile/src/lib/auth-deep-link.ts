@@ -57,24 +57,31 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
 
   const tokenHash = params.token_hash;
   if (tokenHash) {
-    const otpType =
+    const otpTypes: Array<'recovery' | 'signup' | 'invite' | 'email'> =
       kind === 'recovery'
-        ? 'recovery'
-        : kind === 'signup' || kind === 'email'
-          ? 'signup'
-          : 'invite';
-    const { data, error } = await supabase.auth.verifyOtp({
-      token_hash: tokenHash,
-      type: otpType,
-    });
-    if (error) {
-      console.warn('[Auth] verifyOtp token_hash:', error.message);
-      return { ok: false };
+        ? ['recovery', 'email']
+        : kind === 'invite'
+          ? ['invite', 'email']
+          : ['signup', 'email'];
+
+    for (const otpType of otpTypes) {
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: otpType,
+      });
+      if (error) {
+        console.warn('[Auth] verifyOtp token_hash', otpType, error.message);
+        continue;
+      }
+      if (data.session) {
+        const resolvedKind = otpType === 'recovery' || kind === 'recovery' ? 'recovery' : kind;
+        if (__DEV__) {
+          console.log('[Auth] verifyOtp OK —', data.session.user.email ?? data.session.user.id, resolvedKind);
+        }
+        return { ok: true, kind: resolvedKind };
+      }
     }
-    if (__DEV__ && data.session) {
-      console.log('[Auth] verifyOtp OK —', data.session.user.email ?? data.session.user.id, kind);
-    }
-    return data.session ? { ok: true, kind } : { ok: false };
+    return { ok: false };
   }
 
   const code = params.code;

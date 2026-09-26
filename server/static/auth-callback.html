@@ -233,8 +233,11 @@
         }
         var deepLink = sessionState.deepLink;
         var isAndroid = /Android/i.test(navigator.userAgent);
-        var androidIntent = 'intent://auth/callback#' + (sessionState.paramString || '')
-          + '#Intent;scheme=theloop;package=gn.theloop.app;end';
+        var ps = sessionState.paramString || '';
+        var androidIntent =
+          ps.indexOf('token_hash=') >= 0 || ps.indexOf('code=') >= 0
+            ? 'intent://auth/callback?' + ps + '#Intent;scheme=theloop;package=gn.theloop.app;end'
+            : 'intent://auth/callback#' + ps + '#Intent;scheme=theloop;package=gn.theloop.app;end';
         try {
           window.location.href = deepLink;
           if (isAndroid) {
