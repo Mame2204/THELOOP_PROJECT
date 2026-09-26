@@ -61,5 +61,8 @@
     "jest": "^29.7.0",
     "jest-expo": "~54.0.18",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "expo-font": "~14.0.12"
   }
 }
