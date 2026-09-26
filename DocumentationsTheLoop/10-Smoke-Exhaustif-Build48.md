@@ -48,7 +48,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **~300 / 388** ≈ **77 %** global *(après parité 📱→🤖 RN 26 sept.)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **M1-U2** retest après deploy **Render** (sans build mobile) · **M2** pack léger Param. admin (1 appareil) |
+| **Prochain test** | **Hors build 49** : **M2** (finir étoiles 📱 si besoin) · **C1** push · **D1** · admin mobile **B9 délégué** · **A4/A5** restants — voir § « En attendant bulle 49 » |
+| **Bloqué bulle 49** | **M1-U2** set_password in-app (fix anti double `verifyOtp` · PR #52) · LoopX · octroi individuel scan · modération refus 💻 · Phase 1 retraits · perf mobile · etc. |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -86,14 +87,28 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | # | Action | Attendu |
 |---|--------|---------|
 | ~~**M1-U1**~~ | ~~Logout membre~~ — **PASS 26 sept.** 📱🤖 · retour **Accueil sans session** (visiteur) — OK testeur | — |
-| **M1-U2** | Recovery → **« Ouvrir l’application »** → **set_password in-app** | **FAIL 26 sept.** · session expirée · web `session_id` JWT · **fix** page auth-callback (deploy Render) |
+| **M1-U2** | Recovery → **« Ouvrir l’application »** → **set_password in-app** | **⏸ bulle 49** · FAIL 26 sept. · fix PR #52 (dedupe deep link) · **ne pas retester sur build 48** |
 | ~~**M1-U3**~~ | ~~Connexion SPOT~~ — **N/A** · entrée **retirée** app mobile (partenaire = **e-mail / MDP** uniquement) | — |
 | ~~**M1-U4**~~ | Inscription complète (gate ON) — **PASS 26 sept.** 📱🤖 | — |
 
-> **M1-U2 · set_password — faut-il un build mobile ?**  
-> **Non** pour le correctif principal (PR #51) : la page **`api.theloop-app.com/auth/callback`** (Render) ne doit plus consommer le `token_hash` avant « Ouvrir l’application ». Le **build 48** sait déjà faire `verifyOtp` + écran nouveau MDP.  
-> **Retest** : merge + deploy **Render** → **nouvel e-mail** oubli MDP → « Ouvrir l’application » → saisie MDP → login.  
-> Un **nouveau build EAS** n’est utile que pour les **libellés d’erreur** mobile affinés (cosmétique).
+> **M1-U2 · set_password — build 49 obligatoire**  
+> Correctif **in-app** (PR #52) : un seul `verifyOtp` par lien (évite « session expirée »). **Render** aide le parcours **web** ; l’app **build 48** n’a pas ce code.  
+> **Retest M1-U2** : **bulle 49+** · nouvel e-mail · « Ouvrir l’application » · MDP · login.  
+> En attendant : reset MDP possible via **« Continuer sur le web »** sur le lien mail (Render à jour) si besoin urgent.
+
+### En attendant bulle 49 — ordre suggéré *(build 48 · 📱 ou 🤖 · 1 device)*
+
+| Ordre | ID | Durée | Notes |
+|------:|-----|------:|-------|
+| 1 | **M2** | ~15 min | **M2-U0** : 11 tuiles Param. admin · **M2-U★** : 1 save · **Étoiles** : retest paliers/formule *(💻 déjà OK)* |
+| 2 | **C1** | ~30 min | Push : campagnes · tirage · modération · ciblage *(7 scénarios tableau Partie C)* |
+| 3 | **D1** | ~15 min | Cold start · background · images · refresh |
+| 4 | **B9 mobile** | ~10 min | Admin **délégué** sur app *(💻 B9 déjà PASS)* |
+| 5 | **A4-4/5/6** | variable | Partenaire 🤖 si contenu publié · sinon N/A |
+| 6 | **A2-U1/U2** | ~5 min | PassPayment · Mes privilèges (membre perso) |
+| 7 | **C2–C4** | ~15 min | Partenaire invité · mailto · filleul |
+
+**Ne pas lancer** (bulle 49+) : M1-U2 in-app · LoopX · octroi individuel scan · refus privilège partenaire · Phase 1 retraits · slider À la une · A5-U23.
 
 ### Règle parité smoke *(éviter de retester 3× la même logique)*
 
@@ -125,8 +140,8 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Priorité | ID / zone | 📱🤖 | 💻 | Notes |
 |----------|-----------|------|-----|--------|
-| **P0** | **M1-U2** set_password in-app | Retest **FAIL** | — | Deploy **Render** PR #51 · **sans build mobile** · nouvel e-mail reset |
-| **P0** | **M2** Param. admin satellites (11 tuiles + 1 save) | **À faire** *(tu testes après ce message)* | déjà PASS | Une fois **M2 OK** sur **📱 ou 🤖** → on coche **📱+🤖** |
+| **⏸ 49** | **M1-U2** set_password in-app | **bulle 49** | Render OK web | PR #52 · **pas de retest build 48** |
+| **P0** | **M2** Param. admin satellites (11 tuiles + 1 save · étoiles) | **À faire** | déjà PASS 💻 | 1 device → coche **📱+🤖** |
 | **P1** | **C1** push (7 scénarios tableau) | [ ] | — | Campagnes · tirage · modération · ciblage |
 | **P1** | **D1** régression rapide (5×2) | [ ] | — | Cold start · background · images · refresh |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [ ] | — | Checklist transversale |
@@ -159,7 +174,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
 | **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
 | **🤖 Android** | **~118** | **~140** | **~84 %** | **Parité RN** : cases 📱 cochées → 🤖 alignées *(26 sept. agent)* sauf **N/A / build 49+**. |
-| **Global (1 ligne = 1 case)** | **~300** | **388** | **~77 %** | Reste = **M1-U2 · M2 · push · Phase 1 · build 49+**. |
+| **Global (1 ligne = 1 case)** | **~300** | **388** | **~77 %** | Reste **hors 49** = **M2 · C1 · D1 · B9 mobile** · reste **49+** = M1-U2 · Phase 1 · LoopX… |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
@@ -1148,10 +1163,10 @@ Mobile (26 sept. 2026 · testeur · **Lot A Android** · build 48 · hors build 
   - **Suite agent** : **M-BOTH-1** Auth · **M-BOTH-2** Param. admin mobile
 Mobile (26 sept. 2026 · testeur · **M-BOTH-1**) :
   - **PASS M1-U1** 📱🤖 : déconnexion membre → **Accueil sans login** (comportement validé)
-  - **FAIL M1-U2** 📱🤖 : oubli MDP · mail OK · lien OK · **set_password** → « session expirée » · web → `session_id` JWT · **retest 2** après fix deep link query + recovery session
-  - **M2 partiel** : Pays · Catégories · Paliers partenaire · Légal · Horaires · Permissions **PASS** · **Étoiles FAIL** (paliers web manquants → PR)
+  - **⏸ M1-U2** 📱🤖 : **reporté bulle 49** (PR #52 dedupe verifyOtp) · dernier FAIL 26 sept.
+  - **M2 partiel** : Pays · Catégories · Paliers partenaire · Légal · Horaires · Permissions **PASS** · **Étoiles** : retest 📱 après 💻 OK (grille formule/paliers)
   - **N/A M1-U3** : pas d’entrée SPOT dans l’app · retrait écran + API context mobile
-  - **Fix** : auth-callback ne consomme plus `token_hash` avant « Ouvrir l’app » · deploy **Render** requis · retest M1-U2 (**sans build mobile**)
+  - **Pilotage 26 sept. soir** : smoke **hors bulle 49** en parallèle · M1-U2 seulement après **build 49**
   - **PASS M1-U4** 📱🤖 : inscription complète (gate ON)
 Mobile (26 sept. 2026 · pilotage parité) :
   - Règle : **📱🤖** = 1 device · **💻 Param. déjà PASS** → M2 = U0 (11 tuiles) + **1** save (M2-U★)
