@@ -76,6 +76,9 @@ export const PERIOD_LABELS: Record<BillingPeriod, string> = {
   lifetime: 'À vie',
 };
 
+/** Formules boutique admin-web (pas de « à vie » — Heritage / illimité = catalogue séparé). */
+export const SHOP_BILLING_PERIODS: BillingPeriod[] = ['monthly', 'quarterly', 'annual'];
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -180,9 +183,10 @@ export async function loadPassCatalog(countryCode: string): Promise<PassCatalogE
   const key = remoteKey('pass_catalog_v1', countryCode);
   const legacy = countryCode.toUpperCase() === 'GN' ? 'pass_catalog_v1' : undefined;
   const remote = await fetchSetting<PassCatalogEntry[]>(key, legacy);
-  if (Array.isArray(remote) && remote.length) return normalizeCatalog(remote);
+  if (Array.isArray(remote)) return normalizeCatalog(remote);
   const seeded = defaultCatalog();
   await upsertSetting(key, seeded);
+  if (countryCode.toUpperCase() === 'GN') await upsertSetting('pass_catalog_v1', seeded);
   return seeded;
 }
 
