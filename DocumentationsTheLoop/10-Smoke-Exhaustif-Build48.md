@@ -196,8 +196,8 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | ID | Action | Compte | Attendu |
 |----|--------|--------|---------|
-| **A2-U1** | Profil → Découvrir Prime → forfait → **PassPayment** (sans payer si tu veux) | membre perso | Écran paiement s’ouvre · montant · moyens affichés |
-| **A2-U2** | Chercher entrée **Mes privilèges** | membre perso | **N/A attendu** — pas de menu · noter si trouvé via notif |
+| **A2-U1** | Profil → Découvrir Prime → forfait → **PassPayment** (sans payer si tu veux) | membre perso | **PASS 26 sept.** 📱🤖 · écran paiement OK |
+| **A2-U2** | Chercher entrée **Mes privilèges** (liste) | membre perso | **N/A 26 sept.** — pas de menu membre sans PASS · **privilèges fiches PASS** |
 
 ---
 
