@@ -669,9 +669,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    void Linking.getInitialURL().then((url) => void handleDeepLink(url));
+    void Linking.getInitialURL().then((url) => {
+      void handleDeepLink(url).catch((err: unknown) => {
+        console.warn('[Auth] getInitialURL deep link:', err instanceof Error ? err.message : err);
+      });
+    });
     const subscription = Linking.addEventListener('url', ({ url }) => {
-      void handleDeepLink(url);
+      void handleDeepLink(url).catch((err: unknown) => {
+        console.warn('[Auth] url deep link:', err instanceof Error ? err.message : err);
+      });
     });
 
     let appStateSub: { remove: () => void } | undefined;

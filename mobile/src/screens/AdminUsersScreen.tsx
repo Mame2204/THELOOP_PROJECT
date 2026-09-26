@@ -233,12 +233,12 @@ export function AdminUsersScreen({ navigation }: Props) {
 
     let { data, error, count } = await query;
 
-    if (error && /last_seen_at/i.test(error.message)) {
+    if (error && /last_seen_at|auth_last_sign_in_at/i.test(error.message)) {
       let fallback = supabase
         .from('users')
         .select(
-          'id, email, first_name, last_name, phone_number, user_role, is_active, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools',
-          { count: 'exact' },
+          'id, email, first_name, last_name, phone_number, user_role, is_active, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at',
+          { count: staleMode ? undefined : 'exact' },
         )
         .order('created_at', { ascending: false })
         .range(from, to);
