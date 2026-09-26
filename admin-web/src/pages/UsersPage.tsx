@@ -235,10 +235,10 @@ export function UsersPage() {
     const sentEmail = res.email ?? inviteForm.email.trim().toLowerCase();
     const mailKind =
       res.mailMode === 'recovery_resent'
-        ? 'E-mail de réinitialisation envoyé'
-        : 'E-mail d\'invitation envoyé';
+        ? 'E-mail de réinitialisation envoyé (lien mot de passe)'
+        : 'E-mail d\'invitation envoyé (activation dans l\'app THE LOOP)';
     setInviteMsg(
-      `${mailKind} à ${sentEmail}. Vérifiez aussi les spams / Promotions (expéditeur Supabase).`,
+      `${mailKind} à ${sentEmail}. L'invité ouvre l'app → Connexion → « Activer un compte invité par l'équipe ». Vérifiez les spams.`,
     );
     setInviteForm({
       email: '',
@@ -906,7 +906,7 @@ export function UsersPage() {
             Envoyer l’invitation
           </button>
           {inviteMsg ? (
-            <p className={inviteMsg.includes('envoyée') ? 'muted' : 'error'}>{inviteMsg}</p>
+            <p className={inviteMsg.includes('envoyé') ? 'muted' : 'error'}>{inviteMsg}</p>
           ) : null}
         </form>
       ) : null}

@@ -15,6 +15,7 @@ import { useContent } from '@/context/ContentContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
+import { useContentIdsWithBenefits } from '@/hooks/useContentIdsWithBenefits';
 import { useScrollContentContainerStyle } from '@/hooks/useScrollContentContainerStyle';
 import {
   filterPartnerPublicContent,
@@ -46,6 +47,7 @@ export function PartnerPublicScreen({ route, navigation }: Props) {
   const { publicEvents, getHomeLocations } = useContent();
   const { isEventFavorite, isLocationFavorite, toggleEventFavorite, toggleLocationFavorite } = useFavorites();
   const openFavoritesSignup = usePromptFavoritesSignup();
+  const { hasBenefit } = useContentIdsWithBenefits();
   const c = theme.colors;
 
   const [filter, setFilter] = useState<TabFilter>('all');
@@ -178,6 +180,7 @@ export function PartnerPublicScreen({ route, navigation }: Props) {
             <EventCard
               event={row.item}
               isFavorite={isEventFavorite(row.item.id)}
+              hasLinkedPrivilege={hasBenefit(row.item.id, 'event')}
               onPress={() => navigation.navigate('EventDetail', { slug: row.item.slug })}
               onToggleFavorite={() => onFavoriteEvent(row.item.id)}
             />
@@ -187,6 +190,7 @@ export function PartnerPublicScreen({ route, navigation }: Props) {
           <SpotCard
             spot={row.item}
             isFavorite={isLocationFavorite(row.item.id)}
+            hasLinkedPrivilege={hasBenefit(row.item.id, row.kind === 'tool' ? 'tool' : 'spot')}
             onPress={() => navigation.navigate('SpotDetail', { slug: row.item.slug })}
             onToggleFavorite={() => onFavoriteLoc(row.item.id, row.kind)}
           />

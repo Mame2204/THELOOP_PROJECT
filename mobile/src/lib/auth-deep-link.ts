@@ -57,7 +57,12 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
 
   const tokenHash = params.token_hash;
   if (tokenHash) {
-    const otpType = kind === 'recovery' ? 'recovery' : 'invite';
+    const otpType =
+      kind === 'recovery'
+        ? 'recovery'
+        : kind === 'signup' || kind === 'email'
+          ? 'signup'
+          : 'invite';
     const { data, error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: otpType,

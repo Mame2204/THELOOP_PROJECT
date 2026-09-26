@@ -13,6 +13,7 @@
         "EXPO_PUBLIC_SUPABASE_URL": "https://eeyhtulpixvftvhppinz.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_l78zClzs1ldqOElbaLVT0w__KrKrlZv",
         "EXPO_PUBLIC_AUTH_REDIRECT_URL": "theloop://auth/callback",
+        "EXPO_PUBLIC_AUTH_CALLBACK_HTTPS_URL": "https://api.theloop-app.com/auth/callback",
         "EXPO_PUBLIC_PAYMENT_API_URL": "https://api.theloop-app.com"
       }
     },
@@ -24,6 +25,7 @@
         "EXPO_PUBLIC_SUPABASE_URL": "https://eeyhtulpixvftvhppinz.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_l78zClzs1ldqOElbaLVT0w__KrKrlZv",
         "EXPO_PUBLIC_AUTH_REDIRECT_URL": "theloop://auth/callback",
+        "EXPO_PUBLIC_AUTH_CALLBACK_HTTPS_URL": "https://api.theloop-app.com/auth/callback",
         "EXPO_PUBLIC_PAYMENT_API_URL": "https://api.theloop-app.com"
       }
     }

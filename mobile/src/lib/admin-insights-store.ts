@@ -9,13 +9,44 @@ import type { HomeLocation } from '@/lib/demo-data';
 import { listAllLoopWalksForAdmin } from '@/lib/loop-walks-store';
 import { getAllWalkClickCounts, getAllWalkFavoriteCounts, getAllWalkRatingStats } from '@/lib/walk-engagement-store';
 import { countSpotFavorites } from '@/lib/spot-stars-store';
-import { getBenefitOverviewKpis, getCatalogUsageStats, type BenefitOverviewKpis, type CatalogUsageStat } from '@/lib/prime-benefits-store';
-import { countDashboardActiveCatalogBenefits } from '@/lib/benefit-catalog-store';
+import {
+  getBenefitInsightsDetails,
+  getCatalogUsageStats,
+  type BenefitInsightsDetails,
+  type BenefitOverviewKpis,
+  type CatalogUsageStat,
+} from '@/lib/prime-benefits-store';
+import {
+  countDashboardActiveCatalogBenefits,
+  isPartnerAssociatedBenefit,
+  isStandaloneTheLoopBenefit,
+  listBenefitCatalog,
+} from '@/lib/benefit-catalog-store';
 import { getEventCategoryLabel, getSpotCategoryLabel, getToolCategoryLabel, refreshCategoryLabelsCache } from '@/lib/category-labels-cache';
 import type { EventCategory } from '@/types';
 
 const LOCAL_FAV_KEY = 'loop_local_favorite_counts_v1';
-const INSIGHTS_CACHE = 'loop_admin_insights_v3';
+const INSIGHTS_CACHE = 'loop_admin_insights_v5';
+const ACCUEIL_INSIGHTS_TOP = 5;
+
+async function filterInsightsCatalogBenefitStats(
+  stats: CatalogUsageStat[],
+  countryCode?: string,
+): Promise<CatalogUsageStat[]> {
+  const items = await listBenefitCatalog(false);
+  const cc = countryCode?.toUpperCase().slice(0, 2);
+  const scoped = cc
+    ? items.filter((c) => !c.countryCode || c.countryCode.toUpperCase().slice(0, 2) === cc)
+    : items;
+  const allowed = new Set(
+    scoped
+      .filter((c) => isPartnerAssociatedBenefit(c) && !isStandaloneTheLoopBenefit(c))
+      .map((c) => c.id),
+  );
+  return stats
+    .filter((s) => allowed.has(s.catalogId))
+    .sort((a, b) => b.granted - a.granted || b.used - a.used || a.title.localeCompare(b.title, 'fr'));
+}
 
 export type FullAdminInsights = Awaited<ReturnType<typeof buildFullAdminInsights>>;
 
@@ -159,13 +190,14 @@ export async function getAccueilEngagementInsights(countryCode?: string): Promis
   corners: CornerInsight[];
   chroniques: ChroniqueInsight[];
   polls: PollInsight[];
+  logoCount: number;
 }> {
   const corners: CornerInsight[] = [];
   const chroniques: ChroniqueInsight[] = [];
   const polls: PollInsight[] = [];
 
   if (!isSupabaseConfigured() || !supabase) {
-    return { corners, chroniques, polls };
+    return { corners, chroniques, polls, logoCount: 0 };
   }
 
   let usersQuery = supabase
@@ -197,11 +229,17 @@ export async function getAccueilEngagementInsights(countryCode?: string): Promis
     .limit(100);
   if (countryCode) pollsQuery = pollsQuery.eq('country_code', countryCode);
 
-  const [usersRes, cornersRes, chroniquesRes, pollsRes] = await Promise.all([
+  let logosQuery = supabase
+    .from('home_partner_logos')
+    .select('id', { count: 'exact', head: true });
+  if (countryCode) logosQuery = logosQuery.eq('country_code', countryCode);
+
+  const [usersRes, cornersRes, chroniquesRes, pollsRes, logosRes] = await Promise.all([
     usersQuery,
     cornersQuery,
     chroniquesQuery,
     pollsQuery,
+    logosQuery,
   ]);
   const totalUsers = usersRes.count ?? 0;
 
@@ -281,7 +319,7 @@ export async function getAccueilEngagementInsights(countryCode?: string): Promis
     });
   }
 
-  return { corners, chroniques, polls };
+  return { corners, chroniques, polls, logoCount: logosRes.count ?? 0 };
 }
 
 export async function getTopFavoriteInsights(
@@ -645,9 +683,17 @@ export async function getFullAdminInsights(
   walksByClicks: WalkEngagementInsight[];
   walksByRatings: WalkEngagementInsight[];
   benefitKpis: BenefitOverviewKpis;
+  benefitDetails: BenefitInsightsDetails;
   /** Catalogue actif + partenaire associé + validation partenaire si requise. */
   validatedCatalogActive: number;
   catalogBenefitStats: CatalogUsageStat[];
+  platformCounts: {
+    corners: number;
+    chroniques: number;
+    polls: number;
+    walksPublished: number;
+    logos: number;
+  };
   cornersByClicks: CornerInsight[];
   chroniquesByClicks: ChroniqueInsight[];
   pollInsights: PollInsight[];
@@ -700,9 +746,17 @@ async function buildFullAdminInsights(
   walksByClicks: WalkEngagementInsight[];
   walksByRatings: WalkEngagementInsight[];
   benefitKpis: BenefitOverviewKpis;
+  benefitDetails: BenefitInsightsDetails;
   /** Catalogue actif + partenaire associé + validation partenaire si requise. */
   validatedCatalogActive: number;
   catalogBenefitStats: CatalogUsageStat[];
+  platformCounts: {
+    corners: number;
+    chroniques: number;
+    polls: number;
+    walksPublished: number;
+    logos: number;
+  };
   cornersByClicks: CornerInsight[];
   chroniquesByClicks: ChroniqueInsight[];
   pollInsights: PollInsight[];
@@ -710,17 +764,32 @@ async function buildFullAdminInsights(
   await refreshCategoryLabelsCache();
   const walks = await listAllLoopWalksForAdmin(countryCode);
   const walkIds = new Set(walks.map((w) => w.id));
-  const [walkFavAll, walkClickAll, walkRatingAll, benefitKpis, catalogBenefitStats, validatedCatalogActive, dbEventClicks, accueilInsights] =
+  const [walkFavAll, walkClickAll, walkRatingAll, benefitDetails, catalogBenefitStats, dbEventClicks, accueilInsights] =
     await Promise.all([
     getAllWalkFavoriteCounts(),
     getAllWalkClickCounts(),
     getAllWalkRatingStats(),
-    getBenefitOverviewKpis(countryCode),
+    getBenefitInsightsDetails(countryCode),
     getCatalogUsageStats(countryCode),
-    countDashboardActiveCatalogBenefits(countryCode),
     fetchEventClickCountsFromDb(events),
-    includePlatformInsights ? getAccueilEngagementInsights(countryCode) : Promise.resolve({ corners: [], chroniques: [], polls: [] }),
+    includePlatformInsights
+      ? getAccueilEngagementInsights(countryCode)
+      : Promise.resolve({ corners: [], chroniques: [], polls: [], logoCount: 0 }),
   ]);
+  const benefitKpis = benefitDetails.allGrants;
+  const validatedCatalogActive = benefitDetails.catalogActiveAssociated;
+  const walksPublished = walks.filter((w) => w.isPublished !== false).length;
+  const platformCounts = {
+    corners: accueilInsights.corners.length,
+    chroniques: accueilInsights.chroniques.length,
+    polls: accueilInsights.polls.length,
+    walksPublished,
+    logos: accueilInsights.logoCount,
+  };
+  const catalogStatsFiltered = await filterInsightsCatalogBenefitStats(
+    catalogBenefitStats,
+    countryCode,
+  );
   const walkFavCounts = Object.fromEntries(
     Object.entries(walkFavAll).filter(([id]) => walkIds.has(id)),
   );
@@ -868,11 +937,13 @@ async function buildFullAdminInsights(
       (a, b) => b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount || b.clickCount - a.clickCount,
     ),
     benefitKpis,
+    benefitDetails,
     validatedCatalogActive,
-    catalogBenefitStats,
-    cornersByClicks: accueilInsights.corners,
-    chroniquesByClicks: accueilInsights.chroniques,
-    pollInsights: accueilInsights.polls,
+    catalogBenefitStats: catalogStatsFiltered,
+    platformCounts,
+    cornersByClicks: accueilInsights.corners.slice(0, ACCUEIL_INSIGHTS_TOP),
+    chroniquesByClicks: accueilInsights.chroniques.slice(0, ACCUEIL_INSIGHTS_TOP),
+    pollInsights: accueilInsights.polls.slice(0, ACCUEIL_INSIGHTS_TOP),
   };
 }
 

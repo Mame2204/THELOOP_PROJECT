@@ -8,6 +8,11 @@ import { loadUserFavorites } from '@/lib/favorites-store';
 import type { HomeLocation } from '@/lib/demo-data';
 import { isToolLocation } from '@/lib/location-kind-utils';
 import { listRegistryUsers, type RegistryUser } from '@/lib/user-registry-store';
+import {
+  isEmailTarget,
+  parseIndividualTargets,
+  resolveIndividualUserIds,
+} from '@/lib/notification-individual-target';
 import { normalizePhone } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { undefinedIfNull } from '@/lib/supabase-types';
@@ -436,6 +441,28 @@ export function subscribeUserNotifications(listener: NotificationListener): () =
   return () => notificationListeners.delete(listener);
 }
 
+const partnerModerationRefreshListeners = new Set<NotificationListener>();
+
+/** Rafraîchir Mon contenu partenaire après push modération (sans écouter toute l’inbox). */
+export function subscribePartnerModerationRefresh(listener: NotificationListener): () => void {
+  partnerModerationRefreshListeners.add(listener);
+  return () => partnerModerationRefreshListeners.delete(listener);
+}
+
+export function emitPartnerModerationRefresh(): void {
+  for (const listener of partnerModerationRefreshListeners) listener();
+}
+
+export function isPartnerModerationPushTitle(title: string): boolean {
+  const t = title.trim().toLowerCase();
+  return (
+    t.includes('validé')
+    || t.includes('refusé')
+    || t.includes('retiré')
+    || t.startsWith('retrait refusé')
+  );
+}
+
 /** Rafale d'écritures (octroi multiple, sync) → un seul rechargement abonné. */
 const EMIT_COALESCE_MS = 300;
 let emitTimer: ReturnType<typeof setTimeout> | null = null;
@@ -714,7 +741,13 @@ function pruneRecentAppends(now: number): void {
 export function appendUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
+  options?: {
+    recipientPhone?: string | null;
+    /** Push déjà reçu côté OS : ne pas ré-insérer en base (évite boucle push ↔ inbox). */
+    skipOsDelivery?: boolean;
+    /** Id serveur déjà connu (payload push). */
+    remoteId?: string | null;
+  },
 ): Promise<UserNotification> {
   const now = Date.now();
   pruneRecentAppends(now);
@@ -732,19 +765,24 @@ export function appendUserNotification(
 async function createUserNotification(
   userId: string,
   input: { title: string; message: string; audience: NotificationAudience },
-  options?: { recipientPhone?: string | null; skipOsDelivery?: boolean },
+  options?: {
+    recipientPhone?: string | null;
+    skipOsDelivery?: boolean;
+    remoteId?: string | null;
+  },
 ): Promise<UserNotification> {
   const sentAt = new Date().toISOString();
-  let id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  let id =
+    options?.remoteId?.trim() && /^[0-9a-f-]{36}$/i.test(options.remoteId.trim())
+      ? options.remoteId.trim()
+      : `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const recipientPhone = await resolveRecipientPhone(userId, options?.recipientPhone);
 
-  const remoteId = await persistNotificationRemote(
-    userId,
-    input,
-    sentAt,
-    recipientPhone,
-  );
-  if (remoteId) id = remoteId;
+  // Echo d’un push serveur : cache local uniquement (build 48 incl.).
+  if (!options?.skipOsDelivery) {
+    const remoteId = await persistNotificationRemote(userId, input, sentAt, recipientPhone);
+    if (remoteId) id = remoteId;
+  }
 
   const all = await loadAll();
   const entry: UserNotification = {
@@ -854,11 +892,15 @@ export async function notifyAdminUsers(input: {
   }
 }
 
+const welcomeSentUserIds = new Set<string>();
+
 export async function sendWelcomeNotification(user: {
   id: string;
   firstName?: string | null;
   countryCode?: string | null;
 }): Promise<void> {
+  if (welcomeSentUserIds.has(user.id)) return;
+  welcomeSentUserIds.add(user.id);
   const name = user.firstName?.trim() || 'Membre';
   await appendUserNotification(user.id, {
     title: `Bienvenue ${name} !`,
@@ -1286,6 +1328,39 @@ export async function distributeNotification(input: {
   const message = input.message.trim();
   const campaignId = resolveCampaignIdForInsert(input.campaignId);
 
+  if (
+    input.audience === 'individual' &&
+    isSupabaseConfigured() &&
+    supabase &&
+    (await canUseRemoteNotifications())
+  ) {
+    await ensureNotificationAuthSession();
+    try {
+      const userIds = await resolveIndividualUserIds(
+        supabase,
+        input.targetPhone ?? '',
+        input.countryCode ?? 'GN',
+      );
+      if (userIds.length) {
+        const sentAt = new Date().toISOString();
+        const rowsToInsert: NotificationInsertRow[] = userIds.map((userId) => ({
+          user_id: userId,
+          recipient_phone: null,
+          title,
+          message,
+          audience: input.audience,
+          sent_at: sentAt,
+          ...(campaignId ? { campaign_id: campaignId } : {}),
+        }));
+        await insertNotificationsRemote(rowsToInsert);
+        await deliverPushToAdminUserIds(userIds, title, message, input.audience);
+        return userIds.length;
+      }
+    } catch (err) {
+      console.warn('[Notifications] individual remote:', err instanceof Error ? err.message : err);
+    }
+  }
+
   // Diffusion serveur (tous types de campagnes rôle) — pas de limite registre client.
   const serverAudiences: NotificationAudience[] = [
     'all',
@@ -1343,11 +1418,18 @@ export async function distributeNotification(input: {
   const guestPhones: string[] = [];
 
   if (input.audience === 'individual') {
-    const phones = parsePhones(input.targetPhone);
-    recipients = users.filter(
-      (u) => u.phoneNumber && phones.some((p) => phonesMatch(u.phoneNumber, p)) && inCountry(u) && inCity(u),
-    );
-    // Pas d’envoi aux sans-compte en ciblage individuel manuel (uniquement comptes connus)
+    const targets = parseIndividualTargets(input.targetPhone);
+    const emails = new Set(targets.filter(isEmailTarget).map((t) => t.toLowerCase()));
+    const phones = targets
+      .filter((t) => !isEmailTarget(t))
+      .map((p) => normalizePhone(p))
+      .filter(Boolean);
+    recipients = users.filter((u) => {
+      if (!inCountry(u) || !inCity(u)) return false;
+      if (u.email && emails.has(u.email.trim().toLowerCase())) return true;
+      if (u.phoneNumber && phones.some((p) => phonesMatch(u.phoneNumber, p))) return true;
+      return false;
+    });
   } else if (input.audience === 'guests_phone') {
     const phones = parsePhones(input.targetPhone);
     if (phones.length) {

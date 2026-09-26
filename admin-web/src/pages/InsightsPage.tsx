@@ -1,12 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ListPager } from '../components/ListPager';
 import { useAuth } from '../context/AuthContext';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { isSuperAdminUser } from '../lib/permissions';
-import { loadInsights, type InsightsBundle, type InsightRow } from '../lib/insights';
+import {
+  loadInsights,
+  pickTopPerfRows,
+  type ContentTypeUsageRow,
+  type InsightsBundle,
+  type PlatformCornerRow,
+  type PlatformPollRow,
+  type WalkInsightRow,
+} from '../lib/insights';
+import { LOOP_PERF_PAGE_SIZE, type LoopPerfMetricTab } from '../lib/loop-perf-sort';
+import type { TeamLoopPerfRow } from '../lib/team-loop-performance';
 
 type Tab = 'overview' | 'events' | 'spots' | 'tools' | 'benefits' | 'platform';
+type EventMetricTab = 'all' | 'favorites' | 'clicks';
+type SpotMetricTab = 'all' | 'favorites' | 'clicks' | 'stars' | 'ratings';
+type PlatformMetricTab = 'all' | 'corner' | 'polls' | 'walks';
+
+const INSIGHTS_PAGE_SIZE = LOOP_PERF_PAGE_SIZE;
+const ACCUEIL_INSIGHTS_TOP = 5;
 
 export function InsightsPage() {
   const { profile } = useAuth();
@@ -51,23 +68,85 @@ export function InsightsPage() {
       p.set('tab', next);
       return p;
     });
+    setEventMetric('all');
+    setSpotMetric('all');
+    setPlatformMetric('all');
+    setListPage(0);
+    setBenefitsPage(0);
   }
 
   const [data, setData] = useState<InsightsBundle | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [eventMetric, setEventMetric] = useState<EventMetricTab>('all');
+  const [spotMetric, setSpotMetric] = useState<SpotMetricTab>('all');
+  const [toolMetric, setToolMetric] = useState<SpotMetricTab>('all');
+  const [platformMetric, setPlatformMetric] = useState<PlatformMetricTab>('all');
+  const [listPage, setListPage] = useState(0);
+  const [benefitsPage, setBenefitsPage] = useState(0);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      setData(await loadInsights(countryCode));
+      const bundle = await loadInsights(countryCode, { includePlatform: isSuper });
+      setData(bundle);
+      if (bundle.error) setError(bundle.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Chargement impossible');
     }
-  }, [countryCode]);
+  }, [countryCode, isSuper]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const weights = data?.perf.weights;
+
+  const eventList = useMemo(() => {
+    if (!data || !weights) return [];
+    const m: LoopPerfMetricTab =
+      eventMetric === 'favorites' ? 'favorites' : eventMetric === 'clicks' ? 'clicks' : 'all';
+    return pickTopPerfRows(data.perf.events, m, weights, 500);
+  }, [data, eventMetric, weights]);
+
+  const spotList = useMemo(() => {
+    if (!data || !weights) return [];
+    const m: LoopPerfMetricTab =
+      spotMetric === 'favorites'
+        ? 'favorites'
+        : spotMetric === 'clicks'
+          ? 'clicks'
+          : spotMetric === 'stars'
+            ? 'stars'
+            : spotMetric === 'ratings'
+              ? 'ratings'
+              : 'all';
+    return pickTopPerfRows(data.perf.spots, m, weights, 500);
+  }, [data, spotMetric, weights]);
+
+  const toolList = useMemo(() => {
+    if (!data || !weights) return [];
+    const m: LoopPerfMetricTab =
+      toolMetric === 'favorites'
+        ? 'favorites'
+        : toolMetric === 'clicks'
+          ? 'clicks'
+          : toolMetric === 'stars'
+            ? 'stars'
+            : toolMetric === 'ratings'
+              ? 'ratings'
+              : 'all';
+    return pickTopPerfRows(data.perf.tools, m, weights, 500);
+  }, [data, toolMetric, weights]);
+
+  const pagedEventList = eventList.slice(listPage * INSIGHTS_PAGE_SIZE, (listPage + 1) * INSIGHTS_PAGE_SIZE);
+  const pagedSpotList = spotList.slice(listPage * INSIGHTS_PAGE_SIZE, (listPage + 1) * INSIGHTS_PAGE_SIZE);
+  const pagedToolList = toolList.slice(listPage * INSIGHTS_PAGE_SIZE, (listPage + 1) * INSIGHTS_PAGE_SIZE);
+
+  const catalogStatsPaged = useMemo(() => {
+    if (!data) return [];
+    const start = benefitsPage * INSIGHTS_PAGE_SIZE;
+    return data.catalogStats.slice(start, start + INSIGHTS_PAGE_SIZE);
+  }, [data, benefitsPage]);
 
   return (
     <section>
@@ -134,7 +213,7 @@ export function InsightsPage() {
             className={`tab ${tab === 'platform' ? 'active' : ''}`}
             onClick={() => setTab('platform')}
           >
-            Plateforme
+            Accueil
           </button>
         ) : null}
       </nav>
@@ -142,58 +221,132 @@ export function InsightsPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {!data ? <p className="muted">Chargement…</p> : null}
 
+      {data ? <TabKpiStrip tab={tab} data={data} canPlatform={canPlatform} canBenefits={canBenefits} /> : null}
+
       {data && tab === 'overview' && canOverview ? (
         <>
-          <div className="kpi-grid">
-            <Kpi label="Événements publiés" value={data.counts.events} />
-            <Kpi label="Spots publiés" value={data.counts.spots} />
-            <Kpi label="Outils publiés" value={data.counts.tools} />
-            <Kpi label="Octrois" value={data.benefitKpis.granted} />
-            <Kpi label="Actifs" value={data.benefitKpis.active} />
-            <Kpi label="Consommés" value={data.benefitKpis.consumed} />
-          </div>
-          <div className="split-pane" style={{ marginTop: 16 }}>
-            <TopCard title="Top events (clics)" rows={data.eventsByClicks} />
-            <TopCard title="Top spots (clics)" rows={data.spotsByClicks} />
-          </div>
+          <EngagementByType rows={data.contentTypeUsage} />
         </>
       ) : null}
 
-      {data && tab === 'events' && canEvents ? (
-        <TopCard title="Événements — clics" rows={data.eventsByClicks} />
+      {data && tab === 'events' && canEvents && weights ? (
+        <>
+          <MetricTabs
+            tabs={
+              [
+                ['all', 'Tous'],
+                ['favorites', 'Favoris'],
+                ['clicks', 'Clics'],
+              ] as const
+            }
+            active={eventMetric}
+            onChange={(m) => {
+              setEventMetric(m);
+              setListPage(0);
+            }}
+          />
+          <p className="meta" style={{ marginBottom: 8 }}>
+            Tri « Tous » : score = clics×{weights.clickWeight} + favoris×{weights.favoriteWeight} + moyenne
+            note×{weights.ratingWeight}.
+          </p>
+          <PerfRankList rows={pagedEventList} rankOffset={listPage * INSIGHTS_PAGE_SIZE} />
+          <ListPager
+            page={listPage}
+            total={eventList.length}
+            pageSize={INSIGHTS_PAGE_SIZE}
+            onPageChange={setListPage}
+            label="événements"
+          />
+        </>
       ) : null}
-      {data && tab === 'spots' && canSpots ? (
-        <TopCard title="Spots — clics" rows={data.spotsByClicks} />
+
+      {data && tab === 'spots' && canSpots && weights ? (
+        <>
+          <MetricTabs
+            tabs={
+              [
+                ['all', 'Tous'],
+                ['favorites', 'Favoris'],
+                ['clicks', 'Clics'],
+                ['stars', 'Étoiles'],
+                ['ratings', 'Notes'],
+              ] as const
+            }
+            active={spotMetric}
+            onChange={(m) => {
+              setSpotMetric(m);
+              setListPage(0);
+            }}
+          />
+          <PerfRankList rows={pagedSpotList} rankOffset={listPage * INSIGHTS_PAGE_SIZE} />
+          <ListPager
+            page={listPage}
+            total={spotList.length}
+            pageSize={INSIGHTS_PAGE_SIZE}
+            onPageChange={setListPage}
+            label="spots"
+          />
+        </>
       ) : null}
-      {data && tab === 'tools' && canTools ? (
-        <TopCard title="Outils — clics" rows={data.toolsByClicks} />
+
+      {data && tab === 'tools' && canTools && weights ? (
+        <>
+          <MetricTabs
+            tabs={
+              [
+                ['all', 'Tous'],
+                ['favorites', 'Favoris'],
+                ['clicks', 'Clics'],
+                ['stars', 'Étoiles'],
+                ['ratings', 'Notes'],
+              ] as const
+            }
+            active={toolMetric}
+            onChange={(m) => {
+              setToolMetric(m);
+              setListPage(0);
+            }}
+          />
+          <PerfRankList rows={pagedToolList} rankOffset={listPage * INSIGHTS_PAGE_SIZE} />
+          <ListPager
+            page={listPage}
+            total={toolList.length}
+            pageSize={INSIGHTS_PAGE_SIZE}
+            onPageChange={setListPage}
+            label="outils"
+          />
+        </>
       ) : null}
 
       {data && tab === 'benefits' && canBenefits ? (
         <>
-          <div className="kpi-grid">
-            <Kpi label="Octroyés" value={data.benefitKpis.granted} />
-            <Kpi label="Actifs" value={data.benefitKpis.active} />
-            <Kpi label="Expirés" value={data.benefitKpis.expired} />
-            <Kpi label="Utilisés" value={data.benefitKpis.consumed} />
-          </div>
+          <p className="meta" style={{ marginTop: 0 }}>
+            Tous les modèles <strong>associés à un contenu</strong> (actifs ou non). Détail des octrois et consommations
+            par catalogue.
+          </p>
           <div className="table-wrap" style={{ marginTop: 16 }}>
             <table className="data-table">
               <thead>
                 <tr>
                   <th>Catalogue</th>
-                  <th>Octroyés</th>
-                  <th>Utilisés</th>
-                  <th>En cours</th>
+                  <th>Statut modèle</th>
+                  <th>Octrois total</th>
+                  <th>Individuels</th>
+                  <th>Par rôle</th>
+                  <th>Consommés</th>
+                  <th>Non consommés</th>
                 </tr>
               </thead>
               <tbody>
-                {data.catalogStats.map((s) => (
+                {catalogStatsPaged.map((s) => (
                   <tr key={s.catalogId}>
                     <td>
                       <strong>{s.title}</strong>
                     </td>
+                    <td>{s.isActive ? 'Actif' : 'Inactif'}</td>
                     <td>{s.granted}</td>
+                    <td>{s.grantedIndividual}</td>
+                    <td>{s.grantedRole}</td>
                     <td>{s.used}</td>
                     <td>{s.unusedAssigned}</td>
                   </tr>
@@ -202,54 +355,402 @@ export function InsightsPage() {
             </table>
             {data.catalogStats.length === 0 ? (
               <p className="muted" style={{ padding: 16 }}>
-                Pas encore de stats catalogue.
+                Aucun modèle associé à un contenu partenaire pour ce pays.
               </p>
             ) : null}
           </div>
+          <ListPager
+            page={benefitsPage}
+            total={data.catalogStats.length}
+            pageSize={INSIGHTS_PAGE_SIZE}
+            onPageChange={setBenefitsPage}
+            label="catalogues"
+          />
         </>
       ) : null}
 
       {data && tab === 'platform' && canPlatform ? (
-        <div className="card">
-          <h3>Plateforme</h3>
-          <p className="meta">
-            Métriques Accueil avancées (Singulier, Fragment, sondages) restent détaillées sur mobile.
-            Ici : synthèse catalogue + privilèges ci-dessus.
+        <>
+          <MetricTabs
+            tabs={
+              [
+                ['all', 'Tous'],
+                ['corner', 'Le Singulier / Fragment'],
+                ['polls', 'Sondages'],
+                ['walks', 'Parcours'],
+              ] as const
+            }
+            active={platformMetric}
+            onChange={(m) => setPlatformMetric(m)}
+          />
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Chaque bloc affiche le <strong>top {ACCUEIL_INSIGHTS_TOP}</strong> (pas de pagination).
           </p>
-          <div className="kpi-grid" style={{ marginTop: 12 }}>
-            <Kpi label="Catalogue total" value={data.counts.events + data.counts.spots + data.counts.tools} />
-            <Kpi label="Octrois" value={data.benefitKpis.granted} />
-          </div>
-        </div>
+          {platformMetric === 'all' || platformMetric === 'corner' ? (
+            <>
+              <CornerList
+                title={`Le Singulier — top ${ACCUEIL_INSIGHTS_TOP} clics`}
+                rows={data.platform.corners}
+                limit={ACCUEIL_INSIGHTS_TOP}
+              />
+              <CornerList
+                title={`Le Fragment — top ${ACCUEIL_INSIGHTS_TOP} clics`}
+                rows={data.platform.chroniques}
+                limit={ACCUEIL_INSIGHTS_TOP}
+              />
+            </>
+          ) : null}
+          {platformMetric === 'all' || platformMetric === 'polls' ? (
+            <PollList
+              polls={data.platform.polls}
+              limit={ACCUEIL_INSIGHTS_TOP}
+              title={`Sondages — top ${ACCUEIL_INSIGHTS_TOP} (récents)`}
+            />
+          ) : null}
+          {platformMetric === 'all' || platformMetric === 'walks' ? (
+            <WalkList
+              walks={data.platform.walks}
+              limit={ACCUEIL_INSIGHTS_TOP}
+              title={`Parcours — top ${ACCUEIL_INSIGHTS_TOP} clics`}
+            />
+          ) : null}
+        </>
       ) : null}
     </section>
   );
 }
 
-function Kpi({ label, value }: { label: string; value: number }) {
+function Kpi({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
     <div className="card kpi-card">
       <div className="meta">{label}</div>
       <strong>{value}</strong>
+      {hint ? <div className="meta">{hint}</div> : null}
     </div>
   );
 }
 
-function TopCard({ title, rows }: { title: string; rows: InsightRow[] }) {
+function TabKpiStrip({
+  tab,
+  data,
+  canPlatform,
+  canBenefits,
+}: {
+  tab: Tab;
+  data: InsightsBundle;
+  canPlatform: boolean;
+  canBenefits: boolean;
+}) {
+  const d = data.benefitDetails;
+  const macro = (kind: keyof InsightsBundle['contentMacro']) => data.contentMacro[kind];
+
+  let title = 'Indicateurs';
+  let body: ReactNode = null;
+
+  if (tab === 'overview') {
+    title = 'Vue d’ensemble — macro';
+    body = (
+      <>
+        <Kpi label="Événements publiés" value={macro('events').published} />
+        <Kpi label="Spots publiés" value={macro('spots').published} />
+        <Kpi label="Outils publiés" value={macro('tools').published} />
+        {canBenefits ? (
+          <Kpi label="Modèles associés" value={d.catalogActiveAssociated} hint="Actifs + partenaire / lieu" />
+        ) : null}
+        {canPlatform ? (
+          <>
+            <Kpi label="Le Singulier" value={data.platformCounts.corners} hint="Fiches" />
+            <Kpi label="Le Fragment" value={data.platformCounts.chroniques} hint="Fiches" />
+            <Kpi label="Sondages" value={data.platformCounts.polls} />
+            <Kpi label="Parcours publiés" value={data.platformCounts.walksPublished} />
+          </>
+        ) : null}
+      </>
+    );
+  } else if (tab === 'events') {
+    title = 'Événements — statuts';
+    const m = macro('events');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'spots') {
+    title = 'Spots — statuts';
+    const m = macro('spots');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'tools') {
+    title = 'Outils — statuts';
+    const m = macro('tools');
+    body = (
+      <>
+        <Kpi label="Publiés" value={m.published} />
+        <Kpi label="Archivés" value={m.archived} />
+        <Kpi label="Désactivés" value={m.deactivated} />
+        <Kpi label="Brouillons" value={m.draft} />
+      </>
+    );
+  } else if (tab === 'benefits' && canBenefits) {
+    title = 'Privilèges — catalogue & octrois';
+    body = (
+      <>
+        <Kpi label="Modèles créés" value={d.catalogTotal} />
+        {d.catalogActive !== d.catalogTotal ? (
+          <Kpi label="Modèles actifs" value={d.catalogActive} />
+        ) : null}
+        <Kpi label="Actifs associés" value={d.catalogActiveAssociated} hint="Partenaire + contenu lié" />
+        <Kpi label="Octrois individuels" value={d.individual.granted} hint="Admin / tirage ciblé" />
+        <Kpi label="Octrois par rôle" value={d.roleEntitlement.granted} hint="Automatiques (member, prime…)" />
+        <Kpi label="Octrois total" value={d.allGrants.granted} />
+        <Kpi
+          label="Non consommés"
+          value={d.allGrants.active}
+          hint="Octroi actif ou en attente de validation partenaire"
+        />
+        <Kpi label="Consommés" value={d.allGrants.consumed} hint="Usage enregistré (date d’utilisation)" />
+        <Kpi
+          label="Expirés sans usage"
+          value={d.allGrants.expired}
+          hint="Validité dépassée sans consommation"
+        />
+      </>
+    );
+  } else if (tab === 'platform' && canPlatform) {
+    title = 'Accueil — volumes';
+    body = (
+      <>
+        <Kpi label="Le Singulier" value={data.platformCounts.corners} />
+        <Kpi label="Le Fragment" value={data.platformCounts.chroniques} />
+        <Kpi label="Sondages" value={data.platformCounts.polls} />
+        <Kpi label="Parcours publiés" value={data.platformCounts.walksPublished} />
+        <Kpi label="Logos partenaires" value={data.platformCounts.logos} />
+      </>
+    );
+  }
+
+  if (!body) return null;
+
+  return (
+    <div className="card" style={{ marginBottom: 16 }}>
+      <h3 style={{ marginTop: 0, marginBottom: 8 }}>{title}</h3>
+      <div className="kpi-grid">{body}</div>
+    </div>
+  );
+}
+
+function MetricTabs<T extends string>({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: readonly (readonly [T, string])[];
+  active: T;
+  onChange: (next: T) => void;
+}) {
+  return (
+    <nav className="tabs" style={{ marginBottom: 12 }}>
+      {tabs.map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          className={`tab ${active === id ? 'active' : ''}`}
+          onClick={() => onChange(id)}
+        >
+          {label}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+function EngagementByType({ rows }: { rows: ContentTypeUsageRow[] }) {
+  const visible = rows.filter((r) => r.itemCount > 0);
+  if (!visible.length) {
+    return <p className="muted">Pas encore de données plébiscités.</p>;
+  }
   return (
     <div className="card">
+      <h3 style={{ marginTop: 0 }}>Plébiscités par type</h3>
+      <p className="meta">Du plus plébiscité au moins plébiscité (favoris, clics, notes).</p>
+      <ol className="top-list">
+        {visible.map((row, index) => (
+          <li key={row.kind}>
+            <span>
+              <span className="meta" style={{ marginRight: 8 }}>
+                #{index + 1}
+              </span>
+              <strong>{row.label}</strong>
+              <span className="meta"> · {formatUsageMeta(row)}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function formatUsageMeta(row: ContentTypeUsageRow): string {
+  if (row.kind === 'event') {
+    return `${row.totalFavorites} favori${row.totalFavorites > 1 ? 's' : ''} · ${row.totalClicks} clic${row.totalClicks > 1 ? 's' : ''} · ${row.itemCount} fiche${row.itemCount > 1 ? 's' : ''}`;
+  }
+  if (row.kind === 'corner') {
+    return `${row.itemCount} profil${row.itemCount > 1 ? 's' : ''} · ${row.totalClicks} clic${row.totalClicks > 1 ? 's' : ''}`;
+  }
+  if (row.kind === 'chronique') {
+    return `${row.itemCount} Fragment${row.itemCount > 1 ? 's' : ''} · ${row.totalClicks} clic${row.totalClicks > 1 ? 's' : ''}`;
+  }
+  if (row.kind === 'poll') {
+    const rate =
+      row.totalRatingCount > 0
+        ? `${row.ratingAvg.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`
+        : '—';
+    return `${row.totalFavorites} vote${row.totalFavorites > 1 ? 's' : ''} · ${row.itemCount} sondage${row.itemCount > 1 ? 's' : ''} (${rate})`;
+  }
+  const rating =
+    row.totalRatingCount > 0
+      ? `${row.ratingAvg.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}/5 · ${row.totalRatingCount} avis · `
+      : '';
+  return `${row.totalFavorites} favori${row.totalFavorites > 1 ? 's' : ''} · ${row.totalClicks} clic${row.totalClicks > 1 ? 's' : ''} · ${rating}${row.itemCount} fiche${row.itemCount > 1 ? 's' : ''}`;
+}
+
+function PerfRankList({ rows, rankOffset }: { rows: TeamLoopPerfRow[]; rankOffset: number }) {
+  if (rows.length === 0) {
+    return (
+      <p className="muted" style={{ marginBottom: 12 }}>
+        Aucun contenu publié avec engagement pour ce pays.
+      </p>
+    );
+  }
+  return (
+    <div className="card" style={{ marginBottom: 12 }}>
+      <ol className="top-list">
+        {rows.map((r, index) => (
+          <li key={r.id}>
+            <div style={{ flex: 1 }}>
+              <span className="meta" style={{ marginRight: 6 }}>
+                #{rankOffset + index + 1}
+              </span>
+              <span>{r.title}</span>
+              <div className="meta" style={{ marginTop: 4 }}>
+                {r.displayLine}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function CornerList({
+  title,
+  rows,
+  limit,
+}: {
+  title: string;
+  rows: PlatformCornerRow[];
+  limit: number;
+}) {
+  const slice = rows.slice(0, limit);
+  return (
+    <div className="card" style={{ marginBottom: 12 }}>
       <h3 style={{ marginTop: 0 }}>{title}</h3>
       {rows.length === 0 ? (
-        <p className="muted">Aucune donnée.</p>
+        <p className="muted">Aucune fiche.</p>
       ) : (
         <ol className="top-list">
-          {rows.map((r) => (
+          {slice.map((r) => (
             <li key={r.id}>
               <span>
                 {r.title}
-                {r.subtitle ? <span className="meta"> · {r.subtitle}</span> : null}
+                {r.personName ? <span className="meta"> · {r.personName}</span> : null}
+                {!r.isActive ? <span className="meta"> · inactif</span> : null}
               </span>
-              <strong>{r.metric}</strong>
+              <strong>{r.clickCount}</strong>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+function PollList({
+  polls,
+  limit,
+  title,
+}: {
+  polls: PlatformPollRow[];
+  limit: number;
+  title: string;
+}) {
+  const slice = polls.slice(0, limit);
+  return (
+    <div className="card" style={{ marginBottom: 12 }}>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      {polls.length === 0 ? (
+        <p className="muted">Aucun sondage.</p>
+      ) : (
+        slice.map((poll) => (
+          <div key={poll.id} style={{ marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #eee' }}>
+            <strong>{poll.question}</strong>
+            <p className="meta">
+              {poll.responseCount} réponse{poll.responseCount > 1 ? 's' : ''} · {poll.viewCount} vue
+              {poll.viewCount > 1 ? 's' : ''} ·{' '}
+              {poll.responseRate.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} % des vues
+              {!poll.isActive ? ' · inactif' : ''}
+            </p>
+            {poll.options.length ? (
+              <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
+                {poll.options.map((opt) => (
+                  <li key={opt.optionId} className="meta">
+                    {opt.label} — {opt.voteCount} (
+                    {opt.voteRate.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %)
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function WalkList({
+  walks,
+  limit,
+  title,
+}: {
+  walks: WalkInsightRow[];
+  limit: number;
+  title: string;
+}) {
+  const sorted = [...walks].sort((a, b) => b.clicks - a.clicks || b.favorites - a.favorites);
+  const slice = sorted.slice(0, limit);
+  return (
+    <div className="card" style={{ marginBottom: 12 }}>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      {sorted.length === 0 ? (
+        <p className="muted">Aucun parcours publié.</p>
+      ) : (
+        <ol className="top-list">
+          {slice.map((w) => (
+            <li key={w.id}>
+              <span>
+                {w.title}
+                <div className="meta">{w.displayLine}</div>
+              </span>
             </li>
           ))}
         </ol>

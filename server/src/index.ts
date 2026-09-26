@@ -10,10 +10,14 @@ import { partnerValidationRouter } from './routes/partner-validation.js';
 import { partnerBenefitOffersRouter } from './routes/partner-benefit-offers.js';
 import { partnerSpotSessionRouter } from './routes/partner-spot-session.js';
 import { paymentsRouter } from './routes/payments.js';
+import { authCallbackPageRouter } from './routes/auth-callback-page.js';
 import { publicPagesRouter } from './routes/public-pages.js';
 import { webhookRouter } from './routes/webhook.js';
 import { cronRouter } from './routes/cron.js';
 import { startInternalPushCron } from './services/internal-push-cron.js';
+import { syncSupabaseAuthConfigIfNeeded } from './boot/sync-auth-config.js';
+import { syncAuthRecoveryStorageIfNeeded } from './boot/sync-auth-recovery-storage.js';
+import { syncAuthEmailTemplatesIfNeeded } from './boot/sync-auth-email-templates.js';
 
 const app = express();
 
@@ -93,6 +97,7 @@ app.get('/health', async (_req, res) => {
   });
 });
 
+app.use(authCallbackPageRouter);
 app.use(publicPagesRouter);
 app.use('/api', paymentsRouter);
 app.use('/api', partnerValidationRouter);
@@ -107,6 +112,16 @@ app.use((_req, res) => {
 });
 
 app.listen(config.port, '0.0.0.0', () => {
+  void syncAuthRecoveryStorageIfNeeded(true).catch((err) => {
+    console.warn('[auth-sync] Storage:', err instanceof Error ? err.message : err);
+  });
+  void syncSupabaseAuthConfigIfNeeded(true).catch((err) => {
+    console.warn('[auth-sync] Auth config:', err instanceof Error ? err.message : err);
+  });
+  void syncAuthEmailTemplatesIfNeeded(true).catch((err) => {
+    console.warn('[auth-sync] E-mail templates:', err instanceof Error ? err.message : err);
+  });
+
   console.log(`[payment-server] Écoute sur 0.0.0.0:${config.port} (${config.nodeEnv})`);
   console.log(`[payment-server] Djomy base: ${config.djomyBaseUrl}`);
   if (config.isDjomyProduction) {

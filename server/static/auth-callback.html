@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>THE LOOP — Compte</title>
+  <style>
+    :root { color-scheme: light; --bg:#f4fcfd; --text:#0a0a0a; --muted:#636e72; --card:#fff; --border:rgba(10,10,10,0.08); }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+      font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); }
+    main { max-width:420px; width:100%; background:var(--card); border:1px solid var(--border);
+      border-radius:16px; padding:28px 24px; text-align:center; box-shadow:0 12px 40px rgba(18,168,188,0.06); }
+    .kicker { font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
+    h1 { margin:12px 0 0; font-size:1.25rem; line-height:1.3; color:var(--text); }
+    p { margin:12px 0 0; font-size:.9rem; line-height:1.5; color:var(--muted); }
+    .form { margin-top:20px; text-align:left; display:none; }
+    .choice { margin-top:20px; display:none; }
+    label { display:block; font-size:11px; font-weight:600; margin-bottom:6px; color:var(--muted); }
+    input { width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:16px; margin-bottom:12px; }
+    .btn { display:block; width:100%; padding:14px; border:none; border-radius:12px; background:#0a0a0a; color:#fff;
+      font-size:.95rem; font-weight:700; cursor:pointer; margin-top:10px; text-decoration:none; text-align:center; }
+    .btn.secondary { background:#fff; color:#0a0a0a; border:1px solid #ddd; }
+    .btn.ghost { background:transparent; color:var(--muted); border:none; font-weight:600; font-size:.85rem; margin-top:8px; }
+    .err { color:#dc2626; font-size:13px; margin-top:8px; display:none; }
+    .ok { color:#059669; font-size:13px; margin-top:8px; display:none; }
+    .hint { margin-top:14px; font-size:12px; color:var(--muted); }
+    .overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:100;
+      align-items:center; justify-content:center; padding:20px; }
+    .overlay.open { display:flex; }
+    .modal { max-width:400px; width:100%; background:#fff; border-radius:16px; padding:28px 24px; text-align:center;
+      border:1px solid var(--border); box-shadow:0 20px 50px rgba(0,0,0,0.15); }
+    .modal h2 { margin:0; font-size:1.15rem; }
+    .modal p { margin:12px 0 0; font-size:.9rem; }
+    .modal .btn { margin-top:16px; }
+    .success-panel { margin-top:20px; display:none; text-align:center; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">THE LOOP</p>
+    <h1 id="title">Chargement…</h1>
+    <p id="message">Validation du lien…</p>
+
+    <div id="choice" class="choice">
+      <p class="hint">Comment souhaitez-vous continuer ?</p>
+      <button type="button" class="btn" id="btnApp">J'ai THE LOOP — ouvrir l'application</button>
+      <button type="button" class="btn secondary" id="btnWeb">Continuer sur le web</button>
+    </div>
+
+    <form id="pwdForm" class="form">
+      <label for="pwd">Nouveau mot de passe (8+ caractères)</label>
+      <input id="pwd" type="password" minlength="8" autocomplete="new-password" required />
+      <label for="pwd2">Confirmer</label>
+      <input id="pwd2" type="password" minlength="8" autocomplete="new-password" required />
+      <button type="submit" class="btn">Enregistrer le mot de passe</button>
+      <button type="button" class="btn ghost" id="backToChoice">← Retour au choix app / web</button>
+      <p class="err" id="err"></p>
+      <p class="ok" id="ok"></p>
+    </form>
+
+    <p class="hint" id="appFallback" style="display:none">
+      L'app ne s'est pas ouverte ? <button type="button" class="btn ghost" id="fallbackWeb" style="display:inline;padding:0;margin:0;">Continuer sur le web</button>
+    </p>
+
+    <div id="successPanel" class="success-panel">
+      <button type="button" class="btn" id="successOpenApp">Ouvrir THE LOOP (connexion)</button>
+      <a class="btn secondary" id="successInstall" href="https://www.theloop-app.com/">Télécharger l'application</a>
+      <p class="hint">THE LOOP est une application mobile. Utilisez votre e-mail et le mot de passe que vous venez de définir.</p>
+    </div>
+  </main>
+
+  <div id="installOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+    <div class="modal">
+      <p class="kicker">THE LOOP</p>
+      <h2 id="installTitle">Compte activé !</h2>
+      <p id="installMessage">Installez THE LOOP pour accéder à l'agenda, au guide et à vos privilèges.</p>
+      <a class="btn" id="installBtn" href="https://www.theloop-app.com/">Installer THE LOOP</a>
+      <button type="button" class="btn secondary" id="openAppAfter">J'ai déjà l'app — ouvrir</button>
+      <button type="button" class="btn ghost" id="installLater">Plus tard</button>
+    </div>
+  </div>
+
+  <script>window.__PREBOOT_SESSION__ = null;</script>
+  <script>
+    (function () {
+      var p = window.__PREBOOT_SESSION__;
+      if (!p) return;
+      var t = document.getElementById('title');
+      var m = document.getElementById('message');
+      if (!t || !m) return;
+      if (p.verifyError) {
+        t.textContent = 'Lien invalide ou expiré';
+        m.textContent = p.verifyError;
+        return;
+      }
+      if (p.accessToken && p.refreshToken) {
+        t.textContent = 'Activer votre compte';
+        m.textContent =
+          "THE LOOP est installée ? Touchez « Ouvrir l'application ». Sinon « Continuer sur le web » pour choisir votre mot de passe.";
+        var c = document.getElementById('choice');
+        if (c) c.style.display = 'block';
+      }
+    })();
+  </script>
+  <noscript>
+    <p class="hint" style="margin-top:16px">
+      JavaScript est requis pour choisir votre mot de passe. Ouvrez ce lien dans <strong>Safari</strong> ou <strong>Chrome</strong> (pas l’aperçu du mail).
+    </p>
+  </noscript>
+  <script>
+    (function () {
+      var supabaseUrl = window.__SUPABASE_URL__;
+      var anon = window.__SUPABASE_ANON__;
+      var prebootSession = window.__PREBOOT_SESSION__;
+      var PLAY_STORE = 'https://play.google.com/store/apps/details?id=gn.theloop.app';
+      var WEB_HOME = 'https://www.theloop-app.com/';
+
+      var title = document.getElementById('title');
+      var message = document.getElementById('message');
+      var choiceEl = document.getElementById('choice');
+      var pwdForm = document.getElementById('pwdForm');
+      var btnApp = document.getElementById('btnApp');
+      var btnWeb = document.getElementById('btnWeb');
+      var backToChoice = document.getElementById('backToChoice');
+      var appFallback = document.getElementById('appFallback');
+      var fallbackWeb = document.getElementById('fallbackWeb');
+      var errEl = document.getElementById('err');
+      var okEl = document.getElementById('ok');
+      var installOverlay = document.getElementById('installOverlay');
+      var installBtn = document.getElementById('installBtn');
+      var openAppAfter = document.getElementById('openAppAfter');
+      var installLater = document.getElementById('installLater');
+      var successPanel = document.getElementById('successPanel');
+      var successOpenApp = document.getElementById('successOpenApp');
+      var successInstall = document.getElementById('successInstall');
+
+      var sessionState = { accessToken: '', refreshToken: '', kind: 'invite', paramString: '', deepLink: '', memberEmail: '' };
+      var usedWebPath = false;
+      var webActivationComplete = false;
+
+      function readParams() {
+        var merged = new URLSearchParams();
+        var search = window.location.search || '';
+        if (search.indexOf('?') === 0) {
+          new URLSearchParams(search.slice(1)).forEach(function (v, k) {
+            merged.set(k, v);
+          });
+        }
+        var hash = window.location.hash || '';
+        if (hash.indexOf('#') === 0 && hash.length > 1) {
+          new URLSearchParams(hash.slice(1)).forEach(function (v, k) {
+            merged.set(k, v);
+          });
+        }
+        var paramString = merged.toString();
+        return { paramString: paramString, params: merged };
+      }
+
+      function fetchWithTimeout(url, options, ms) {
+        return new Promise(function (resolve, reject) {
+          var timer = setTimeout(function () {
+            reject(new Error('Délai dépassé — vérifiez votre connexion et réessayez.'));
+          }, ms);
+          fetch(url, options)
+            .then(function (res) {
+              clearTimeout(timer);
+              resolve(res);
+            })
+            .catch(function (err) {
+              clearTimeout(timer);
+              reject(err);
+            });
+        });
+      }
+
+      function showErr(msg) {
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+        okEl.style.display = 'none';
+      }
+
+      function authError(body) {
+        return body.error_description || body.msg || body.message || body.error || 'Erreur';
+      }
+
+      function buildDeepLink(paramString) {
+        return paramString ? 'theloop://auth/callback#' + paramString : 'theloop://auth/callback';
+      }
+
+      function buildLoginDeepLink() {
+        var link = 'theloop://auth/login';
+        if (sessionState.memberEmail) {
+          link += '?email=' + encodeURIComponent(sessionState.memberEmail);
+        }
+        return link;
+      }
+
+      function openMobileLogin() {
+        var deepLink = buildLoginDeepLink();
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        var androidIntent = 'intent://auth/login'
+          + (sessionState.memberEmail ? '?email=' + encodeURIComponent(sessionState.memberEmail) : '')
+          + '#Intent;scheme=theloop;package=gn.theloop.app;end';
+        try {
+          window.location.href = deepLink;
+          if (isAndroid) {
+            window.setTimeout(function () {
+              try { window.location.href = androidIntent; } catch (e2) { /* ignore */ }
+            }, 600);
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      function openNativeApp() {
+        if (webActivationComplete) {
+          openMobileLogin();
+          return;
+        }
+        var deepLink = sessionState.deepLink;
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        var androidIntent = 'intent://auth/callback#' + (sessionState.paramString || '')
+          + '#Intent;scheme=theloop;package=gn.theloop.app;end';
+        try {
+          window.location.href = deepLink;
+          if (isAndroid) {
+            window.setTimeout(function () {
+              try { window.location.href = androidIntent; } catch (e2) { /* ignore */ }
+            }, 600);
+          }
+        } catch (e) { /* ignore */ }
+        appFallback.style.display = 'block';
+      }
+
+      function configureStoreLink(anchorEl) {
+        if (!anchorEl) return;
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isAndroid) {
+          anchorEl.href = PLAY_STORE;
+          anchorEl.textContent = 'Installer sur Google Play';
+        } else if (isIOS) {
+          anchorEl.href = WEB_HOME;
+          anchorEl.textContent = 'Obtenir THE LOOP (App Store)';
+        } else {
+          anchorEl.href = WEB_HOME;
+          anchorEl.textContent = 'Télécharger THE LOOP';
+        }
+      }
+
+      function configureInstallLinks() {
+        configureStoreLink(installBtn);
+      }
+
+      function showInstallModal() {
+        configureInstallLinks();
+        installOverlay.classList.add('open');
+      }
+
+      function hideInstallModal() {
+        installOverlay.classList.remove('open');
+      }
+
+      function fetchMemberEmail(accessToken) {
+        return fetch(supabaseUrl + '/auth/v1/user', {
+          headers: { 'Authorization': 'Bearer ' + accessToken, 'apikey': anon }
+        }).then(function (res) { return res.json(); }).then(function (user) {
+          if (user && user.email) sessionState.memberEmail = user.email;
+          return user;
+        });
+      }
+
+      function markInviteActivated(accessToken) {
+        return fetchMemberEmail(accessToken).then(function (user) {
+          if (!user) return;
+          var meta = user.user_metadata || {};
+          var inviteId = meta.admin_invite_id;
+          var email = user.email;
+          if (!inviteId || !email) return;
+          return fetch(supabaseUrl + '/rest/v1/rpc/mark_admin_user_invite_activated', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + accessToken,
+              'apikey': anon
+            },
+            body: JSON.stringify({ p_invite_id: inviteId, p_email: email })
+          });
+        }).catch(function () { /* non bloquant */ });
+      }
+
+      function showChoiceScreen() {
+        choiceEl.style.display = 'block';
+        pwdForm.style.display = 'none';
+        appFallback.style.display = 'none';
+        title.textContent = sessionState.kind === 'recovery' ? 'Réinitialiser le mot de passe' : 'Activer votre compte';
+        message.textContent = "THE LOOP est installée ? Ouvrez l'app. Sinon, continuez sur le web pour choisir votre mot de passe.";
+      }
+
+      function showWebForm() {
+        usedWebPath = true;
+        choiceEl.style.display = 'none';
+        pwdForm.style.display = 'block';
+        appFallback.style.display = 'none';
+        if (successPanel) successPanel.style.display = 'none';
+        title.textContent = 'Nouveau mot de passe';
+        message.textContent = 'Choisissez votre mot de passe ci-dessous. Ensuite, ouvrez THE LOOP sur votre téléphone pour vous connecter.';
+        errEl.style.display = 'none';
+        okEl.style.display = 'none';
+      }
+
+      function showWebActivationSuccess() {
+        webActivationComplete = true;
+        sessionState.accessToken = '';
+        sessionState.refreshToken = '';
+        sessionState.paramString = '';
+        sessionState.deepLink = '';
+        choiceEl.style.display = 'none';
+        pwdForm.style.display = 'none';
+        appFallback.style.display = 'none';
+        hideInstallModal();
+        title.textContent = 'Compte activé';
+        message.textContent =
+          "Votre mot de passe est enregistré. THE LOOP est une application mobile : connectez-vous dans l'app avec votre e-mail et ce mot de passe.";
+        configureStoreLink(successInstall);
+        if (successPanel) successPanel.style.display = 'block';
+      }
+
+      function beginSession(accessToken, refreshToken, kind, paramString) {
+        sessionState.accessToken = accessToken;
+        sessionState.refreshToken = refreshToken;
+        sessionState.kind = kind;
+        sessionState.paramString = paramString;
+        sessionState.deepLink = buildDeepLink(paramString);
+        showChoiceScreen();
+      }
+
+      btnApp.addEventListener('click', openNativeApp);
+      btnWeb.addEventListener('click', showWebForm);
+      fallbackWeb.addEventListener('click', showWebForm);
+      backToChoice.addEventListener('click', function () {
+        if (webActivationComplete) return;
+        showChoiceScreen();
+      });
+      if (successOpenApp) successOpenApp.addEventListener('click', openMobileLogin);
+      openAppAfter.addEventListener('click', function () {
+        hideInstallModal();
+        openNativeApp();
+      });
+      installLater.addEventListener('click', hideInstallModal);
+
+      pwdForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var pwd = document.getElementById('pwd').value;
+        var pwd2 = document.getElementById('pwd2').value;
+        if (pwd.length < 8) { showErr('Minimum 8 caractères.'); return; }
+        if (pwd !== pwd2) { showErr('Les mots de passe ne correspondent pas.'); return; }
+        fetch(supabaseUrl + '/auth/v1/user', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + sessionState.accessToken,
+            'apikey': anon
+          },
+          body: JSON.stringify({
+            password: pwd,
+            data: { pending_welcome: null, referral_code: null },
+          })
+        }).then(function (res) {
+          if (!res.ok) return res.json().then(function (j) { throw new Error(authError(j)); });
+          return markInviteActivated(sessionState.accessToken);
+        }).then(function () {
+          if (usedWebPath) {
+            showWebActivationSuccess();
+            return;
+          }
+          pwdForm.style.display = 'none';
+          title.textContent = 'Compte prêt';
+          message.textContent = sessionState.kind === 'invite'
+            ? 'Votre invitation est activée.'
+            : 'Votre mot de passe a été mis à jour.';
+          openNativeApp();
+        }).catch(function (err) {
+          showErr(err.message || 'Enregistrement impossible.');
+        });
+      });
+
+      function otpVerifyType(kind) {
+        if (kind === 'recovery') return 'recovery';
+        if (kind === 'signup' || kind === 'email') return 'signup';
+        return 'invite';
+      }
+
+      function verifyTokenHash(tokenHash, kind) {
+        return fetchWithTimeout(supabaseUrl + '/auth/v1/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': anon },
+          body: JSON.stringify({ type: otpVerifyType(kind), token_hash: tokenHash })
+        }, 20000).then(function (res) {
+          return res.json().then(function (body) {
+            if (!res.ok) throw new Error(authError(body));
+            return body;
+          });
+        });
+      }
+
+      function exchangeCode(code) {
+        return fetch(supabaseUrl + '/auth/v1/token?grant_type=pkce', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': anon },
+          body: JSON.stringify({ auth_code: code })
+        }).then(function (res) {
+          return res.json().then(function (body) {
+            if (!res.ok) throw new Error(authError(body));
+            return body;
+          });
+        });
+      }
+
+      if (prebootSession && prebootSession.verifyError) {
+        title.textContent = 'Lien invalide ou expiré';
+        message.textContent = prebootSession.verifyError;
+        return;
+      }
+      if (prebootSession && prebootSession.accessToken && prebootSession.refreshToken) {
+        var pk = (prebootSession.kind || 'invite').toLowerCase();
+        var pps =
+          'type=' + pk
+          + '&access_token=' + encodeURIComponent(prebootSession.accessToken)
+          + '&refresh_token=' + encodeURIComponent(prebootSession.refreshToken);
+        beginSession(prebootSession.accessToken, prebootSession.refreshToken, pk, pps);
+        return;
+      }
+
+      var stuckGuard = window.setTimeout(function () {
+        if (title.textContent === 'Chargement…') {
+          title.textContent = 'Lien incomplet ou expiré';
+          message.textContent =
+            "Ouvrez le lien dans Safari ou Chrome (icône ⋯ du mail → « Ouvrir dans le navigateur »). Si le problème continue, demandez un nouvel e-mail d'invitation.";
+        }
+      }, 8000);
+
+      function clearStuckGuard() {
+        window.clearTimeout(stuckGuard);
+      }
+
+      var parsed = readParams();
+      var params = parsed.params;
+      var paramString = parsed.paramString;
+      var kind = (params.get('type') || 'invite').toLowerCase();
+      var tokenHash = params.get('token_hash') || params.get('token');
+      var code = params.get('code');
+      var accessToken = params.get('access_token');
+      var refreshToken = params.get('refresh_token');
+
+      var error = params.get('error_description') || params.get('error');
+      if (error) {
+        clearStuckGuard();
+        title.textContent = 'Lien invalide';
+        message.textContent = decodeURIComponent(String(error).replace(/\\+/g, ' '));
+        return;
+      }
+
+      if (!paramString) {
+        clearStuckGuard();
+        title.textContent = 'Lien incomplet';
+        message.textContent =
+          'Ce lien ne contient pas les informations attendues. Rouvrez le dernier e-mail et touchez « Activer mon compte », ou copiez le lien de secours sous le bouton.';
+        return;
+      }
+
+      if (tokenHash) {
+        message.textContent = 'Validation du lien en cours…';
+        verifyTokenHash(tokenHash, kind)
+          .then(function (session) {
+            clearStuckGuard();
+            var at = session.access_token;
+            var rt = session.refresh_token;
+            if (!at || !rt) throw new Error('Session invalide après validation.');
+            var ps = 'type=' + kind + '&access_token=' + encodeURIComponent(at) + '&refresh_token=' + encodeURIComponent(rt);
+            beginSession(at, rt, kind, ps);
+          })
+          .catch(function (err) {
+            clearStuckGuard();
+            title.textContent = 'Lien invalide ou expiré';
+            message.textContent = err.message || "Demandez un nouvel e-mail depuis l'administrateur THE LOOP.";
+          });
+        return;
+      }
+
+      if (code && !accessToken) {
+        exchangeCode(code)
+          .then(function (session) {
+            beginSession(session.access_token, session.refresh_token, kind, paramString);
+          })
+          .catch(function (err) {
+            title.textContent = 'Lien incomplet';
+            message.textContent = (err.message || 'Ce lien ne peut pas être validé ici.')
+              + " Demandez à l'équipe THE LOOP de renvoyer l'invitation (nouveau modèle d'e-mail).";
+          });
+        return;
+      }
+
+      if ((kind === 'recovery' || kind === 'invite') && accessToken && refreshToken) {
+        clearStuckGuard();
+        beginSession(accessToken, refreshToken, kind, paramString);
+        return;
+      }
+
+      clearStuckGuard();
+      title.textContent = 'E-mail confirmé';
+      message.textContent = "Utilisez les boutons ci-dessous pour continuer dans l'app ou sur le web.";
+      sessionState.deepLink = buildDeepLink(paramString);
+      sessionState.paramString = paramString;
+      sessionState.kind = kind;
+      showChoiceScreen();
+    })();
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
@@ -55,7 +55,11 @@ import {
   savePassShopSettings,
 } from '@/lib/pass-shop-settings-store';
 import { PRIME_PLAN_OPTIONS, type PrimeBillingPeriod } from '@/lib/prime-plans';
-import { listRegistryUsers } from '@/lib/user-registry-store';
+import {
+  findRegistryUserById,
+  searchRegistryUsersForPassGrant,
+  type RegistryUser,
+} from '@/lib/user-registry-store';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -175,7 +179,9 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
   const [catalogModalVisible, setCatalogModalVisible] = useState(false);
   const [editingCatalog, setEditingCatalog] = useState<PassCatalogEntry | null>(null);
   const [catalogForm, setCatalogForm] = useState<CatalogFormState>(emptyCatalogForm());
-  const [members, setMembers] = useState<Awaited<ReturnType<typeof listRegistryUsers>>>([]);
+  const [searchResults, setSearchResults] = useState<RegistryUser[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<RegistryUser | null>(null);
   const [passMessages, setPassMessages] = useState<PassActivationMessage[]>([]);
   const [messageModalVisible, setMessageModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState<PassActivationMessage | null>(null);
@@ -183,9 +189,8 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [loadedPrices, users, bonus, messages, catalog, shop] = await Promise.all([
+    const [loadedPrices, bonus, messages, catalog, shop] = await Promise.all([
       getPassPrices(countryCode),
-      listRegistryUsers(),
       listActiveGrantedPasses(),
       listPassActivationMessages({ countryCode, includeArchived: true }),
       listPassCatalog({ countryCode, includeArchived: true }),
@@ -199,7 +204,6 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
       lifetime: String(loadedPrices.lifetime),
     });
     setMaxPendingInput(String(shop.maxPendingPasses));
-    setMembers(users.filter((u) => u.role !== 'ADMIN' && u.userRole !== 'super_admin'));
     setBonusPasses(bonus);
     setPassMessages(messages);
     setPassCatalog(catalog);
@@ -224,25 +228,31 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
     setRefreshing(false);
   }, [run]);
 
-  const searchResults = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return members
-      .filter((m) => {
-        const hay = [
-          m.firstName,
-          m.lastName,
-          m.email,
-          m.phoneNumber,
-          m.referralCode,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        return hay.includes(q);
-      })
-      .slice(0, 8);
-  }, [members, search]);
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearchLoading(true);
+    const timer = setTimeout(() => {
+      void searchRegistryUsersForPassGrant(q, countryCode, 8)
+        .then((rows) => {
+          if (!cancelled) setSearchResults(rows);
+        })
+        .finally(() => {
+          if (!cancelled) setSearchLoading(false);
+        });
+    }, 280);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [search, countryCode]);
 
   async function handleSavePrices() {
     const next: PassPriceMap = { ...prices };
@@ -288,7 +298,9 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
     }
     const catalog = selectedCatalog;
     if (!catalog) return;
-    const target = members.find((m) => m.id === selectedUserId);
+    const target =
+      selectedMember ??
+      (selectedUserId ? await findRegistryUserById(selectedUserId) : null);
     const name = target
       ? [target.firstName, target.lastName].filter(Boolean).join(' ').trim() || target.email
       : 'ce membre';
@@ -305,6 +317,8 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
               setGrantNote('');
               setSearch('');
               setSelectedUserId(null);
+              setSelectedMember(null);
+              setSearchResults([]);
               await load();
               Alert.alert('PASS accordé', `${name} bénéficie de ${catalog.label}.`);
             } catch {
@@ -804,10 +818,27 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
         onChangeText={(text) => {
           setSearch(text);
           setSelectedUserId(null);
+          setSelectedMember(null);
         }}
         placeholder="Rechercher membre (nom, email, téléphone…)"
         placeholderTextColor={shell.pageKicker}
       />
+
+      {search.trim().length > 0 && search.trim().length < 2 ? (
+        <Text style={[styles.empty, { color: shell.pageKicker }]}>
+          Saisissez au moins 2 caractères pour rechercher un membre.
+        </Text>
+      ) : null}
+
+      {searchLoading ? (
+        <Text style={[styles.empty, { color: shell.pageKicker }]}>Recherche…</Text>
+      ) : null}
+
+      {!searchLoading && search.trim().length >= 2 && searchResults.length === 0 ? (
+        <Text style={[styles.empty, { color: shell.pageKicker }]}>
+          Aucun membre trouvé pour « {search.trim()} » — vérifiez l’orthographe ou le pays ({countryLabel}).
+        </Text>
+      ) : null}
 
       {searchResults.map((m) => {
         const name = [m.firstName, m.lastName].filter(Boolean).join(' ').trim() || m.email;
@@ -820,7 +851,10 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
               { borderColor: shell.filterInactiveBorder },
               selected && { borderColor: ADMIN_THEME.accent, backgroundColor: ADMIN_THEME.glow },
             ]}
-            onPress={() => setSelectedUserId(m.id)}
+            onPress={() => {
+              setSelectedUserId(m.id);
+              setSelectedMember(m);
+            }}
           >
             <Text style={[styles.memberName, { color: shell.pageTitle }]}>{name}</Text>
             <Text style={[styles.memberMeta, { color: shell.pageKicker }]}>
@@ -853,7 +887,10 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
       </Pressable>
 
       <Text style={[styles.section, { color: shell.pageKicker, marginTop: 24 }]}>
-        PASS accordés ({bonusPasses.length})
+        Octrois admin actifs ({bonusPasses.length})
+      </Text>
+      <Text style={[styles.intro, { color: shell.pageKicker }]}>
+        Heritage et PASS offerts par l’équipe uniquement — les achats membres sont dans Paiements Djomy.
       </Text>
       {bonusPasses.map((item) => (
         <View key={item.pass.id} style={adminCardStyle(shell)}>

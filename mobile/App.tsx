@@ -19,6 +19,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { AppKeyboardRoot } from '@/components/KeyboardAwareFormScroll';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { AppBootGate } from '@/components/AppBootGate';
+import { PaymentReturnHandler } from '@/components/PaymentReturnHandler';
 
 export default function App() {
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function App() {
       <SafeAreaProvider>
         <AppKeyboardRoot>
           <AuthProvider>
+            <PaymentReturnHandler />
             <AdminPermissionsProvider>
               <ThemeProvider>
                 <ContentCountriesProvider>

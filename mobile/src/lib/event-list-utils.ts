@@ -1,5 +1,16 @@
 import type { Event } from '@/types';
 
+/** Date de début agenda — fallback si admin-web n’a pas renseigné start_date. */
+export function resolveEventStartsAt(event: Event): Date {
+  const start = new Date(event.startsAt);
+  if (!Number.isNaN(start.getTime())) return start;
+  if (event.createdAt) {
+    const created = new Date(event.createdAt);
+    if (!Number.isNaN(created.getTime())) return created;
+  }
+  return new Date();
+}
+
 export type AgendaListRow =
   | { kind: 'month'; id: string; label: string }
   | { kind: 'event'; id: string; event: Event };
@@ -37,7 +48,7 @@ function isDateOnlyEnd(iso: string, parsed: Date): boolean {
 
 /** Instant où l'événement quitte l'agenda (fin de journée si pas d'heure de fin explicite). */
 export function getEventAgendaEndAt(event: Event): Date {
-  const start = new Date(event.startsAt);
+  const start = resolveEventStartsAt(event);
 
   if (!event.endsAt) {
     return endOfLocalCalendarDay(start);
@@ -59,7 +70,7 @@ export function isEventPast(event: Event, now: Date = new Date()): boolean {
 
 /** Événement prévu aujourd'hui. */
 export function isEventToday(event: Event, now: Date = new Date()): boolean {
-  const start = new Date(event.startsAt);
+  const start = resolveEventStartsAt(event);
   return isSameCalendarDay(start, now);
 }
 
@@ -72,7 +83,7 @@ export function getEventStatusLabel(event: Event): 'Aujourd\'hui' | 'Passé' | n
 /** Du plus proche au plus lointain. */
 export function sortEventsByDateAsc(events: Event[]): Event[] {
   return [...events].sort(
-    (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+    (a, b) => resolveEventStartsAt(a).getTime() - resolveEventStartsAt(b).getTime(),
   );
 }
 
@@ -96,7 +107,7 @@ export function buildAgendaListRows(events: Event[]): AgendaListRow[] {
     if (seenEventIds.has(event.id)) continue;
     seenEventIds.add(event.id);
 
-    const d = new Date(event.startsAt);
+    const d = resolveEventStartsAt(event);
     const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
     if (monthKey !== lastMonthKey) {
       rows.push({ kind: 'month', id: `month-${monthKey}`, label: formatMonthYearFr(d) });

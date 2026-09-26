@@ -13,6 +13,7 @@ import { isEventPast } from '@/lib/event-list-utils';
 import { contentOriginFromStaging, isTeamContentOrigin } from '@/lib/content-origin';
 import type { ContentOrigin } from '@/lib/content-origin';
 import { isToolLocation } from '@/lib/location-kind-utils';
+import { matchesAdminCountry } from '@/lib/admin-country';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export { CONTENT_STATUS_LABELS };
@@ -757,6 +758,71 @@ export async function buildTeamAdminContentList(
     events: all.events.filter((i) => isTeamContentOrigin(i.contentOrigin)),
     spots: all.spots.filter((i) => isTeamContentOrigin(i.contentOrigin)),
   };
+}
+
+export type TeamFeaturedRow = {
+  id: string;
+  title: string;
+  kindLabel: string;
+  source: string;
+};
+
+/** À la une Hub THE LOOP — drapeau catalogue Supabase (sans overrides locaux Accueil). */
+export function listTeamFeaturedFromCatalog(
+  events: Event[],
+  locations: HomeLocation[],
+  countryCode: string,
+): TeamFeaturedRow[] {
+  const rows: TeamFeaturedRow[] = [];
+
+  for (const e of events) {
+    if (!isTeamContentOrigin(e.contentOrigin)) continue;
+    if (!matchesAdminCountry(e.countryCode, countryCode)) continue;
+    if (e.isActive === false) continue;
+    const status = e.contentStatus ?? 'published';
+    if (status !== 'published') continue;
+    if (
+      !isFeaturedWindowActive(
+        Boolean(e.catalogFeatured),
+        e.featuredStartDate ?? null,
+        e.featuredEndDate ?? null,
+      )
+    ) {
+      continue;
+    }
+    rows.push({
+      id: e.id,
+      title: e.title,
+      kindLabel: 'Événement',
+      source: 'À la une',
+    });
+  }
+
+  for (const loc of locations) {
+    if (!isTeamContentOrigin(loc.contentOrigin)) continue;
+    if (!matchesAdminCountry(loc.countryCode, countryCode)) continue;
+    if (loc.hidden === true || loc.isActive === false) continue;
+    const status = loc.contentStatus ?? 'published';
+    if (status !== 'published') continue;
+    if (isToolLocation(loc) && loc.isVerified !== true) continue;
+    if (
+      !isFeaturedWindowActive(
+        Boolean(loc.catalogFeatured),
+        loc.featuredStartDate ?? null,
+        loc.featuredEndDate ?? null,
+      )
+    ) {
+      continue;
+    }
+    rows.push({
+      id: loc.id,
+      title: loc.name,
+      kindLabel: isToolLocation(loc) ? 'Outil' : 'Spot',
+      source: 'À la une',
+    });
+  }
+
+  return rows;
 }
 
 /** Filtre le contenu public selon les overrides admin. */

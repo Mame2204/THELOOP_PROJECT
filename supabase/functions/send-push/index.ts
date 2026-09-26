@@ -67,13 +67,17 @@ Deno.serve(async (req) => {
     }
 
     // Vérifie qu’un utilisateur (ou service) est authentifié.
-    const userClient = createClient(supabaseUrl, anonKey || serviceKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-    const { data: userData, error: userErr } = await userClient.auth.getUser(token);
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: 'Invalid session' }), {
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const adminForAuth = createClient(supabaseUrl, serviceKey);
+    let authUser = (await adminForAuth.auth.getUser(token)).data.user ?? null;
+    if (!authUser && anonKey) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      authUser = (await userClient.auth.getUser()).data.user ?? null;
+    }
+    if (!authUser) {
+      return new Response(JSON.stringify({ error: 'Session expirée.' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

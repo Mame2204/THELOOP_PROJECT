@@ -15,6 +15,12 @@ type Body = {
   email?: string;
   password?: string;
   inviteId?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
+  city?: string | null;
+  countryCode?: string | null;
+  phoneNumber?: string | null;
 };
 
 function normalizeEmail(raw: string): string {
@@ -73,7 +79,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    const invite = inviteJson as { id?: string; email?: string };
+    const invite = inviteJson as {
+      id?: string;
+      email?: string;
+      user_role?: string;
+      first_name?: string | null;
+      last_name?: string | null;
+    };
+
+    function defaultInviteFirstName(userRole?: string | null): string {
+      const role = (userRole ?? 'member').toLowerCase();
+      if (role === 'partner') return 'Partenaire';
+      if (role === 'admin') return 'Administrateur';
+      return 'Membre';
+    }
     if (inviteId && invite.id && invite.id !== inviteId) {
       return new Response(JSON.stringify({ error: 'Invitation invalide pour cet e-mail.' }), {
         status: 400,
@@ -97,6 +116,37 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { data: profile } = await admin
+      .from('users')
+      .select('account_status')
+      .ilike('email', email)
+      .maybeSingle();
+
+    const accountStatus = String(profile?.account_status ?? '').trim().toLowerCase();
+    if (accountStatus && accountStatus !== 'invited') {
+      if (invite.id) {
+        await admin.rpc('mark_admin_user_invite_activated', {
+          p_invite_id: invite.id,
+          p_email: email,
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          error: 'account_already_active',
+          message:
+            'Ce compte est déjà actif. Connectez-vous avec votre mot de passe ou utilisez « Mot de passe oublié ».',
+        }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    const profileFirst =
+      (body.firstName ?? invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
+    const profileLast = (body.lastName ?? invite.last_name ?? '').trim() || 'THE LOOP';
+    const birthDate = (body.birthDate ?? '').trim() || null;
+    const city = (body.city ?? invite.city ?? '').trim() || null;
+    const countryCode = (body.countryCode ?? invite.country_code ?? 'GN').trim().toUpperCase().slice(0, 2);
+    const phoneNumber = (body.phoneNumber ?? '').trim() || null;
     const { error: updateErr } = await admin.auth.admin.updateUserById(authUser.id, {
       password,
       email_confirm: true,
@@ -105,6 +155,9 @@ Deno.serve(async (req) => {
         pending_welcome: true,
         invited_by_admin: true,
         admin_invite_id: invite.id ?? null,
+        first_name: profileFirst,
+        last_name: profileLast,
+        user_role: invite.user_role ?? authUser.user_metadata?.user_role ?? 'member',
       },
     });
     if (updateErr) {
@@ -120,6 +173,22 @@ Deno.serve(async (req) => {
         p_email: email,
       });
     }
+
+    await admin
+      .from('users')
+      .update({
+        first_name: profileFirst,
+        last_name: profileLast,
+        birth_date: birthDate,
+        city,
+        country_code: countryCode,
+        phone_number: phoneNumber,
+        user_role: invite.user_role ?? undefined,
+        is_active: true,
+        account_status: 'active',
+        updated_at: new Date().toISOString(),
+      })
+      .ilike('email', email);
 
     return new Response(JSON.stringify({ ok: true, userId: authUser.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

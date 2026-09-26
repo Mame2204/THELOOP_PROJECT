@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAdminCountry } from '@/context/AdminCountryContext';
@@ -7,9 +7,11 @@ import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import { AdminTabMenu } from '@/components/admin/AdminTabMenu';
+import { AdminListPager, ADMIN_LIST_PAGE_SIZE } from '@/components/admin/AdminListPager';
 import { isTeamContentOrigin } from '@/lib/content-origin';
 import { matchesAdminCountry } from '@/lib/admin-country';
 import { isToolLocation } from '@/lib/location-kind-utils';
+import { computeEngagementScore, getSpotStarSettings } from '@/lib/spot-stars-store';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -33,14 +35,18 @@ function formatRatingMeta(avg: number, count: number): string {
   return `${avg.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}/5 · ${count} avis`;
 }
 
-function sortByMetric(items: PerfItem[], metric: MetricTab): PerfItem[] {
+function sortByMetric(
+  items: PerfItem[],
+  metric: MetricTab,
+  score: (item: PerfItem) => number,
+): PerfItem[] {
   const copy = [...items];
   copy.sort((a, b) => {
     if (metric === 'favorites') return b.favorites - a.favorites || b.clicks - a.clicks;
     if (metric === 'clicks') return b.clicks - a.clicks || b.favorites - a.favorites;
     if (metric === 'stars') return b.stars - a.stars || b.favorites - a.favorites;
     if (metric === 'ratings') return b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount;
-    return b.favorites + b.clicks + b.stars * 5 - (a.favorites + a.clicks + a.stars * 5);
+    return score(b) - score(a) || b.clicks - a.clicks || b.favorites - a.favorites;
   });
   return copy;
 }
@@ -53,6 +59,28 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [section, setSection] = useState<ContentSection>('all');
   const [metric, setMetric] = useState<MetricTab>('all');
+  const [page, setPage] = useState(0);
+  const [scoreWeights, setScoreWeights] = useState({
+    clickWeight: 1,
+    favoriteWeight: 5,
+    ratingWeight: 10,
+  });
+
+  const engagementScore = useCallback(
+    (item: PerfItem) =>
+      computeEngagementScore(item.clicks, item.favorites, item.ratingAvg, scoreWeights),
+    [scoreWeights],
+  );
+
+  useEffect(() => {
+    void getSpotStarSettings(countryCode).then((s) => {
+      setScoreWeights({
+        clickWeight: s.clickWeight,
+        favoriteWeight: s.favoriteWeight,
+        ratingWeight: s.ratingWeight ?? 10,
+      });
+    });
+  }, [countryCode]);
 
   const items = useMemo(() => {
     const next: PerfItem[] = [];
@@ -77,7 +105,7 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
         title: loc.name,
         clicks: loc.clickCount ?? 0,
         favorites: loc.favoriteCount ?? 0,
-        stars: loc.starCount ?? 0,
+        stars: loc.starCount ?? 3,
         ratingAvg: loc.ratingAvg ?? 0,
         ratingCount: loc.ratingCount ?? 0,
       });
@@ -92,8 +120,17 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
     if (section === 'events') list = list.filter((i) => i.kind === 'event');
     else if (section === 'spots') list = list.filter((i) => i.kind === 'spot');
     else if (section === 'tools') list = list.filter((i) => i.kind === 'tool');
-    return sortByMetric(list, metric);
-  }, [items, section, metric]);
+    return sortByMetric(list, metric, engagementScore);
+  }, [items, section, metric, engagementScore]);
+
+  const paged = useMemo(() => {
+    const start = page * ADMIN_LIST_PAGE_SIZE;
+    return filtered.slice(start, start + ADMIN_LIST_PAGE_SIZE);
+  }, [filtered, page]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [section, metric, countryCode]);
 
   if (role !== 'ADMIN') {
     return (
@@ -126,7 +163,8 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
       />
       <AdminCountryBar shell={shell} compact />
       <Text style={[styles.note, { color: shell.pageKicker }]}>
-        Uniquement les contenus créés par l'équipe THE LOOP — du plus plébiscité au moins.
+        Score « Tous » : clics×{scoreWeights.clickWeight} + favoris×{scoreWeights.favoriteWeight} + moyenne
+        note×{scoreWeights.ratingWeight} (Paramètres étoiles).
       </Text>
 
       <AdminTabMenu
@@ -162,9 +200,9 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
       {filtered.length === 0 ? (
         <Text style={[styles.empty, { color: shell.pageKicker }]}>Aucun contenu THE LOOP publié pour ce pays.</Text>
       ) : (
-        filtered.map((item, index) => (
+        paged.map((item, index) => (
           <View key={`${item.kind}-${item.id}`} style={adminCardStyle(shell)}>
-            <Text style={[styles.rank, { color: ADMIN_THEME.accent }]}>#{index + 1}</Text>
+            <Text style={[styles.rank, { color: ADMIN_THEME.accent }]}>#{page * ADMIN_LIST_PAGE_SIZE + index + 1}</Text>
             <Text style={[styles.title, { color: shell.pageTitle }]} numberOfLines={2}>{item.title}</Text>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>
               {item.kind === 'event'
@@ -174,6 +212,14 @@ export function AdminLoopStatsScreen({ navigation }: Props) {
           </View>
         ))
       )}
+      <AdminListPager
+        page={page}
+        total={filtered.length}
+        pageSize={ADMIN_LIST_PAGE_SIZE}
+        onPageChange={setPage}
+        shell={shell}
+        label="contenus"
+      />
     </ScrollView>
   );
 }

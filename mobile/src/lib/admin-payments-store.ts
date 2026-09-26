@@ -108,6 +108,7 @@ async function authHeaders(): Promise<HeadersInit> {
 
 export async function listAdminPaymentIntents(options?: {
   status?: string;
+  bucket?: 'in_progress' | 'paid' | 'abandoned';
   fulfillment?: string;
   countryCode?: string;
   limit?: number;
@@ -127,6 +128,7 @@ export async function listAdminPaymentIntents(options?: {
 
   const params = new URLSearchParams();
   if (options?.status) params.set('status', options.status);
+  if (options?.bucket) params.set('bucket', options.bucket);
   if (options?.fulfillment) params.set('fulfillment', options.fulfillment);
   if (options?.countryCode) params.set('country', options.countryCode);
   if (options?.limit) params.set('limit', String(options.limit));
@@ -213,7 +215,7 @@ export async function fetchAdminPaymentCsv(options?: {
 
 export async function reconcileAdminPaymentIntent(
   intentId: string,
-): Promise<{ ok: boolean; error?: string; intent?: Partial<AdminPaymentIntent> }> {
+): Promise<{ ok: boolean; error?: string; summary?: string; intent?: Partial<AdminPaymentIntent> }> {
   if (!isAdminBackendConfigured()) {
     return { ok: false, error: 'Backend non configuré.' };
   }
@@ -226,6 +228,7 @@ export async function reconcileAdminPaymentIntent(
     const body = (await response.json()) as {
       ok?: boolean;
       error?: string;
+      summary?: string;
       intent?: {
         id: string;
         status: string;
@@ -234,12 +237,13 @@ export async function reconcileAdminPaymentIntent(
         djomyStatus: string | null;
         djomyPaidAmount: number | null;
         paidAt: string | null;
+        lastCheckedAt: string | null;
       };
     };
     if (!response.ok) {
       return { ok: false, error: body.error ?? 'Resynchronisation impossible.' };
     }
-    return { ok: true, intent: body.intent };
+    return { ok: true, summary: body.summary, intent: body.intent };
   } catch {
     return { ok: false, error: 'Impossible de joindre le serveur.' };
   }

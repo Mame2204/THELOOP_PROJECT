@@ -3697,6 +3697,10 @@ export type Database = {
         Args: { p_email: string }
         Returns: string
       }
+      check_admin_invite_activation_eligibility: {
+        Args: { p_email: string }
+        Returns: string
+      }
       claim_home_poll_votes: { Args: { p_phone_id: string }; Returns: number }
       count_my_partner_validation_metrics: {
         Args: { p_since?: string }

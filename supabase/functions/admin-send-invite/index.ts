@@ -26,6 +26,13 @@ type InviteBody = {
   city?: string | null;
 };
 
+function defaultInviteFirstName(userRole?: string | null): string {
+  const role = (userRole ?? 'member').toLowerCase();
+  if (role === 'partner') return 'Partenaire';
+  if (role === 'admin') return 'Administrateur';
+  return 'Membre';
+}
+
 function extractSecondsFromMessage(message: string): number {
   const patterns = [
     /(\d+)\s*seconds?/i,
@@ -99,23 +106,31 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userClient = createClient(supabaseUrl, anonKey || serviceKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-    const { data: userData, error: userErr } = await userClient.auth.getUser(token);
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: 'Invalid session' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
+    // Valider le JWT admin via service role (fiable même si SUPABASE_ANON_KEY edge est absent / obsolète).
+    let authUser = (await adminClient.auth.getUser(token)).data.user ?? null;
+    if (!authUser && anonKey) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
       });
+      authUser = (await userClient.auth.getUser()).data.user ?? null;
+    }
+    if (!authUser) {
+      return new Response(
+        JSON.stringify({ error: 'Session expirée — reconnectez-vous sur admin-web puis réessayez.' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
-    const adminClient = createClient(supabaseUrl, serviceKey);
     const { data: profile } = await adminClient
       .from('users')
       .select('user_role, is_active')
-      .eq('id', userData.user.id)
+      .eq('id', authUser.id)
       .maybeSingle();
 
     if (!profile?.is_active) {
@@ -145,15 +160,63 @@ Deno.serve(async (req) => {
     const redirectTo =
       (body.redirectTo ?? '').trim() ||
       Deno.env.get('AUTH_REDIRECT_URL') ||
-      'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
+      'https://api.theloop-app.com/auth/callback';
 
+    const activationBase = redirectTo.replace(/\/$/, '').includes('/auth/callback')
+      ? redirectTo.replace(/\/$/, '')
+      : 'https://api.theloop-app.com/auth/callback';
+
+    async function buildActivationLink(type: 'invite' | 'recovery'): Promise<string | null> {
+      const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
+        type,
+        email,
+        options: { redirectTo: activationBase },
+      });
+      if (linkErr) {
+        console.warn('[admin-send-invite] generateLink:', linkErr.message);
+        return null;
+      }
+      const hashed = linkData?.properties?.hashed_token;
+      if (!hashed || typeof hashed !== 'string') return null;
+      const otpType = type === 'recovery' ? 'recovery' : 'invite';
+      return `${activationBase}?token_hash=${encodeURIComponent(hashed)}&type=${otpType}`;
+    }
+
+    const { data: existingProfile } = await adminClient
+      .from('users')
+      .select('id, account_status')
+      .ilike('email', email)
+      .maybeSingle();
+
+    const existingStatus = String(existingProfile?.account_status ?? '').trim().toLowerCase();
+    if (existingStatus && existingStatus !== 'invited' && existingStatus !== 'deleted') {
+      if (body.inviteId) {
+        await adminClient
+          .from('admin_user_invites')
+          .update({ activated_at: new Date().toISOString() })
+          .eq('id', body.inviteId)
+          .is('activated_at', null);
+      }
+      return new Response(
+        JSON.stringify({
+          error:
+            'Compte déjà actif pour cet e-mail. Utilisez « Reset MDP » depuis la fiche utilisateur.',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
+    const role = body.userRole ?? 'member';
     const metadata: Record<string, unknown> = {
       pending_welcome: true,
       invited_by_admin: true,
       admin_invite_id: body.inviteId ?? null,
-      first_name: body.firstName ?? null,
-      last_name: body.lastName ?? null,
-      user_role: body.userRole ?? 'member',
+      first_name: body.firstName?.trim() || defaultInviteFirstName(role),
+      last_name: body.lastName?.trim() || 'THE LOOP',
+      user_role: role,
       country_code: body.countryCode ?? 'GN',
       phone_number: body.phoneNumber ?? null,
       city: body.city ?? null,
@@ -189,7 +252,27 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Compte déjà présent : renvoyer un e-mail de réinitialisation (même UX set_password)
+      if (existingStatus && existingStatus !== 'invited' && existingStatus !== 'deleted') {
+        if (body.inviteId) {
+          await adminClient
+            .from('admin_user_invites')
+            .update({ activated_at: new Date().toISOString() })
+            .eq('id', body.inviteId)
+            .is('activated_at', null);
+        }
+        return new Response(
+          JSON.stringify({
+            error:
+              'Compte déjà actif pour cet e-mail. Utilisez « Reset MDP » depuis la fiche utilisateur.',
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        );
+      }
+
+      // Compte Auth déjà présent (statut invited ou profil absent) : e-mail de réinitialisation
       const recoverRes = await fetch(`${supabaseUrl}/auth/v1/recover`, {
         method: 'POST',
         headers: {
@@ -219,7 +302,8 @@ Deno.serve(async (req) => {
           .update({ otp_sent_at: new Date().toISOString() })
           .eq('id', body.inviteId);
       }
-      return new Response(JSON.stringify({ ok: true, mode: 'recovery_resent' }), {
+      const activationLink = await buildActivationLink('recovery');
+      return new Response(JSON.stringify({ ok: true, mode: 'recovery_resent', activationLink }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -232,7 +316,12 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, mode: 'invite', userId: invited.user?.id ?? null }),
+      JSON.stringify({
+        ok: true,
+        mode: 'invite',
+        userId: invited.user?.id ?? null,
+        activationLink: null,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {

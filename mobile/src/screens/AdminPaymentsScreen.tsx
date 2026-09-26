@@ -19,6 +19,11 @@ import {
   type AdminPaymentSummary,
 } from '@/lib/admin-payments-store';
 import { formatDateFr } from '@/lib/date-utils';
+import {
+  classifyPaymentAttempt,
+  paymentAttemptBadgeLabel,
+  resyncHintForIntent,
+} from '@/lib/payment-intent-display';
 import { formatGnf } from '@/lib/djomy-fees';
 import { primePlanLabel, type PrimeBillingPeriod } from '@/lib/prime-plans';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -26,7 +31,7 @@ import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminPayments'>;
 
-type StatusFilter = 'all' | 'paid' | 'pending' | 'failed' | 'incidents';
+type StatusFilter = 'all' | 'paid' | 'pending' | 'abandoned' | 'failed' | 'incidents';
 
 const PERIOD_LABELS: Record<string, string> = {
   monthly: 'Mensuel',
@@ -50,29 +55,22 @@ function formatDateTimeFr(iso: string | null | undefined): string {
   }
 }
 
-function statusTone(status: string): { bg: string; color: string; label: string } {
-  switch (status) {
-    case 'paid':
-      return { bg: 'rgba(34,197,94,0.15)', color: '#16a34a', label: 'Payé' };
-    case 'failed':
-      return { bg: 'rgba(239,68,68,0.15)', color: '#dc2626', label: 'Échoué' };
-    case 'cancelled':
-      return { bg: 'rgba(107,114,128,0.2)', color: '#6b7280', label: 'Annulé' };
-    case 'redirected':
-      return { bg: 'rgba(245,158,11,0.18)', color: '#b45309', label: 'Portail ouvert' };
-    case 'created':
-      return { bg: 'rgba(59,130,246,0.15)', color: '#2563eb', label: 'Créé' };
+function attemptTone(intent: AdminPaymentIntent): { bg: string; color: string; label: string } {
+  const kind = classifyPaymentAttempt(intent);
+  switch (kind) {
+    case 'completed':
+      return { bg: 'rgba(34,197,94,0.15)', color: '#16a34a', label: paymentAttemptBadgeLabel(kind) };
+    case 'abandoned':
+      return { bg: 'rgba(107,114,128,0.22)', color: '#4b5563', label: paymentAttemptBadgeLabel(kind) };
+    case 'awaiting_fulfillment':
+      return { bg: 'rgba(245,158,11,0.2)', color: '#b45309', label: paymentAttemptBadgeLabel(kind) };
+    case 'awaiting_operator':
+      return { bg: 'rgba(59,130,246,0.15)', color: '#2563eb', label: paymentAttemptBadgeLabel(kind) };
+    case 'incident':
+      return { bg: 'rgba(239,68,68,0.15)', color: '#dc2626', label: paymentAttemptBadgeLabel(kind) };
     default:
-      return { bg: 'rgba(107,114,128,0.15)', color: '#6b7280', label: status };
+      return { bg: 'rgba(245,158,11,0.18)', color: '#b45309', label: paymentAttemptBadgeLabel(kind) };
   }
-}
-
-function matchesFilter(intent: AdminPaymentIntent, filter: StatusFilter): boolean {
-  if (filter === 'all') return true;
-  if (filter === 'incidents') return intent.fulfillmentStatus === 'failed';
-  if (filter === 'paid') return intent.status === 'paid' || intent.fulfillmentStatus === 'fulfilled';
-  if (filter === 'failed') return intent.status === 'failed' || intent.status === 'cancelled';
-  return intent.status !== 'paid' && intent.fulfillmentStatus !== 'fulfilled' && intent.status !== 'failed' && intent.status !== 'cancelled';
 }
 
 const PAGE_SIZE = 30;
@@ -103,21 +101,25 @@ export function AdminPaymentsScreen({ navigation }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const bucket =
+      filter === 'pending'
+        ? 'in_progress'
+        : filter === 'paid'
+          ? 'paid'
+          : filter === 'abandoned'
+            ? 'abandoned'
+            : undefined;
     const res = await listAdminPaymentIntents({
-      limit: filter === 'all' || filter === 'paid' ? PAGE_SIZE : 80,
-      offset: filter === 'all' || filter === 'paid' ? page * PAGE_SIZE : 0,
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
       countryCode,
-      ...(filter === 'paid' ? { status: 'paid' } : {}),
+      bucket,
       ...(filter === 'incidents' ? { fulfillment: 'failed' } : {}),
     });
     setLoadError(res.error ?? null);
     setSummary(res.summary ?? null);
     setTotal(res.total ?? res.intents.length);
-    setIntents(
-      filter === 'all' || filter === 'paid'
-        ? res.intents
-        : res.intents.filter((i) => matchesFilter(i, filter)),
-    );
+    setIntents(res.intents);
   }, [filter, page, countryCode]);
 
   const loadAnalytics = useCallback(async () => {
@@ -187,8 +189,9 @@ export function AdminPaymentsScreen({ navigation }: Props) {
         return;
       }
       Alert.alert(
-        'Resynchronisé',
-        `Statut : ${res.intent?.status ?? '—'} · Fulfillment : ${res.intent?.fulfillmentStatus ?? '—'}`,
+        'Resync Djomy',
+        res.summary ??
+          `Statut : ${res.intent?.status ?? '—'} · Fulfillment : ${res.intent?.fulfillmentStatus ?? '—'} · Djomy : ${res.intent?.djomyStatus ?? '—'}`,
       );
       await load();
     } finally {
@@ -335,7 +338,7 @@ export function AdminPaymentsScreen({ navigation }: Props) {
           { id: 'all', label: 'Tous' },
           { id: 'pending', label: 'En cours' },
           { id: 'paid', label: 'Payés' },
-          { id: 'failed', label: 'Échoués' },
+          { id: 'abandoned', label: 'Sans débit' },
           { id: 'incidents', label: 'Incidents' },
         ]}
         active={filter}
@@ -352,7 +355,7 @@ export function AdminPaymentsScreen({ navigation }: Props) {
       ) : null}
 
       {filtered.map((intent) => {
-        const tone = statusTone(intent.status);
+        const tone = attemptTone(intent);
         const expanded = expandedId === intent.id;
         const period =
           PERIOD_LABELS[intent.billingPeriod] ??
@@ -389,6 +392,10 @@ export function AdminPaymentsScreen({ navigation }: Props) {
             </Text>
             <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={1}>
               Tx Djomy : {intent.djomyTransactionId ?? '—'}
+            </Text>
+            <Text style={[styles.meta, { color: shell.pageKicker }]} numberOfLines={2}>
+              Vérifié Djomy :{' '}
+              {intent.lastCheckedAt ? formatDateTimeFr(intent.lastCheckedAt) : 'Jamais — touchez Resync'}
             </Text>
 
             {expanded ? (
@@ -429,15 +436,20 @@ export function AdminPaymentsScreen({ navigation }: Props) {
                 </Text>
 
                 {canReconcilePaymentIntent(intent) ? (
-                  <Pressable
-                    style={[styles.resyncBtn, { borderColor: ADMIN_THEME.accent, opacity: busyId === intent.id ? 0.6 : 1 }]}
-                    disabled={busyId === intent.id}
-                    onPress={() => void handleReconcile(intent)}
-                  >
-                    <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 12 }}>
-                      {busyId === intent.id ? 'Resync…' : 'Resynchroniser avec Djomy'}
+                  <>
+                    <Pressable
+                      style={[styles.resyncBtn, { borderColor: ADMIN_THEME.accent, opacity: busyId === intent.id ? 0.6 : 1 }]}
+                      disabled={busyId === intent.id}
+                      onPress={() => void handleReconcile(intent)}
+                    >
+                      <Text style={{ color: ADMIN_THEME.accent, fontWeight: '700', fontSize: 12 }}>
+                        {busyId === intent.id ? 'Resync…' : 'Resynchroniser avec Djomy'}
+                      </Text>
+                    </Pressable>
+                    <Text style={[styles.tapHint, { color: shell.pageKicker, marginTop: 6 }]}>
+                      {resyncHintForIntent(intent)}
                     </Text>
-                  </Pressable>
+                  </>
                 ) : (
                   <Text style={[styles.tapHint, { color: shell.pageKicker, marginTop: 8 }]}>
                     {reconcileDisabledReason(intent) ?? 'Resync non nécessaire'}

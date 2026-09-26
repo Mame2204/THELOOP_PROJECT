@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, AppState, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContent } from '@/context/ContentContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
@@ -24,6 +24,7 @@ import { PARTNER_PUBLICATION_NOTICE } from '@/lib/legal-content-store';
 import { navigateRoot } from '@/lib/navigation-utils';
 import { slugify } from '@/lib/content-mappers';
 import { resolvePartnerWorkspaceContext } from '@/lib/partner-spot-auth';
+import { subscribePartnerModerationRefresh } from '@/lib/user-notifications-store';
 import { useCategoryLabels } from '@/context/CategoryLabelsContext';
 import { usePartnerContentScopes } from '@/hooks/usePartnerContentScopes';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -168,6 +169,37 @@ export function PartnerContentScreen({ navigation }: Props) {
     ttlMs: 90_000,
     enabled: role === 'PARTNER' && Boolean(user),
   });
+
+  /** Modération web → statut serveur : recharger au retour app + après notif partenaire (TTL focus seul = stale « pending »). */
+  const partnerRefreshDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const schedulePartnerContentRefresh = useCallback(() => {
+    if (partnerRefreshDebounceRef.current) clearTimeout(partnerRefreshDebounceRef.current);
+    partnerRefreshDebounceRef.current = setTimeout(() => {
+      partnerRefreshDebounceRef.current = null;
+      void run(true);
+    }, 400);
+  }, [run]);
+
+  useEffect(() => {
+    return () => {
+      if (partnerRefreshDebounceRef.current) clearTimeout(partnerRefreshDebounceRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (role !== 'PARTNER' || !user) return;
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') schedulePartnerContentRefresh();
+    });
+    return () => sub.remove();
+  }, [role, user, schedulePartnerContentRefresh]);
+
+  useEffect(() => {
+    if (role !== 'PARTNER' || !user) return;
+    return subscribePartnerModerationRefresh(() => {
+      schedulePartnerContentRefresh();
+    });
+  }, [role, user, schedulePartnerContentRefresh]);
 
   const [partnerWorkspace, setPartnerWorkspace] = useState<{ effectiveUserId: string; partnerLabel: string } | null>(null);
 

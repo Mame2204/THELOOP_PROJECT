@@ -81,6 +81,7 @@ export interface PaymentIntent {
   djomyTransactionId: string | null;
   djomyStatus: string | null;
   djomyProviderReference?: string | null;
+  lastCheckedAt?: string | null;
   djomyPaidAmount?: number | null;
   grossGnf?: number;
   feeRatePercent?: number | null;
@@ -95,6 +96,7 @@ export async function fetchPaymentIntents(options?: {
   limit?: number;
   offset?: number;
   status?: string;
+  bucket?: 'in_progress' | 'paid' | 'abandoned';
   fulfillment?: string;
   countryCode?: string;
 }): Promise<{ intents: PaymentIntent[]; summary?: PaymentSummary; total?: number; error?: string }> {
@@ -103,6 +105,7 @@ export async function fetchPaymentIntents(options?: {
   if (options?.limit) params.set('limit', String(options.limit));
   if (options?.offset != null) params.set('offset', String(options.offset));
   if (options?.status) params.set('status', options.status);
+  if (options?.bucket) params.set('bucket', options.bucket);
   if (options?.fulfillment) params.set('fulfillment', options.fulfillment);
   if (options?.countryCode) params.set('country', options.countryCode);
   const qs = params.toString();
@@ -301,16 +304,18 @@ export async function createAccountingSettlement(input: {
   }
 }
 
-export async function reconcilePayment(id: string): Promise<{ ok: boolean; error?: string }> {
+export async function reconcilePayment(
+  id: string,
+): Promise<{ ok: boolean; error?: string; summary?: string }> {
   try {
     const res = await fetch(`${API_URL}/api/admin/payment-intents/${id}/reconcile`, {
       method: 'POST',
       headers: await authHeaders(),
       body: '{}',
     });
-    const body = (await res.json()) as { error?: string };
+    const body = (await res.json()) as { error?: string; summary?: string };
     if (!res.ok) return { ok: false, error: body.error ?? 'Resync impossible.' };
-    return { ok: true };
+    return { ok: true, summary: body.summary };
   } catch {
     return { ok: false, error: 'API injoignable.' };
   }

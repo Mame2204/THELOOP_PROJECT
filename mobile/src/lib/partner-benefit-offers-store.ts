@@ -21,7 +21,9 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { asJson, undefinedIfNull } from '@/lib/supabase-types';
 import {
   fetchAdminPartnerBenefitOffersViaBackend,
+  respondPartnerBenefitOfferViaBackend,
 } from '@/lib/partner-benefit-offers-backend-api';
+import { isLoopBackendConfigured } from '@/lib/loop-backend-api';
 import {
   acceptPartnerCatalogOfferViaSupabase,
   buildPartnerBenefitOfferNotificationMessage,
@@ -31,7 +33,6 @@ import {
   respondPartnerBenefitOfferViaSupabase,
   parseRpcJsonArray,
 } from '@/lib/partner-benefit-offers-supabase-fallback';
-import { isLoopBackendConfigured } from '@/lib/loop-backend-api';
 import { ensurePartnerSupabaseSession, getPartnerAuthUserIdFromSession, requirePartnerAuthUserId } from '@/lib/partner-spot-auth';
 import { resolveEffectivePartnerUserId } from '@/lib/partner-session-user-id';
 
@@ -450,8 +451,22 @@ async function respondRemotePartnerOffer(
   offer: PartnerBenefitOffer,
   accept: boolean,
   note?: string | null,
+  partnerUserId?: string,
 ): Promise<{ ok: boolean; error?: string }> {
   await ensurePartnerSupabaseSession();
+
+  if (isLoopBackendConfigured() && partnerUserId) {
+    const backendRes = await respondPartnerBenefitOfferViaBackend(partnerUserId, offer, accept, note);
+    if (backendRes.ok) return backendRes;
+    if (
+      backendRes.error &&
+      backendRes.error !== 'backend_not_configured' &&
+      backendRes.error !== 'backend_unreachable'
+    ) {
+      return backendRes;
+    }
+  }
+
   const supabaseRes = await respondPartnerBenefitOfferViaSupabase(offer, accept, note);
   if (supabaseRes.ok) return supabaseRes;
 
@@ -467,6 +482,15 @@ async function respondRemotePartnerOffer(
     if (catalogLocalId && !catalogLocalId.startsWith('pending-title-')) {
       return acceptPartnerCatalogOfferViaSupabase(catalogLocalId);
     }
+  }
+
+  if (supabaseRes.error?.includes('rpc_partner_respond_missing')) {
+    return {
+      ok: false,
+      error: accept
+        ? 'Validation impossible — service partenaire indisponible. Réessayez ou contactez THE LOOP.'
+        : 'Refus impossible — service partenaire indisponible. Réessayez ou contactez THE LOOP.',
+    };
   }
 
   return supabaseRes.error
@@ -1118,7 +1142,7 @@ export async function respondPartnerBenefitOffer(
     return null;
   }
 
-  const remoteRes = await respondRemotePartnerOffer(current, accept, trimmedNote);
+  const remoteRes = await respondRemotePartnerOffer(current, accept, trimmedNote, partnerUserId);
   if (!remoteRes.ok) {
     throw new Error(remoteRes.error ?? 'Réponse serveur impossible');
   }

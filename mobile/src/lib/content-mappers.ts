@@ -299,7 +299,7 @@ export function mapDbEventToApp(row: DbEventRow, slug: string): Event {
       mapDbContentStatus(row.content_status) === 'published' && row.is_active !== false
         ? 'published'
         : 'draft',
-    startsAt: row.start_date,
+    startsAt: row.start_date?.trim() ? row.start_date : row.created_at,
     endsAt: row.end_date,
     venueName: venueLabel(row),
     venueAddress: locationLabelFromNeighborhood(neighborhood),

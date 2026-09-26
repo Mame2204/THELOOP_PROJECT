@@ -243,6 +243,90 @@ async function loadAllFromStorage(): Promise<PrimeBenefit[]> {
   }
 }
 
+function mapAnalyticsRpcRow(row: Record<string, unknown>): PrimeBenefit {
+  const usedAt = row.used_at ? String(row.used_at) : null;
+  const rawStatus = row.status as PrimeBenefit['status'];
+  const roleRaw = row.role_entitlement ? String(row.role_entitlement) : null;
+  const roleEntitlement =
+    roleRaw === 'member' || roleRaw === 'prime' || roleRaw === 'admin' || roleRaw === 'partner'
+      ? roleRaw
+      : null;
+  const localId = String(row.local_id ?? crypto.randomUUID());
+  const status: PrimeBenefit['status'] =
+    usedAt && rawStatus !== 'expired_unused' ? 'used' : rawStatus;
+  return normalizeBenefit({
+    id: localId,
+    userId: '00000000-0000-0000-0000-000000000000',
+    userPhone: null,
+    catalogId: String(row.catalog_local_id ?? row.catalog_id ?? ''),
+    title: '—',
+    description: '',
+    partnerName: null,
+    benefitKind: 'unlimited',
+    quantityTotal: null,
+    quantityUsed: 0,
+    maxUses: null,
+    usesCount: usedAt ? 1 : 0,
+    status,
+    grantedAt: new Date(0).toISOString(),
+    expiresAt: row.expires_at ? String(row.expires_at) : new Date(0).toISOString(),
+    usedAt,
+    grantedBy: roleEntitlement ? 'role-entitlement' : 'admin',
+    grantAudience: (row.grant_audience as PrimeBenefit['grantAudience']) ?? 'individual',
+    customNote: null,
+    grantBatchId: null,
+    grantCountryCode: row.grant_country_code ? String(row.grant_country_code) : null,
+    grantCity: null,
+    roleEntitlement,
+    validityDays: null,
+    validityStartsOnActivation: false,
+    activatedAt: null,
+  });
+}
+
+/** Octrois pour KPI Insights admin — RPC admin puis fallback table. */
+async function loadGrantsForAdminAnalytics(countryCode?: string): Promise<PrimeBenefit[]> {
+  if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    try {
+      const loadRpc = async (cc: string | null) => {
+        const { data, error } = await supabase.rpc('list_admin_benefit_grants_analytics', {
+          p_country_code: cc,
+        });
+        if (error) {
+          console.warn('[PrimeBenefits] analytics rpc:', error.message);
+          return null;
+        }
+        return refreshStatuses((data ?? []).map((row) => mapAnalyticsRpcRow(row as Record<string, unknown>)));
+      };
+
+      const fromRpc = await loadRpc(countryCode ?? null);
+      if (fromRpc !== null) {
+        return fromRpc;
+      }
+      const fromRpcAll = countryCode ? await loadRpc(null) : null;
+      if (fromRpcAll !== null) {
+        return filterGrantsByCountry(fromRpcAll, countryCode);
+      }
+
+      const { fetchAllRemotePrimeBenefits } = await import('@/lib/prime-benefits-sync');
+      const remote = await fetchAllRemotePrimeBenefits();
+      if (remote.length) {
+        return refreshStatuses(filterGrantsByCountry(remote, countryCode));
+      }
+    } catch (e) {
+      console.warn('[PrimeBenefits] analytics remote:', e);
+    }
+  }
+  return refreshStatuses(filterGrantsByCountry(await loadAllFromStorage(), countryCode));
+}
+
+function isRoleEntitlementBenefit(b: PrimeBenefit): boolean {
+  if (b.id.startsWith('role-ben-')) return true;
+  if (b.grantAudience === 'individual') return false;
+  if (b.roleEntitlement) return true;
+  return false;
+}
+
 async function loadAll(): Promise<PrimeBenefit[]> {
   const local = refreshStatuses(await loadAllFromStorage());
   if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
@@ -1606,7 +1690,10 @@ export async function requestBenefitValidation(
   const updated = all[idx];
   await saveAll(all);
 
-  // 2) Créer / re-pousser la demande (locale + remote pour le scan partenaire)
+  // 2) Aligner le statut octroi côté serveur avant la redemption (octroi individuel admin déjà en base)
+  await persistAndSync(all, [updated], { awaitRemote: true }).catch(() => undefined);
+
+  // 3) Créer / re-pousser la demande (locale + remote pour le scan partenaire)
   const { redemption, remoteOk } = await createBenefitRedemption({
     benefitId: activatedWithPartner.id,
     userId: sessionUserId,
@@ -1631,8 +1718,6 @@ export async function requestBenefitValidation(
     remoteOk,
   });
 
-  // 3) Sync grant pending vers Supabase (pour le JOIN RPC partenaire) — ne bloque pas le succès
-  void persistAndSync(all, [updated], { awaitRemote: true }).catch(() => undefined);
   markNetworkReachable();
 
   try {
@@ -1779,26 +1864,87 @@ export interface BenefitOverviewKpis {
   consumed: number;
 }
 
-export async function getBenefitOverviewKpis(countryCode?: string): Promise<BenefitOverviewKpis> {
-  let all = refreshStatuses(await loadAll()).filter((b) => !b.roleEntitlement);
-  if (countryCode) {
-    const cc = countryCode.toUpperCase().slice(0, 2);
-    all = all.filter(
-      (b) => !b.grantCountryCode || b.grantCountryCode.toUpperCase().slice(0, 2) === cc,
-    );
+export interface BenefitInsightsDetails {
+  catalogTotal: number;
+  catalogActive: number;
+  catalogActiveAssociated: number;
+  individual: BenefitOverviewKpis;
+  roleEntitlement: BenefitOverviewKpis;
+  allGrants: BenefitOverviewKpis;
+}
+
+function filterGrantsByCountry(all: PrimeBenefit[], countryCode?: string): PrimeBenefit[] {
+  if (!countryCode) return all;
+  const cc = countryCode.toUpperCase().slice(0, 2);
+  return all.filter(
+    (b) => !b.grantCountryCode || b.grantCountryCode.toUpperCase().slice(0, 2) === cc,
+  );
+}
+
+function computeBenefitOverviewKpis(benefits: PrimeBenefit[]): BenefitOverviewKpis {
+  return {
+    granted: benefits.length,
+    active: benefits.filter((b) => b.status === 'active' || b.status === 'pending_validation').length,
+    expired: benefits.filter((b) => b.status === 'expired_unused').length,
+    consumed: benefits.filter((b) => b.status === 'used').length,
+  };
+}
+
+async function countValidatedRedemptionsForInsights(): Promise<number> {
+  if (!isSupabaseConfigured() || !supabase) return 0;
+  const { count, error } = await supabase
+    .from('benefit_redemptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'validated');
+  if (error) {
+    console.warn('[PrimeBenefits] validated redemptions count:', error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function getBenefitInsightsDetails(countryCode?: string): Promise<BenefitInsightsDetails> {
+  const { countDashboardActiveCatalogBenefits, listBenefitCatalog } = await import(
+    '@/lib/benefit-catalog-store'
+  );
+  const [allRaw, validatedRedemptions] = await Promise.all([
+    loadGrantsForAdminAnalytics(countryCode),
+    countValidatedRedemptionsForInsights(),
+  ]);
+  let all = filterGrantsByCountry(allRaw, countryCode);
+  const individual = all.filter((b) => !isRoleEntitlementBenefit(b));
+  const role = all.filter((b) => isRoleEntitlementBenefit(b));
+  const cc = countryCode?.toUpperCase().slice(0, 2);
+  const catalogAll = await listBenefitCatalog(false);
+  const catalog = cc
+    ? catalogAll.filter((c) => (c.countryCode ?? '').toUpperCase().slice(0, 2) === cc)
+    : catalogAll;
+  const catalogActiveAssociated = await countDashboardActiveCatalogBenefits(countryCode);
+  const allKpis = computeBenefitOverviewKpis(all);
+  if (validatedRedemptions > allKpis.consumed) {
+    allKpis.consumed = validatedRedemptions;
   }
   return {
-    granted: all.length,
-    active: all.filter((b) => b.status === 'active' || b.status === 'pending_validation').length,
-    expired: all.filter((b) => b.status === 'expired_unused').length,
-    consumed: all.filter((b) => b.status === 'used').length,
+    catalogTotal: catalog.length,
+    catalogActive: catalog.filter((c) => c.isActive).length,
+    catalogActiveAssociated,
+    individual: computeBenefitOverviewKpis(individual),
+    roleEntitlement: computeBenefitOverviewKpis(role),
+    allGrants: allKpis,
   };
+}
+
+export async function getBenefitOverviewKpis(countryCode?: string): Promise<BenefitOverviewKpis> {
+  const details = await getBenefitInsightsDetails(countryCode);
+  return details.allGrants;
 }
 
 export interface CatalogUsageStat {
   catalogId: string;
   title: string;
   granted: number;
+  grantedIndividual: number;
+  grantedRole: number;
   /** Affectés au membre et utilisés */
   used: number;
   /** Affectés au membre mais pas encore utilisés (active / pending_validation) */
@@ -1812,7 +1958,7 @@ export interface CatalogUsageStat {
 
 export async function getCatalogUsageStats(countryCode?: string): Promise<CatalogUsageStat[]> {
   await purgeOrphanPrimeBenefits();
-  const allBenefits = refreshStatuses(await loadAll());
+  const allBenefits = await loadGrantsForAdminAnalytics(countryCode);
   const cc = countryCode?.toUpperCase().slice(0, 2);
   const all = cc
     ? allBenefits.filter(
@@ -1831,6 +1977,8 @@ export async function getCatalogUsageStats(countryCode?: string): Promise<Catalo
       catalogId: item.id,
       title: item.title,
       granted: 0,
+      grantedIndividual: 0,
+      grantedRole: 0,
       used: 0,
       unusedAssigned: 0,
       unassignedActive: item.isActive ? 1 : 0,
@@ -1841,10 +1989,11 @@ export async function getCatalogUsageStats(countryCode?: string): Promise<Catalo
 
   for (const benefit of all) {
     if (!catalogIds.has(benefit.catalogId)) continue;
-    if (benefit.roleEntitlement) continue;
     const stat = byCatalog.get(benefit.catalogId);
     if (!stat) continue;
     stat.granted += 1;
+    if (isRoleEntitlementBenefit(benefit)) stat.grantedRole += 1;
+    else stat.grantedIndividual += 1;
     if (benefit.status === 'used') stat.used += 1;
     if (benefit.status === 'active' || benefit.status === 'pending_validation') {
       stat.unusedAssigned += 1;

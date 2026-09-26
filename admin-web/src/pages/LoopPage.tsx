@@ -16,8 +16,21 @@ import {
   type CatalogKind,
   type ContentStatus,
 } from '../lib/content';
-import { isTheLoopLinked, listBenefitCatalog, type BenefitCatalogRow } from '../lib/privileges';
+import {
+  filterTheLoopOfferedBenefits,
+  listBenefitCatalog,
+  loadPublishedContentIndex,
+  type BenefitCatalogRow,
+} from '../lib/privileges';
 import { loadInsights, type InsightsBundle } from '../lib/insights';
+import {
+  LOOP_PERF_PAGE_SIZE,
+  sortLoopPerfRows,
+  type LoopPerfMetricTab,
+  type LoopPerfSectionTab,
+} from '../lib/loop-perf-sort';
+import type { LoopPerfScoreWeights } from '../lib/loop-perf-score-weights';
+import { loadTeamLoopPerformance, type TeamLoopPerfRow } from '../lib/team-loop-performance';
 
 type Tab = 'contenu' | 'privileges' | 'featured' | 'stats';
 
@@ -71,6 +84,16 @@ export function LoopPage() {
   const [benefits, setBenefits] = useState<BenefitCatalogRow[]>([]);
   const [benefitFilter, setBenefitFilter] = useState<'active' | 'all'>('active');
   const [stats, setStats] = useState<InsightsBundle | null>(null);
+  const [teamPerfByKind, setTeamPerfByKind] = useState<{
+    events: TeamLoopPerfRow[];
+    spots: TeamLoopPerfRow[];
+    tools: TeamLoopPerfRow[];
+  } | null>(null);
+  const [perfSection, setPerfSection] = useState<LoopPerfSectionTab>('all');
+  const [perfMetric, setPerfMetric] = useState<LoopPerfMetricTab>('all');
+  const [perfPage, setPerfPage] = useState(0);
+  const [perfScoreWeights, setPerfScoreWeights] = useState<LoopPerfScoreWeights | null>(null);
+  const [benefitPage, setBenefitPage] = useState(0);
 
   const loadContent = useCallback(async () => {
     const res = await listCatalogContent(countryCode, [typeTab], {
@@ -86,13 +109,23 @@ export function LoopPage() {
   }, [countryCode, typeTab, page, statusFilter]);
 
   const loadBenefits = useCallback(async () => {
-    const res = await listBenefitCatalog(countryCode);
-    setBenefits(res.items.filter((i) => isTheLoopLinked(i.partnerNames)));
+    const [res, index] = await Promise.all([
+      listBenefitCatalog(countryCode),
+      loadPublishedContentIndex(countryCode),
+    ]);
+    setBenefits(filterTheLoopOfferedBenefits(res.items, index, { countryCode, activeOnly: false }));
     if (res.error) setMsg(res.error);
   }, [countryCode]);
 
   const loadStats = useCallback(async () => {
-    setStats(await loadInsights(countryCode, { teamOnly: true }));
+    const [insights, perf] = await Promise.all([
+      loadInsights(countryCode, { teamOnly: true }),
+      loadTeamLoopPerformance(countryCode),
+    ]);
+    setStats(insights);
+    setTeamPerfByKind({ events: perf.events, spots: perf.spots, tools: perf.tools });
+    setPerfScoreWeights(perf.weights);
+    if (perf.error) setMsg(perf.error);
   }, [countryCode]);
 
   useEffect(() => {
@@ -123,6 +156,38 @@ export function LoopPage() {
     [benefits, benefitFilter],
   );
 
+  const perfListSorted = useMemo(() => {
+    if (!teamPerfByKind || !perfScoreWeights) return [];
+    const weights = perfScoreWeights;
+    if (perfSection === 'events') return sortLoopPerfRows(teamPerfByKind.events, perfMetric, weights);
+    if (perfSection === 'spots') return sortLoopPerfRows(teamPerfByKind.spots, perfMetric, weights);
+    if (perfSection === 'tools') return sortLoopPerfRows(teamPerfByKind.tools, perfMetric, weights);
+    const merged = [
+      ...teamPerfByKind.events,
+      ...teamPerfByKind.spots,
+      ...teamPerfByKind.tools,
+    ];
+    return sortLoopPerfRows(merged, perfMetric, weights);
+  }, [teamPerfByKind, perfSection, perfMetric, perfScoreWeights]);
+
+  const perfListPage = useMemo(() => {
+    const start = perfPage * LOOP_PERF_PAGE_SIZE;
+    return perfListSorted.slice(start, start + LOOP_PERF_PAGE_SIZE);
+  }, [perfListSorted, perfPage]);
+
+  const pagedBenefits = useMemo(() => {
+    const start = benefitPage * CATALOG_PAGE_SIZE;
+    return filteredBenefits.slice(start, start + CATALOG_PAGE_SIZE);
+  }, [filteredBenefits, benefitPage]);
+
+  useEffect(() => {
+    setPerfPage(0);
+  }, [perfSection, perfMetric, countryCode]);
+
+  useEffect(() => {
+    setBenefitPage(0);
+  }, [benefitFilter, countryCode]);
+
   async function applyStatus(item: CatalogContentItem, status: ContentStatus) {
     setBusy(true);
     const res = await setCatalogContentStatus(item.kind, item.id, status);
@@ -138,7 +203,7 @@ export function LoopPage() {
     <section>
       <header className="page-header">
         <div>
-          <p className="brand-kicker">Publication équipe</p>
+          <p className="brand-kicker">Contenu THE LOOP</p>
           <h2>THE LOOP</h2>
           <p className="meta">
             Contenu d’origine admin/loop — pays : {countryLabel}. Catalogue global :{' '}
@@ -251,6 +316,9 @@ export function LoopPage() {
 
       {tab === 'privileges' && canBenefits ? (
         <>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Uniquement les privilèges THE LOOP rattachés à un contenu publié (événement, spot ou outil) — aligné app mobile.
+          </p>
           <div className="tabs" style={{ marginBottom: 12 }}>
             <button
               type="button"
@@ -277,7 +345,7 @@ export function LoopPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBenefits.map((b) => (
+                {pagedBenefits.map((b) => (
                   <tr key={b.localId}>
                     <td>
                       <strong>{b.title}</strong>
@@ -299,6 +367,13 @@ export function LoopPage() {
               </p>
             ) : null}
           </div>
+          <ListPager
+            page={benefitPage}
+            total={filteredBenefits.length}
+            pageSize={CATALOG_PAGE_SIZE}
+            onPageChange={setBenefitPage}
+            label="privilèges"
+          />
         </>
       ) : null}
 
@@ -311,7 +386,7 @@ export function LoopPage() {
         </>
       ) : null}
 
-      {tab === 'stats' && canStats && stats ? (
+      {tab === 'stats' && canStats && stats && teamPerfByKind && perfScoreWeights ? (
         <>
           <div className="kpi-grid">
             <div className="card kpi-card">
@@ -327,10 +402,62 @@ export function LoopPage() {
               <strong>{stats.counts.tools}</strong>
             </div>
           </div>
-          <h3>Top clics (équipe)</h3>
-          <TopList title="Événements" rows={stats.eventsByClicks} />
-          <TopList title="Spots" rows={stats.spotsByClicks} />
-          <TopList title="Outils" rows={stats.toolsByClicks} />
+          <h3>Performances</h3>
+          <p className="meta" style={{ marginBottom: 8 }}>
+            Tri « Tous » : score = clics×{perfScoreWeights.clickWeight} + favoris×
+            {perfScoreWeights.favoriteWeight} + moyenne note×{perfScoreWeights.ratingWeight} (Paramètres
+            étoiles). Vue globale ou par type.
+          </p>
+          <nav className="tabs" style={{ marginBottom: 8 }}>
+            {(
+              [
+                ['all', 'Tous'],
+                ['events', 'Événements'],
+                ['spots', 'Spots'],
+                ['tools', 'Outils'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`tab ${perfSection === id ? 'active' : ''}`}
+                onClick={() => {
+                  setPerfSection(id);
+                  setPerfMetric('all');
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <nav className="tabs" style={{ marginBottom: 12 }}>
+            {(
+              [
+                ['all', 'Tous'],
+                ['favorites', 'Favoris'],
+                ['clicks', 'Clics'],
+                ['stars', 'Étoiles'],
+                ['ratings', 'Notes'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`tab ${perfMetric === id ? 'active' : ''}`}
+                onClick={() => setPerfMetric(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <PerfRankList rows={perfListPage} rankOffset={perfPage * LOOP_PERF_PAGE_SIZE} showKind={perfSection === 'all'} />
+          <ListPager
+            page={perfPage}
+            total={perfListSorted.length}
+            pageSize={LOOP_PERF_PAGE_SIZE}
+            onPageChange={setPerfPage}
+            label="contenus"
+          />
         </>
       ) : null}
     </section>
@@ -435,22 +562,50 @@ function ContentTable({
   );
 }
 
-function TopList({ title, rows }: { title: string; rows: { id: string; title: string; metric: number }[] }) {
+const PERF_KIND_LABELS: Record<TeamLoopPerfRow['kind'], string> = {
+  event: 'Événement',
+  spot: 'Spot',
+  tool: 'Outil',
+};
+
+function PerfRankList({
+  rows,
+  rankOffset,
+  showKind,
+}: {
+  rows: TeamLoopPerfRow[];
+  rankOffset: number;
+  showKind: boolean;
+}) {
+  if (rows.length === 0) {
+    return (
+      <p className="muted" style={{ marginBottom: 12 }}>
+        Aucun contenu THE LOOP publié pour ce pays.
+      </p>
+    );
+  }
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <h4 style={{ margin: '0 0 8px' }}>{title}</h4>
-      {rows.length === 0 ? (
-        <p className="muted">Aucune donnée.</p>
-      ) : (
-        <ol className="top-list">
-          {rows.slice(0, 5).map((r) => (
-            <li key={r.id}>
+      <ol className="top-list">
+        {rows.map((r, index) => (
+          <li key={`${r.kind}-${r.id}`}>
+            <div style={{ flex: 1 }}>
+              <span className="meta" style={{ marginRight: 6 }}>
+                #{rankOffset + index + 1}
+              </span>
+              {showKind ? (
+                <span className="badge" style={{ marginRight: 6 }}>
+                  {PERF_KIND_LABELS[r.kind]}
+                </span>
+              ) : null}
               <span>{r.title}</span>
-              <strong>{r.metric}</strong>
-            </li>
-          ))}
-        </ol>
-      )}
+              <div className="meta" style={{ marginTop: 4 }}>
+                {r.displayLine}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

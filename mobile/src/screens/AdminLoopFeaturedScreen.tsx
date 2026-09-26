@@ -7,7 +7,7 @@ import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
-import { listFeaturedCandidates } from '@/lib/admin-content-store';
+import { listTeamFeaturedFromCatalog } from '@/lib/admin-content-store';
 import { isTeamContentOrigin } from '@/lib/content-origin';
 import { matchesAdminCountry } from '@/lib/admin-country';
 import { isToolLocation } from '@/lib/location-kind-utils';
@@ -20,33 +20,23 @@ export function AdminLoopFeaturedScreen({ navigation }: Props) {
   const { role } = useAuthContext();
   const { countryLabel, countryCode } = useAdminCountry();
   const { shell } = useMemberTheme();
-  const { publicEvents, primeEvents, getHomeLocations, featuredBanners, featuredSpotBanners, refresh } = useAdminCatalog();
+  const { publicEvents, primeEvents, getHomeLocations, featuredBanners, featuredSpotBanners, refresh } =
+    useAdminCatalog();
   const [refreshing, setRefreshing] = useState(false);
-  const [featuredTitles, setFeaturedTitles] = useState<Array<{ id: string; title: string; kindLabel: string; source: string }>>([]);
+  const [featuredTitles, setFeaturedTitles] = useState<
+    Array<{ id: string; title: string; kindLabel: string; source: string }>
+  >([]);
 
   const load = useCallback(async () => {
     const teamEvents = [...publicEvents, ...primeEvents].filter(
       (e) => isTeamContentOrigin(e.contentOrigin) && matchesAdminCountry(e.countryCode, countryCode),
     );
-    const teamSpots = getHomeLocations().filter(
+    const teamLocations = getHomeLocations().filter(
       (l) => isTeamContentOrigin(l.contentOrigin) && matchesAdminCountry(l.countryCode, countryCode),
     );
-    const teamIds = new Set([...teamEvents.map((e) => e.id), ...teamSpots.map((s) => s.id)]);
+    const teamIds = new Set([...teamEvents.map((e) => e.id), ...teamLocations.map((s) => s.id)]);
 
-    const candidates = await listFeaturedCandidates(teamEvents, teamSpots);
-    const flagged = candidates
-      .filter((c) => c.isFeatured)
-      .map((c) => ({
-        id: c.id,
-        title: c.title,
-        kindLabel: c.kind === 'event'
-          ? 'Événement'
-          : (() => {
-              const loc = teamSpots.find((s) => s.id === c.id);
-              return loc && isToolLocation(loc) ? 'Outil' : 'Spot';
-            })(),
-        source: 'À la une',
-      }));
+    const flagged = listTeamFeaturedFromCatalog(teamEvents, teamLocations, countryCode);
 
     const carouselEvents = featuredBanners
       .filter((b) => teamIds.has(b.targetId))
@@ -55,7 +45,7 @@ export function AdminLoopFeaturedScreen({ navigation }: Props) {
     const carouselSpots = featuredSpotBanners
       .filter((b) => teamIds.has(b.targetId))
       .map((b) => {
-        const loc = teamSpots.find((s) => s.id === b.targetId);
+        const loc = teamLocations.find((s) => s.id === b.targetId);
         return {
           id: b.id,
           title: b.title,
@@ -72,7 +62,8 @@ export function AdminLoopFeaturedScreen({ navigation }: Props) {
   }, [publicEvents, primeEvents, getHomeLocations, featuredBanners, featuredSpotBanners, countryCode]);
 
   const { run } = useFocusLoad(
-    async () => {
+    async (force) => {
+      if (force) await refresh();
       await load();
     },
     { ttlMs: 90_000, enabled: role === 'ADMIN', resetKey: countryCode },
@@ -95,7 +86,7 @@ export function AdminLoopFeaturedScreen({ navigation }: Props) {
           refreshing={refreshing}
           onRefresh={() => {
             setRefreshing(true);
-            void refresh().then(() => run(true)).finally(() => setRefreshing(false));
+            void run(true).finally(() => setRefreshing(false));
           }}
           tintColor={ADMIN_THEME.accent}
         />
@@ -109,14 +100,16 @@ export function AdminLoopFeaturedScreen({ navigation }: Props) {
       />
       <AdminCountryBar shell={shell} compact />
       <Text style={[styles.hint, { color: shell.pageKicker }]}>
-        Mises en avant actives pour les contenus publiés par l'équipe THE LOOP. Gestion complète : Accueil admin → À la une.
+        Mises en avant actives pour les contenus publiés par THE LOOP (aligné admin-web). Gestion : Accueil admin → À la une.
       </Text>
       {featuredTitles.length === 0 ? (
         <Text style={[styles.empty, { color: shell.pageKicker }]}>Aucun contenu THE LOOP n'est à la une pour ce pays.</Text>
       ) : (
         featuredTitles.map((item) => (
           <View key={`${item.id}-${item.source}`} style={adminCardStyle(shell)}>
-            <Text style={[styles.title, { color: shell.pageTitle }]} numberOfLines={2}>{item.title}</Text>
+            <Text style={[styles.title, { color: shell.pageTitle }]} numberOfLines={2}>
+              {item.title}
+            </Text>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>
               {item.kindLabel} · {item.source}
             </Text>

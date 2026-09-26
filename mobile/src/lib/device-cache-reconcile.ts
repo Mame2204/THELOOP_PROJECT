@@ -112,6 +112,7 @@ export function invalidateAccueilScopedCaches(): void {
     invalidateScope(`chronique_${scope}`, scopedStorageKey('loop_chronique_active_v1', scope));
     // Anciennes clés mémoire (collision Corner/Chronique sur le code pays seul).
     invalidateScope(scope);
+    invalidateScope(`home_logos_${scope}`, scopedStorageKey('loop_home_partner_logos_v4', scope));
     invalidateScope(`home_logos_${scope}`, scopedStorageKey('loop_home_partner_logos_v3', scope));
     invalidateScope(`home_logos_${scope}`, scopedStorageKey('loop_home_partner_logos_v2', scope));
     invalidateScope(scope, scopedStorageKey('loop_home_partner_logos_v1', scope));

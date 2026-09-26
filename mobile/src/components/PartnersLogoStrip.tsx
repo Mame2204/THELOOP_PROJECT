@@ -79,10 +79,7 @@ export function PartnersLogoStrip({
   useEffect(() => {
     return subscribeHomeRefresh((reason) => {
       // Pas de reload sur chaque home-refresh (featured, sections…) — logos peu volatils.
-      if (
-        reason === 'accueil-blocks' ||
-        (reason.startsWith('admin-accueil') && reason.includes('partner'))
-      ) {
+      if (reason === 'accueil-blocks' || reason.startsWith('admin-accueil')) {
         loadPartners(true);
       }
     });

@@ -1,4 +1,5 @@
 import { deliverPushToUsers } from './api';
+import { resolveIndividualUserIds } from './notification-individual-target';
 import { supabase } from './supabase';
 
 export type PushCampaignStatus = 'draft' | 'scheduled' | 'sent' | 'cancelled' | 'failed';
@@ -25,7 +26,7 @@ export const AUDIENCE_LABELS: Record<NotificationAudience, string> = {
   admin: 'Administrateurs',
   favorites: 'Favoris par catégorie',
   birthday: 'Anniversaires du mois',
-  individual: 'Numéros ciblés',
+  individual: 'E-mails ciblés',
 };
 
 const CAMPAIGN_STATUS_LABELS: Record<string, string> = {
@@ -49,9 +50,61 @@ export function isPushCampaignEditable(status: string): boolean {
   return status === 'draft' || status === 'scheduled';
 }
 
-/** Campagne supprimable tant qu’elle n’a pas été envoyée. */
-export function isPushCampaignDeletable(status: string): boolean {
-  return status !== 'sent';
+/** Campagne supprimable : jamais si envoyée avec ≥1 dest. ; oui si envoyée à 0 dest. ou non envoyée. */
+export function isPushCampaignDeletable(status: string, recipientCount = 0): boolean {
+  if (status === 'sent') return recipientCount === 0;
+  return true;
+}
+
+export function isPushCampaignCancellable(status: string): boolean {
+  return status === 'draft' || status === 'scheduled';
+}
+
+export const CAMPAIGN_LIST_PAGE_SIZE = 12;
+export const CAMPAIGN_RECIPIENTS_PAGE_SIZE = 20;
+
+export interface CampaignRecipientRow {
+  userId: string | null;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  userRole: string | null;
+  recipientPhone: string | null;
+  sentAt: string | null;
+}
+
+type PushCampaignRowDb = {
+  id: string;
+  title: string | null;
+  message: string | null;
+  audience: string | null;
+  status: string | null;
+  scheduled_at: string | null;
+  sent_at: string | null;
+  recipient_count: number | null;
+  created_at: string | null;
+  target_phone: string | null;
+  favorite_event_categories: unknown;
+  favorite_spot_categories: unknown;
+  favorite_tool_categories: unknown;
+};
+
+function mapPushCampaignRow(r: PushCampaignRowDb): PushCampaign {
+  return {
+    id: String(r.id),
+    title: String(r.title ?? ''),
+    message: String(r.message ?? ''),
+    audience: String(r.audience ?? ''),
+    status: String(r.status ?? ''),
+    scheduledAt: r.scheduled_at ? String(r.scheduled_at) : null,
+    sentAt: r.sent_at ? String(r.sent_at) : null,
+    recipientCount: Number(r.recipient_count ?? 0),
+    createdAt: r.created_at ? String(r.created_at) : null,
+    targetPhone: r.target_phone ? String(r.target_phone) : null,
+    favoriteEventCategories: parseStringArray(r.favorite_event_categories),
+    favoriteSpotCategories: parseStringArray(r.favorite_spot_categories),
+    favoriteToolCategories: parseStringArray(r.favorite_tool_categories),
+  };
 }
 
 export interface PushCampaign {
@@ -215,31 +268,75 @@ function campaignBaseRow(input: {
 }
 
 export async function listPushCampaigns(countryCode: string): Promise<PushCampaign[]> {
-  let q = supabase
+  const { items } = await listPushCampaignsPage(countryCode, 0, 200);
+  return items;
+}
+
+export async function listPushCampaignsPage(
+  countryCode: string,
+  page: number,
+  pageSize = CAMPAIGN_LIST_PAGE_SIZE,
+): Promise<{ items: PushCampaign[]; total: number }> {
+  const from = Math.max(0, page) * pageSize;
+  const to = from + pageSize - 1;
+
+  let countQ = supabase.from('admin_push_campaigns').select('id', { count: 'exact', head: true });
+  let dataQ = supabase
     .from('admin_push_campaigns')
     .select(
       'id, title, message, audience, status, scheduled_at, sent_at, recipient_count, created_at, target_phone, country_code, favorite_event_categories, favorite_spot_categories, favorite_tool_categories',
     )
     .order('created_at', { ascending: false })
-    .limit(80);
-  if (countryCode) q = q.eq('country_code', countryCode);
-  const { data, error } = await q;
+    .range(from, to);
+  if (countryCode) {
+    countQ = countQ.eq('country_code', countryCode);
+    dataQ = dataQ.eq('country_code', countryCode);
+  }
+  const [{ count, error: countErr }, { data, error }] = await Promise.all([countQ, dataQ]);
+  if (countErr) throw new Error(countErr.message);
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => ({
-    id: String(r.id),
-    title: String(r.title ?? ''),
-    message: String(r.message ?? ''),
-    audience: String(r.audience ?? ''),
-    status: String(r.status ?? ''),
-    scheduledAt: r.scheduled_at ? String(r.scheduled_at) : null,
-    sentAt: r.sent_at ? String(r.sent_at) : null,
-    recipientCount: Number(r.recipient_count ?? 0),
-    createdAt: r.created_at ? String(r.created_at) : null,
-    targetPhone: r.target_phone ? String(r.target_phone) : null,
-    favoriteEventCategories: parseStringArray(r.favorite_event_categories),
-    favoriteSpotCategories: parseStringArray(r.favorite_spot_categories),
-    favoriteToolCategories: parseStringArray(r.favorite_tool_categories),
+  return {
+    items: (data ?? []).map((r) => mapPushCampaignRow(r as PushCampaignRowDb)),
+    total: count ?? 0,
+  };
+}
+
+export async function listCampaignRecipientsPage(
+  campaignId: string,
+  page: number,
+  pageSize = CAMPAIGN_RECIPIENTS_PAGE_SIZE,
+): Promise<{ items: CampaignRecipientRow[]; total: number }> {
+  const offset = Math.max(0, page) * pageSize;
+
+  const { data, error } = await supabase.rpc('admin_list_campaign_recipients', {
+    p_campaign_id: campaignId,
+    p_limit: pageSize,
+    p_offset: offset,
+  });
+
+  if (error) {
+    if (/function.*does not exist|schema cache/i.test(error.message)) {
+      throw new Error(
+        'Fonction admin_list_campaign_recipients absente — appliquez la migration 20260942 sur Supabase.',
+      );
+    }
+    throw new Error(error.message);
+  }
+
+  const rows = (data ?? []) as Array<Record<string, unknown>>;
+  const total = rows.length ? Number(rows[0].total_count ?? 0) : 0;
+
+  const items: CampaignRecipientRow[] = rows.map((row) => ({
+    userId: row.user_id ? String(row.user_id) : null,
+    email: row.email ? String(row.email) : null,
+    firstName: row.first_name ? String(row.first_name) : null,
+    lastName: row.last_name ? String(row.last_name) : null,
+    userRole: row.user_role ? String(row.user_role) : null,
+    recipientPhone: row.recipient_phone ? String(row.recipient_phone) : null,
+    sentAt: row.sent_at ? String(row.sent_at) : null,
   }));
+
+  return { items, total };
 }
 
 export async function cancelPushCampaign(id: string): Promise<{ ok: boolean; error?: string }> {
@@ -257,15 +354,23 @@ export async function cancelPushCampaign(id: string): Promise<{ ok: boolean; err
 }
 
 export async function deletePushCampaign(id: string): Promise<{ ok: boolean; error?: string }> {
-  const { data, error } = await supabase
+  const { data: existing, error: fetchErr } = await supabase
     .from('admin_push_campaigns')
-    .delete()
+    .select('id, status, recipient_count')
     .eq('id', id)
-    .neq('status', 'sent')
-    .select('id')
     .maybeSingle();
+  if (fetchErr) return { ok: false, error: fetchErr.message };
+  if (!existing) return { ok: false, error: 'Campagne introuvable.' };
+
+  const status = String(existing.status ?? '');
+  const recipientCount = Number(existing.recipient_count ?? 0);
+  if (status === 'sent' && recipientCount > 0) {
+    return { ok: false, error: 'Campagne déjà diffusée — suppression impossible.' };
+  }
+
+  const { data, error } = await supabase.from('admin_push_campaigns').delete().eq('id', id).select('id').maybeSingle();
   if (error) return { ok: false, error: error.message };
-  if (!data) return { ok: false, error: 'Campagne introuvable ou déjà envoyée.' };
+  if (!data) return { ok: false, error: 'Suppression impossible.' };
   return { ok: true };
 }
 
@@ -286,14 +391,7 @@ async function distributePushCampaignNow(input: {
   const favTools = input.favoriteToolCategories ?? [];
 
   if (audience === 'individual') {
-    const phone = input.targetPhone!.trim();
-    const { data: users } = await supabase
-      .from('users')
-      .select('id')
-      .eq('country_code', countryCode)
-      .or(`phone_number.eq.${phone},phone_number.ilike.%${phone.slice(-9)}`)
-      .limit(20);
-    const userIds = (users ?? []).map((u) => String(u.id));
+    const userIds = await resolveIndividualUserIds(supabase, input.targetPhone!.trim(), countryCode);
     return distributeInboxAndPush({ userIds, title, message, audience, campaignId: id });
   }
   if (audience === 'favorites') {
@@ -340,7 +438,7 @@ export async function updatePushCampaign(
   const message = input.message.trim();
   if (!title || !message) return { ok: false, error: 'Titre et message requis.' };
   if (input.audience === 'individual' && !input.targetPhone?.trim()) {
-    return { ok: false, error: 'Téléphone requis pour un envoi individuel.' };
+    return { ok: false, error: 'E-mail requis pour un envoi individuel (séparateur ;).' };
   }
   if (
     input.audience === 'favorites' &&
@@ -462,7 +560,7 @@ export async function sendPushCampaign(input: {
   const message = input.message.trim();
   if (!title || !message) return { ok: false, error: 'Titre et message requis.' };
   if (input.audience === 'individual' && !input.targetPhone?.trim()) {
-    return { ok: false, error: 'Téléphone requis pour un envoi individuel.' };
+    return { ok: false, error: 'E-mail requis pour un envoi individuel (séparateur ;).' };
   }
   if (
     input.audience === 'favorites' &&

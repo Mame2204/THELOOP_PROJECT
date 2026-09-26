@@ -6,7 +6,10 @@ import {
   resolvePartnerIdentity,
   type PartnerIdentity,
 } from '@/lib/partner-identity-store';
-import { resolveStablePartnerKey } from '@/lib/partner-validation-code-store';
+import {
+  normalizePartnerValidationCode,
+  resolveStablePartnerKey,
+} from '@/lib/partner-validation-code-store';
 import {
   applyPartnerBenefitValidationViaBackend,
   fetchPartnerPendingValidationsViaBackend,
@@ -83,7 +86,8 @@ async function pushRedemptionToRemote(
   if (entry.contentType) remoteRow.content_type = entry.contentType;
   if (entry.contentTitle) remoteRow.content_title = entry.contentTitle;
 
-  const rpcClient = getSupabasePublic() ?? (isSupabaseConfigured() ? supabase : null);
+  const rpcClient =
+    (isSupabaseConfigured() && supabase ? supabase : null) ?? getSupabasePublic();
   if (rpcClient) {
     const { data: rpcId, error: rpcError } = await rpcClient.rpc('request_benefit_redemption', {
       p_local_id: entry.id,
@@ -862,6 +866,37 @@ async function fetchRemotePendingByPartnerHint(
 
 export type { PartnerPendingValidationRow } from '@/lib/partner-validation-direct';
 
+/** Filtre les demandes pending visibles pour la session partenaire (code / établissement / identité). */
+export function filterPendingValidationsForPartnerSession(
+  rows: PartnerPendingValidationRow[],
+  partnerCode: string,
+  partnerHint?: { partnerId?: string; partnerName?: string; establishmentId?: string },
+): PartnerPendingValidationRow[] {
+  if (!rows.length) return rows;
+
+  const code = normalizePartnerValidationCode(partnerCode);
+  const establishmentId = partnerHint?.establishmentId?.trim();
+  const targetName = normalizePartnerName(partnerHint?.partnerName ?? '');
+  const hintId = partnerHint?.partnerId?.trim() ?? '';
+
+  const matched = rows.filter(({ redemption: r }) => {
+    if (code && normalizePartnerValidationCode(r.partnerCode ?? '') === code) return true;
+    if (establishmentId && r.contentId === establishmentId) return true;
+    if (targetName && normalizePartnerName(r.partnerName) === targetName) return true;
+    if (
+      hintId &&
+      (r.partnerId === hintId ||
+        r.partnerId === `user:${hintId}` ||
+        hintId === `user:${r.partnerId}`)
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  return matched.length ? matched : rows;
+}
+
 /** Lecture des demandes en attente — RPC Supabase, direct anon, backend LAN. */
 export async function fetchPartnerPendingValidations(
   memberUserId: string,
@@ -932,14 +967,8 @@ export async function fetchPartnerPendingValidations(
           });
         }
         let mapped = mapRpcPendingRows(data as Record<string, unknown>[]);
-        const establishmentId = partnerHint?.establishmentId?.trim();
-        if (establishmentId) {
-          const forEstablishment = mapped.filter(
-            (row) => !row.redemption.contentId || row.redemption.contentId === establishmentId,
-          );
-          if (forEstablishment.length) mapped = forEstablishment;
-        }
-        return mapped;
+        mapped = filterPendingValidationsForPartnerSession(mapped, partnerCode, partnerHint);
+        if (mapped.length) return mapped;
       }
       if (error && !/Could not find the function|schema cache/i.test(error.message)) {
         console.warn('[Redemption] list_member_pending RPC:', error.message);
@@ -955,16 +984,8 @@ export async function fetchPartnerPendingValidations(
     });
     if (!error && Array.isArray(data) && data.length) {
       let mapped = mapRpcPendingRows(data as Record<string, unknown>[]);
-
-      const establishmentId = partnerHint?.establishmentId?.trim();
-      if (establishmentId) {
-        const forEstablishment = mapped.filter(
-          (row) => !row.redemption.contentId || row.redemption.contentId === establishmentId,
-        );
-        if (forEstablishment.length) mapped = forEstablishment;
-      }
-
-      return mapped;
+      mapped = filterPendingValidationsForPartnerSession(mapped, partnerCode, partnerHint);
+      if (mapped.length) return mapped;
     }
     if (error && !error.message.includes('Could not find the function')) {
       console.warn('[Redemption] list pending RPC:', error.message);
@@ -1047,25 +1068,40 @@ export async function applyPartnerBenefitValidationRemote(
   redemptionLocalIds: string[],
   validate: boolean,
   partnerHint?: { partnerId?: string; partnerName?: string; establishmentId?: string },
-  finalizeItems?: Array<{ redemptionId: string; benefitId: string; memberUserId: string }>,
+  finalizeItems?: Array<{
+    redemptionId: string;
+    benefitId: string;
+    memberUserId: string;
+    partnerCode?: string | null;
+  }>,
 ): Promise<number> {
   if (!(await isNetworkOnline()) || !redemptionLocalIds.length) return 0;
 
+  const partnerCodesToTry = new Set<string>();
+  partnerCodesToTry.add(normalizePartnerValidationCode(partnerCode));
+  for (const item of finalizeItems ?? []) {
+    if (item.partnerCode?.trim()) {
+      partnerCodesToTry.add(normalizePartnerValidationCode(item.partnerCode));
+    }
+  }
+
   if (isSupabaseConfigured() && supabase) {
     const rpcClient = getSupabasePublic() ?? supabase;
-    const { data, error } = await rpcClient.rpc('apply_partner_benefit_validation', {
-      p_partner_code: partnerCode,
-      p_redemption_local_ids: redemptionLocalIds,
-      p_validate: validate,
-    });
-    if (!error) {
-      const count = typeof data === 'number' ? data : Number(data ?? 0);
-      if (count > 0) {
-        markNetworkReachable();
-        return count;
+    for (const codeAttempt of partnerCodesToTry) {
+      const { data, error } = await rpcClient.rpc('apply_partner_benefit_validation', {
+        p_partner_code: codeAttempt,
+        p_redemption_local_ids: redemptionLocalIds,
+        p_validate: validate,
+      });
+      if (!error) {
+        const count = typeof data === 'number' ? data : Number(data ?? 0);
+        if (count > 0) {
+          markNetworkReachable();
+          return count;
+        }
+      } else if (!error.message.includes('Could not find the function')) {
+        console.warn('[Redemption] apply validation RPC:', error.message);
       }
-    } else if (!error.message.includes('Could not find the function')) {
-      console.warn('[Redemption] apply validation RPC:', error.message);
     }
   }
 

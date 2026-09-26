@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
 import type { PaymentIntentRow } from '../lib/supabase-admin.js';
+import { isStuckPendingFulfillment } from './reconcile-payment-summary.js';
 
 export interface PaymentBreakdownRow {
   key: string;
@@ -141,12 +142,7 @@ export async function computePaymentAnalytics(
     if (row.fulfillment_status === 'failed') fulfillmentFailed += 1;
     if (row.status === 'failed' || row.status === 'cancelled') paymentFailed += 1;
 
-    if (
-      row.fulfillment_status === 'pending' &&
-      row.djomy_transaction_id?.trim() &&
-      !row.djomy_transaction_id.startsWith('sandbox-force-') &&
-      row.updated_at < stuckCutoff
-    ) {
+    if (isStuckPendingFulfillment(row, stuckCutoff)) {
       stuckPending += 1;
     }
 

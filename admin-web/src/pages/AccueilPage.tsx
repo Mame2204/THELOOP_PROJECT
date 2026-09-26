@@ -3,7 +3,11 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
+import { normalizeWalkStepInputs, resolveCatalogTargetRef } from '../lib/content-slugs';
+import { CatalogTargetPicker, type CatalogTargetSelection } from '../components/CatalogTargetPicker';
+import { ImageOrUrlField } from '../components/ImageOrUrlField';
 import { ListPager } from '../components/ListPager';
+import { WalkStepPicker } from '../components/WalkStepPicker';
 import {
   ACCUEIL_BLOCK_LABELS,
   ACCUEIL_PAGE_SIZE,
@@ -12,11 +16,12 @@ import {
   deleteCorner,
   deleteLogo,
   deletePoll,
-  createPoll,
-  createWalkSimple,
-  createCornerSimple,
-  createChroniqueSimple,
-  createLogo,
+  upsertAccueilChronique,
+  upsertAccueilLogo,
+  upsertAccueilCorner,
+  upsertAccueilPoll,
+  upsertAccueilWalk,
+  type WalkStepInput,
   deleteWalk,
   listAccueilChroniques,
   listAccueilCorners,
@@ -129,15 +134,140 @@ export function AccueilPage() {
   const [chroniqueTotal, setChroniqueTotal] = useState(0);
   const [logos, setLogos] = useState<AccueilLogoRow[]>([]);
 
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  const [pollActivate, setPollActivate] = useState(true);
+
   const [newWalkTitle, setNewWalkTitle] = useState('');
   const [newWalkDuration, setNewWalkDuration] = useState('');
+  const [newWalkSummary, setNewWalkSummary] = useState('');
+  const [newWalkCover, setNewWalkCover] = useState('');
+  const [walkSteps, setWalkSteps] = useState<WalkStepInput[]>([]);
+  const [walkFeatured, setWalkFeatured] = useState(false);
+
   const [newCornerSubject, setNewCornerSubject] = useState('');
   const [newCornerTitle, setNewCornerTitle] = useState('');
   const [newCornerImpact, setNewCornerImpact] = useState('');
+  const [newCornerLocation, setNewCornerLocation] = useState('');
+  const [newCornerBadge, setNewCornerBadge] = useState('');
+  const [newCornerQuote, setNewCornerQuote] = useState('');
+  const [newCornerMedia, setNewCornerMedia] = useState('');
+  const [newCornerActivate, setNewCornerActivate] = useState(false);
+  const [cornerRelated, setCornerRelated] = useState<CatalogTargetSelection | null>(null);
+
   const [newChroniqueTitle, setNewChroniqueTitle] = useState('');
   const [newChroniqueBody, setNewChroniqueBody] = useState('');
+  const [newChroniqueVolume, setNewChroniqueVolume] = useState('');
+  const [newChroniqueFootnote, setNewChroniqueFootnote] = useState('');
+  const [chroniqueCtaEnabled, setChroniqueCtaEnabled] = useState(true);
+  const [chroniqueContactPhone, setChroniqueContactPhone] = useState('');
+  const [chroniqueContactEmail, setChroniqueContactEmail] = useState('');
+  const [chroniqueTarget, setChroniqueTarget] = useState<CatalogTargetSelection | null>(null);
+  const [newChroniqueActivate, setNewChroniqueActivate] = useState(false);
+
   const [newLogoName, setNewLogoName] = useState('');
   const [newLogoUrl, setNewLogoUrl] = useState('');
+  const [newLogoWebsite, setNewLogoWebsite] = useState('');
+  const [newLogoActive, setNewLogoActive] = useState(true);
+
+  const [editingPollId, setEditingPollId] = useState<string | null>(null);
+  const [editingWalkId, setEditingWalkId] = useState<string | null>(null);
+  const [editingCornerId, setEditingCornerId] = useState<string | null>(null);
+  const [editingChroniqueId, setEditingChroniqueId] = useState<string | null>(null);
+  const [editingLogoId, setEditingLogoId] = useState<string | null>(null);
+
+  function fillPollForm(p: AccueilPollRow) {
+    setEditingPollId(p.id);
+    setPollQuestion(p.question);
+    setPollOptions(p.optionLabels.length >= 2 ? p.optionLabels : [...p.optionLabels, '', ''].slice(0, 2));
+    setPollActivate(p.isActive);
+    setTab('poll');
+  }
+
+  function fillWalkForm(w: AccueilWalkRow) {
+    setEditingWalkId(w.id);
+    setNewWalkTitle(w.title);
+    setNewWalkDuration(w.durationMinutes != null ? String(w.durationMinutes) : '');
+    setNewWalkSummary(w.summary ?? '');
+    setNewWalkCover(w.coverImageUrl ?? '');
+    setWalkSteps(w.steps);
+    void normalizeWalkStepInputs(countryCode, w.steps).then(setWalkSteps);
+    setWalkFeatured(w.isFeaturedWeek);
+    setTab('walks');
+  }
+
+  function fillCornerForm(c: AccueilCornerRow) {
+    setEditingCornerId(c.id);
+    setNewCornerSubject(c.subjectName);
+    setNewCornerTitle(c.title);
+    setNewCornerImpact(c.impactDescription);
+    setNewCornerLocation(c.locationLabel ?? '');
+    setNewCornerBadge(c.badgeTag ?? '');
+    setNewCornerQuote(c.coreQuote ?? '');
+    setNewCornerMedia(c.mediaUrl ?? '');
+    setNewCornerActivate(c.isActive);
+    setCornerRelated(null);
+    if (c.relatedTargetType && (c.relatedTargetId || c.relatedTargetSlug)) {
+      void resolveCatalogTargetRef(
+        countryCode,
+        c.relatedTargetType,
+        c.relatedTargetId,
+        c.relatedTargetSlug,
+      ).then((resolved) => {
+        if (resolved) {
+          setCornerRelated({
+            targetType: resolved.targetType,
+            targetId: resolved.targetId,
+            targetSlug: resolved.targetSlug,
+            title: resolved.title,
+          });
+        }
+      });
+    }
+    setTab('corner');
+  }
+
+  function fillChroniqueForm(c: AccueilChroniqueRow) {
+    setEditingChroniqueId(c.id);
+    setNewChroniqueTitle(c.title);
+    setNewChroniqueBody(c.body);
+    setNewChroniqueVolume(c.volumeLabel ?? '');
+    setNewChroniqueFootnote(c.footnote ?? '');
+    setChroniqueCtaEnabled(c.ctaEnabled);
+    setChroniqueContactPhone(c.contactPhone ?? '');
+    setChroniqueContactEmail(c.contactEmail ?? '');
+    setNewChroniqueActivate(c.isActive);
+    setChroniqueTarget(null);
+    if (c.targetType && (c.targetId || c.targetSlug)) {
+      void resolveCatalogTargetRef(countryCode, c.targetType, c.targetId, c.targetSlug).then((resolved) => {
+        if (resolved) {
+          setChroniqueTarget({
+            targetType: resolved.targetType,
+            targetId: resolved.targetId,
+            targetSlug: resolved.targetSlug,
+            title: resolved.title,
+          });
+        }
+      });
+    }
+    setTab('chronique');
+  }
+
+  function fillLogoForm(l: (typeof logos)[number]) {
+    setEditingLogoId(l.id);
+    setNewLogoName(l.name);
+    setNewLogoUrl(l.logoUrl);
+    setNewLogoWebsite(l.websiteUrl ?? '');
+    setNewLogoActive(l.isActive);
+    setTab('logos');
+  }
+
+  function resetPollForm() {
+    setEditingPollId(null);
+    setPollQuestion('');
+    setPollOptions(['', '']);
+    setPollActivate(true);
+  }
 
   const loadOverview = useCallback(async () => {
     setSections(await loadAppSections(countryCode));
@@ -332,6 +462,11 @@ export function AccueilPage() {
 
       {tab === 'featured' && canHero ? (
         <>
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Accueil mobile : contenu publié + visuel (bannière événement / spot, logo outil) · outils
+            « validés THE LOOP » · date d’événement recommandée pour l’agenda · resync app ~1 min après
+            changement (migration empreinte catalogue).
+          </p>
           <div className="tabs" style={{ marginBottom: 12 }}>
             <button
               type="button"
@@ -439,45 +574,82 @@ export function AccueilPage() {
 
       {tab === 'poll' && canPoll ? (
         <>
-          <div className="card" style={{ marginBottom: 12 }}>
-            <h3>Nouveau sondage</h3>
-            <div className="toolbar">
+          <div className="card" style={{ marginBottom: 12, maxWidth: 560 }}>
+            <h3>{editingPollId ? 'Modifier le sondage' : 'Nouveau sondage'}</h3>
+            <p className="meta">Question + au moins 2 choix (aligné mobile).</p>
+            <div className="field">
+              <label>Question</label>
               <input
-                id="new-poll-q"
-                placeholder="Question du sondage…"
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter') return;
-                  const input = e.currentTarget;
-                  const q = input.value;
-                  void createPoll(countryCode, q).then((r) => {
-                    if (!r.ok) setMsg(r.error ?? 'Erreur');
-                    else {
-                      input.value = '';
-                      setMsg('Sondage créé.');
-                      void loadPolls();
-                    }
-                  });
-                }}
+                value={pollQuestion}
+                onChange={(e) => setPollQuestion(e.target.value)}
+                placeholder="Quelle est votre préférence…"
               />
+            </div>
+            {pollOptions.map((opt, index) => (
+              <div className="field" key={`poll-opt-${index}`}>
+                <label>Choix {index + 1}</label>
+                <input
+                  value={opt}
+                  onChange={(e) => {
+                    const next = [...pollOptions];
+                    next[index] = e.target.value;
+                    setPollOptions(next);
+                  }}
+                  placeholder={`Réponse ${index + 1}`}
+                />
+              </div>
+            ))}
+            {pollOptions.length < 4 ? (
               <button
                 type="button"
-                className="btn small"
-                onClick={() => {
-                  const input = document.getElementById('new-poll-q') as HTMLInputElement | null;
-                  if (!input) return;
-                  void createPoll(countryCode, input.value).then((r) => {
-                    if (!r.ok) setMsg(r.error ?? 'Erreur');
-                    else {
-                      input.value = '';
-                      setMsg('Sondage créé.');
-                      void loadPolls();
-                    }
-                  });
-                }}
+                className="btn small ghost"
+                onClick={() => setPollOptions([...pollOptions, ''])}
               >
-                Créer
+                Ajouter un choix
               </button>
-            </div>
+            ) : null}
+            <label className="check-inline" style={{ display: 'flex', marginTop: 12 }}>
+              <input
+                type="checkbox"
+                checked={pollActivate}
+                onChange={(e) => setPollActivate(e.target.checked)}
+              />
+              Activer sur l’Accueil membre
+            </label>
+            <button
+              type="button"
+              className="btn"
+              style={{ marginTop: 12 }}
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void upsertAccueilPoll(countryCode, {
+                  id: editingPollId ?? undefined,
+                  question: pollQuestion,
+                  optionLabels: pollOptions,
+                  activate: pollActivate,
+                }).then((r) => {
+                  setBusy(false);
+                  if (!r.ok) setMsg(r.error ?? 'Erreur');
+                  else {
+                    resetPollForm();
+                    setMsg(
+                      pollActivate
+                        ? 'Sondage enregistré et actif.'
+                        : 'Sondage enregistré (inactif).',
+                    );
+                    void loadPolls();
+                  }
+                });
+              }}
+            >
+              {editingPollId ? 'Mettre à jour' : 'Enregistrer le sondage'}
+            </button>
+            {editingPollId ? (
+              <button type="button" className="btn ghost small" style={{ marginLeft: 8 }} onClick={resetPollForm}>
+                Annuler
+              </button>
+            ) : null}
           </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -506,6 +678,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillPollForm(p)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -550,36 +725,70 @@ export function AccueilPage() {
 
       {tab === 'walks' && canWalks ? (
         <>
-        <div className="card" style={{ maxWidth: 480, marginBottom: 12 }}>
-          <h3>Nouveau parcours</h3>
+        <div className="card" style={{ maxWidth: 640, marginBottom: 12 }}>
+          <h3>{editingWalkId ? 'Modifier le parcours' : 'Nouveau parcours'}</h3>
+          <p className="meta">Minimum 2 étapes · contenu publié (événement, spot ou outil).</p>
           <div className="field">
             <label>Titre</label>
             <input value={newWalkTitle} onChange={(e) => setNewWalkTitle(e.target.value)} />
           </div>
           <div className="field">
+            <label>Accroche (optionnel)</label>
+            <input value={newWalkSummary} onChange={(e) => setNewWalkSummary(e.target.value)} />
+          </div>
+          <div className="field">
             <label>Durée (min, optionnel)</label>
             <input value={newWalkDuration} onChange={(e) => setNewWalkDuration(e.target.value)} />
           </div>
+          <ImageOrUrlField
+            label="Visuel de couverture"
+            value={newWalkCover}
+            onChange={setNewWalkCover}
+            hint="URL ou fichier local — sinon image par défaut."
+          />
+          <WalkStepPicker countryCode={countryCode} steps={walkSteps} onChange={setWalkSteps} />
+          <label className="check-inline" style={{ display: 'flex', marginTop: 8 }}>
+            <input
+              type="checkbox"
+              checked={walkFeatured}
+              onChange={(e) => setWalkFeatured(e.target.checked)}
+            />
+            Parcours de la semaine (publié sur Accueil)
+          </label>
           <button
             type="button"
             className="btn"
             disabled={busy}
+            style={{ marginTop: 12 }}
             onClick={() => {
               setBusy(true);
               const dur = Number.parseInt(newWalkDuration, 10);
-              void createWalkSimple(countryCode, newWalkTitle, Number.isFinite(dur) ? dur : undefined).then((r) => {
+              void upsertAccueilWalk(countryCode, {
+                id: editingWalkId ?? undefined,
+                title: newWalkTitle,
+                summary: newWalkSummary,
+                coverImageUrl: newWalkCover,
+                durationMinutes: Number.isFinite(dur) ? dur : null,
+                steps: walkSteps,
+                activateFeatured: walkFeatured,
+              }).then((r) => {
                 setBusy(false);
                 if (!r.ok) setMsg(r.error ?? 'Erreur');
                 else {
+                  setEditingWalkId(null);
                   setNewWalkTitle('');
                   setNewWalkDuration('');
-                  setMsg('Parcours créé (brouillon). Complétez les étapes sur mobile si besoin.');
+                  setNewWalkSummary('');
+                  setNewWalkCover('');
+                  setWalkSteps([]);
+                  setWalkFeatured(false);
+                  setMsg(walkFeatured ? 'Parcours publié (semaine).' : 'Parcours enregistré.');
                   void loadWalks();
                 }
               });
             }}
           >
-            Créer
+            {editingWalkId ? 'Mettre à jour' : 'Enregistrer le parcours'}
           </button>
         </div>
         <div className="table-wrap">
@@ -613,6 +822,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillWalkForm(w)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -689,19 +901,63 @@ export function AccueilPage() {
 
       {tab === 'corner' && canCorner ? (
         <>
-        <div className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
-          <h3>Nouveau Singulier</h3>
-          <div className="field"><label>Sujet</label><input value={newCornerSubject} onChange={(e) => setNewCornerSubject(e.target.value)} /></div>
-          <div className="field"><label>Titre œuvre</label><input value={newCornerTitle} onChange={(e) => setNewCornerTitle(e.target.value)} /></div>
-          <div className="field"><label>Impact</label><textarea rows={2} value={newCornerImpact} onChange={(e) => setNewCornerImpact(e.target.value)} /></div>
-          <button type="button" className="btn" disabled={busy} onClick={() => {
+        <div className="card" style={{ maxWidth: 620, marginBottom: 12 }}>
+          <h3>{editingCornerId ? 'Modifier le Singulier' : 'Nouveau Singulier'}</h3>
+          <div className="field"><label>Sujet (créateur)</label><input value={newCornerSubject} onChange={(e) => setNewCornerSubject(e.target.value)} /></div>
+          <div className="field"><label>Titre de l’œuvre</label><input value={newCornerTitle} onChange={(e) => setNewCornerTitle(e.target.value)} /></div>
+          <div className="field"><label>Lieu / contexte</label><input value={newCornerLocation} onChange={(e) => setNewCornerLocation(e.target.value)} /></div>
+          <div className="field"><label>Badge (optionnel)</label><input value={newCornerBadge} onChange={(e) => setNewCornerBadge(e.target.value)} /></div>
+          <div className="field"><label>Citation (optionnel)</label><input value={newCornerQuote} onChange={(e) => setNewCornerQuote(e.target.value)} /></div>
+          <div className="field"><label>Impact</label><textarea rows={3} value={newCornerImpact} onChange={(e) => setNewCornerImpact(e.target.value)} /></div>
+          <ImageOrUrlField label="Visuel / média" value={newCornerMedia} onChange={setNewCornerMedia} />
+          <CatalogTargetPicker
+            countryCode={countryCode}
+            value={cornerRelated}
+            onChange={setCornerRelated}
+            label="Contenu lié (bouton Découvrir)"
+          />
+          <label className="check-inline" style={{ display: 'flex', marginTop: 8 }}>
+            <input
+              type="checkbox"
+              checked={newCornerActivate}
+              onChange={(e) => setNewCornerActivate(e.target.checked)}
+            />
+            Activer sur l’Accueil
+          </label>
+          <button type="button" className="btn" disabled={busy} style={{ marginTop: 12 }} onClick={() => {
             setBusy(true);
-            void createCornerSimple(countryCode, { subjectName: newCornerSubject, title: newCornerTitle, impactDescription: newCornerImpact }).then((r) => {
+            void upsertAccueilCorner(countryCode, {
+              id: editingCornerId ?? undefined,
+              subjectName: newCornerSubject,
+              title: newCornerTitle,
+              impactDescription: newCornerImpact,
+              locationLabel: newCornerLocation,
+              badgeTag: newCornerBadge,
+              coreQuote: newCornerQuote,
+              mediaUrl: newCornerMedia,
+              relatedTargetType: cornerRelated?.targetType ?? null,
+              relatedTargetId: cornerRelated?.targetId ?? null,
+              relatedTargetSlug: cornerRelated?.targetSlug ?? null,
+              activate: newCornerActivate,
+            }).then((r) => {
               setBusy(false);
               if (!r.ok) setMsg(r.error ?? 'Erreur');
-              else { setNewCornerSubject(''); setNewCornerTitle(''); setNewCornerImpact(''); setMsg('Singulier créé.'); void loadCorners(); }
+              else {
+                setEditingCornerId(null);
+                setNewCornerSubject('');
+                setNewCornerTitle('');
+                setNewCornerImpact('');
+                setNewCornerLocation('');
+                setNewCornerBadge('');
+                setNewCornerQuote('');
+                setNewCornerMedia('');
+                setCornerRelated(null);
+                setNewCornerActivate(false);
+                setMsg(newCornerActivate ? 'Singulier actif.' : 'Singulier enregistré (inactif).');
+                void loadCorners();
+              }
             });
-          }}>Créer</button>
+          }}>{editingCornerId ? 'Mettre à jour' : 'Enregistrer'}</button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -730,6 +986,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillCornerForm(c)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -781,18 +1040,80 @@ export function AccueilPage() {
 
       {tab === 'chronique' && canChronique ? (
         <>
-        <div className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
-          <h3>Nouveau Fragment</h3>
+        <div className="card" style={{ maxWidth: 620, marginBottom: 12 }}>
+          <h3>{editingChroniqueId ? 'Modifier le Fragment' : 'Nouveau Fragment'}</h3>
           <div className="field"><label>Titre</label><input value={newChroniqueTitle} onChange={(e) => setNewChroniqueTitle(e.target.value)} /></div>
-          <div className="field"><label>Texte</label><textarea rows={3} value={newChroniqueBody} onChange={(e) => setNewChroniqueBody(e.target.value)} /></div>
-          <button type="button" className="btn" disabled={busy} onClick={() => {
+          <div className="field"><label>Volume / période (optionnel)</label><input value={newChroniqueVolume} onChange={(e) => setNewChroniqueVolume(e.target.value)} /></div>
+          <div className="field"><label>Texte d’ambiance</label><textarea rows={4} value={newChroniqueBody} onChange={(e) => setNewChroniqueBody(e.target.value)} /></div>
+          <div className="field"><label>Note de bas de page (optionnel)</label><input value={newChroniqueFootnote} onChange={(e) => setNewChroniqueFootnote(e.target.value)} /></div>
+          <label className="check-inline" style={{ display: 'flex', marginBottom: 8 }}>
+            <input
+              type="checkbox"
+              checked={chroniqueCtaEnabled}
+              onChange={(e) => setChroniqueCtaEnabled(e.target.checked)}
+            />
+            Bouton « Découvrir » vers un contenu
+          </label>
+          {chroniqueCtaEnabled ? (
+            <CatalogTargetPicker
+              countryCode={countryCode}
+              value={chroniqueTarget}
+              onChange={setChroniqueTarget}
+              label="Contenu mis en avant"
+            />
+          ) : (
+            <>
+              <div className="field">
+                <label>Téléphone contact</label>
+                <input value={chroniqueContactPhone} onChange={(e) => setChroniqueContactPhone(e.target.value)} />
+              </div>
+              <div className="field">
+                <label>E-mail contact</label>
+                <input type="email" value={chroniqueContactEmail} onChange={(e) => setChroniqueContactEmail(e.target.value)} />
+              </div>
+            </>
+          )}
+          <label className="check-inline" style={{ display: 'flex', marginTop: 8 }}>
+            <input
+              type="checkbox"
+              checked={newChroniqueActivate}
+              onChange={(e) => setNewChroniqueActivate(e.target.checked)}
+            />
+            Activer sur l’Accueil
+          </label>
+          <button type="button" className="btn" disabled={busy} style={{ marginTop: 12 }} onClick={() => {
             setBusy(true);
-            void createChroniqueSimple(countryCode, { title: newChroniqueTitle, body: newChroniqueBody }).then((r) => {
+            void upsertAccueilChronique(countryCode, {
+              id: editingChroniqueId ?? undefined,
+              title: newChroniqueTitle,
+              body: newChroniqueBody,
+              volumeLabel: newChroniqueVolume,
+              footnote: newChroniqueFootnote,
+              ctaEnabled: chroniqueCtaEnabled,
+              contactPhone: chroniqueContactPhone,
+              contactEmail: chroniqueContactEmail,
+              targetType: chroniqueTarget?.targetType ?? null,
+              targetId: chroniqueTarget?.targetId ?? null,
+              targetSlug: chroniqueTarget?.targetSlug ?? null,
+              activate: newChroniqueActivate,
+            }).then((r) => {
               setBusy(false);
               if (!r.ok) setMsg(r.error ?? 'Erreur');
-              else { setNewChroniqueTitle(''); setNewChroniqueBody(''); setMsg('Fragment créé.'); void loadChroniques(); }
+              else {
+                setEditingChroniqueId(null);
+                setNewChroniqueTitle('');
+                setNewChroniqueBody('');
+                setNewChroniqueVolume('');
+                setNewChroniqueFootnote('');
+                setChroniqueTarget(null);
+                setChroniqueContactPhone('');
+                setChroniqueContactEmail('');
+                setNewChroniqueActivate(false);
+                setMsg(newChroniqueActivate ? 'Fragment actif.' : 'Fragment enregistré (inactif).');
+                void loadChroniques();
+              }
             });
-          }}>Créer</button>
+          }}>{editingChroniqueId ? 'Mettre à jour' : 'Enregistrer'}</button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -821,6 +1142,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillChroniqueForm(c)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"
@@ -873,17 +1197,45 @@ export function AccueilPage() {
       {tab === 'logos' && canLogos ? (
         <>
         <div className="card" style={{ maxWidth: 480, marginBottom: 12 }}>
-          <h3>Nouveau logo</h3>
-          <div className="field"><label>Nom</label><input value={newLogoName} onChange={(e) => setNewLogoName(e.target.value)} /></div>
-          <div className="field"><label>URL image</label><input value={newLogoUrl} onChange={(e) => setNewLogoUrl(e.target.value)} placeholder="https://…" /></div>
+          <h3>{editingLogoId ? 'Modifier le logo' : 'Nouveau logo'}</h3>
+          <p className="meta">Visible sur l’Accueil membre si actif et bloc « Logos partenaires » activé (vue d’ensemble).</p>
+          <div className="field"><label>Nom partenaire</label><input value={newLogoName} onChange={(e) => setNewLogoName(e.target.value)} /></div>
+          <div className="field">
+            <label>Site web (optionnel)</label>
+            <input value={newLogoWebsite} onChange={(e) => setNewLogoWebsite(e.target.value)} placeholder="https://…" />
+          </div>
+          <ImageOrUrlField
+            label="Logo"
+            value={newLogoUrl}
+            onChange={setNewLogoUrl}
+            hint="Les fichiers locaux sont envoyés sur le stockage public pour l’app mobile."
+          />
+          <label className="check-inline" style={{ display: 'flex', marginTop: 8 }}>
+            <input type="checkbox" checked={newLogoActive} onChange={(e) => setNewLogoActive(e.target.checked)} />
+            Actif sur l’Accueil
+          </label>
           <button type="button" className="btn" disabled={busy} onClick={() => {
             setBusy(true);
-            void createLogo(countryCode, { name: newLogoName, logoUrl: newLogoUrl }).then((r) => {
+            void upsertAccueilLogo(countryCode, {
+              id: editingLogoId ?? undefined,
+              name: newLogoName,
+              logoUrl: newLogoUrl,
+              websiteUrl: newLogoWebsite,
+              isActive: newLogoActive,
+            }).then((r) => {
               setBusy(false);
               if (!r.ok) setMsg(r.error ?? 'Erreur');
-              else { setNewLogoName(''); setNewLogoUrl(''); setMsg('Logo créé.'); void loadLogos(); }
+              else {
+                setEditingLogoId(null);
+                setNewLogoName('');
+                setNewLogoUrl('');
+                setNewLogoWebsite('');
+                setNewLogoActive(true);
+                setMsg('Logo enregistré.');
+                void loadLogos();
+              }
             });
-          }}>Créer</button>
+          }}>{editingLogoId ? 'Mettre à jour' : 'Créer'}</button>
         </div>
         <div className="table-wrap">
           <table className="data-table">
@@ -919,6 +1271,9 @@ export function AccueilPage() {
                   </td>
                   <td>
                     <div className="edit-actions" style={{ marginTop: 0 }}>
+                      <button type="button" className="btn small" disabled={busy} onClick={() => fillLogoForm(l)}>
+                        Modifier
+                      </button>
                       <button
                         type="button"
                         className="btn small ghost"

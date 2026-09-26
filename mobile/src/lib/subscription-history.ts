@@ -475,7 +475,7 @@ export function formatPassAmount(amountGnf?: number): string {
 }
 
 export const PASS_PAYMENT_LABELS: Record<PassPaymentMethod, string> = {
-  all: 'Tous (portail Djomy)',
+  all: 'Portail de paiement',
   orange_money: 'Orange Money',
   mtn_momo: 'MTN MoMo',
   soutra_money: 'Soutra Money',

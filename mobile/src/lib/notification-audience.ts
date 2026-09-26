@@ -24,5 +24,5 @@ export const AUDIENCE_LABELS: Record<NotificationAudience, string> = {
   admin: 'Administrateurs',
   favorites: 'Favoris par catégorie',
   birthday: 'Anniversaires du mois',
-  individual: 'Numéros ciblés',
+  individual: 'E-mails ciblés',
 };

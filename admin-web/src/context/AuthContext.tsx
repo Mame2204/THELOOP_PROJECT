@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -34,9 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const initialBootstrapDone = useRef(false);
 
   const bootstrap = useCallback(async () => {
-    setLoading(true);
+    if (!initialBootstrapDone.current) {
+      setLoading(true);
+    }
     setAuthError(null);
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData.session?.user;
@@ -73,12 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       lastName: row.last_name,
       countryCode: (row as { country_code?: string | null }).country_code ?? null,
     });
+    initialBootstrapDone.current = true;
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void bootstrap();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') return;
       void bootstrap();
     });
     return () => sub.subscription.unsubscribe();

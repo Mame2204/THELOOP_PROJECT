@@ -14,6 +14,8 @@ type PartnerCodeRow = {
   partner_key: string;
   partner_name: string;
   validation_code: string;
+  establishment_id?: string | null;
+  user_id?: string | null;
 };
 
 type RedemptionRow = {
@@ -166,7 +168,8 @@ function redemptionMatchesPartner(
   hint?: { partnerId?: string; partnerName?: string; establishmentId?: string },
 ): boolean {
   const redemptionCode = normalizePartnerValidationCode(redemption.partner_code ?? '');
-  if (redemptionCode === code) return true;
+  const scannedCode = normalizePartnerValidationCode(code);
+  if (redemptionCode === scannedCode) return true;
   if (redemption.partner_key === partner.partner_key) return true;
   if (normalizePartnerName(redemption.partner_name) === normalizePartnerName(partner.partner_name)) {
     return true;
@@ -190,6 +193,22 @@ function redemptionMatchesPartner(
     return true;
   }
 
+  const pvcEstablishment = partner.establishment_id ? String(partner.establishment_id) : '';
+  if (
+    pvcEstablishment &&
+    redemption.content_id &&
+    redemption.content_id === pvcEstablishment
+  ) {
+    return true;
+  }
+
+  const pvcUserId = partner.user_id ? String(partner.user_id) : '';
+  if (pvcUserId) {
+    if (redemption.partner_key === pvcUserId || redemption.partner_key === `user:${pvcUserId}`) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -198,7 +217,7 @@ async function loadPartnerCode(code: string): Promise<PartnerCodeRow | null> {
   if (!client) return null;
   const { data, error } = await client
     .from('partner_validation_codes')
-    .select('partner_key, partner_name, validation_code')
+    .select('partner_key, partner_name, validation_code, establishment_id, user_id')
     .eq('validation_code', code)
     .maybeSingle();
   if (error || !data) return null;

@@ -252,6 +252,18 @@ partnerBenefitOffersRouter.post('/partner/benefit-offers/respond', async (req, r
       }
     }
 
+    await supabase
+      .from('partner_benefit_offers')
+      .update({
+        status: accept ? 'accepted' : 'declined',
+        partner_response_note: accept ? null : note,
+        responded_at: now,
+        updated_at: now,
+      })
+      .eq('catalog_local_id', catalogLocalId)
+      .eq('partner_user_id', partnerUserId)
+      .eq('status', 'pending');
+
     res.json({
       localId: localId || `pending-${catalogLocalId}`,
       catalogLocalId,

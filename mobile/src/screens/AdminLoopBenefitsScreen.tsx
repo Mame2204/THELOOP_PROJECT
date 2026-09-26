@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useAdminCountry } from '@/context/AdminCountryContext';
@@ -6,11 +6,13 @@ import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { useAdminModuleAccess } from '@/hooks/useAdminModuleAccess';
 import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { AdminPageHeader, ADMIN_THEME } from '@/components/admin/AdminShell';
+import { AdminListPager, ADMIN_LIST_PAGE_SIZE } from '@/components/admin/AdminListPager';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import {
   BENEFIT_KIND_LABELS,
   filterTheLoopOfferedBenefits,
   listBenefitCatalog,
+  loadPublishedContentIndexFromSnapshot,
   peekBenefitCatalog,
   type BenefitCatalogItem,
 } from '@/lib/benefit-catalog-store';
@@ -32,10 +34,16 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [refreshing, setRefreshing] = useState(false);
   const [detailItem, setDetailItem] = useState<BenefitCatalogItem | null>(null);
+  const [page, setPage] = useState(0);
 
   const refresh = useCallback(async () => {
-    const fresh = await listBenefitCatalog();
-    setItems(filterTheLoopOfferedBenefits(fresh, countryCode, statusFilter === 'active'));
+    const [fresh, publishedIndex] = await Promise.all([
+      listBenefitCatalog(),
+      loadPublishedContentIndexFromSnapshot(countryCode),
+    ]);
+    setItems(
+      filterTheLoopOfferedBenefits(fresh, countryCode, statusFilter === 'active', publishedIndex),
+    );
   }, [countryCode, statusFilter]);
 
   const { run } = useFocusLoad(
@@ -43,7 +51,10 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
       if (role !== 'ADMIN' || !allowed) return;
       const cached = await peekBenefitCatalog();
       if (cached.length > 0) {
-        setItems(filterTheLoopOfferedBenefits(cached, countryCode, statusFilter === 'active'));
+        const publishedIndex = await loadPublishedContentIndexFromSnapshot(countryCode);
+        setItems(
+          filterTheLoopOfferedBenefits(cached, countryCode, statusFilter === 'active', publishedIndex),
+        );
       }
       if (force || cached.length === 0) {
         await refresh();
@@ -60,6 +71,15 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
     () => [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [items],
   );
+
+  const pagedItems = useMemo(() => {
+    const start = page * ADMIN_LIST_PAGE_SIZE;
+    return sortedItems.slice(start, start + ADMIN_LIST_PAGE_SIZE);
+  }, [sortedItems, page]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [statusFilter, countryCode]);
 
   if (role !== 'ADMIN' || isLoading) {
     if (role !== 'ADMIN') {
@@ -124,12 +144,18 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
               ]}
               onPress={() => {
                 setStatusFilter(f.id);
-                void peekBenefitCatalog().then((cached) => {
-                  setItems(filterTheLoopOfferedBenefits(cached, countryCode, f.id === 'active'));
-                });
-                void listBenefitCatalog().then((fresh) => {
-                  setItems(filterTheLoopOfferedBenefits(fresh, countryCode, f.id === 'active'));
-                });
+                setPage(0);
+                void (async () => {
+                  const publishedIndex = await loadPublishedContentIndexFromSnapshot(countryCode);
+                  const cached = await peekBenefitCatalog();
+                  setItems(
+                    filterTheLoopOfferedBenefits(cached, countryCode, f.id === 'active', publishedIndex),
+                  );
+                  const fresh = await listBenefitCatalog();
+                  setItems(
+                    filterTheLoopOfferedBenefits(fresh, countryCode, f.id === 'active', publishedIndex),
+                  );
+                })();
               }}
             >
               <Text style={{ color: statusFilter === f.id ? '#fff' : shell.pageTitle, fontSize: 10, fontWeight: '700' }}>
@@ -146,7 +172,7 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
               : 'Aucun privilège THE LOOP enregistré pour ce pays.'}
           </Text>
         ) : (
-          sortedItems.map((item) => (
+          pagedItems.map((item) => (
             <Pressable
               key={item.id}
               style={[styles.card, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
@@ -174,6 +200,14 @@ export function AdminLoopBenefitsScreen({ navigation }: Props) {
             </Pressable>
           ))
         )}
+        <AdminListPager
+          page={page}
+          total={sortedItems.length}
+          pageSize={ADMIN_LIST_PAGE_SIZE}
+          onPageChange={setPage}
+          shell={shell}
+          label="privilèges"
+        />
       </ScrollView>
 
       <Modal visible={Boolean(detailItem)} transparent animationType="fade" onRequestClose={() => setDetailItem(null)}>

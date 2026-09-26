@@ -2,8 +2,6 @@ import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { LoopLogo } from '../components/LoopLogo';
 import { useAuth } from '../context/AuthContext';
-import { getApiUrl } from '../lib/api';
-
 export function LoginPage() {
   const { loading, profile, authError, login, clearError } = useAuth();
   const [email, setEmail] = useState('');
@@ -30,7 +28,6 @@ export function LoginPage() {
           </div>
         </div>
         <h1>Administration</h1>
-        <p className="meta">Console web — API : {getApiUrl() || 'non configurée'}</p>
         <div className="field">
           <label htmlFor="email">E-mail</label>
           <input

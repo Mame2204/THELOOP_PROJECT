@@ -12,13 +12,19 @@ import {
 import { formatWhen, statusBadge } from '../lib/format';
 import { billingPeriodLabel, paymentMethodLabel } from '../lib/payment-labels';
 import { canReconcilePaymentIntent, reconcileDisabledReason } from '../lib/payment-reconcile';
+import {
+  classifyPaymentAttempt,
+  paymentAttemptBadgeLabel,
+  paymentIntentStatusLabel,
+  resyncHintForIntent,
+} from '../lib/payment-intent-display';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { Link } from 'react-router-dom';
 
 const PAGE = 20;
 const PERIOD_OPTIONS = [7, 30, 90] as const;
 
-type PayFilter = 'all' | 'incidents';
+type PayFilter = 'all' | 'in_progress' | 'paid' | 'abandoned' | 'incidents';
 
 export function PaymentsPage() {
   const { countryCode, countryLabel } = useAdminCountry();
@@ -38,6 +44,14 @@ export function PaymentsPage() {
       limit: PAGE,
       offset: page * PAGE,
       countryCode,
+      bucket:
+        filter === 'in_progress'
+          ? 'in_progress'
+          : filter === 'paid'
+            ? 'paid'
+            : filter === 'abandoned'
+              ? 'abandoned'
+              : undefined,
       fulfillment: filter === 'incidents' ? 'failed' : undefined,
     });
     setError(res.error ?? null);
@@ -159,8 +173,9 @@ export function PaymentsPage() {
           <>
             {analytics.stuckPending > 0 ? (
               <p className="error-text" style={{ marginBottom: 12 }}>
-                <strong>{analytics.stuckPending}</strong> paiement(s) Djomy confirmé(s) bloqué(s) (&gt;
-                5 min sans PASS) — le cron tente une réconciliation ; vérifiez la liste ci-dessous.
+                <strong>{analytics.stuckPending}</strong> paiement(s) avec débit Djomy confirmé, PASS
+                encore en attente (&gt; 5 min) — le cron réconcilie automatiquement ; resync manuel si
+                besoin dans la liste ci-dessous.
               </p>
             ) : null}
 
@@ -273,20 +288,24 @@ export function PaymentsPage() {
       </div>
 
       <div className="tabs" style={{ marginBottom: 12 }}>
-        <button
-          type="button"
-          className={`tab ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          Tous
-        </button>
-        <button
-          type="button"
-          className={`tab ${filter === 'incidents' ? 'active' : ''}`}
-          onClick={() => setFilter('incidents')}
-        >
-          Incidents fulfillment
-        </button>
+        {(
+          [
+            ['all', 'Tous'],
+            ['in_progress', 'En cours'],
+            ['paid', 'Payés'],
+            ['abandoned', 'Sans débit'],
+            ['incidents', 'Incidents PASS'],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            className={`tab ${filter === id ? 'active' : ''}`}
+            onClick={() => setFilter(id)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {error ? <p className="error">{error}</p> : null}
@@ -304,6 +323,7 @@ export function PaymentsPage() {
               <th>Frais</th>
               <th>Net</th>
               <th>Statut</th>
+              <th>Vérifié Djomy</th>
               <th>Créé</th>
               <th></th>
             </tr>
@@ -383,10 +403,26 @@ export function PaymentsPage() {
                 <td>{p.feeGnf != null ? `${p.feeGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
                 <td>{p.netGnf != null ? `${p.netGnf.toLocaleString('fr-FR')} GNF` : '—'}</td>
                 <td>
-                  <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
+                  <span className={`badge ${statusBadge(p.status)}`}>
+                    {paymentAttemptBadgeLabel(
+                      classifyPaymentAttempt({
+                        status: p.status,
+                        fulfillmentStatus: p.fulfillmentStatus,
+                        djomyStatus: p.djomyStatus,
+                      }),
+                    )}
+                  </span>
                   <div className="meta">
-                    {p.fulfillmentStatus} · {p.djomyStatus ?? '—'}
+                    {paymentIntentStatusLabel(p.status)} · PASS {p.fulfillmentStatus} · Djomy{' '}
+                    {p.djomyStatus ?? '—'}
                   </div>
+                </td>
+                <td>
+                  {p.lastCheckedAt ? (
+                    formatWhen(p.lastCheckedAt)
+                  ) : (
+                    <span className="meta">Jamais (cliquez Resync)</span>
+                  )}
                 </td>
                 <td>{formatWhen(p.createdAt)}</td>
                 <td>
@@ -397,15 +433,19 @@ export function PaymentsPage() {
                         className="btn small ghost"
                         onClick={() => {
                           void reconcilePayment(p.id).then((r) => {
-                            if (!r.ok) window.alert(r.error ?? 'Erreur');
-                            else void load();
+                            if (!r.ok) {
+                              window.alert(r.error ?? 'Erreur');
+                              return;
+                            }
+                            window.alert(r.summary ?? 'Vérification Djomy terminée.');
+                            void load();
                           });
                         }}
                       >
                         Resync Djomy
                       </button>
-                      <div className="meta" style={{ marginTop: 4, maxWidth: 120 }}>
-                        Payé côté Djomy mais PASS non activé
+                      <div className="meta" style={{ marginTop: 4, maxWidth: 200 }}>
+                        {resyncHintForIntent(p)}
                       </div>
                     </>
                   ) : (

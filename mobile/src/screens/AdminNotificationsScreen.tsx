@@ -152,7 +152,7 @@ export function AdminNotificationsScreen({ navigation }: Props) {
       return;
     }
     if (audience === 'individual' && !targetPhone.trim()) {
-      Alert.alert('Numéros requis', 'Saisissez un ou plusieurs numéros séparés par ;');
+      Alert.alert('E-mails requis', 'Saisissez un ou plusieurs e-mails séparés par ;');
       return;
     }
     if (
@@ -303,17 +303,19 @@ export function AdminNotificationsScreen({ navigation }: Props) {
 
       {audience === 'individual' ? (
         <>
-          <Text style={[styles.label, { color: shell.pageKicker }]}>Numéros (séparateur ;)</Text>
+          <Text style={[styles.label, { color: shell.pageKicker }]}>E-mails (séparateur ;)</Text>
           <TextInput
             style={inputStyle}
             value={targetPhone}
             onChangeText={setTargetPhone}
-            placeholder="+22462000001; +22462000002"
+            placeholder="membre@theloop.gn; prime@theloop.gn"
             placeholderTextColor={shell.pageKicker}
-            keyboardType="phone-pad"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
           />
           <Text style={[styles.hint, { color: shell.pageKicker }]}>
-            Un ou plusieurs numéros — uniquement des comptes existants.
+            Comptes actifs du pays admin. Les numéros restent acceptés en secours.
           </Text>
         </>
       ) : null}

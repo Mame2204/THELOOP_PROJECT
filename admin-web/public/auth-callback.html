@@ -30,15 +30,25 @@
   <script>
     (function () {
       /** Page pont — mot de passe choisi dans le navigateur (sans app installée). */
-      var AUTH_CALLBACK_BASE = 'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
+      var AUTH_CALLBACK_BASE = 'https://api.theloop-app.com/auth/callback';
       var title = document.getElementById('title');
       var message = document.getElementById('message');
       var hint = document.getElementById('hint');
 
-      var hash = window.location.hash || '';
+      var merged = new URLSearchParams();
       var search = window.location.search || '';
-      var paramString = hash.indexOf('#') === 0 ? hash.slice(1)
-        : (search.indexOf('?') === 0 ? search.slice(1) : '');
+      if (search.indexOf('?') === 0) {
+        new URLSearchParams(search.slice(1)).forEach(function (v, k) {
+          merged.set(k, v);
+        });
+      }
+      var hash = window.location.hash || '';
+      if (hash.indexOf('#') === 0 && hash.length > 1) {
+        new URLSearchParams(hash.slice(1)).forEach(function (v, k) {
+          merged.set(k, v);
+        });
+      }
+      var paramString = merged.toString();
 
       if (!paramString) {
         title.textContent = 'Lien incomplet';

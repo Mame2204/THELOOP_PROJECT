@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CoverImage } from '@/components/CoverImage';
 import { CatalogCoverScrim } from '@/components/DetailHeroScrim';
+import { ContentPrivilegeBadge } from '@/components/ContentPrivilegeBadge';
 import { FavoriteHeartButton } from '@/components/FavoriteHeartButton';
 import { CATALOG_CARD_IMAGE_HEIGHT } from '@/constants/layout';
 import type { HomeLocation } from '@/lib/demo-data';
@@ -15,11 +16,19 @@ interface SpotCardProps {
   isFavorite: boolean;
   onPress: () => void;
   onToggleFavorite: () => void;
+  /** Au moins un privilège catalogue actif lié à ce spot ou outil. */
+  hasLinkedPrivilege?: boolean;
 }
 
 const COVER_HEIGHT = CATALOG_CARD_IMAGE_HEIGHT;
 
-export function SpotCard({ spot, isFavorite, onPress, onToggleFavorite }: SpotCardProps) {
+export function SpotCard({
+  spot,
+  isFavorite,
+  onPress,
+  onToggleFavorite,
+  hasLinkedPrivilege = false,
+}: SpotCardProps) {
   const { theme } = useMemberTheme();
   const { spotLabel, toolLabel, spotEmoji, toolEmoji } = useCategoryLabels();
   const isTool = spot.subCategory === 'tools';
@@ -62,6 +71,9 @@ export function SpotCard({ spot, isFavorite, onPress, onToggleFavorite }: SpotCa
               <Text style={styles.categoryBadge} numberOfLines={1}>
                 {categoryText}
               </Text>
+              {hasLinkedPrivilege ? (
+                <ContentPrivilegeBadge variant="overlay" accent={theme.colors.accent} />
+              ) : null}
             </View>
             <FavoriteHeartButton
               active={isFavorite}

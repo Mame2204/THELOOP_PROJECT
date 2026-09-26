@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
@@ -6,6 +7,7 @@ import {
   addPartnershipNote,
   approvePartnershipWithOnboarding,
   listPartnershipRequests,
+  peekPartnershipRequests,
   PARTNERSHIP_STATUS_LABELS,
   updatePartnershipStatus,
 } from '@/lib/admin-partnership-store';
@@ -37,20 +39,25 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
   const [noteText, setNoteText] = useState<Record<string, string>>({});
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async (options?: { force?: boolean }) => {
-    // force uniquement pull / mutation — cache-first sinon (egress).
-    setList(await listPartnershipRequests(countryCode, { force: options?.force === true }));
+  const load = useCallback(async (force: boolean) => {
+    if (!force) {
+      const cached = await peekPartnershipRequests(countryCode);
+      if (cached.length) setList(cached);
+    }
+    setList(await listPartnershipRequests(countryCode, { force: true }));
   }, [countryCode]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { run } = useFocusLoad(load, {
+    enabled: role === 'ADMIN' && allowed,
+    resetKey: countryCode,
+    ttlMs: 45_000,
+  });
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load({ force: true });
+    await run(true);
     setRefreshing(false);
-  }, [load]);
+  }, [run]);
 
   if (role !== 'ADMIN') {
     return (
@@ -82,7 +89,7 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
                   'Partenaire validé',
                   'Invitez le contact depuis Utilisateurs (rôle Partenaire) pour activer l’Espace Pro.',
                 );
-                await load({ force: true });
+                await run(true);
               });
             },
           },
@@ -93,7 +100,7 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
 
     const res = await updatePartnershipStatus(id, status);
     if (!res.ok) Alert.alert('Erreur', res.error ?? 'Mise à jour impossible');
-    else await load({ force: true });
+    else await run(true);
   }
 
   async function saveNote(partnershipId: string) {
@@ -106,7 +113,7 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
       user?.fullName ?? 'Admin',
     );
     setNoteText((prev) => ({ ...prev, [partnershipId]: '' }));
-    await load({ force: true });
+    await run(true);
     Alert.alert('Note enregistrée', 'Horodatage ajouté à l\'historique.');
   }
 

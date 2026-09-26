@@ -1,16 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type MouseEvent } from 'react';
+import { CampaignRecipientsPanel } from '../components/CampaignRecipientsPanel';
+import { ListPager } from '../components/ListPager';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { useAuth } from '../context/AuthContext';
 import { formatWhen } from '../lib/format';
 import {
   audienceLabel,
   AUDIENCE_LABELS,
+  CAMPAIGN_LIST_PAGE_SIZE,
   campaignStatusLabel,
   cancelPushCampaign,
   deletePushCampaign,
+  isPushCampaignCancellable,
   isPushCampaignDeletable,
   isPushCampaignEditable,
-  listPushCampaigns,
+  listPushCampaignsPage,
   sendPushCampaign,
   updatePushCampaign,
   type NotificationAudience,
@@ -50,6 +54,9 @@ export function NotificationsPage() {
   const { countryCode, countryLabel } = useAdminCountry();
   const { profile } = useAuth();
   const [rows, setRows] = useState<PushCampaign[]>([]);
+  const [campaignTotal, setCampaignTotal] = useState(0);
+  const [campaignPage, setCampaignPage] = useState(0);
+  const [detailCampaign, setDetailCampaign] = useState<PushCampaign | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -70,12 +77,15 @@ export function NotificationsPage() {
   const load = useCallback(async () => {
     try {
       setError(null);
-      setRows(await listPushCampaigns(countryCode));
+      const res = await listPushCampaignsPage(countryCode, campaignPage, CAMPAIGN_LIST_PAGE_SIZE);
+      setRows(res.items);
+      setCampaignTotal(res.total);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur');
       setRows([]);
+      setCampaignTotal(0);
     }
-  }, [countryCode]);
+  }, [countryCode, campaignPage]);
 
   const loadCategories = useCallback(async () => {
     const [events, spots, tools] = await Promise.all([
@@ -90,8 +100,15 @@ export function NotificationsPage() {
 
   useEffect(() => {
     void load();
+  }, [load]);
+
+  useEffect(() => {
     void loadCategories();
-  }, [load, loadCategories]);
+  }, [loadCategories]);
+
+  useEffect(() => {
+    setCampaignPage(0);
+  }, [countryCode]);
 
   function toggleChip(list: string[], slug: string, setter: (v: string[]) => void) {
     setter(list.includes(slug) ? list.filter((s) => s !== slug) : [...list, slug]);
@@ -110,7 +127,8 @@ export function NotificationsPage() {
     setFavoriteToolCategories([]);
   }
 
-  function startEdit(campaign: PushCampaign) {
+  function startEdit(campaign: PushCampaign, e?: MouseEvent) {
+    e?.stopPropagation();
     setEditingId(campaign.id);
     setTitle(campaign.title);
     setMessage(campaign.message);
@@ -126,13 +144,17 @@ export function NotificationsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function openDetails(campaign: PushCampaign) {
+    setDetailCampaign(campaign);
+  }
+
   async function handleSend() {
     if (!title.trim() || !message.trim()) {
       setMsg('Titre et message obligatoires.');
       return;
     }
     if (audience === 'individual' && !targetPhone.trim()) {
-      setMsg('Numéro(s) requis pour un envoi individuel.');
+      setMsg('E-mail(s) requis pour un envoi individuel (séparateur ;).');
       return;
     }
     if (
@@ -199,6 +221,7 @@ export function NotificationsPage() {
             ? `Envoyé — ${res.recipientCount ?? 0} destinataire(s).`
             : 'Campagne planifiée.',
       );
+      setCampaignPage(0);
       void load();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Erreur inattendue.');
@@ -207,7 +230,8 @@ export function NotificationsPage() {
     }
   }
 
-  async function handleCancel(id: string) {
+  async function handleCancel(id: string, e?: MouseEvent) {
+    e?.stopPropagation();
     if (!window.confirm('Annuler cette campagne ?')) return;
     setMsg(null);
     if (editingId === id) resetForm();
@@ -220,10 +244,12 @@ export function NotificationsPage() {
     void load();
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: string, e?: MouseEvent) {
+    e?.stopPropagation();
     if (!window.confirm('Supprimer définitivement cette campagne ?')) return;
     setMsg(null);
     if (editingId === id) resetForm();
+    if (detailCampaign?.id === id) setDetailCampaign(null);
     const res = await deletePushCampaign(id);
     if (!res.ok) {
       setMsg(res.error ?? 'Suppression impossible.');
@@ -258,8 +284,37 @@ export function NotificationsPage() {
     );
   }
 
+  function renderCampaignActions(r: PushCampaign) {
+    const canEdit = isPushCampaignEditable(r.status);
+    const canCancel = isPushCampaignCancellable(r.status);
+    const canDelete = isPushCampaignDeletable(r.status, r.recipientCount);
+
+    return (
+      <div className="edit-actions notifications-row-actions" onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="btn ghost small" onClick={() => openDetails(r)}>
+          Détails
+        </button>
+        {canEdit ? (
+          <button type="button" className="btn ghost small" onClick={(e) => startEdit(r, e)}>
+            Modifier
+          </button>
+        ) : null}
+        {canCancel ? (
+          <button type="button" className="btn ghost small danger" onClick={(e) => void handleCancel(r.id, e)}>
+            Annuler
+          </button>
+        ) : null}
+        {canDelete ? (
+          <button type="button" className="btn ghost small danger" onClick={(e) => void handleDelete(r.id, e)}>
+            Supprimer
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
-    <section>
+    <section className="notifications-page">
       <header className="page-header">
         <div>
           <p className="brand-kicker">Paramètres</p>
@@ -275,135 +330,145 @@ export function NotificationsPage() {
       {error ? <p className="error-text">{error}</p> : null}
       {msg ? <p className="muted">{msg}</p> : null}
 
-      <div className="split-pane">
-        <div className="card">
-          <h3>{editingId ? 'Modifier la campagne' : 'Envoyer'}</h3>
-          {editingId ? (
-            <p className="meta" style={{ marginBottom: 12 }}>
-              Modification d&apos;une campagne non envoyée.{' '}
-              <button type="button" className="btn ghost small" onClick={resetForm}>
-                Annuler la modification
-              </button>
-            </p>
-          ) : null}
+      <div className={`notifications-layout${detailCampaign ? ' has-detail' : ''}`}>
+        <div className="notifications-main">
+      <div className="card notifications-form-card">
+        <h3>{editingId ? 'Modifier la campagne' : 'Envoyer'}</h3>
+        {editingId ? (
+          <p className="meta" style={{ marginBottom: 12 }}>
+            Modification d&apos;une campagne non envoyée.{' '}
+            <button type="button" className="btn ghost small" onClick={resetForm}>
+              Annuler la modification
+            </button>
+          </p>
+        ) : null}
 
-          <div className="field">
-            <label>Destinataires</label>
-            <div className="chip-row">
-              {AUDIENCES.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  className={`target-chip${audience === a ? ' active' : ''}`}
-                  onClick={() => setAudience(a)}
-                >
-                  {AUDIENCE_LABELS[a]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {audience === 'individual' ? (
-            <div className="field">
-              <label>Numéros (séparateur ;)</label>
-              <input
-                value={targetPhone}
-                onChange={(e) => setTargetPhone(e.target.value)}
-                placeholder="+22462000001; +22462000002"
-              />
-              <p className="meta">Un ou plusieurs numéros — uniquement des comptes existants.</p>
-            </div>
-          ) : null}
-
-          {audience === 'birthday' ? (
-            <p className="meta">
-              Comptes dont l&apos;anniversaire est ce mois-ci (date de naissance renseignée).
-            </p>
-          ) : null}
-
-          {audience === 'favorites' ? (
-            <>
-              <div className="field">
-                <label>Catégories événements</label>
-                {renderCategoryChips(eventCats, favoriteEventCategories, setFavoriteEventCategories)}
-              </div>
-              <div className="field">
-                <label>Catégories spots</label>
-                {renderCategoryChips(spotCats, favoriteSpotCategories, setFavoriteSpotCategories)}
-              </div>
-              <div className="field">
-                <label>Catégories outils</label>
-                {renderCategoryChips(toolCats, favoriteToolCategories, setFavoriteToolCategories)}
-              </div>
-              <p className="meta">
-                Membres ayant en favori au moins un contenu d&apos;une catégorie sélectionnée.
-                Admins et partenaires exclus.
-              </p>
-            </>
-          ) : null}
-
-          <div className="field">
-            <label>Titre</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Message</label>
-            <textarea rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
-          </div>
-
-          <div className="field">
-            <label>Mode d&apos;envoi</label>
-            <div className="chip-row">
+        <div className="field">
+          <label>Destinataires</label>
+          <div className="chip-row">
+            {AUDIENCES.map((a) => (
               <button
+                key={a}
                 type="button"
-                className={`target-chip${sendNow ? ' active' : ''}`}
-                onClick={() => setSendNow(true)}
+                className={`target-chip${audience === a ? ' active' : ''}`}
+                onClick={() => setAudience(a)}
               >
-                Immédiat
+                {AUDIENCE_LABELS[a]}
               </button>
-              <button
-                type="button"
-                className={`target-chip${!sendNow ? ' active' : ''}`}
-                onClick={() => setSendNow(false)}
-              >
-                Planifié
-              </button>
-            </div>
+            ))}
           </div>
-
-          {!sendNow ? (
-            <div className="field">
-              <label>Date &amp; heure d&apos;envoi</label>
-              <input
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-              />
-            </div>
-          ) : null}
-
-          <button type="button" className="btn" disabled={busy} onClick={() => void handleSend()}>
-            {busy
-              ? 'Enregistrement…'
-              : editingId
-                ? sendNow
-                  ? 'Enregistrer et envoyer'
-                  : 'Enregistrer la planification'
-                : sendNow
-                  ? 'Envoyer maintenant'
-                  : 'Planifier'}
-          </button>
         </div>
 
+        {audience === 'individual' ? (
+          <div className="field">
+            <label>E-mails (séparateur ;)</label>
+            <input
+              type="text"
+              value={targetPhone}
+              onChange={(e) => setTargetPhone(e.target.value)}
+              placeholder="membre@theloop.gn; prime@theloop.gn"
+              autoComplete="off"
+            />
+            <p className="meta">
+              Un ou plusieurs e-mails de comptes actifs (pays admin). Les numéros restent acceptés en secours.
+            </p>
+          </div>
+        ) : null}
+
+        {audience === 'birthday' ? (
+          <p className="meta">
+            Comptes dont l&apos;anniversaire est ce mois-ci (date de naissance renseignée).
+          </p>
+        ) : null}
+
+        {audience === 'favorites' ? (
+          <>
+            <div className="field">
+              <label>Catégories événements</label>
+              {renderCategoryChips(eventCats, favoriteEventCategories, setFavoriteEventCategories)}
+            </div>
+            <div className="field">
+              <label>Catégories spots</label>
+              {renderCategoryChips(spotCats, favoriteSpotCategories, setFavoriteSpotCategories)}
+            </div>
+            <div className="field">
+              <label>Catégories outils</label>
+              {renderCategoryChips(toolCats, favoriteToolCategories, setFavoriteToolCategories)}
+            </div>
+            <p className="meta">
+              Membres ayant en favori au moins un contenu d&apos;une catégorie sélectionnée. Admins et partenaires
+              exclus.
+            </p>
+          </>
+        ) : null}
+
+        <div className="field">
+          <label>Titre</label>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Message</label>
+          <textarea rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
+        </div>
+
+        <div className="field">
+          <label>Mode d&apos;envoi</label>
+          <div className="chip-row">
+            <button
+              type="button"
+              className={`target-chip${sendNow ? ' active' : ''}`}
+              onClick={() => setSendNow(true)}
+            >
+              Immédiat
+            </button>
+            <button
+              type="button"
+              className={`target-chip${!sendNow ? ' active' : ''}`}
+              onClick={() => setSendNow(false)}
+            >
+              Planifié
+            </button>
+          </div>
+        </div>
+
+        {!sendNow ? (
+          <div className="field">
+            <label>Date &amp; heure d&apos;envoi</label>
+            <input
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+            />
+          </div>
+        ) : null}
+
+        <button type="button" className="btn" disabled={busy} onClick={() => void handleSend()}>
+          {busy
+            ? 'Enregistrement…'
+            : editingId
+              ? sendNow
+                ? 'Enregistrer et envoyer'
+                : 'Enregistrer la planification'
+              : sendNow
+                ? 'Envoyer maintenant'
+                : 'Planifier'}
+        </button>
+      </div>
+
+      <div className="card notifications-history-card">
+        <h3>Historique des campagnes</h3>
+        <p className="meta">Cliquez sur une ligne ou sur « Détails » pour voir les destinataires.</p>
+
         <div className="table-wrap">
-          <table className="data-table">
+          <table className="data-table notifications-campaigns-table">
             <thead>
               <tr>
                 <th>Campagne</th>
                 <th>Audience</th>
                 <th>Statut</th>
+                <th>Dest.</th>
                 <th>Dates</th>
-                <th />
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -416,55 +481,27 @@ export function NotificationsPage() {
                       ? 'err'
                       : 'warn';
                 return (
-                  <tr key={r.id}>
+                  <tr
+                    key={r.id}
+                    className={`notifications-campaign-row${detailCampaign?.id === r.id ? ' row-selected' : ''}`}
+                    onClick={() => openDetails(r)}
+                  >
                     <td>
                       <strong>{r.title}</strong>
-                      <div className="meta">{r.message.slice(0, 100)}</div>
+                      <div className="meta">{r.message.slice(0, 120)}</div>
                       {fav ? <div className="meta">Favoris : {fav}</div> : null}
                     </td>
                     <td className="meta">{audienceLabel(r.audience)}</td>
                     <td>
                       <span className={`badge ${badgeClass}`}>{campaignStatusLabel(r.status)}</span>
-                      <div className="meta">{r.recipientCount} dest.</div>
                     </td>
+                    <td className="meta">{r.recipientCount}</td>
                     <td className="meta">
                       Créée {formatWhen(r.createdAt)}
                       {r.scheduledAt ? <div>Planif. {formatWhen(r.scheduledAt)}</div> : null}
                       {r.sentAt ? <div>Envoyée {formatWhen(r.sentAt)}</div> : null}
                     </td>
-                    <td>
-                      {isPushCampaignEditable(r.status) || isPushCampaignDeletable(r.status) ? (
-                        <div className="edit-actions" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-                          {isPushCampaignEditable(r.status) ? (
-                            <>
-                              <button
-                                type="button"
-                                className="btn ghost small"
-                                onClick={() => startEdit(r)}
-                              >
-                                Modifier
-                              </button>
-                              <button
-                                type="button"
-                                className="btn ghost small danger"
-                                onClick={() => void handleCancel(r.id)}
-                              >
-                                Annuler
-                              </button>
-                            </>
-                          ) : null}
-                          {isPushCampaignDeletable(r.status) ? (
-                            <button
-                              type="button"
-                              className="btn ghost small danger"
-                              onClick={() => void handleDelete(r.id)}
-                            >
-                              Supprimer
-                            </button>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </td>
+                    <td>{renderCampaignActions(r)}</td>
                   </tr>
                 );
               })}
@@ -476,6 +513,20 @@ export function NotificationsPage() {
             </p>
           ) : null}
         </div>
+
+        <ListPager
+          page={campaignPage}
+          total={campaignTotal}
+          pageSize={CAMPAIGN_LIST_PAGE_SIZE}
+          onPageChange={setCampaignPage}
+          label="campagnes"
+        />
+      </div>
+        </div>
+
+        {detailCampaign ? (
+          <CampaignRecipientsPanel campaign={detailCampaign} onClose={() => setDetailCampaign(null)} />
+        ) : null}
       </div>
     </section>
   );

@@ -9,6 +9,7 @@ import { useContent } from '@/context/ContentContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
+import { useContentIdsWithBenefits } from '@/hooks/useContentIdsWithBenefits';
 import {
   buildAgendaListRows,
   filterUpcomingEvents,
@@ -40,6 +41,7 @@ export function AgendaScreen({ navigation }: Props) {
   const { isEventFavorite, toggleEventFavorite } = useFavorites();
 
   const openFavoritesSignup = usePromptFavoritesSignup();
+  const { hasBenefit } = useContentIdsWithBenefits();
 
   const { ready: categoriesReady, revision, activeEventFilter, inactiveEventFilter } = useCategoryLabels();
 
@@ -151,6 +153,7 @@ export function AgendaScreen({ navigation }: Props) {
           <EventCard
             event={item.event}
             isFavorite={isEventFavorite(item.event.id)}
+            hasLinkedPrivilege={hasBenefit(item.event.id, 'event')}
             onPress={() => navigation.navigate('EventDetail', { slug: item.event.slug })}
             onToggleFavorite={() => onFavorite(item.event.id)}
           />
