@@ -142,7 +142,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 |----------|-----------|------|-----|--------|
 | **⏸ 49** | **M1-U2** set_password in-app | **bulle 49** | Render OK web | PR #52 · **pas de retest build 48** |
 | **P0** | **M2** Param. admin satellites | **PASS** *(26 sept. soir)* 📱🤖 | déjà PASS 💻 | Étoiles → **bulle 49** · reste signalé Users web |
-| **P1** | **C1** push (réception OS + inbox) | **PASS** *(testeur 26 sept.)* 📱🤖 | partiel 💻 | Achat PASS · campagnes déjà validées · cocher lignes Partie C au besoin |
+| **P1** | **C1** push (réception OS + inbox) | **partiel** 📱🤖 | **PASS** envoi 💻 | **Achat PASS** coché · **campagnes / tirage / modération** = cases `[ ]` car **boucle notifs** en session → fix code **main** · **retest bulle 49** |
 | **P1** | **D1** régression rapide | **PARTIEL** 📱 PASS · **🤖 FAIL** cold start icône | — | Reprise arrière-plan 🤖 OK · voir journal |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [ ] | — | Checklist transversale |
 | **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
@@ -165,18 +165,45 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
-### Avancement par plateforme *(décompte agent · 26 sept. 2026)*
+### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · 26 sept. 2026 soir)*
 
-> Chaque **ligne** `- [ ]` compte **une fois** dans le global. Une ligne **📱** ou **🤖** ne compte que pour cette plateforme ; **📱🤖** compte pour **iOS et Android**. Le global **68 %** reste bas surtout parce que la checklist inclut **tout le mobile** (A1–A5, parité 🤖, Phase 1, C1, admin mobile…) alors que le web a été massacré en QA cette semaine.
+> Chaque **ligne** markdown compte **une fois** dans le global. Les lignes **📱🤖** sont comptées à part (les deux plateformes dans la même puce).
 
-| Plateforme | Coché | Total | % | Commentaire |
-|------------|------:|------:|---:|-------------|
-| **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
-| **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
-| **🤖 Android** | **~118** | **~140** | **~84 %** | **Parité RN** : cases 📱 cochées → 🤖 alignées *(26 sept. agent)* sauf **N/A / build 49+**. |
-| **Global (1 ligne = 1 case)** | **337** | **394** | **≈86 %** | Reste **49+** = M1-U2 · Étoiles 📱 · Phase 1 · LoopX · modération refus… · **🤖 D1** cold start icône |
+| Environnement | Coché | Total lignes | % réalisé | % restant | Commentaire |
+|---------------|------:|-------------:|----------:|----------:|-------------|
+| **💻 Admin-web** | **78** | **85** | **92 %** | **8 %** | Hors **bulle 49** ≈ **100 %** opérationnel · reste surtout **modération refus / retraits / notifs** (QA volontairement ⏸) |
+| **📱 iPhone** | **123** | **145** | **85 %** | **15 %** | Inclut lignes `- [x] **📱**` uniquement |
+| **🤖 Android** | **102** | **122** | **84 %** | **16 %** | Inclut lignes `- [x] **🤖**` · **D1 cold start icône** = FAIL connu |
+| **📱🤖 (double puce)** | **20** | **26** | **77 %** | **23 %** | Souvent **Étoiles** · auth · parité explicite |
+| **Global checklist** | **337** | **394** | **≈86 %** | **≈14 %** | Référence honnête du fichier |
 
-**Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
+**Tableaux Phase 1 / C1** (cases `[ ]` dans les grilles, hors puces) : **~327 / 505 ≈ 65 %** — c’est là que beaucoup de **C1 push** restent **non cochés** : tu as validé l’essentiel en session, mais **campagnes / tirage / modération** ont été **interrompus ou reportés** à cause des **notifications en boucle** (corrigé dans le **code** `main`, retest propre sur **bulle 49**).
+
+### Reste à faire — par environnement *(priorisé)*
+
+| Environnement | Déjà réalisé (ne pas refaire) | Reste / bloqué |
+|---------------|------------------------------|----------------|
+| **💻 Web** | B0–B9 · B5 push admin · PASS · Users connexion · Insights · Accueil · TEAMS · **Tirage** *(testeur 24–26 sept.)* | **B2** refus modération + notif partenaire · retraits Phase 1 · filtres modération retest · doublon push campagne ⏳ |
+| **📱 iOS** | A1–A3 · A2-U1 · M2 satellites *(sauf Étoiles)* · B9 délégué · D1 *(sauf si régression)* · C1 achat PASS | **M1-U2** set_password · **Étoiles** admin · **C1** tableau détaillé *(retest post-fix boucle)* · **refus privilège partenaire** · octroi individuel scan · LoopX · Phase 1 |
+| **🤖 Android** | Parité RN avec 📱 sur la plupart des lots A / M2 / B9 | Idem **49+** · plus **cold start depuis icône** (bug lancement) |
+
+### Parité web → mobile *(audit code · 26 sept. 2026)*
+
+Erreurs ou fixes remontés **💻** : le mobile **RN** partage le **même Supabase / RPC** sauf UI admin-web séparée.
+
+| Sujet | Web | Mobile RN | Verdict code `main` |
+|-------|-----|-----------|---------------------|
+| **Boucle notifications push** (inbox + refresh) | N/A | `NotificationsContext` — pas de ré-insertion au push · debounce badge · refresh modération ciblé | **Aligné** *(commits e4ca773 · 758e04c)* · **retest device bulle 49** |
+| **Modération** — notify partenaire approve/refuse | `moderation.ts` → `notify_partner_user` + 1 push | `partner-moderation-notify.ts` — **même RPC** | **Aligné** · refus **non cochés** = QA ⏸ pas code manquant |
+| **Refus privilège partenaire** | PR **#34** + picker lieux #33 | `PartnerBenefitsScreen` + API Render · clavier refus | **Aligné** · **verrou anti double réponse** ajouté store + UI |
+| **Recovery MDP in-app** | auth-callback HTML | PR **#52** dedupe `verifyOtp` | **Aligné code** · **binaire 49** requis |
+| **Users dernière connexion** | migrations **20260945+46** | `user-activity.ts` + liste admin mobile | **Aligné** |
+| **Étoiles formule / paliers** | `SpotStarsPage` grille PASS | `AdminSpotStarsScreen` — même store · layout différent | **Retest 📱 bulle 49** après 💻 OK |
+| **PASS Désactiver catalogue** | PR **#45–#48** admin-web | Mobile = archiver / activer messages *(pas même libellé « Désactiver »)* | **Comportement proche** · pas de bug bloquant signalé mobile |
+| **Octroi individuel scan** | web OK | `PartnerBenefitConfirm` + SQL **20260935+36** | **Retest 49+** (FAIL historique build 48) |
+| **Tirage + push gagnant** | **PASS testeur 💻** | `admin-benefit-draw-store` → `grantPrimeBenefitsToTargets` *(même chaîne d’octroi)* | **Code aligné** · **push gagnant 📱 non retesté** par testeur — à faire sur 49 si besoin |
+
+**Build 49+** = binaire mobile + retests **C1 / refus / M1-U2 / Étoiles** — pas une erreur de pourcentage checklist.
 
 ---
 
@@ -881,12 +908,12 @@ Liens Param. → pages satellites :
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
 - [x] **💻** Privilège → partenaire + lieu · envoi validation *(24 sept. **PASS web**)*
 - [x] **📱** Partenaire **accepte** *(24 sept. **PASS** build 48)*
-- [ ] **📱** Partenaire **refuse** + motif *(**retest build 49+** · PR #34)*
+- [ ] **📱** Partenaire **refuse** + motif *(code **PR #34** + verrou anti double-notif mobile · **retest build 49+** — boucle notifs en session build 48)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
 - [x] **💻** Tirage — filtres **par rôle** · scope *(24 sept. 2026 · testeur **PASS**)*
-- [ ] **📱** Gagnant — notif « Nouveau privilège » (cross-platform)
+- [ ] **📱** Gagnant — notif « Nouveau privilège » *(💻 tirage **PASS** testeur · 📱 push gagnant **non retesté** · code octroi aligné)*
 
 ## B8 — Automatisations · Paliers · Étoiles · Horaires
 
@@ -912,6 +939,8 @@ Liens Param. → pages satellites :
 # PARTIE C — Push & transversal
 
 ## C1 — Push mobile (réception)
+
+> **26 sept. testeur :** plusieurs scénarios **non cochés** car **notifications en boucle** pendant les tests (inbox / badge / refresh). **Correctifs mergés sur `main`** (`NotificationsContext` · modération · pas de ré-insert push). **Ne pas recocher** sans **retest sur bulle 49**. **Achat PASS → push** reste **PASS** (ligne ci-dessous).
 
 | Scénario | 📱 | 🤖 |
 |----------|----|----|

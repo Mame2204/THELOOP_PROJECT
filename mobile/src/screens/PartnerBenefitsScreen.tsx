@@ -79,6 +79,7 @@ export function PartnerBenefitsScreen({ navigation }: Props) {
   const partnerLabel = user?.company ?? user?.fullName ?? 'Partenaire';
   const loadSeq = useRef(0);
   const acceptingRef = useRef(false);
+  const rejectingRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!user?.id || role !== 'PARTNER') return;
@@ -220,12 +221,13 @@ export function PartnerBenefitsScreen({ navigation }: Props) {
   }
 
   async function confirmReject() {
-    if (!user || !rejectOffer) return;
+    if (!user || !rejectOffer || rejectingRef.current) return;
     const reason = rejectReason.trim();
     if (!reason) {
       Alert.alert('Motif requis', 'Indiquez le motif du refus pour THE LOOP.');
       return;
     }
+    rejectingRef.current = true;
     try {
       const ctx = await resolvePartnerWorkspaceContext(user);
       const next = await respondPartnerBenefitOffer(
@@ -246,6 +248,8 @@ export function PartnerBenefitsScreen({ navigation }: Props) {
       Alert.alert('Refus enregistré', 'THE LOOP a été notifié avec votre motif.');
     } catch (err) {
       Alert.alert('Erreur', formatPartnerRespondError(err));
+    } finally {
+      rejectingRef.current = false;
     }
   }
 

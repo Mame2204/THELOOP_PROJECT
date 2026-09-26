@@ -76,6 +76,13 @@ const KEY = 'loop_partner_benefit_offers_v1';
 const RPC_OFFLINE_CACHE_KEY = 'loop_partner_benefit_offers_rpc_v2';
 const DISMISSED_PENDING_CATALOG_KEY = 'loop_partner_dismissed_pending_catalog_v1';
 
+/** Évite double tap / double requête → plusieurs notifyAdminUsers pour une même offre. */
+const inFlightPartnerOfferResponses = new Set<string>();
+
+function partnerOfferResponseLockKey(offerId: string, partnerUserId: string): string {
+  return `${partnerUserId.trim()}:${offerId.trim()}`;
+}
+
 interface PartnerOffersRpcCache {
   authUserId: string;
   savedAt: string;
@@ -1047,6 +1054,12 @@ export async function acceptPartnerBenefitOffer(offer: PartnerBenefitOffer): Pro
     throw new Error('Cette demande n\'est plus en attente de validation.');
   }
 
+  const lockKey = partnerOfferResponseLockKey(current.id, current.partnerUserId);
+  if (inFlightPartnerOfferResponses.has(lockKey)) {
+    throw new Error('Validation déjà en cours — patientez quelques secondes.');
+  }
+  inFlightPartnerOfferResponses.add(lockKey);
+
   await ensurePartnerSupabaseSession();
   if (__DEV__) {
     console.log('[PartnerBenefitOffers] accept start', {
@@ -1055,43 +1068,47 @@ export async function acceptPartnerBenefitOffer(offer: PartnerBenefitOffer): Pro
     });
   }
 
-  const remoteRes = await respondPartnerBenefitOfferViaSupabase(current, true);
-  if (!remoteRes.ok) {
+  try {
+    const remoteRes = await respondPartnerBenefitOfferViaSupabase(current, true);
+    if (!remoteRes.ok) {
+      if (__DEV__) {
+        console.warn('[PartnerBenefitOffers] accept failed', remoteRes.error);
+      }
+      throw new Error(remoteRes.error ?? 'Activation impossible — vérifiez votre connexion.');
+    }
+
+    invalidatePartnerBenefitOffersRemoteCache();
+
+    const next: PartnerBenefitOffer = {
+      ...current,
+      status: 'accepted',
+      partnerResponseNote: null,
+      respondedAt: new Date().toISOString(),
+    };
+
+    void (async () => {
+      try {
+        const all = await loadAll();
+        const idx = all.findIndex((o) => o.id === next.id);
+        if (idx >= 0) all[idx] = next;
+        else all.push(next);
+        await saveAll(all);
+      } catch (err) {
+        console.warn('[PartnerBenefitOffers] save accept:', err instanceof Error ? err.message : err);
+      }
+    })();
+
+    void runPartnerOfferRespondSideEffects(current, next, true, null).catch((err) => {
+      console.warn('[PartnerBenefitOffers] post-accept:', err instanceof Error ? err.message : err);
+    });
+
     if (__DEV__) {
-      console.warn('[PartnerBenefitOffers] accept failed', remoteRes.error);
+      console.log('[PartnerBenefitOffers] accept ok', { catalogId: next.catalogId });
     }
-    throw new Error(remoteRes.error ?? 'Activation impossible — vérifiez votre connexion.');
+    return next;
+  } finally {
+    inFlightPartnerOfferResponses.delete(lockKey);
   }
-
-  invalidatePartnerBenefitOffersRemoteCache();
-
-  const next: PartnerBenefitOffer = {
-    ...current,
-    status: 'accepted',
-    partnerResponseNote: null,
-    respondedAt: new Date().toISOString(),
-  };
-
-  void (async () => {
-    try {
-      const all = await loadAll();
-      const idx = all.findIndex((o) => o.id === next.id);
-      if (idx >= 0) all[idx] = next;
-      else all.push(next);
-      await saveAll(all);
-    } catch (err) {
-      console.warn('[PartnerBenefitOffers] save accept:', err instanceof Error ? err.message : err);
-    }
-  })();
-
-  void runPartnerOfferRespondSideEffects(current, next, true, null).catch((err) => {
-    console.warn('[PartnerBenefitOffers] post-accept:', err instanceof Error ? err.message : err);
-  });
-
-  if (__DEV__) {
-    console.log('[PartnerBenefitOffers] accept ok', { catalogId: next.catalogId });
-  }
-  return next;
 }
 
 export async function respondPartnerBenefitOffer(
@@ -1142,42 +1159,52 @@ export async function respondPartnerBenefitOffer(
     return null;
   }
 
-  const remoteRes = await respondRemotePartnerOffer(current, accept, trimmedNote, partnerUserId);
-  if (!remoteRes.ok) {
-    throw new Error(remoteRes.error ?? 'Réponse serveur impossible');
+  const lockKey = partnerOfferResponseLockKey(offerId, partnerUserId);
+  if (inFlightPartnerOfferResponses.has(lockKey)) {
+    return null;
   }
-  invalidatePartnerBenefitOffersRemoteCache();
+  inFlightPartnerOfferResponses.add(lockKey);
 
-  const next: PartnerBenefitOffer = {
-    ...current,
-    status: accept ? 'accepted' : 'declined',
-    partnerResponseNote: trimmedNote,
-    respondedAt: new Date().toISOString(),
-  };
+  try {
+    const remoteRes = await respondRemotePartnerOffer(current, accept, trimmedNote, partnerUserId);
+    if (!remoteRes.ok) {
+      throw new Error(remoteRes.error ?? 'Réponse serveur impossible');
+    }
+    invalidatePartnerBenefitOffersRemoteCache();
 
-  const identity = await resolvePartnerIdentity(partnerUserId, current.partnerName ?? '');
-  const idx = findOfferIndexForPartner(all, offerId, partnerUserId, identity);
-  if (idx >= 0) {
-    all[idx] = next;
-  } else if (all.some((o) => o.id === offerId)) {
-    const byId = all.findIndex((o) => o.id === offerId);
-    if (byId >= 0) all[byId] = next;
-    else all.push(next);
-  } else {
-    all.push(next);
+    const next: PartnerBenefitOffer = {
+      ...current,
+      status: accept ? 'accepted' : 'declined',
+      partnerResponseNote: trimmedNote,
+      respondedAt: new Date().toISOString(),
+    };
+
+    const identity = await resolvePartnerIdentity(partnerUserId, current.partnerName ?? '');
+    const idx = findOfferIndexForPartner(all, offerId, partnerUserId, identity);
+    if (idx >= 0) {
+      all[idx] = next;
+    } else if (all.some((o) => o.id === offerId)) {
+      const byId = all.findIndex((o) => o.id === offerId);
+      if (byId >= 0) all[byId] = next;
+      else all.push(next);
+    } else {
+      all.push(next);
+    }
+    void saveAll(all).catch((err) => {
+      console.warn('[PartnerBenefitOffers] save local:', err instanceof Error ? err.message : err);
+    });
+    void upsertRemotePartnerOffer(next).catch((err) => {
+      console.warn('[PartnerBenefitOffer] sync réponse:', err);
+    });
+
+    void runPartnerOfferRespondSideEffects(current, next, accept, trimmedNote).catch((err) => {
+      console.warn('[PartnerBenefitOffers] post-respond:', err instanceof Error ? err.message : err);
+    });
+
+    return next;
+  } finally {
+    inFlightPartnerOfferResponses.delete(lockKey);
   }
-  void saveAll(all).catch((err) => {
-    console.warn('[PartnerBenefitOffers] save local:', err instanceof Error ? err.message : err);
-  });
-  void upsertRemotePartnerOffer(next).catch((err) => {
-    console.warn('[PartnerBenefitOffer] sync réponse:', err);
-  });
-
-  void runPartnerOfferRespondSideEffects(current, next, accept, trimmedNote).catch((err) => {
-    console.warn('[PartnerBenefitOffers] post-respond:', err instanceof Error ? err.message : err);
-  });
-
-  return next;
 }
 
 async function runPartnerOfferRespondSideEffects(
