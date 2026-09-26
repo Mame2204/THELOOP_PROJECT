@@ -1,3 +1,15 @@
+/** Bandeau admin : « Prénom Nom · e-mail » ou e-mail seul. */
+export function formatAdminIdentity(profile: {
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+}): string {
+  const name = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim();
+  const email = profile.email.trim();
+  if (name && email) return `${name} · ${email}`;
+  return name || email || 'Administrateur';
+}
+
 export function formatWhen(iso: string | null): string {
   if (!iso) return 'Jamais';
   try {

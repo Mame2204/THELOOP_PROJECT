@@ -47,8 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **~268 / 388** ≈ **69 %** global · **Web ~86/90 lignes 💻 (≈96 %)** · **iOS 110/181** · **Android 87/152** |
-| **Admin-web 💻 (hors build 49)** | **≈96 %** — reste **B9** (3) · **B5 planif.** *(3 option)* |
-| **Prochain test 💻** | **B9-1 → B9-3** (délégué) · puis **W-12/W-13** si tu veux boucler notifs · **build 49+** = modération |
+| **Admin-web 💻 (hors build 49)** | **≈99 %** — **B9-2** modération si grant Demandes · sinon **web bouclé** |
+| **Prochain test 💻** | **build 49+** modération web · ou **B9-2** après ajout droit Demandes au délégué · puis **mobile** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -72,9 +72,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | ~~**W-19**~~ | Activer / archiver · retirer octroi · prix sans « à vie » — **PASS 26 sept.** | — |
 | **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
 | **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
-| **B9-1** | Délégué — coller **`/parametres`** ou **`/pass`** dans la barre d’adresse → **refus / redirect** (pas le formulaire complet) | Compte délégué sans ces droits |
-| **B9-2** | Délégué **avec** droit modération — onglet **Modération** `/demandes` → valider une soumission *(sans refus/notif build 49)* | Grant `moderation` |
-| **B9-3** | Même délégué — menu **sans** Gestion PASS / Paramètres *(déjà OK visuellement · B9-1 confirme URL directe)* | — |
+| ~~**B9-1**~~ | **`/pass`** → redirect **Insights** *(26 sept. · **PASS**)* | — |
+| **B9-2** | Délégué + modération **+ accès Demandes** → valider une soumission | **⏸ 26 sept.** modération sans module Demandes · pas d’onglet · retest si grant |
+| ~~**B9-3**~~ | Menu = Contenu · THE LOOP · Accueil · Insights (vue d’ensemble seule) · **PASS 26 sept.** | — |
+| ~~**W-12–13**~~ | Planifier · modifier · détails · annuler · supprimer campagne — **PASS 26 sept.** | — |
 
 **🔒 Reporté build 49+ (ne pas compter dans la session web actuelle) :** modération **refus** + notifs partenaire · retraits Phase 1 · filtres modération retest · LoopX / contenu prime · octroi individuel scan partenaire · etc. (voir tableau « Reporté build 49+ »).
 
@@ -771,9 +772,9 @@ Liens Param. → pages satellites :
 - [x] **💻** Audiences : Membres · Prime · Partenaires · **Favoris par catégorie** · **Anniversaires du mois** · **E-mails ciblés** *(25 sept. 2026 · testeur **PASS**)*
 - [x] **💻** Historique campagnes · pagination · badges statut · **Détails** liste destinataires *(25 sept. 2026 · testeur **PASS** · PR #39–#40)*
 - [x] **💻** **Supprimer** campagne (dont **0 dest.**) · actions contextuelles tableau *(25 sept. 2026 · testeur **PASS** UI)*
-- [ ] **💻** **Planifier** +3 min → **⏳** statut `sent`
-- [ ] **💻** Modifier campagne planifiée
-- [ ] **💻** **Annuler** → `cancelled` *(planifiée)*
+- [x] **💻** **Planifier** campagne *(26 sept. 2026 · testeur **PASS** · W-12)*
+- [x] **💻** Modifier campagne planifiée · **Détails** *(26 sept. · **PASS** · W-13)*
+- [x] **💻** **Annuler** planifiée · **Supprimer** *(26 sept. · **PASS**)*
 - [ ] **⏳** Pas de doublon push (1 campagne = 1 notif)
 
 > Détail : `07-Smoke-Push.md`
@@ -823,9 +824,9 @@ Liens Param. → pages satellites :
 
 - [x] **💻** Login admin délégué → sidebar / modules alignés sur le jeu sauvegardé *(24 sept. · **26 sept.** connexion URL OK · modules visibles = droits super admin · reste hors périmètre OK)*
 - [x] **💻** Hub **THE LOOP** — tuiles visibles seulement si modules cochés (`content`, `featured`, `insights`, `prime_benefits`…) *(24 sept. 2026 · **PASS** · pas un bug catalogue)*
-- [ ] **💻** Module **sans** permission → refus / redirect explicite
-- [ ] **💻** Modération OK si grant `moderation`
-- [ ] **💻** Paramètres / PASS **inaccessibles** sans `manage_admins` / `pass_management`
+- [x] **💻** Module **sans** permission → redirect *(26 sept. · **PASS** · `/pass` → Insights · B9-1)*
+- [ ] **💻** Modération OK si grant `moderation` **+ Demandes visible** *(26 sept. · **SKIP** · modération sans accès module Demandes)*
+- [x] **💻** Paramètres / PASS **inaccessibles** *(26 sept. · **PASS** · menu + redirect · B9-3)*
 - [ ] **📱** Admin mobile délégué — thème gris bleu · modules masqués
 - [ ] **🤖** Idem
 
@@ -1068,6 +1069,12 @@ Admin-web (26 sept. 2026 · testeur · suite) :
 Admin-web (26 sept. 2026 · deploy #45) :
   - **PASS** connexion **admin délégué** web (testeur · ne pas refaire)
   - **Retest** : **W-19b** Désactiver forfait + scroll octroi sans chevauchement (hard refresh)
+Admin-web (26 sept. 2026 · testeur · B9 + B5) :
+  - **PASS B9-1** : `/pass` → redirect **Insights**
+  - **PASS B9-3** : menu délégué = Contenu · THE LOOP · Accueil · Insights (vue d’ensemble seule)
+  - **SKIP B9-2** : modération cochée mais **pas** module Demandes → pas d’onglet modération
+  - **PASS W-12/W-13** : notif planifiée · modifier · détails · annuler · supprimer
+  - **UX** : bandeau **Prénom Nom · e-mail** (deploy suivant)
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
