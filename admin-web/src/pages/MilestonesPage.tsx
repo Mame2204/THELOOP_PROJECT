@@ -364,7 +364,7 @@ export function MilestonesPage() {
         </p>
       </div>
 
-      <div className="split-pane">
+      <div className="split-pane form-list-stack">
         <div className="card">
           <h3>{editing ? 'Modifier le palier' : 'Nouveau palier'}</h3>
           {editing

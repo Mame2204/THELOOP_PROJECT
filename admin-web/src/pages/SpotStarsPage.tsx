@@ -190,9 +190,9 @@ export function SpotStarsPage() {
         ))}
       </div>
 
-      <div className="split-pane">
+      <div className="split-pane form-list-stack">
         <div className="card">
-          <h3>Poids (spots auto)</h3>
+          <h3>Poids (clics · favoris · notes)</h3>
           <div className="field">
             <label>Clics</label>
             <input

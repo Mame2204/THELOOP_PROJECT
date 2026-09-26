@@ -33,7 +33,7 @@ export function OngletsPage() {
       </header>
       {msg ? <p className="muted">{msg}</p> : null}
 
-      <div className="split-pane">
+      <div className="split-pane form-list-stack">
         <div className="card">
           <h3>Onglets membres</h3>
           {(

@@ -75,12 +75,29 @@ export function PassPage() {
   const [shop, setShop] = useState<PassShopSettings>({ maxPendingPasses: 3 });
 
   const [messages, setMessages] = useState<PassActivationMessage[]>([]);
-  const [msgDraft, setMsgDraft] = useState({
+  const emptyMsgDraft = () => ({
     name: '',
     passType: 'default' as PassMessageType,
     titleTemplate: 'Votre {passLabel} est actif',
     messageTemplate: 'Bonjour {firstName}, votre {passLabel} est maintenant actif. {validity}',
   });
+  const [msgDraft, setMsgDraft] = useState(emptyMsgDraft);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+
+  function loadMessageForEdit(m: PassActivationMessage) {
+    setEditingMessageId(m.id);
+    setMsgDraft({
+      name: m.name,
+      passType: m.passType,
+      titleTemplate: m.titleTemplate,
+      messageTemplate: m.messageTemplate,
+    });
+  }
+
+  function resetMessageForm() {
+    setEditingMessageId(null);
+    setMsgDraft(emptyMsgDraft());
+  }
 
   const reloadOps = useCallback(async () => {
     const [c, g] = await Promise.all([loadPassCatalog(countryCode), listActiveGrants(countryCode)]);
@@ -258,89 +275,7 @@ export function PassPage() {
 
       {tab === 'ops' && canOps ? (
         <>
-          <div className="split-pane">
-            <div>
-              <h3>Catalogue</h3>
-              <div className="table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>PASS</th>
-                      <th>Prix</th>
-                      <th>Validité</th>
-                      <th>Statut</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {catalog
-                      .filter((c) => c.status !== 'archived')
-                      .map((c) => (
-                        <tr key={c.id}>
-                          <td>
-                            <strong>{c.label}</strong>
-                            <div className="meta">{c.description}</div>
-                            {c.purchasableInShop && c.shopBillingPeriod ? (
-                              <div className="meta">Boutique · {PERIOD_LABELS[c.shopBillingPeriod]}</div>
-                            ) : null}
-                          </td>
-                          <td>{c.priceGnf.toLocaleString('fr-FR')}</td>
-                          <td>{c.validityDays == null ? 'Illimité' : `${c.validityDays} j`}</td>
-                          <td>
-                            <span className={`badge ${c.status === 'active' ? 'ok' : 'warn'}`}>
-                              {c.status}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="edit-actions">
-                              <button
-                                type="button"
-                                className="btn small ghost"
-                                onClick={() => {
-                                  setEditingId(c.id);
-                                  setDraft({
-                                    label: c.label,
-                                    description: c.description,
-                                    priceGnf: c.priceGnf,
-                                    validityDays: c.validityDays,
-                                    grantableBySuperAdmin: c.grantableBySuperAdmin,
-                                    purchasableInShop: c.purchasableInShop,
-                                    shopBillingPeriod: c.shopBillingPeriod,
-                                    status: c.status,
-                                  });
-                                }}
-                              >
-                                Éditer
-                              </button>
-                              <button
-                                type="button"
-                                className="btn small ghost"
-                                disabled={busy || c.id === INTERMEDIATE_CATALOG_ID}
-                                onClick={() =>
-                                  void setStatus(c, c.status === 'active' ? 'inactive' : 'active')
-                                }
-                              >
-                                {c.status === 'active' ? 'Désactiver' : 'Activer'}
-                              </button>
-                              {!c.isBuiltin ? (
-                                <button
-                                  type="button"
-                                  className="btn small ghost"
-                                  disabled={busy}
-                                  onClick={() => void setStatus(c, 'archived')}
-                                >
-                                  Archiver
-                                </button>
-                              ) : null}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
+          <div className="split-pane form-list-stack">
             <form className="card edit-panel" onSubmit={(e) => void handleSaveEntry(e)}>
               <h3>{editingId ? 'Modifier PASS' : 'Nouveau PASS'}</h3>
               <div className="field">
@@ -435,6 +370,88 @@ export function PassPage() {
                 ) : null}
               </div>
             </form>
+
+            <div>
+              <h3>Catalogue</h3>
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>PASS</th>
+                      <th>Prix</th>
+                      <th>Validité</th>
+                      <th>Statut</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {catalog
+                      .filter((c) => c.status !== 'archived')
+                      .map((c) => (
+                        <tr key={c.id}>
+                          <td>
+                            <strong>{c.label}</strong>
+                            <div className="meta">{c.description}</div>
+                            {c.purchasableInShop && c.shopBillingPeriod ? (
+                              <div className="meta">Boutique · {PERIOD_LABELS[c.shopBillingPeriod]}</div>
+                            ) : null}
+                          </td>
+                          <td>{c.priceGnf.toLocaleString('fr-FR')}</td>
+                          <td>{c.validityDays == null ? 'Illimité' : `${c.validityDays} j`}</td>
+                          <td>
+                            <span className={`badge ${c.status === 'active' ? 'ok' : 'warn'}`}>
+                              {c.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="edit-actions">
+                              <button
+                                type="button"
+                                className="btn small ghost"
+                                onClick={() => {
+                                  setEditingId(c.id);
+                                  setDraft({
+                                    label: c.label,
+                                    description: c.description,
+                                    priceGnf: c.priceGnf,
+                                    validityDays: c.validityDays,
+                                    grantableBySuperAdmin: c.grantableBySuperAdmin,
+                                    purchasableInShop: c.purchasableInShop,
+                                    shopBillingPeriod: c.shopBillingPeriod,
+                                    status: c.status,
+                                  });
+                                }}
+                              >
+                                Éditer
+                              </button>
+                              <button
+                                type="button"
+                                className="btn small ghost"
+                                disabled={busy || c.id === INTERMEDIATE_CATALOG_ID}
+                                onClick={() =>
+                                  void setStatus(c, c.status === 'active' ? 'inactive' : 'active')
+                                }
+                              >
+                                {c.status === 'active' ? 'Désactiver' : 'Activer'}
+                              </button>
+                              {!c.isBuiltin ? (
+                                <button
+                                  type="button"
+                                  className="btn small ghost"
+                                  disabled={busy}
+                                  onClick={() => void setStatus(c, 'archived')}
+                                >
+                                  Archiver
+                                </button>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           <h3 style={{ marginTop: 28 }}>Octroyer un PASS</h3>
@@ -595,32 +612,49 @@ export function PassPage() {
         <>
           <form
             className="card"
-            style={{ maxWidth: 560, marginBottom: 16 }}
+            style={{ maxWidth: 640, marginBottom: 16 }}
             onSubmit={(e) => {
               e.preventDefault();
               const now = new Date().toISOString();
-              const next: PassActivationMessage[] = [
-                ...messages,
-                {
-                  id: `msg-${Date.now()}`,
-                  ...msgDraft,
-                  name: msgDraft.name.trim() || `Message ${msgDraft.passType}`,
-                  status: 'active',
-                  createdAt: now,
-                  updatedAt: now,
-                },
-              ];
+              const trimmedName = msgDraft.name.trim() || `Message ${msgDraft.passType}`;
+              let next: PassActivationMessage[];
+              if (editingMessageId) {
+                next = messages.map((x) =>
+                  x.id === editingMessageId
+                    ? {
+                        ...x,
+                        name: trimmedName,
+                        passType: msgDraft.passType,
+                        titleTemplate: msgDraft.titleTemplate,
+                        messageTemplate: msgDraft.messageTemplate,
+                        updatedAt: now,
+                      }
+                    : x,
+                );
+              } else {
+                next = [
+                  ...messages,
+                  {
+                    id: `msg-${Date.now()}`,
+                    ...msgDraft,
+                    name: trimmedName,
+                    status: 'active',
+                    createdAt: now,
+                    updatedAt: now,
+                  },
+                ];
+              }
               void saveActivationMessages(countryCode, next).then((r) => {
                 if (!r.ok) setMsg(r.error ?? 'Erreur');
                 else {
                   setMessages(next);
-                  setMsg('Message ajouté.');
-                  setMsgDraft((d) => ({ ...d, name: '' }));
+                  setMsg(editingMessageId ? 'Modèle enregistré.' : 'Message ajouté.');
+                  resetMessageForm();
                 }
               });
             }}
           >
-            <h3>Nouveau modèle</h3>
+            <h3>{editingMessageId ? 'Modifier le modèle' : 'Nouveau modèle'}</h3>
             <div className="field">
               <label>Nom</label>
               <input
@@ -661,9 +695,16 @@ export function PassPage() {
               />
             </div>
             <p className="meta">Variables : {'{firstName}'} {'{passLabel}'} {'{passType}'} {'{validity}'}</p>
-            <button className="btn" type="submit">
-              Ajouter
-            </button>
+            <div className="edit-actions">
+              <button className="btn" type="submit">
+                {editingMessageId ? 'Enregistrer' : 'Ajouter'}
+              </button>
+              {editingMessageId ? (
+                <button type="button" className="btn ghost" onClick={resetMessageForm}>
+                  Annuler
+                </button>
+              ) : null}
+            </div>
           </form>
 
           <div className="table-wrap">
@@ -680,7 +721,12 @@ export function PassPage() {
                 {messages
                   .filter((m) => m.status !== 'archived')
                   .map((m) => (
-                    <tr key={m.id}>
+                    <tr
+                      key={m.id}
+                      className={editingMessageId === m.id ? 'row-selected' : undefined}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => loadMessageForEdit(m)}
+                    >
                       <td>
                         <strong>{m.name}</strong>
                         <div className="meta">{m.titleTemplate}</div>
@@ -691,8 +737,15 @@ export function PassPage() {
                           {m.status}
                         </span>
                       </td>
-                      <td>
+                      <td onClick={(e) => e.stopPropagation()}>
                         <div className="edit-actions">
+                          <button
+                            type="button"
+                            className="btn small ghost"
+                            onClick={() => loadMessageForEdit(m)}
+                          >
+                            Modifier
+                          </button>
                           <button
                             type="button"
                             className="btn small ghost"

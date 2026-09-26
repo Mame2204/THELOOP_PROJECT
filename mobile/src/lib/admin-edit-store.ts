@@ -93,6 +93,7 @@ export interface EditableEventPayload {
   spotId: string | null;
   entryPrice: number | null;
   isInvitationOnly?: boolean;
+  isLoopX?: boolean;
   currency: string;
   infoUrl: string | null;
   instagramUrl: string | null;
@@ -470,6 +471,7 @@ async function fetchEventFromSupabase(id: string): Promise<EditableEventPayload 
       ? null
       : (data.is_free ? null : (data.ticket_price != null ? Number(data.ticket_price) : null)),
     isInvitationOnly: Boolean(data.is_invitation_only),
+    isLoopX: Boolean(data.is_loop_x),
     currency: 'GNF',
     infoUrl: submissionMeta?.infoUrl ?? actionLink,
     instagramUrl: data.instagram_url ? String(data.instagram_url) : (submissionMeta?.instagramUrl ?? null),
@@ -743,6 +745,7 @@ async function applyPublishedEventUpdate(
     country_code: payload.countryCode,
     is_free: !payload.isInvitationOnly && payload.entryPrice == null,
     is_invitation_only: Boolean(payload.isInvitationOnly),
+    is_loop_x: Boolean(payload.isLoopX),
     ticket_price: payload.isInvitationOnly || payload.entryPrice == null ? null : payload.entryPrice,
     category_slugs: payload.categories?.length ? payload.categories : [payload.category],
     venue_location: payload.venueLocation ?? null,
@@ -892,6 +895,7 @@ function fromStagingEvent(row: StagingEvent): EditableEventPayload {
     spotId: row.spotId,
     entryPrice: row.entryPrice,
     isInvitationOnly: row.isInvitationOnly ?? false,
+    isLoopX: row.isLoopX ?? false,
     currency: row.currency,
     infoUrl: row.infoUrl,
     instagramUrl: row.instagramUrl ?? null,
@@ -1068,6 +1072,7 @@ async function adminUpdatePartnerEventFromPayload(payload: EditableEventPayload)
     spotId: payload.spotId,
     entryPrice: payload.entryPrice,
     isInvitationOnly: payload.isInvitationOnly,
+    isLoopX: payload.isLoopX,
     currency: payload.currency,
     infoUrl: payload.infoUrl,
     instagramUrl: payload.instagramUrl,

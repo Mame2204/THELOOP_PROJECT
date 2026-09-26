@@ -59,6 +59,11 @@ export function EventCard({
               <Text style={styles.categoryBadge} numberOfLines={1}>
                 {categoryText}
               </Text>
+              {event.visibility === 'prime' ? (
+                <View style={styles.loopXBadge}>
+                  <Text style={styles.loopXText}>LoopX</Text>
+                </View>
+              ) : null}
               {statusLabel ? (
                 <View style={[styles.statusSticker, statusLabel === 'Aujourd\'hui' ? styles.statusToday : styles.statusPast]}>
                   <Text style={[styles.statusText, statusLabel === 'Aujourd\'hui' ? styles.statusTextToday : null]}>
@@ -123,6 +128,13 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     maxWidth: '100%',
   },
+  loopXBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: colors.gold,
+  },
+  loopXText: { fontSize: 10, fontWeight: '800', color: colors.black, letterSpacing: 0.4 },
   statusSticker: {
     paddingHorizontal: 8,
     paddingVertical: 4,

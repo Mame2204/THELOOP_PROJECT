@@ -613,14 +613,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱** Tirage — lancer · historique · notif gagnant
 - [ ] **📱** Push immédiat audience Tous
 - [ ] **📱** Push planifié · annuler
-- [ ] **📱** Transfert contenu THE LOOP ↔ partenaire
-- [ ] **📱** Publier / archiver contenu
+- [x] **📱** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · partenaire + THE LOOP · super admin + délégué)*
+- [x] **📱** Publier / archiver contenu *(26 sept. · **PASS web** catalogue · mobile aligné transfert)*
 - [ ] **🤖** Idem pour chaque action
 
 ### Transfert contenu (code validation)
-- [ ] **📱** THE LOOP → partenaire : code **partenaire** à la consommation
-- [ ] **📱** Partenaire → THE LOOP : code **équipe THE LOOP**
-- [ ] **🤖** Idem
+- [x] **📱** THE LOOP → partenaire : code **partenaire** à la consommation *(26 sept. 2026 · **PASS**)*
+- [x] **📱** Partenaire → THE LOOP : code **équipe THE LOOP** *(26 sept. · **PASS**)*
+- [ ] **🤖** Idem *(26 sept. · à confirmer si même session Android admin)*
 
 ---
 
@@ -633,9 +633,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 - [x] **💻🤖✓** Login → redirect dashboard
 - [x] **💻🤖✓** Sélecteur pays **Guinée**
-- [x] **💻** Session stable *(24 sept. 2026 · testeur · connexion / déconnexion / reconnexion OK · atterrit sur Insights)*
-- [x] **💻** Déconnexion → `/login` *(24 sept. 2026 · **PASS**)*
-- [x] **💻** Menu latéral — badge Demandes si pending *(24 sept. 2026 · **PASS** · ex. 4 = 2 partenariats actifs + 2 idées · onglet Idées à ouvrir pour voir les 2 · détail sur `/demandes` après deploy)*
+- [x] **💻** Session stable 15 min *(26 sept. 2026 · testeur **PASS** · W-3 · cf. 24 sept. reconnexion OK)*
+- [x] **💻** Déconnexion → `/login` *(26 sept. · **PASS** · W-1)*
+- [x] **💻** Menu latéral — badge Demandes si pending *(26 sept. · **PASS** · W-2 · ex. partenariats + idées sur `/demandes`)*
 
 ## B1 — Navigation — toutes les routes
 
@@ -660,10 +660,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/payments` | Paiements | [x] | **PASS 24 sept.** · liste transactions | [x] |
 | `/compta` | Compta | [x] | **PASS 24 sept.** · export CSV · revenus · paniers · pagination | [x] |
 | `/notifications` | Notifications | [x] | **PASS 24 sept.** · envoi immédiat · rôles · favoris · anniversaire · e-mail ciblé (PR #36) | [x] |
-| `/automation` | Automatisations | [ ] | Jobs · exécuter | [x] |
-| `/milestones` | Paliers | [ ] | Éditer · archiver | [x] |
-| `/etoiles` | Étoiles | [ ] | Spots / outils / parcours | [x] |
-| `/horaires` | Horaires | [ ] | Presets ouverture | [x] |
+| `/automation` | Automatisations | [x] | **PASS 26 sept.** · W-4 | [x] |
+| `/milestones` | Paliers | [x] | **PASS 26 sept.** · W-5 | [x] |
+| `/etoiles` | Étoiles | [ ] | **FAIL 26 sept.** · W-6 · RLS `20260944` | [x] |
+| `/horaires` | Horaires | [x] | **PASS 26 sept.** · W-7 | [x] |
 | `/parametres` | Paramètres | [x] | **PASS 24 sept.** · B3 Gates · Pays · Catég. · Légal · Plus · Permissions (par admin) | [x] |
 | `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
 | `/privilege-standalone` | Standalone | [x] | **PASS 24 sept.** · CRUD · création **désactivée** · **Activer / Désactiver** · biblio octroi = actifs | [x] |
@@ -711,10 +711,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 Liens Param. → pages satellites :
 - [x] **💻** `/notifications` accessible depuis Param. *(24 sept. 2026 · testeur **PASS** · campagnes immédiates)*
-- [ ] **💻** `/automation` accessible
-- [ ] **💻** `/milestones` accessible
-- [ ] **💻** `/etoiles` accessible
-- [ ] **💻** `/horaires` accessible
+- [x] **💻** `/automation` accessible *(26 sept. 2026 · **PASS** · W-4 · liste jobs · exécuter sans erreur)*
+- [x] **💻** `/milestones` accessible *(26 sept. · **PASS** · W-5 · créer palier)*
+- [ ] **💻** `/etoiles` accessible *(26 sept. · **FAIL** · W-6 · poids clics/favoris/notes · **Enregistrer** KO · fix RLS `20260944` + retest après deploy Supabase)*
+- [x] **💻** `/horaires` accessible *(26 sept. · **PASS** · W-7 · presets · enregistrer)*
 
 ## B4 — Users · PASS · Paiements
 
@@ -726,8 +726,13 @@ Liens Param. → pages satellites :
 
 ### PASS
 - [x] **💻** Octroi manuel PASS *(24 sept. 2026 · héritage gratuit limité · utilisateur passe Prime puis retrait OK)*
-- [ ] **💻** Prix Guinée · enregistrer *(non retesté ce tour)*
-- [ ] **💻** Messages / modèles notification *(non retesté)*
+- [x] **💻** Prix Guinée · enregistrer *(26 sept. 2026 · testeur **PASS** · W-10 · onglet Prix)*
+- [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · testeur **PASS**)*
+- [x] **💻** Messages — **archiver** modèle *(26 sept. · testeur **PASS**)*
+- [ ] **💻** Messages — **modifier** un modèle (bouton **Modifier** ou clic ligne → formulaire → **Enregistrer**) *(26 sept. · **FAIL** UI · fix PR #44 · **retest post-deploy**)*
+- [x] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
+- [ ] **💻** Catalogue PASS — activer / désactiver / archiver forfait *(26 sept. · **non testé** ce tour)*
+- [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement)*
 
 ### Paiements & Compta
 - [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
@@ -752,14 +757,12 @@ Liens Param. → pages satellites :
 
 ## B6 — Contenu & éditorial
 
-- [x] **💻** Filtrer events / spots / outils / marché *(23 sept. 2026 · super admin · Contenu **PASS**)*
-- [x] **💻** Créer event · spot · outil (ContentEditor) *(23 sept. 2026 · **PASS web** · sans date événement → agenda mobile faible jusqu’à edit / **build 49+**)*
-- [x] **💻** À la une *(23 sept. 2026 · **PASS web** (Accueil → À la une) · **📱🤖 Accueil slider** → **build 49+** + `20260937` · republier/archiver : suite B6)*
-- [ ] **💻** Archiver · republier (cycle de vie catalogue)
-- [ ] **💻** Transfert propriétaire THE LOOP ↔ partenaire
-- [x] **💻** Accueil — **vue d’ensemble** · **sondage** · **à la une** *(24 sept. soir · testeur **PASS**)*
-- [x] **💻** Accueil — formulaires complets *(24 sept. · testeur **PASS web**)*
-- [x] **💻** Loop hub — onglets contenu / privilèges / à la une / performances *(23 sept. PASS · 24 sept. deploy Insights sans régression attendue)*
+- [x] **💻** Filtrer events / spots / outils / archivés *(26 sept. 2026 · testeur **PASS**)*
+- [x] **💻** Créer event · spot · outil (ContentEditor) *(26 sept. · **PASS** · brouillon · publier · retirer · cf. 23 sept.)*
+- [x] **💻** Archiver · republier · cycle de vie catalogue *(26 sept. · **PASS** · désactiver / archiver)*
+- [x] **💻** Transfert propriétaire THE LOOP ↔ partenaire *(26 sept. · **N/A web** · **PASS 📱** admin mobile)*
+- [x] **💻** Accueil — hero · sondage · parcours · singulier · logos *(26 sept. · **PASS** · W-8 · cf. 24 sept.)*
+- [x] **💻** Loop hub — sections éditoriales *(26 sept. · **PASS** · W-9 · `/loop`)*
 
 ## B6b — Insights admin-web (détail onglets)
 
@@ -786,10 +789,10 @@ Liens Param. → pages satellites :
 
 ## B8 — Automatisations · Paliers · Étoiles · Horaires
 
-- [ ] **💻** Automation — liste jobs · exécuter manuellement
-- [ ] **💻** Paliers — créer · éditer · archiver · voir Archives
-- [ ] **💻** Étoiles — seuils spots / outils / parcours
-- [ ] **💻** Horaires — presets · assignation
+- [x] **💻** Automation — liste jobs · exécuter manuellement *(26 sept. 2026 · **PASS** · W-4)*
+- [x] **💻** Paliers — créer · éditer · archiver · voir Archives *(26 sept. · **PASS** · W-5 · créer OK)*
+- [ ] **💻** Étoiles — poids clics / favoris / notes *(26 sept. · **FAIL** · W-6 · migration `20260944` · retest post-prod)*
+- [x] **💻** Horaires — presets · assignation *(26 sept. · **PASS** · W-7)*
 
 ## B9 — Admin délégué (permissions réduites)
 
@@ -882,10 +885,10 @@ Liens Param. → pages satellites :
 
 ## D3 — Onglets masqués (AdminRubrique)
 
-- [ ] **💻** Désactiver onglet Agenda → app masque tab
-- [ ] **📱** Membre ne voit plus Agenda
-- [ ] **🤖** Idem
-- [ ] **💻** Réactiver → tab revient
+- [x] **💻** Désactiver onglet Agenda → app masque tab *(26 sept. 2026 · testeur **PASS** · `/onglets`)*
+- [x] **📱** Membre ne voit plus Agenda *(26 sept. · **PASS**)*
+- [x] **🤖** Idem *(26 sept. · **PASS** · parité iPhone)*
+- [x] **💻** Réactiver → tab revient *(26 sept. · **PASS**)*
 
 ---
 
@@ -1026,6 +1029,13 @@ Supabase prod (23 sept. 2026 · testeur) :
   - **20260935** individual grant materialize — **OK**
   - **20260936** partner validation match — **OK** → retest octroi individuel après **build mobile 49+**
 Branch / commit : `main` PR #9 · deploy admin-web auto
+
+Admin-web (26 sept. 2026 · testeur · session W) :
+  - **PASS** B0 W-1–W-3 · B8 automation · paliers · horaires · B6 W-8/W-9 · PASS prix · messages création + activer/désactiver + archiver · catalogue création
+  - **FAIL** `/etoiles` — enregistrer poids (RLS super_admin · `20260944`)
+  - **FAIL** PASS messages — pas de **Modifier** (fix UI admin-web deploy)
+  - **UX** pages Paramètres : formulaire **au-dessus**, liste **en dessous** (`form-list-stack`)
+  - **⏸** B5 planifier/annuler · octroi manuel PASS
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

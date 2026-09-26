@@ -477,7 +477,7 @@ export function ParametresPage() {
       ) : null}
 
       {tab === 'permissions' && canPermissions ? (
-        <div className="split-pane">
+        <div className="split-pane form-list-stack">
           <div className="card">
             <h3>Droits par défaut (admins délégués)</h3>
             <PermissionGroupEditor value={defaultPerms} onChange={setDefaultPerms} />

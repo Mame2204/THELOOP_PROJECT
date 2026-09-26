@@ -189,6 +189,7 @@ export async function promoteStagingDraftToCatalog(
       spotId: item.spotId,
       entryPrice: item.entryPrice,
       isInvitationOnly: item.isInvitationOnly === true,
+      isLoopX: item.isLoopX === true,
       infoUrl: item.infoUrl,
       websiteUrl: item.websiteUrl,
       instagramUrl: item.instagramUrl,
