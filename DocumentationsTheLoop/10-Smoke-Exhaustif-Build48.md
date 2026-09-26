@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~282 / 388** ≈ **73 %** global · **Web ~88/90 💻 (≈98 %)** · **iOS ~116/164** · **Android ~104/140** |
+| **Avancement smoke** | **~300 / 388** ≈ **77 %** global *(après parité 📱→🤖 RN 26 sept.)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
 | **Prochain test** | **M1-U2** retest après deploy **Render** (sans build mobile) · **M2** pack léger Param. admin (1 appareil) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
@@ -118,6 +118,28 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 **M-BOTH-3** (après) : admin délégué mobile · push C1 restants · D1 régression · **Phase 1 = build 49+**.
 
+### Inventaire — reste à tester *(26 sept. · après parité 📱→🤖)*
+
+> **Politique confirmée :** tout le code **`mobile/src/`** est **identique 📱 et 🤖** → **1 appareil mobile** suffit ; l’agent coche l’autre plateforme quand 📱 est PASS et 🤖 vide (sauf **N/A** explicite).  
+> **💻 admin-web** = code **`admin-web/`** séparé → **pas** de coche croisée mobile/web sauf **backend déjà PASS** (Param. = smoke **M2** léger, pas re-QA web).
+
+| Priorité | ID / zone | 📱🤖 | 💻 | Notes |
+|----------|-----------|------|-----|--------|
+| **P0** | **M1-U2** set_password in-app | Retest **FAIL** | — | Deploy **Render** PR #51 · **sans build mobile** · nouvel e-mail reset |
+| **P0** | **M2** Param. admin satellites (11 tuiles + 1 save) | **À faire** *(tu testes après ce message)* | déjà PASS | Une fois **M2 OK** sur **📱 ou 🤖** → on coche **📱+🤖** |
+| **P1** | **C1** push (7 scénarios tableau) | [ ] | — | Campagnes · tirage · modération · ciblage |
+| **P1** | **D1** régression rapide (5×2) | [ ] | — | Cold start · background · images · refresh |
+| **P1** | **D2** parité meta (5 lignes 📱🤖) | [ ] | — | Checklist transversale |
+| **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
+| **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [ ] | — | RN · parité auto après 1 device |
+| **P2** | **A5** octroi manuel mobile · tirage · push admin | [ ] | partiel web | U23 = **build 49+** (PR #7) |
+| **P2** | **C2** partenaire invité → Espace Pro | [ ] | — | |
+| **P2** | **C3/C4** mailto · filleul +1 | [ ] | — | |
+| **P2** | **B9** admin délégué **mobile** | [ ] | PASS web | Compte délégué dédié |
+| **🔒 build 49+** | LoopX · octroi individuel · modération refus 💻 · Phase 1 (7) | [ ] | [ ] | Hors session actuelle |
+
+**Non aligné parité (volontaire)** : A4-U15/U16/U17/U18/U19 🤖 marqués **⏸ N/A / reporté** (pas de contenu publié ou suite A4-4) — **ne pas** cocher 🤖 depuis 📱.
+
 **UX déployée :** formulaire / panneau détail **au-dessus**, tableau **en dessous** (`form-list-stack`) — PASS, paliers, étoiles, horaires, tirage, onglets, permissions, Users, Modération, Compta (tableaux empilés).
 
 ### Métriques — pourquoi deux pourcentages ?
@@ -136,8 +158,8 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 |------------|------:|------:|---:|-------------|
 | **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
 | **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
-| **🤖 Android** | **~104** | **~140** | **~74 %** | **Lot A Android 26 sept.** — rattrapage parité A2 détails · admin Demandes · transfert. |
-| **Global (1 ligne = 1 case)** | **~282** | **388** | **~73 %** | Web bouclé · reste = **M-BOTH-1/2/3** + **build 49+**. |
+| **🤖 Android** | **~118** | **~140** | **~84 %** | **Parité RN** : cases 📱 cochées → 🤖 alignées *(26 sept. agent)* sauf **N/A / build 49+**. |
+| **Global (1 ligne = 1 case)** | **~300** | **388** | **~77 %** | Reste = **M1-U2 · M2 · push · Phase 1 · build 49+**. |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
@@ -486,11 +508,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · **violet/indigo** — pas or · OK mobile actuel)*
 - [x] **📱** Filtre **LoopX** (Agenda) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu PR #4 / prochain build)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(parité RN 26 sept. · **BLOCKED** build 49+ · cf. 📱)*
 - [x] **📱** Filtre **Loop Prime** (Spots) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu prochain build)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(parité RN 26 sept. · **BLOCKED** build 49+ · cf. 📱)*
 - [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(parité RN 26 sept. · **BLOCKED** build 49+ · cf. 📱)*
 - [x] **📱** Favoris via menu profil (pas seulement bottom nav) *(20 sept. 2026 · build 48 · compte carte membre Prime · **écart mobile** — aucune entrée Favoris dans Profil · accès via **bottom nav** comme membre · spec PWA = menu profil Prime)*
 - [x] **🤖** **PASS écart** *(22 sept. 2026 · build 48 · **pas de favoris via Profil** · favoris via nav — conforme mobile)*
 
@@ -571,7 +593,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Validation privilèges
 - [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(parité RN 26 sept. · **N/A** · cf. 📱)*
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR membre *(20 sept. 2026 · build 48 · A4-U22 PASS · validation identité OK depuis Pro connecté)*
 - [x] **🤖** Idem *(23 sept. 2026 · Android · scan Prime sans « Utiliser » puis avec privilège — OK)*
 - [x] **📱** `PartnerBenefitConfirmScreen` — accepter / refuser *(20 sept. 2026 · build 48 · A4-U23 PASS)*
@@ -601,19 +623,19 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Module | Écran | 📱 | 🤖 |
 |--------|-------|----|----|
-| Insights | `AdminInsightsScreen` | [x] FAIL partiel | [ ] |
-| Accueil | `AdminAccueilScreen` | [x] PASS | [ ] |
-| Onglets & Espace Pro | `AdminRubriqueScreen` | [x] PASS | [ ] |
-| Hub THE LOOP | `AdminLoopScreen` | [x] PASS *(sauf création hub · retest perf 📱49+)* | [ ] |
-| Contenu | `AdminContentScreen` | [x] PASS | [ ] |
-| Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [ ] |
-| Demandes | `AdminDemandesScreen` | [x] FAIL partiel | [ ] |
-| Privilèges THE LOOP | `AdminPrimeBenefitsScreen` | [x] PASS | [ ] |
-| Privilèges TEAMS | `AdminStaffBenefitsScreen` | [x] FAIL partiel | [ ] |
-| Tirage au sort | `AdminBenefitDrawScreen` | [x] PASS | [ ] |
-| Gestion PASS | `AdminPassManagementScreen` | [x] PASS | [ ] |
-| Compta PASS | `AdminComptaScreen` | [x] PASS | [ ] |
-| Paramètres | `AdminSuperSettingsScreen` | [x] PASS | [ ] |
+| Insights | `AdminInsightsScreen` | [x] FAIL partiel | [x] *(parité RN 26 sept. · cf. 📱)* |
+| Accueil | `AdminAccueilScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Onglets & Espace Pro | `AdminRubriqueScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Hub THE LOOP | `AdminLoopScreen` | [x] PASS *(sauf création hub · retest perf 📱49+)* | [x] *(parité RN 26 sept.)* |
+| Contenu | `AdminContentScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Utilisateurs | `AdminUsersScreen` | [x] FAIL partiel | [x] *(parité RN 26 sept. · cf. 📱)* |
+| Demandes | `AdminDemandesScreen` | [x] FAIL partiel | [x] *(parité RN 26 sept. · hub 🤖 retest 26 sept.)* |
+| Privilèges THE LOOP | `AdminPrimeBenefitsScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Privilèges TEAMS | `AdminStaffBenefitsScreen` | [x] FAIL partiel | [x] *(parité RN 26 sept. · cf. 📱)* |
+| Tirage au sort | `AdminBenefitDrawScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Gestion PASS | `AdminPassManagementScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Compta PASS | `AdminComptaScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
+| Paramètres | `AdminSuperSettingsScreen` | [x] PASS | [x] *(parité RN 26 sept. · sous-modules = **M2**)* |
 
 ### Hub Demandes (sous-écrans)
 - [x] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter *(20 sept. 2026 · build 48 · **FAIL partiel** · noms « . » au 1er affichage · OK après pull refresh · cache-first)*
@@ -677,7 +699,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · partenaire + THE LOOP · super admin + délégué)*
 - [x] **🤖** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · parité iPhone)*
 - [x] **📱** Publier / archiver contenu *(26 sept. · **PASS web** catalogue · mobile aligné transfert)*
-- [ ] **🤖** Publier / archiver contenu *(reste actions admin critiques 🤖 hors transfert)*
+- [x] **🤖** Publier / archiver contenu *(parité RN 26 sept. · cf. 📱 + transfert 🤖 PASS)*
 
 ### Transfert contenu (code validation)
 - [x] **📱** THE LOOP → partenaire : code **partenaire** à la consommation *(26 sept. 2026 · **PASS**)*
@@ -1132,6 +1154,9 @@ Mobile (26 sept. 2026 · testeur · **M-BOTH-1**) :
   - **PASS M1-U4** 📱🤖 : inscription complète (gate ON)
 Mobile (26 sept. 2026 · pilotage parité) :
   - Règle : **📱🤖** = 1 device · **💻 Param. déjà PASS** → M2 = U0 (11 tuiles) + **1** save (M2-U★)
+Parité agent (26 sept. 2026) :
+  - **🤖** aligné sur **📱** : sidebar admin A5 (13 modules) · A3 LoopX BLOCKED · A4-U21 N/A · publier/archiver admin
+  - **Non aligné** : Param. satellites (M2) · set_password · Phase 1 · A4 retraits 🤖 N/A · build 49+
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
