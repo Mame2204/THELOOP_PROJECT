@@ -203,7 +203,7 @@ export function AdminUsersScreen({ navigation }: Props) {
     const to = from + PAGE_SIZE - 1;
     const staleMode = statusFilter === 'stale';
     const selectCols =
-      'id, email, first_name, last_name, phone_number, user_role, is_active, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at';
+      'id, email, first_name, last_name, phone_number, user_role, is_active, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at, auth_last_sign_in_at';
 
     let query = supabase
       .from('users')
@@ -308,7 +308,14 @@ export function AdminUsersScreen({ navigation }: Props) {
           tools: row.partner_can_manage_tools !== false,
         },
         lastSeenAt: 'last_seen_at' in row ? ((row as { last_seen_at?: string | null }).last_seen_at ?? null) : null,
-        lastSignInAt: authActivity.activity[row.id]?.lastSignInAt ?? null,
+        lastSignInAt: (() => {
+          const fromRow = (row as { auth_last_sign_in_at?: string | null }).auth_last_sign_in_at ?? null;
+          const fromRpc = authActivity.activity[row.id]?.lastSignInAt ?? null;
+          if (fromRow && fromRpc) {
+            return new Date(fromRow) >= new Date(fromRpc) ? fromRow : fromRpc;
+          }
+          return fromRow ?? fromRpc;
+        })(),
       };
     });
 
