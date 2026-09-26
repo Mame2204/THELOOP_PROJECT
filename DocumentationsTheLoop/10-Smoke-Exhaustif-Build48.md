@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **~282 / 388** ≈ **73 %** global · **Web ~88/90 💻 (≈98 %)** · **iOS ~116/164** · **Android ~104/140** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Retest M1-U2** après deploy API Render · puis **M-BOTH-2** (Param. admin mobile) |
+| **Prochain test** | **M1-U2** retest après deploy **Render** (sans build mobile) · **M2** pack léger Param. admin (1 appareil) |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -88,23 +88,33 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | ~~**M1-U1**~~ | ~~Logout membre~~ — **PASS 26 sept.** 📱🤖 · retour **Accueil sans session** (visiteur) — OK testeur | — |
 | **M1-U2** | Recovery → **« Ouvrir l’application »** → **set_password in-app** | **FAIL 26 sept.** · session expirée · web `session_id` JWT · **fix** page auth-callback (deploy Render) |
 | ~~**M1-U3**~~ | ~~Connexion SPOT~~ — **N/A** · entrée **retirée** app mobile (partenaire = **e-mail / MDP** uniquement) | — |
-| **M1-U4** | Inscription complète (gate ON) : mail → lien → connecté | Optionnel |
+| ~~**M1-U4**~~ | Inscription complète (gate ON) — **PASS 26 sept.** 📱🤖 | — |
 
-**M-BOTH-2 — Admin mobile · Paramètres satellites (~25 min · 📱 puis 🤖)**
+> **M1-U2 · set_password — faut-il un build mobile ?**  
+> **Non** pour le correctif principal (PR #51) : la page **`api.theloop-app.com/auth/callback`** (Render) ne doit plus consommer le `token_hash` avant « Ouvrir l’application ». Le **build 48** sait déjà faire `verifyOtp` + écran nouveau MDP.  
+> **Retest** : merge + deploy **Render** → **nouvel e-mail** oubli MDP → « Ouvrir l’application » → saisie MDP → login.  
+> Un **nouveau build EAS** n’est utile que pour les **libellés d’erreur** mobile affinés (cosmétique).
 
-| # | Module | Écran |
-|---|--------|-------|
-| **M2-U1** | Pays | `AdminContentCountriesScreen` |
-| **M2-U2** | Catégories | `AdminCategoriesScreen` |
-| **M2-U3** | Étoiles | `AdminSpotStarsScreen` |
-| **M2-U4** | Paliers | `AdminPartnerMilestonesScreen` |
-| **M2-U5** | Parrainage | `AdminReferralSettingsScreen` |
-| **M2-U6** | Automatisations | `AdminAutomationJobsScreen` · exécuter 1 job |
-| **M2-U7** | Notifs push mobile | `AdminNotificationsScreen` |
-| **M2-U8** | Standalone | `AdminStandaloneBenefitScreen` |
-| **M2-U9** | Légal | `AdminLegalScreen` |
-| **M2-U10** | Horaires | `AdminOpeningHoursScreen` |
-| **M2-U11** | Permissions délégués | `AdminPermissionsScreen` |
+### Règle parité smoke *(éviter de retester 3× la même logique)*
+
+| Couche | Règle |
+|--------|--------|
+| **📱 + 🤖** | Même code `mobile/src/…` → **un seul appareil** par pack (iPhone **ou** Android) suffit ; on coche **les deux** après PASS. |
+| **💻 web admin** vs **admin mobile** | **UI différente** (`admin-web/` vs écrans `Admin*`) mais **même Supabase / RPC** pour Paramètres. Si **💻 déjà PASS** (B3 · W-4–W-7 · 24–26 sept.), **ne pas refaire** tout le CRUD sur mobile. |
+| **Mobile admin M2** | Smoke = **navigation** + preuve **lecture/écriture** légère (voir pack ci-dessous), pas re-parcourir toute la QA web. |
+
+**M-BOTH-2 — Paramètres admin mobile · pack léger (~10 min · 📱 *ou* 🤖 · pas les deux)**
+
+Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** → sous-menus.
+
+| # | Action | Suffit si… |
+|---|--------|------------|
+| **M2-U0** | Ouvrir **chaque** tuile satellite (11) — écran charge, pas d’erreur rouge | Accès OK (tu l’as confirmé) |
+| **M2-U★** | **1 seule** action d’écriture mobile (au choix) : ex. **Automatisations** → exécuter 1 job **ou** **Pays** → basculer un pays (hors Guinée) puis remettre | Prouve le chemin save mobile (backend déjà validé 💻) |
+
+Écrans concernés (code RN partagé 📱🤖) : Pays · Catégories · Étoiles · Paliers · Parrainage · Automatisations · Notifs push · Standalone · Légal · Horaires · Permissions.
+
+**Réponse « accès vs rentrer dedans »** : **M2-U0** = rentrer dans chaque tuile (scroll / liste visible). **M2-U★** = **une** modification enregistrée — pas 11 CRUD complets.
 
 **M-BOTH-3** (après) : admin délégué mobile · push C1 restants · D1 régression · **Phase 1 = build 49+**.
 
@@ -881,8 +891,8 @@ Liens Param. → pages satellites :
 - [x] **📱** Login → Accueil · logout → Accueil visiteur *(build 48 · **M1-U1 PASS 26 sept.**)*
 - [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · déconnexion → Accueil sans login)*
 - [x] **📱🤖** Compte **suspendu** → login refusé + message *(26 sept. 2026 · **PASS 🤖** · admin suspend · déconnexion · reconnect · message blocage)*
-- [ ] **📱** Inscription → mail → lien → connecté
-- [ ] **🤖** Idem
+- [x] **📱** Inscription → mail → lien → connecté *(26 sept. 2026 · **M1-U4 PASS** · testeur)*
+- [x] **🤖** Idem *(26 sept. · **PASS** · parité code mobile)*
 - [x] **📱** Mot de passe oublié → **e-mail reçu** *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** Lien e-mail → page **auth-callback** (choix app / web) *(23 sept. 2026 · build 48)*
@@ -1118,7 +1128,10 @@ Mobile (26 sept. 2026 · testeur · **M-BOTH-1**) :
   - **PASS M1-U1** 📱🤖 : déconnexion membre → **Accueil sans login** (comportement validé)
   - **FAIL M1-U2** 📱🤖 : oubli MDP · mail OK · lien OK · **set_password** → « session expirée » · web → `session_id` JWT
   - **N/A M1-U3** : pas d’entrée SPOT dans l’app · retrait écran + API context mobile
-  - **Fix** : auth-callback ne consomme plus `token_hash` avant « Ouvrir l’app » · deploy **Render** requis · retest M1-U2
+  - **Fix** : auth-callback ne consomme plus `token_hash` avant « Ouvrir l’app » · deploy **Render** requis · retest M1-U2 (**sans build mobile**)
+  - **PASS M1-U4** 📱🤖 : inscription complète (gate ON)
+Mobile (26 sept. 2026 · pilotage parité) :
+  - Règle : **📱🤖** = 1 device · **💻 Param. déjà PASS** → M2 = U0 (11 tuiles) + **1** save (M2-U★)
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
