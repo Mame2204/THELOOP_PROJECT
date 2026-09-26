@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **~300 / 388** ≈ **77 %** global *(après parité 📱→🤖 RN 26 sept.)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Hors build 49** : **D1** · **B9 mobile** délégué · **A4/A5** — **M2 PASS** · **C1 push** déjà OK testeur (26 sept.) |
+| **Prochain test** | **Hors build 49** : **C2–C4** · admin RN secondaire · **A4** si contenu publié — **D1/B9/A2-U1** notés 26 sept. soir |
 | **Bloqué bulle 49** | **M1-U2** set_password in-app (fix anti double `verifyOtp` · PR #52) · LoopX · octroi individuel scan · modération refus 💻 · Phase 1 retraits · perf mobile · etc. |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -143,14 +143,14 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **⏸ 49** | **M1-U2** set_password in-app | **bulle 49** | Render OK web | PR #52 · **pas de retest build 48** |
 | **P0** | **M2** Param. admin satellites | **PASS** *(26 sept. soir)* 📱🤖 | déjà PASS 💻 | Étoiles → **bulle 49** · reste signalé Users web |
 | **P1** | **C1** push (réception OS + inbox) | **PASS** *(testeur 26 sept.)* 📱🤖 | partiel 💻 | Achat PASS · campagnes déjà validées · cocher lignes Partie C au besoin |
-| **P1** | **D1** régression rapide (5×2) | [ ] | — | Cold start · background · images · refresh |
+| **P1** | **D1** régression rapide | **PARTIEL** 📱 PASS · **🤖 FAIL** cold start icône | — | Reprise arrière-plan 🤖 OK · voir journal |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [ ] | — | Checklist transversale |
 | **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
 | **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [ ] | — | RN · parité auto après 1 device |
 | **P2** | **A5** octroi manuel mobile · tirage · push admin | [ ] | partiel web | U23 = **build 49+** (PR #7) |
 | **P2** | **C2** partenaire invité → Espace Pro | [ ] | — | |
 | **P2** | **C3/C4** mailto · filleul +1 | [ ] | — | |
-| **P2** | **B9** admin délégué **mobile** | [ ] | PASS web | Compte délégué dédié |
+| **P2** | **B9** admin délégué **mobile** | **PASS** 📱🤖 | PASS web | Insights OK · approbation demandes → **49+** |
 | **🔒 build 49+** | LoopX · octroi individuel · modération refus 💻 · Phase 1 (7) | [ ] | [ ] | Hors session actuelle |
 
 **Non aligné parité (volontaire)** : A4-U15/U16/U17/U18/U19 🤖 marqués **⏸ N/A / reporté** (pas de contenu publié ou suite A4-4) — **ne pas** cocher 🤖 depuis 📱.
@@ -964,10 +964,10 @@ Liens Param. → pages satellites :
 
 ## D1 — Régression rapide (5 min)
 
-- [ ] **📱** Cold start sans crash
-- [ ] **🤖** Idem
-- [ ] **📱** Arrière-plan → retour OK
-- [ ] **🤖** Idem
+- [x] **📱** Cold start sans crash *(26 sept. 2026 · testeur **PASS**)*
+- [ ] **🤖** Cold start depuis icône *(26 sept. **FAIL** · fermeture / arrière-plan · reprise OK si déjà ouverte)*
+- [x] **📱** Arrière-plan → retour OK *(26 sept. **PASS**)*
+- [x] **🤖** Arrière-plan → retour OK *(26 sept. **PASS** · icône avec app déjà en tâche)*
 - [ ] **📱** Images contenu chargées
 - [ ] **🤖** Idem
 - [ ] **📱** Admin publie → membre voit après refresh
@@ -1173,6 +1173,12 @@ Mobile (26 sept. 2026 · testeur · **M-BOTH-2 Param. admin** · build 48) :
   - **Question UX 💻 Users** : connexion Auth vs activité app — migrations **20260945** + **20260946** · sync à la connexion · redeploy admin-web · **re-login** comptes test
   - **PASS C1 push** *(testeur)* : notifications push déjà validées — ne pas refaire sauf régression
   - **PASS M1-U4** 📱🤖 : inscription complète (gate ON)
+  - **💻 Users** : migrations **20260945+46** · dernière connexion + activité **PASS** testeur
+Mobile (26 sept. 2026 · testeur · **D1 · B9 · A2** · build 48) :
+  - **D1 PARTIEL** : **📱 PASS** (cold start · background · images · refresh) · **🤖 FAIL** lancement depuis **icône** (app part en arrière-plan / fermeture · dialogue système bloqué/annulé · **reprise OK** si déjà en arrière-plan puis icône)
+  - **PASS B9 mobile** 📱🤖 : admin **délégué** · menu · **Insights** OK · pas d’approbation demande (reporté modération **49+**)
+  - **PASS A2-U1** 📱🤖 : membre · **Découvrir Prime** → forfait · **PassPayment** sans payer
+  - **A2-U2 N/A** : pas d’entrée **Mes privilèges** (liste) membre sans PASS — **attendu** · privilèges **sur fiches** visibles **PASS**
 Mobile (26 sept. 2026 · pilotage parité) :
   - Règle : **📱🤖** = 1 device · **💻 Param. déjà PASS** → M2 = U0 (11 tuiles) + **1** save (M2-U★)
 Parité agent (26 sept. 2026) :
