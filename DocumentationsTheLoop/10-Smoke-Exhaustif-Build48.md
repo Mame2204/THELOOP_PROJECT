@@ -664,19 +664,19 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 
 ### Paramètres → sous-modules (stack)
-- [ ] **📱** `AdminContentCountriesScreen` — pays contenu
-- [ ] **📱** `AdminCategoriesScreen` — catégories
-- [ ] **📱** `AdminSpotStarsScreen` — étoiles spots
-- [ ] **📱** `AdminPartnerMilestonesScreen` — paliers · éditer · archiver
+- [x] **📱🤖** `AdminContentCountriesScreen` — pays contenu *(26 sept. · **PASS** testeur · parité RN)*
+- [x] **📱🤖** `AdminCategoriesScreen` — catégories *(26 sept. · **PASS**)*
+- [ ] **📱🤖** `AdminSpotStarsScreen` — étoiles *(26 sept. **FAIL** · formule/paliers · fix app + web paliers · retest)*
+- [x] **📱🤖** `AdminPartnerMilestonesScreen` — paliers partenaire *(26 sept. · **PASS**)*
 - [ ] **📱** `AdminReferralSettingsScreen` — parrainage
 - [ ] **📱** `AdminAutomationJobsScreen` — automatisations · exécuter
 - [ ] **📱** `AdminNotificationsScreen` — campagnes push mobile
 - [ ] **📱** `AdminStandaloneBenefitScreen` — standalone · création désactivée · toggle actifs / tous · aligné web
 - [ ] **📱** `AdminBenefitTypesScreen` — types (onglet standalone)
-- [ ] **📱** `AdminLegalScreen` — CGU & légal
-- [ ] **📱** `AdminOpeningHoursScreen` — horaires presets
-- [ ] **📱** `AdminPermissionsScreen` — permissions admins délégués
-- [ ] **🤖** Idem pour chaque sous-module ci-dessus
+- [x] **📱🤖** `AdminLegalScreen` — CGU & légal *(26 sept. · **PASS**)*
+- [x] **📱🤖** `AdminOpeningHoursScreen` — horaires presets *(26 sept. · **PASS**)*
+- [x] **📱🤖** `AdminPermissionsScreen` — permissions admins délégués *(26 sept. · **PASS**)*
+- [ ] **📱🤖** Automatisations · notifs push · standalone · types *(26 sept. · partiel / non rapporté)*
 
 ### Autres écrans admin (stack)
 - [ ] **📱** `AdminCreateUserScreen` — créer compte
@@ -1148,7 +1148,8 @@ Mobile (26 sept. 2026 · testeur · **Lot A Android** · build 48 · hors build 
   - **Suite agent** : **M-BOTH-1** Auth · **M-BOTH-2** Param. admin mobile
 Mobile (26 sept. 2026 · testeur · **M-BOTH-1**) :
   - **PASS M1-U1** 📱🤖 : déconnexion membre → **Accueil sans login** (comportement validé)
-  - **FAIL M1-U2** 📱🤖 : oubli MDP · mail OK · lien OK · **set_password** → « session expirée » · web → `session_id` JWT
+  - **FAIL M1-U2** 📱🤖 : oubli MDP · mail OK · lien OK · **set_password** → « session expirée » · web → `session_id` JWT · **retest 2** après fix deep link query + recovery session
+  - **M2 partiel** : Pays · Catégories · Paliers partenaire · Légal · Horaires · Permissions **PASS** · **Étoiles FAIL** (paliers web manquants → PR)
   - **N/A M1-U3** : pas d’entrée SPOT dans l’app · retrait écran + API context mobile
   - **Fix** : auth-callback ne consomme plus `token_hash` avant « Ouvrir l’app » · deploy **Render** requis · retest M1-U2 (**sans build mobile**)
   - **PASS M1-U4** 📱🤖 : inscription complète (gate ON)
