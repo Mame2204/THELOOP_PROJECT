@@ -95,7 +95,6 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Plateforme | Coché | Total | % | Commentaire |
 |------------|------:|------:|---:|-------------|
-| **💻 Web** | **74** | **109** | **68 %** | Lignes `💻` + colonne test inventaire routes (24 pages). |
 | **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
 | **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
 | **🤖 Android** | **~94** | **~140** | **~67 %** | Lignes `- [ ]` contenant `🤖` — **~4 pts** derrière iOS. |
@@ -846,7 +845,7 @@ Liens Param. → pages satellites :
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
 | Modération décision → partenaire notifié | [ ] | [ ] |
-| Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [ ] | [x] *(23 sept. 2026 · build 48 · 🤖 MTN · après cron)* |
+| Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(23 sept. 2026 · build 48 · 🤖 MTN · après cron)* |
 
 ## C2 — Auth transversal
 
