@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~300 / 388** ≈ **77 %** global *(après parité 📱→🤖 RN 26 sept.)* · **💻 hors build 49 ≈100 %** |
+| **Avancement smoke** | **337 / 394** ≈ **86 %** global *(recalcul grep 26 sept. soir · cochage aligné journal testeur)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Hors build 49** : **C2–C4** · admin RN secondaire · **A4** si contenu publié — **D1/B9/A2-U1** notés 26 sept. soir |
+| **Prochain test** | **Hors build 49** : **C1** lignes tableau détaillées · **C2–C4** · admin RN secondaire · **A4** si contenu publié · **🤖 D1** cold start icône (bug) |
 | **Bloqué bulle 49** | **M1-U2** set_password in-app (fix anti double `verifyOtp` · PR #52) · LoopX · octroi individuel scan · modération refus 💻 · Phase 1 retraits · perf mobile · etc. |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -161,7 +161,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **388 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** du fichier — aujourd’hui **263 / 388 ≈ 68 %**. |
+| **394 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **337 / 394 ≈ 86 %** *(26 sept. soir · grep post-cochage)*. |
 | **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
@@ -174,7 +174,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
 | **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
 | **🤖 Android** | **~118** | **~140** | **~84 %** | **Parité RN** : cases 📱 cochées → 🤖 alignées *(26 sept. agent)* sauf **N/A / build 49+**. |
-| **Global (1 ligne = 1 case)** | **~300** | **388** | **~77 %** | Reste **hors 49** = **M2 · C1 · D1 · B9 mobile** · reste **49+** = M1-U2 · Phase 1 · LoopX… |
+| **Global (1 ligne = 1 case)** | **337** | **394** | **≈86 %** | Reste **49+** = M1-U2 · Étoiles 📱 · Phase 1 · LoopX · modération refus… · **🤖 D1** cold start icône |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
@@ -186,7 +186,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 |------|--------|
 | A1 sans compte | ✅ |
 | A2 membre (nav · fiches · compte · interactions) | ✅ **📱🤖** *(détails Accueil · Singulier · Fragment · parcours · Partner public · idée · **26 sept. 🤖**)* |
-| A2 PassPayment / MyBenefits | ⏸ voir **A2-U1 / A2-U2** |
+| A2 PassPayment / MyBenefits | ✅ **A2-U1** PASS 26 sept. · **A2-U2** N/A (liste Mes privilèges) |
 | A3 Prime (thème · Mon PASS · privilèges · nav) | ✅ |
 | A3 LoopX / spots prime / contenu prime | 🔒 BLOCKED prochain build |
 
@@ -502,8 +502,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · en cours + en attente · membre achat MTN)*
 - [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · **📱🤖** OM / MTN · PASS + notif cloche · cron ~5 min · retour app Android PR #9)*
 - [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(23 sept. 2026 · build 48 · **PASS** en file + **notif cloche** · sync différée cron · abandon 1ʳᵉ tentative = ligne sans débit)*
-- [ ] **📱** `MyBenefitsScreen` — Mes privilèges *(si entrée UI / notif)*
-- [ ] **🤖** Idem
+- [x] **📱** `MyBenefitsScreen` — Mes privilèges *(26 sept. **A2-U2 N/A** · pas d’entrée menu membre sans PASS · privilèges sur **fiches** OK)*
+- [x] **🤖** Idem *(26 sept. · **N/A** · idem A2-U2)*
 
 ### Interactions
 - [x] **📱** Ajouter / retirer favori *(20 sept. 2026 · build 48)*
@@ -681,17 +681,17 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Paramètres → sous-modules (stack)
 - [x] **📱🤖** `AdminContentCountriesScreen` — pays contenu *(26 sept. · **PASS** testeur · parité RN)*
 - [x] **📱🤖** `AdminCategoriesScreen` — catégories *(26 sept. · **PASS**)*
-- [ ] **📱🤖** `AdminSpotStarsScreen` — étoiles *(26 sept. **FAIL** · formule/paliers · fix app + web paliers · retest)*
+- [ ] **📱🤖** `AdminSpotStarsScreen` — étoiles *(💻 **PASS** 26 sept. · **📱 retest bulle 49** · paliers/formule mobile)*
 - [x] **📱🤖** `AdminPartnerMilestonesScreen` — paliers partenaire *(26 sept. · **PASS**)*
-- [ ] **📱** `AdminReferralSettingsScreen` — parrainage
-- [ ] **📱** `AdminAutomationJobsScreen` — automatisations · exécuter
-- [ ] **📱** `AdminNotificationsScreen` — campagnes push mobile
-- [ ] **📱** `AdminStandaloneBenefitScreen` — standalone · création désactivée · toggle actifs / tous · aligné web
-- [ ] **📱** `AdminBenefitTypesScreen` — types (onglet standalone)
+- [x] **📱** `AdminReferralSettingsScreen` — parrainage *(26 sept. · **PASS M2** testeur)*
+- [x] **📱** `AdminAutomationJobsScreen` — automatisations · exécuter *(26 sept. · **PASS M2** · job exécuté)*
+- [x] **📱** `AdminNotificationsScreen` — campagnes / notifs auto *(26 sept. · **PASS M2** testeur)*
+- [x] **📱** `AdminStandaloneBenefitScreen` — standalone · création désactivée · toggle actifs / tous *(26 sept. · **PASS M2** · privilèges création)*
+- [x] **📱** `AdminBenefitTypesScreen` — types (onglet standalone) *(26 sept. · **PASS M2** testeur)*
 - [x] **📱🤖** `AdminLegalScreen` — CGU & légal *(26 sept. · **PASS**)*
 - [x] **📱🤖** `AdminOpeningHoursScreen` — horaires presets *(26 sept. · **PASS**)*
 - [x] **📱🤖** `AdminPermissionsScreen` — permissions admins délégués *(26 sept. · **PASS**)*
-- [ ] **📱🤖** Automatisations · notifs push · standalone · types *(26 sept. · partiel / non rapporté)*
+- [x] **📱** Gestion PASS mobile — modèles notif · prix Guinée *(26 sept. · **PASS M2** · écran `AdminPassManagementScreen` · cf. tableau sidebar)*
 
 ### Autres écrans admin (stack)
 - [ ] **📱** `AdminCreateUserScreen` — créer compte
@@ -822,6 +822,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Éditer profil · rôle · suspendre *(24 sept. 2026 · testeur **PASS**)*
 - [x] **💻** **Inviter** → e-mail reçu *(23 sept. 2026 · **PASS** · deploy Edge + mail → web → MDP · lien secours admin · retest corps mail sans URL brute : `configure-auth-invite-email.cmd`)*
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
+- [x] **💻** Colonnes **Dernière connexion** (Auth) · **Dernière activité** (app) *(26 sept. · migrations **20260945** + **20260946** · redeploy admin-web · re-login · **PASS** testeur)*
 
 ### PASS
 - [x] **💻** Octroi manuel PASS *(24 sept. · héritage gratuit limité · Prime puis retrait · **retest 26 sept.** octroi héritage + retrait OK)*
@@ -903,8 +904,8 @@ Liens Param. → pages satellites :
 - [x] **💻** Module **sans** permission → redirect *(26 sept. · **PASS** · `/pass` → Insights · B9-1)*
 - [x] **💻** Modération OK si grant `moderation` **+ Demandes** *(26 sept. · **PASS** · badge · onglet Modération · approuver · event visible Agenda)*
 - [x] **💻** Paramètres / PASS **inaccessibles** *(26 sept. · **PASS** · menu + redirect · B9-3)*
-- [ ] **📱** Admin mobile délégué — thème gris bleu · modules masqués
-- [ ] **🤖** Idem
+- [x] **📱** Admin mobile délégué — thème gris bleu · modules masqués *(26 sept. · **PASS B9 mobile** · Insights · menu aligné droits)*
+- [x] **🤖** Idem *(26 sept. · **PASS B9 mobile** testeur)*
 
 ---
 
@@ -968,11 +969,11 @@ Liens Param. → pages satellites :
 - [ ] **🤖** Cold start depuis icône *(26 sept. **FAIL** · fermeture / arrière-plan · reprise OK si déjà ouverte)*
 - [x] **📱** Arrière-plan → retour OK *(26 sept. **PASS**)*
 - [x] **🤖** Arrière-plan → retour OK *(26 sept. **PASS** · icône avec app déjà en tâche)*
-- [ ] **📱** Images contenu chargées
+- [x] **📱** Images contenu chargées *(26 sept. · **PASS D1** testeur)*
 - [ ] **🤖** Idem
-- [ ] **📱** Admin publie → membre voit après refresh
+- [x] **📱** Admin publie → membre voit après refresh *(26 sept. · **PASS D1** · refresh)*
 - [ ] **🤖** Idem
-- [ ] **📱** Navigation fluide (pas refresh loop)
+- [x] **📱** Navigation fluide (pas refresh loop) *(26 sept. · **PASS D1**)*
 - [ ] **🤖** Idem
 
 ## D2 — Parité iPhone vs Android
@@ -1183,7 +1184,9 @@ Mobile (26 sept. 2026 · pilotage parité) :
   - Règle : **📱🤖** = 1 device · **💻 Param. déjà PASS** → M2 = U0 (11 tuiles) + **1** save (M2-U★)
 Parité agent (26 sept. 2026) :
   - **🤖** aligné sur **📱** : sidebar admin A5 (13 modules) · A3 LoopX BLOCKED · A4-U21 N/A · publier/archiver admin
-  - **Non aligné** : Param. satellites (M2) · set_password · Phase 1 · A4 retraits 🤖 N/A · build 49+
+  - **Non aligné** : set_password · Phase 1 · A4 retraits 🤖 N/A · **🤖 D1** cold start icône · **Étoiles 📱** bulle 49
+Doc (26 sept. soir · agent) :
+  - **Alignement journal ↔ checklist** : coches **M2** (sauf Étoiles) · **B9 mobile** · **D1 📱** · **A2-U2 N/A** · **Users** dernière connexion — le % pilotage suivait le journal sans cocher les lignes `- [ ]` (d’où % « figé »).
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
