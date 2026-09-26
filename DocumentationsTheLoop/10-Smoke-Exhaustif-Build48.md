@@ -754,7 +754,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Messages — **modifier** un modèle *(26 sept. · **PASS** · W-11b)*
 - [x] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
 - [x] **💻** Catalogue PASS — activer / **archiver** forfait · **Retirer** octroi *(26 sept. · **PASS**)*
-- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** puis layout OK · persistance statut · fix reload + legacy GN + formulaire ne réactive plus · **retest W-19b post-deploy**)*
+- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** Pass intermédiaire : bouton **grisé** volontairement en code · fix #47 · **retest W-19b**)*
 - [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement)*
 
 ### Paiements & Compta
