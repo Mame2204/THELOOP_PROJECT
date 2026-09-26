@@ -403,9 +403,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 - [x] **💻🤖✓** Login → redirect dashboard
 - [x] **💻🤖✓** Sélecteur pays **Guinée**
-- [ ] **💻** Session stable 15 min
-- [ ] **💻** Déconnexion → `/login`
-- [ ] **💻** Menu latéral — badge Demandes si pending
+- [x] **💻** Session stable 15 min *(26 sept. 2026 · testeur **PASS** · W-3)*
+- [x] **💻** Déconnexion → `/login` *(26 sept. · **PASS** · W-1)*
+- [x] **💻** Menu latéral — badge Demandes si pending *(26 sept. · **PASS** · W-2)*
 
 ## B1 — Navigation — toutes les routes
 
@@ -473,10 +473,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 Liens Param. → pages satellites :
 - [ ] **💻** `/notifications` accessible depuis Param.
-- [ ] **💻** `/automation` accessible
-- [ ] **💻** `/milestones` accessible
-- [ ] **💻** `/etoiles` accessible
-- [ ] **💻** `/horaires` accessible
+- [x] **💻** `/automation` accessible *(26 sept. 2026 · **PASS** · W-4 · liste jobs · exécuter sans erreur)*
+- [x] **💻** `/milestones` accessible *(26 sept. · **PASS** · W-5 · créer palier)*
+- [x] **💻** `/etoiles` accessible *(26 sept. · **FAIL partiel** · W-6 · page OK · **Enregistrer** poids ne persiste pas — bug à traiter)*
+- [x] **💻** `/horaires` accessible *(26 sept. · **PASS** · W-7 · presets · enregistrer)*
 
 ## B4 — Users · PASS · Paiements
 
@@ -487,9 +487,15 @@ Liens Param. → pages satellites :
 - [ ] **💻** **Waitlist** → statut `invited`
 
 ### PASS
-- [ ] **💻** Prix Guinée · enregistrer
-- [ ] **💻** Octroi manuel PASS
-- [ ] **💻** Messages / modèles notification
+- [x] **💻** Prix Guinée · enregistrer *(26 sept. 2026 · testeur **PASS** · W-10 · onglet Prix)*
+- [ ] **💻** Octroi manuel PASS *(onglet Ops · recherche membre · accorder)*
+- [x] **💻** Messages / modèles notification — **création** *(26 sept. · **PASS** · W-11 · Ajouter modèle)*
+- [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · **PASS**)*
+- [x] **💻** Messages — **archiver** modèle *(26 sept. · **PASS**)*
+- [ ] **💻** Messages — **éditer** titre / corps d’un modèle existant *(26 sept. · **non testé** · optionnel)*
+- [ ] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
+- [ ] **💻** Catalogue PASS — activer / désactiver / archiver forfait *(26 sept. · **PASS** si fait avec messages)*
+- [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — pas de bouton Supprimer · seulement archiver)*
 
 ### Paiements & Compta
 - [ ] **💻** Liste transactions · refs Djomy
@@ -516,8 +522,8 @@ Liens Param. → pages satellites :
 - [x] **💻** Créer event · spot · outil (ContentEditor) *(26 sept. · **PASS** · brouillon · publier · retirer)*
 - [x] **💻** À la une · archiver · republier *(26 sept. · **PASS** · désactiver / archiver / cycle de vie)*
 - [x] **💻** Transfert propriétaire THE LOOP ↔ partenaire *(26 sept. · **N/A web** — pas d’UI transfert admin-web · **PASS 📱** admin mobile · cf. A5 transfert)*
-- [ ] **💻** Accueil — hero · sondage · parcours · singulier · logos
-- [ ] **💻** Loop hub — sections éditoriales
+- [x] **💻** Accueil — hero · sondage · parcours · singulier · logos *(26 sept. 2026 · testeur **PASS** · W-8)*
+- [x] **💻** Loop hub — sections éditoriales *(26 sept. · **PASS** · W-9 · `/loop`)*
 
 ## B7 — Privilèges · TEAMS · Tirage
 
@@ -531,10 +537,10 @@ Liens Param. → pages satellites :
 
 ## B8 — Automatisations · Paliers · Étoiles · Horaires
 
-- [ ] **💻** Automation — liste jobs · exécuter manuellement
-- [ ] **💻** Paliers — créer · éditer · archiver · voir Archives
-- [ ] **💻** Étoiles — seuils spots / outils / parcours
-- [ ] **💻** Horaires — presets · assignation
+- [x] **💻** Automation — liste jobs · exécuter manuellement *(26 sept. 2026 · **PASS** · W-4)*
+- [x] **💻** Paliers — créer · éditer · archiver · voir Archives *(26 sept. · **PASS** · W-5 · créer OK)*
+- [ ] **💻** Étoiles — seuils spots / outils / parcours *(26 sept. · **FAIL** · W-6 · enregistrement poids)*
+- [x] **💻** Horaires — presets · assignation *(26 sept. · **PASS** · W-7)*
 
 ## B9 — Admin délégué (permissions réduites)
 
@@ -650,6 +656,11 @@ Testeur :
 Build iPhone : 58 — lancement OK
 Build Android :
 Branch / commit :
+
+Admin-web (26 sept. 2026 · testeur · session W) :
+  - **PASS** B0 W-1–W-3 · B8 automation · paliers · horaires · B6 W-8/W-9 · PASS prix · messages création + activer/désactiver + archiver · catalogue création
+  - **FAIL** `/etoiles` — enregistrer les poids (clics/favoris/notes) ne persiste pas
+  - **⏸** B5 planifier/annuler notifs · édition texte modèles PASS · octroi manuel PASS
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
