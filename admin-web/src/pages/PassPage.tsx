@@ -8,6 +8,7 @@ import {
   HERITAGE_CATALOG_ID,
   INTERMEDIATE_CATALOG_ID,
   PERIOD_LABELS,
+  SHOP_BILLING_PERIODS,
   SHOP_PERIOD_VALIDITY_DAYS,
   computeExpiry,
   countActiveGrantsForCatalog,
@@ -143,17 +144,24 @@ export function PassPage() {
     successMsg = 'Catalogue enregistré.',
   ): Promise<PassCatalogEntry[] | null> {
     setBusy(true);
-    const res = await savePassCatalog(countryCode, next);
-    if (!res.ok) {
-      setBusy(false);
-      setMsg(res.error ?? 'Erreur catalogue');
+    setMsg(null);
+    try {
+      const res = await savePassCatalog(countryCode, next);
+      if (!res.ok) {
+        setMsg(res.error ?? 'Erreur catalogue');
+        return null;
+      }
+      const saved = res.catalog ?? next;
+      setCatalog(saved);
+      setMsg(successMsg);
+      return saved;
+    } catch (e) {
+      const text = e instanceof Error ? e.message : 'Erreur inattendue';
+      setMsg(`Catalogue : ${text}`);
       return null;
+    } finally {
+      setBusy(false);
     }
-    const fresh = await loadPassCatalog(countryCode);
-    setBusy(false);
-    setCatalog(fresh);
-    setMsg(successMsg);
-    return fresh;
   }
 
   async function handleSaveEntry(e: FormEvent) {
@@ -209,42 +217,50 @@ export function PassPage() {
   }
 
   async function setStatus(entry: PassCatalogEntry, status: PassCatalogEntry['status']) {
-    if (status !== 'active' && entry.status === 'active') {
-      const n = await countActiveGrantsForCatalog(entry.id);
-      if (n > 0) {
-        const ok = window.confirm(
-          `${n} membre(s) ont encore « ${entry.label} » actif. Désactiver quand même cette entrée catalogue ? (Les PASS déjà octroyés restent actifs jusqu’à retrait.)`,
-        );
-        if (!ok) {
-          setMsg('Désactivation annulée.');
-          return;
+    if (busy) return;
+    const current = catalog.find((c) => c.id === entry.id) ?? entry;
+    try {
+      if (status !== 'active' && current.status === 'active') {
+        const n = await countActiveGrantsForCatalog(current.id);
+        if (n > 0) {
+          const ok = window.confirm(
+            `${n} membre(s) ont encore « ${current.label} » actif. Désactiver quand même cette entrée catalogue ? (Les PASS déjà octroyés restent actifs jusqu’à retrait.)`,
+          );
+          if (!ok) {
+            setMsg('Désactivation annulée.');
+            return;
+          }
         }
       }
-    }
-    const next = catalog.map((c) =>
-      c.id === entry.id ? { ...c, status, updatedAt: new Date().toISOString() } : c,
-    );
-    const label =
-      status === 'inactive'
-        ? `« ${entry.label} » désactivé dans le catalogue.`
-        : status === 'archived'
-          ? `« ${entry.label} » archivé.`
-          : `« ${entry.label} » réactivé.`;
-    const fresh = await persistCatalog(next, label);
-    if (!fresh) return;
-    const after = fresh.find((c) => c.id === entry.id);
-    if (after && after.status !== status) {
-      setMsg(
-        `Échec : le statut n’a pas été enregistré (lu « ${after.status} », attendu « ${status} »).`,
+      const now = new Date().toISOString();
+      const next = catalog.map((c) =>
+        c.id === current.id ? { ...c, status, updatedAt: now } : c,
       );
-      return;
-    }
-    if (editingId === entry.id) {
-      setDraft((d) => ({ ...d, status: after?.status ?? status }));
-    }
-    if (status === 'archived' && editingId === entry.id) {
-      setEditingId(null);
-      setDraft(newCatalogDraft());
+      const label =
+        status === 'inactive'
+          ? `« ${current.label} » désactivé dans le catalogue.`
+          : status === 'archived'
+            ? `« ${current.label} » archivé.`
+            : `« ${current.label} » réactivé.`;
+      const saved = await persistCatalog(next, label);
+      if (!saved) return;
+      const after = saved.find((c) => c.id === current.id);
+      if (!after || after.status !== status) {
+        setMsg(
+          `Échec : le statut n’a pas été enregistré${after ? ` (lu « ${after.status} »)` : ''}.`,
+        );
+        return;
+      }
+      if (editingId === current.id) {
+        setDraft((d) => ({ ...d, status }));
+      }
+      if (status === 'archived' && editingId === current.id) {
+        setEditingId(null);
+        setDraft(newCatalogDraft());
+      }
+    } catch (e) {
+      const text = e instanceof Error ? e.message : 'Erreur inattendue';
+      setMsg(`Impossible de changer le statut : ${text}`);
     }
   }
 
@@ -382,7 +398,7 @@ export function PassPage() {
                       }));
                     }}
                   >
-                    {(Object.keys(PERIOD_LABELS) as BillingPeriod[]).map((p) => (
+                    {SHOP_BILLING_PERIODS.map((p) => (
                       <option key={p} value={p}>
                         {PERIOD_LABELS[p]}
                       </option>
@@ -621,7 +637,7 @@ export function PassPage() {
           }}
         >
           <h3>Tarifs boutique ({countryLabel})</h3>
-          {(Object.keys(PERIOD_LABELS) as BillingPeriod[]).map((p) => (
+          {SHOP_BILLING_PERIODS.map((p) => (
             <div className="field" key={p}>
               <label>{PERIOD_LABELS[p]}</label>
               <input
