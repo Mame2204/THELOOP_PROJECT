@@ -1,5 +1,5 @@
 /** Événements auth transverses (deep link → navigation). */
-export type AuthFlowEvent = 'password_recovery' | 'goto_login';
+export type AuthFlowEvent = 'password_recovery' | 'goto_login' | 'recovery_link_failed';
 
 type Listener = (event: AuthFlowEvent) => void;
 

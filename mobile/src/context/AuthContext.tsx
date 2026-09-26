@@ -56,7 +56,14 @@ import {
   normalizeEmail,
   validateSignupEmail,
 } from '@/lib/email-auth';
-import { completeAuthSessionFromUrl, describeAuthUrlParams, extractAuthParams } from '@/lib/auth-deep-link';
+import { describeAuthUrlParams, extractAuthParams } from '@/lib/auth-deep-link';
+import {
+  clearAuthCallbackLinkCache,
+  completeAuthSessionFromUrlOnce,
+  getCachedRecoverySession,
+  isRecoveryCallbackUrl,
+  rememberRecoverySession,
+} from '@/lib/auth-recovery-link';
 import { checkAdminInviteActivationEligibility } from '@/lib/admin-invite-store';
 import { emitAuthFlowEvent } from '@/lib/auth-flow-events';
 import {
@@ -219,8 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const syncAuthUserProfileRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
   const fulfillPendingWelcomeRef = useRef<(authUser: AuthUserLike) => Promise<void>>(async () => undefined);
 
-  /** Dernier lien auth/callback (recovery) — retentative verifyOtp à la saisie du MDP si session absente. */
+  /** Dernier lien auth/callback (recovery) — diagnostic uniquement, pas de second verifyOtp. */
   const recoveryLinkUrlRef = useRef<string | null>(null);
+  /** Session ouverte par verifyOtp / PASSWORD_RECOVERY — utilisée à la soumission MDP. */
+  const recoverySessionRef = useRef<import('@supabase/supabase-js').Session | null>(null);
 
   const beginPasswordRecovery = useCallback(() => {
     passwordRecoveryPendingRef.current = true;
@@ -231,6 +240,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const endPasswordRecovery = useCallback(() => {
     passwordRecoveryPendingRef.current = false;
     setPasswordRecoveryPending(false);
+    recoverySessionRef.current = null;
+    recoveryLinkUrlRef.current = null;
+    clearAuthCallbackLinkCache();
   }, []);
 
 
@@ -533,6 +545,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') return;
         if (event === 'PASSWORD_RECOVERY') {
           beginPasswordRecovery();
+          if (session) {
+            recoverySessionRef.current = session;
+            rememberRecoverySession(session);
+          }
           // Ne pas runApply : évite navigation / enrichissement qui invalident la session recovery.
           return;
         }
@@ -567,6 +583,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) return;
 
+    const authClient = supabase;
     logAuthRedirectConfig();
 
     const handleDeepLink = async (url: string | null) => {
@@ -575,7 +592,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (url.includes('auth/login')) {
         endPasswordRecovery();
         try {
-          await supabase.auth.signOut();
+          await authClient.auth.signOut();
         } catch {
           /* session partielle — on continue vers Connexion */
         }
@@ -586,13 +603,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!url.includes('auth/callback')) return;
       recoveryLinkUrlRef.current = url;
+      if (isRecoveryCallbackUrl(url)) {
+        beginPasswordRecovery();
+      }
       const paramHint = describeAuthUrlParams(url);
       if (__DEV__) {
         console.log('[Auth] deep link reçu:', url.split('#')[0].split('?')[0], '|', paramHint);
       }
-      const result = await completeAuthSessionFromUrl(url);
-      if (result.ok && supabase) {
+      const result = await completeAuthSessionFromUrlOnce(url);
+      if (result.ok) {
         const sessionFromLink = result.session;
+        recoverySessionRef.current = sessionFromLink;
+        rememberRecoverySession(sessionFromLink);
         const { data } = await supabase.auth.getSession();
         const activeSession = data.session ?? sessionFromLink;
         if (activeSession) {
@@ -604,7 +626,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (eligibility !== 'eligible') {
               endPasswordRecovery();
               try {
-                await supabase.auth.signOut();
+                await authClient.auth.signOut();
               } catch {
                 /* ignore */
               }
@@ -635,6 +657,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (__DEV__ && paramHint === 'aucun paramètre') {
         console.log('[Auth] deep link sans tokens (rechargement Expo) — e-mail déjà confirmé ? Connectez-vous.');
+      } else if (isRecoveryCallbackUrl(url)) {
+        endPasswordRecovery();
+        emitAuthFlowEvent('recovery_link_failed');
+        if (__DEV__) {
+          console.warn('[Auth] recovery — lien non validé (expiré, déjà utilisé ou ouvert ailleurs)');
+        }
       } else if (__DEV__) {
         console.warn('[Auth] lien non traité — connectez-vous manuellement si l’e-mail est confirmé');
       }
@@ -1490,9 +1518,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) {
       return;
     }
-    // Lien e-mail → theloop:// (build natif) : évite la page web qui consomme / perd le token_hash (PKCE).
+    // redirect_to = page API (e-mail template token_hash) ; autorisé dans Supabase Redirect URLs.
     const { error } = await supabase.auth.resetPasswordForEmail(check.email, {
-      redirectTo: getAuthEmailRedirectUrl(),
+      redirectTo: getAuthMemberFacingRedirectUrl(),
     });
     if (error) {
       const rateLimit = parseAuthEmailRateLimit(error);
@@ -1508,19 +1536,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (newPassword.trim().length < 8) {
       throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
     }
-    let activeSession = (await supabase.auth.getSession()).data.session;
-    if (!activeSession && recoveryLinkUrlRef.current) {
-      const retry = await completeAuthSessionFromUrl(recoveryLinkUrlRef.current);
-      if (retry.ok) {
-        activeSession =
-          (await supabase.auth.getSession()).data.session ?? retry.session ?? null;
-        if (retry.kind === 'recovery') beginPasswordRecovery();
-      }
-    }
+    let activeSession =
+      recoverySessionRef.current
+      ?? getCachedRecoverySession()
+      ?? (await supabase.auth.getSession()).data.session;
     if (!activeSession) {
       throw new Error(
-        'Lien expiré ou session perdue. Demandez un nouvel e-mail depuis l’app, ouvrez le lien dans le mail (pas l’aperçu) — l’app doit s’ouvrir seule.',
+        'Session perdue. Demandez un nouvel e-mail, ouvrez le lien une seule fois, touchez « Ouvrir l’application » et enregistrez le mot de passe tout de suite (ne pas rouvrir le lien sur le web).',
       );
+    }
+    const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
+    if (refreshErr && __DEV__) {
+      console.warn('[Auth] refreshSession avant updateUser:', refreshErr.message);
+    }
+    if (refreshed.session) {
+      activeSession = refreshed.session;
+      recoverySessionRef.current = refreshed.session;
     }
     const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
     if (error) {
@@ -1532,7 +1563,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       throw new Error(msg || 'Impossible d’enregistrer le nouveau mot de passe.');
     }
-    recoveryLinkUrlRef.current = null;
     endPasswordRecovery();
     await applySessionRef.current(activeSession);
     await fulfillPendingWelcomeRef.current(activeSession.user);

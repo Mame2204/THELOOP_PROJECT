@@ -129,6 +129,14 @@ export function AuthScreen({ navigation, route }: Props) {
         setMode('set_password');
         setSignupStep('form');
       }
+      if (event === 'recovery_link_failed') {
+        setMode('reset');
+        setSignupStep('form');
+        Alert.alert(
+          'Lien invalide ou déjà utilisé',
+          'Demandez un nouvel e-mail de réinitialisation. Ouvrez uniquement le dernier message, touchez « Ouvrir l’application » une fois, puis choisissez votre mot de passe dans l’app (sans repasser par le web).',
+        );
+      }
       if (event === 'goto_login') {
         setMode('login');
         setSignupStep('form');

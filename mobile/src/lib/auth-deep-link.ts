@@ -60,7 +60,7 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
   if (tokenHash) {
     const otpTypes: Array<'recovery' | 'signup' | 'invite' | 'email'> =
       kind === 'recovery'
-        ? ['recovery', 'email']
+        ? ['recovery']
         : kind === 'invite'
           ? ['invite', 'email']
           : ['signup', 'email'];
@@ -72,6 +72,9 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
       });
       if (error) {
         console.warn('[Auth] verifyOtp token_hash', otpType, error.message);
+        if (kind === 'recovery') {
+          return { ok: false };
+        }
         continue;
       }
       if (data.session) {

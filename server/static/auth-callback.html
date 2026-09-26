@@ -469,17 +469,10 @@
       }
 
       function verifyTokenHash(tokenHash, kind) {
-        var types =
-          kind === 'recovery'
-            ? ['recovery', 'email']
-            : [otpVerifyType(kind)];
-        var chain = Promise.reject(new Error('Lien invalide'));
-        types.forEach(function (otpType) {
-          chain = chain.catch(function () {
-            return verifyTokenHashOnce(tokenHash, otpType);
-          });
-        });
-        return chain;
+        if (kind === 'recovery') {
+          return verifyTokenHashOnce(tokenHash, 'recovery');
+        }
+        return verifyTokenHashOnce(tokenHash, otpVerifyType(kind));
       }
 
       function exchangeCode(code) {
