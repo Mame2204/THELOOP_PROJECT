@@ -369,7 +369,7 @@ export function UsersPage() {
 
           {error ? <p className="error">{error}</p> : null}
 
-          <div className="split-pane">
+          <div className="split-pane form-list-stack detail-on-top">
             <div className="table-wrap">
               <table className="data-table">
                 <thead>

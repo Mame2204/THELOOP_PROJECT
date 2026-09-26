@@ -47,8 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **263 / 388** ≈ **68 %** global · **Web 74/109 (68 %)** · **iOS 110/181 (61 %)** · **Android 87/152 (57 %)** |
-| **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
-| **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier *(option)* · **📱 build 49+** modération · refus privilège · octroi scan · LoopX |
+| **Admin-web 💻 (hors build 49)** | **~96 %** — retests W-6 · W-11b · catalogue PASS · B9 négatif · B5 planif. *(option)* |
+| **Prochain test 💻** | Voir **« Liste web restante (hors build 49) »** ci-dessous · puis **📱 build 49+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -57,6 +57,28 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
+
+### Liste web restante *(hors build 49 · ne pas refaire ce qui est ✅)*
+
+> **Clarification :** **Paramètres** (`/parametres` + satellites automation / paliers / horaires) = **déjà PASS** (23–26 sept.) — rien à « parcourir » de plus sauf **Étoiles** (retest après migration SQL).
+
+**✅ Déjà validé — ne pas redemander :** B0 session · **B3 Paramètres** (Gates, Pays, Catégories, Permissions, Légal, Plus) · B4 Users / Inviter / Waitlist / Paiements / Compta · octroi manuel PASS *(24 + **26 sept.** héritage + retrait)* · B5 immédiat / historique / détails · B6 contenu + Accueil + Loop · B7 Privilèges / TEAMS / Tirage · standalone · onglets · notifications immédiates.
+
+| ID | Action | Prérequis |
+|----|--------|-----------|
+| ~~**W-6**~~ | ~~Étoiles~~ — **PASS 26 sept.** (migration `20260944` + poids OK) | — |
+| ~~**W-11b**~~ | ~~Messages Modifier~~ — **PASS 26 sept.** | — |
+| **W-19b** | `/pass` → Catalogue — **Désactiver** forfait *(retest post-fix RPC + layout)* | Deploy admin-web |
+| ~~**W-19**~~ | Activer / archiver forfait · **Retirer** octroi — **PASS 26 sept.** | — |
+| **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
+| **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
+| **B9-1** | Compte **admin délégué** — ouvrir une URL **sans** permission → refus clair | Overrides Param. → Permissions |
+| **B9-2** | Délégué **avec** `moderation` — modération OK | — |
+| **B9-3** | Délégué **sans** `manage_admins` / `pass_management` — `/parametres` et gestion PASS **inaccessibles** | — |
+
+**🔒 Reporté build 49+ (ne pas compter dans la session web actuelle) :** modération **refus** + notifs partenaire · retraits Phase 1 · filtres modération retest · LoopX / contenu prime · octroi individuel scan partenaire · etc. (voir tableau « Reporté build 49+ »).
+
+**UX déployée :** formulaire / panneau détail **au-dessus**, tableau **en dessous** (`form-list-stack`) — PASS, paliers, étoiles, horaires, tirage, onglets, permissions, Users, Modération, Compta (tableaux empilés).
 
 ### Métriques — pourquoi deux pourcentages ?
 
@@ -662,7 +684,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/notifications` | Notifications | [x] | **PASS 24 sept.** · envoi immédiat · rôles · favoris · anniversaire · e-mail ciblé (PR #36) | [x] |
 | `/automation` | Automatisations | [x] | **PASS 26 sept.** · W-4 | [x] |
 | `/milestones` | Paliers | [x] | **PASS 26 sept.** · W-5 | [x] |
-| `/etoiles` | Étoiles | [ ] | **FAIL 26 sept.** · W-6 · RLS `20260944` | [x] |
+| `/etoiles` | Étoiles | [x] | **PASS 26 sept.** · W-6 · `20260944` + poids | [x] |
 | `/horaires` | Horaires | [x] | **PASS 26 sept.** · W-7 | [x] |
 | `/parametres` | Paramètres | [x] | **PASS 24 sept.** · B3 Gates · Pays · Catég. · Légal · Plus · Permissions (par admin) | [x] |
 | `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
@@ -713,7 +735,7 @@ Liens Param. → pages satellites :
 - [x] **💻** `/notifications` accessible depuis Param. *(24 sept. 2026 · testeur **PASS** · campagnes immédiates)*
 - [x] **💻** `/automation` accessible *(26 sept. 2026 · **PASS** · W-4 · liste jobs · exécuter sans erreur)*
 - [x] **💻** `/milestones` accessible *(26 sept. · **PASS** · W-5 · créer palier)*
-- [ ] **💻** `/etoiles` accessible *(26 sept. · **FAIL** · W-6 · poids clics/favoris/notes · **Enregistrer** KO · fix RLS `20260944` + retest après deploy Supabase)*
+- [x] **💻** `/etoiles` accessible *(26 sept. · **PASS** · W-6 · migration `20260944` · poids enregistrés)*
 - [x] **💻** `/horaires` accessible *(26 sept. · **PASS** · W-7 · presets · enregistrer)*
 
 ## B4 — Users · PASS · Paiements
@@ -725,13 +747,14 @@ Liens Param. → pages satellites :
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
 ### PASS
-- [x] **💻** Octroi manuel PASS *(24 sept. 2026 · héritage gratuit limité · utilisateur passe Prime puis retrait OK)*
+- [x] **💻** Octroi manuel PASS *(24 sept. · héritage gratuit limité · Prime puis retrait · **retest 26 sept.** octroi héritage + retrait OK)*
 - [x] **💻** Prix Guinée · enregistrer *(26 sept. 2026 · testeur **PASS** · W-10 · onglet Prix)*
 - [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · testeur **PASS**)*
 - [x] **💻** Messages — **archiver** modèle *(26 sept. · testeur **PASS**)*
-- [ ] **💻** Messages — **modifier** un modèle (bouton **Modifier** ou clic ligne → formulaire → **Enregistrer**) *(26 sept. · **FAIL** UI · fix PR #44 · **retest post-deploy**)*
+- [x] **💻** Messages — **modifier** un modèle *(26 sept. · **PASS** · W-11b)*
 - [x] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
-- [ ] **💻** Catalogue PASS — activer / désactiver / archiver forfait *(26 sept. · **non testé** ce tour)*
+- [x] **💻** Catalogue PASS — activer / **archiver** forfait · **Retirer** octroi *(26 sept. · **PASS**)*
+- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** · + chevauchement sticky formulaire · fix RPC `admin_set_app_setting` + CSS · **retest W-19b**)*
 - [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement)*
 
 ### Paiements & Compta
@@ -791,7 +814,7 @@ Liens Param. → pages satellites :
 
 - [x] **💻** Automation — liste jobs · exécuter manuellement *(26 sept. 2026 · **PASS** · W-4)*
 - [x] **💻** Paliers — créer · éditer · archiver · voir Archives *(26 sept. · **PASS** · W-5 · créer OK)*
-- [ ] **💻** Étoiles — poids clics / favoris / notes *(26 sept. · **FAIL** · W-6 · migration `20260944` · retest post-prod)*
+- [x] **💻** Étoiles — poids clics / favoris / notes *(26 sept. · **PASS** · W-6)*
 - [x] **💻** Horaires — presets · assignation *(26 sept. · **PASS** · W-7)*
 
 ## B9 — Admin délégué (permissions réduites)
@@ -1035,7 +1058,13 @@ Admin-web (26 sept. 2026 · testeur · session W) :
   - **FAIL** `/etoiles` — enregistrer poids (RLS super_admin · `20260944`)
   - **FAIL** PASS messages — pas de **Modifier** (fix UI admin-web deploy)
   - **UX** pages Paramètres : formulaire **au-dessus**, liste **en dessous** (`form-list-stack`)
-  - **⏸** B5 planifier/annuler · octroi manuel PASS
+  - **⏸** B5 planifier/annuler
+Admin-web (26 sept. 2026 · testeur · suite) :
+  - **PASS** octroi manuel PASS — héritage + **retrait** (confirmé testeur · ne pas refaire)
+  - **PASS** Users · Paiements · Compta · Privilèges · TEAMS · Tirage — déjà couverts 24 sept. (ne pas refaire)
+  - **Paramètres** : déjà PASS 24–26 sept.
+  - **PASS** W-6 Étoiles · W-11b Messages modifier · archiver forfait · retirer octroi
+  - **FAIL** catalogue **Désactiver** + tableaux octroi sous formulaire création PASS (fix en cours)
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

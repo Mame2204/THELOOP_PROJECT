@@ -95,6 +95,12 @@ async function fetchSetting<T>(key: string, legacyKey?: string): Promise<T | nul
 }
 
 async function upsertSetting(key: string, value: unknown): Promise<{ ok: boolean; error?: string }> {
+  const { error: rpcError } = await supabase.rpc('admin_set_app_setting', {
+    p_key: key,
+    p_value: value,
+  });
+  if (!rpcError) return { ok: true };
+
   const { error } = await supabase.from('app_settings').upsert({
     key,
     value,

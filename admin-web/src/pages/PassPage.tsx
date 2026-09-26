@@ -208,6 +208,13 @@ export function PassPage() {
       c.id === entry.id ? { ...c, status, updatedAt: new Date().toISOString() } : c,
     );
     await persistCatalog(next);
+    if (editingId === entry.id) {
+      setDraft((d) => ({ ...d, status }));
+    }
+    if (status === 'archived' && editingId === entry.id) {
+      setEditingId(null);
+      setDraft(newCatalogDraft());
+    }
   }
 
   async function handleGrant(e: FormEvent) {
@@ -276,7 +283,7 @@ export function PassPage() {
       {tab === 'ops' && canOps ? (
         <>
           <div className="split-pane form-list-stack">
-            <form className="card edit-panel" onSubmit={(e) => void handleSaveEntry(e)}>
+            <form className="card pass-catalog-form" onSubmit={(e) => void handleSaveEntry(e)}>
               <h3>{editingId ? 'Modifier PASS' : 'Nouveau PASS'}</h3>
               <div className="field">
                 <label>Libellé</label>
@@ -400,7 +407,11 @@ export function PassPage() {
                           <td>{c.validityDays == null ? 'Illimité' : `${c.validityDays} j`}</td>
                           <td>
                             <span className={`badge ${c.status === 'active' ? 'ok' : 'warn'}`}>
-                              {c.status}
+                              {c.status === 'active'
+                                ? 'Actif'
+                                : c.status === 'inactive'
+                                  ? 'Inactif'
+                                  : 'Archivé'}
                             </span>
                           </td>
                           <td>
@@ -408,7 +419,8 @@ export function PassPage() {
                               <button
                                 type="button"
                                 className="btn small ghost"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setEditingId(c.id);
                                   setDraft({
                                     label: c.label,
@@ -428,9 +440,10 @@ export function PassPage() {
                                 type="button"
                                 className="btn small ghost"
                                 disabled={busy || c.id === INTERMEDIATE_CATALOG_ID}
-                                onClick={() =>
-                                  void setStatus(c, c.status === 'active' ? 'inactive' : 'active')
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void setStatus(c, c.status === 'active' ? 'inactive' : 'active');
+                                }}
                               >
                                 {c.status === 'active' ? 'Désactiver' : 'Activer'}
                               </button>
@@ -439,7 +452,10 @@ export function PassPage() {
                                   type="button"
                                   className="btn small ghost"
                                   disabled={busy}
-                                  onClick={() => void setStatus(c, 'archived')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    void setStatus(c, 'archived');
+                                  }}
                                 >
                                   Archiver
                                 </button>
@@ -454,6 +470,7 @@ export function PassPage() {
             </div>
           </div>
 
+          <div className="pass-ops-below">
           <h3 style={{ marginTop: 28 }}>Octroyer un PASS</h3>
           <form className="card" onSubmit={(e) => void handleGrant(e)} style={{ maxWidth: 560 }}>
             <div className="field">
@@ -552,6 +569,7 @@ export function PassPage() {
                 Aucun PASS actif.
               </p>
             ) : null}
+          </div>
           </div>
         </>
       ) : null}

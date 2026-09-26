@@ -561,7 +561,7 @@ export function DemandesPage() {
             ) : null}
           </div>
 
-          <div className="split-pane">
+          <div className="split-pane form-list-stack detail-on-top">
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
