@@ -46,13 +46,13 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **~268 / 388** ≈ **69 %** global · **Web ~86/90 lignes 💻 (≈96 %)** · **iOS 110/181** · **Android 87/152** |
+| **Avancement smoke** | **~282 / 388** ≈ **73 %** global · **Web ~88/90 💻 (≈98 %)** · **iOS ~116/164** · **Android ~104/140** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **📱 iOS** puis **🤖 Android** (parité) — voir synthèse mobile ci-dessous |
+| **Prochain test** | **Lot M-BOTH-1** (Auth hors build 49) puis **M-BOTH-2** (Param. admin mobile) — **📱 puis 🤖** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
-| **🤖 Android build 48** | Smoke allégé + **achat PASS MTN OK** (cron · notif) · retour app **PR #9** |
+| **🤖 Android build 48** | **Lot A Android 26 sept.** (C1 PASS · A2 détails · activate · suspendu · hub Demandes · transfert contenu) · achat PASS MTN OK |
 | **Reporté build 49+** | LoopX · octroi individuel · **Accueil slider À la une** (migration `20260937`) · événements sans date (fallback app) · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 |
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
@@ -79,6 +79,35 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 **🔒 Reporté build 49+ (ne pas compter dans la session web actuelle) :** modération **refus** + notifs partenaire · retraits Phase 1 · filtres modération retest · LoopX / contenu prime · octroi individuel scan partenaire · etc. (voir tableau « Reporté build 49+ »).
 
+### Prochain lot mobile — **hors build 49** *(ne pas refaire les ✅ ci-dessus)*
+
+**M-BOTH-1 — Auth transversal (~15 min · 📱 puis 🤖)**
+
+| # | Action | Attendu |
+|---|--------|---------|
+| **M1-U1** | Membre : logout → pile Auth bloquée | Pas d’Accueil sans login |
+| **M1-U2** | Recovery e-mail → page callback → **« Ouvrir l’application »** → **set_password in-app** | MDP changé · login OK |
+| **M1-U3** | `PartnerLoginScreen` — connexion jeton **SPOT** (nav ou deep link) | Espace Pro partenaire |
+| **M1-U4** | Inscription complète (gate ON) : mail → lien → connecté | Optionnel si déjà couvert |
+
+**M-BOTH-2 — Admin mobile · Paramètres satellites (~25 min · 📱 puis 🤖)**
+
+| # | Module | Écran |
+|---|--------|-------|
+| **M2-U1** | Pays | `AdminContentCountriesScreen` |
+| **M2-U2** | Catégories | `AdminCategoriesScreen` |
+| **M2-U3** | Étoiles | `AdminSpotStarsScreen` |
+| **M2-U4** | Paliers | `AdminPartnerMilestonesScreen` |
+| **M2-U5** | Parrainage | `AdminReferralSettingsScreen` |
+| **M2-U6** | Automatisations | `AdminAutomationJobsScreen` · exécuter 1 job |
+| **M2-U7** | Notifs push mobile | `AdminNotificationsScreen` |
+| **M2-U8** | Standalone | `AdminStandaloneBenefitScreen` |
+| **M2-U9** | Légal | `AdminLegalScreen` |
+| **M2-U10** | Horaires | `AdminOpeningHoursScreen` |
+| **M2-U11** | Permissions délégués | `AdminPermissionsScreen` |
+
+**M-BOTH-3** (après) : admin délégué mobile · push C1 restants · D1 régression · **Phase 1 = build 49+**.
+
 **UX déployée :** formulaire / panneau détail **au-dessus**, tableau **en dessous** (`form-list-stack`) — PASS, paliers, étoiles, horaires, tirage, onglets, permissions, Users, Modération, Compta (tableaux empilés).
 
 ### Métriques — pourquoi deux pourcentages ?
@@ -89,7 +118,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
-### Avancement par plateforme *(décompte agent · 25 sept. 2026)*
+### Avancement par plateforme *(décompte agent · 26 sept. 2026)*
 
 > Chaque **ligne** `- [ ]` compte **une fois** dans le global. Une ligne **📱** ou **🤖** ne compte que pour cette plateforme ; **📱🤖** compte pour **iOS et Android**. Le global **68 %** reste bas surtout parce que la checklist inclut **tout le mobile** (A1–A5, parité 🤖, Phase 1, C1, admin mobile…) alors que le web a été massacré en QA cette semaine.
 
@@ -97,8 +126,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |------------|------:|------:|---:|-------------|
 | **💻 Web** | **~88** | **~90** | **~98 %** | Hors build 49 **≈100 %** (B9 complet 26 sept.). |
 | **📱 iOS** | **~116** | **~164** | **~71 %** | Lignes `- [ ]` contenant `📱` (sans double-count doc élargi 181). |
-| **🤖 Android** | **~94** | **~140** | **~67 %** | Lignes `- [ ]` contenant `🤖` — **~4 pts** derrière iOS. |
-| **Global (1 ligne = 1 case)** | **~272** | **388** | **~70 %** | Web bouclé · gros reste = **mobile** + **build 49+**. |
+| **🤖 Android** | **~104** | **~140** | **~74 %** | **Lot A Android 26 sept.** — rattrapage parité A2 détails · admin Demandes · transfert. |
+| **Global (1 ligne = 1 case)** | **~282** | **388** | **~73 %** | Web bouclé · reste = **M-BOTH-1/2/3** + **build 49+**. |
 
 **Build 49+** = une **partie** des ~32 % restants (LoopX, refus privilège, octroi scan, modération notifs…) — pas une erreur de pourcentage.
 
@@ -109,7 +138,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Bloc | Statut |
 |------|--------|
 | A1 sans compte | ✅ |
-| A2 membre (nav · fiches · compte · interactions) | ✅ |
+| A2 membre (nav · fiches · compte · interactions) | ✅ **📱🤖** *(détails Accueil · Singulier · Fragment · parcours · Partner public · idée · **26 sept. 🤖**)*
 | A2 PassPayment / MyBenefits | ⏸ voir **A2-U1 / A2-U2** |
 | A3 Prime (thème · Mon PASS · privilèges · nav) | ✅ |
 | A3 LoopX / spots prime / contenu prime | 🔒 BLOCKED prochain build |
@@ -340,7 +369,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Gate signup OFF → pas d’onglet inscription *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · mode activate / invité)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
 - [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
@@ -402,13 +431,13 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `SpotDetailScreen` — depuis Spots / Accueil *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A2 PASS)*
 - [x] **📱** `CreatorCornerDetailScreen` — Le Singulier *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · lot A2 Android)*
 - [x] **📱** `FragmentDetailScreen` — Le Fragment *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · **PASS**)*
 - [x] **📱** `LoopWalksListScreen` + `LoopWalkDetailScreen` — parcours *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · **PASS**)*
 - [x] **📱** `PartnerPublicScreen` — depuis parcours *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · **PASS**)*
 
 ### Compte & services
 - [x] **📱** `EditProfilScreen` — modifier nom / photo *(20 sept. 2026 · build 48 · compte membre perso)*
@@ -420,7 +449,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `ReferralScreen` — parrainage · code · compteur filleuls *(20 sept. 2026 · build 48 · compte membre perso)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · code + compteur filleuls · membre + Prime)*
 - [x] **📱** `SuggestionScreen` — envoyer idée *(20 sept. 2026 · build 48 · compte membre perso)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS**)*
 - [x] **📱** `PrimeScreen` — boutique PASS · forfaits + prix · bouton paiement *(20 sept. 2026 · build 48 · gate achat PASS ON · compte membre perso)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · **📱🤖** boutique visible · achat OK)*
 - [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
@@ -579,9 +608,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Hub Demandes (sous-écrans)
 - [x] **📱** `AdminPartnershipsScreen` — partenariats pending / approuver / rejeter *(20 sept. 2026 · build 48 · **FAIL partiel** · noms « . » au 1er affichage · OK après pull refresh · cache-first)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · hub Demandes Android)*
 - [x] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser *(20 sept. 2026 · build 48 · **PACK A5-3 OK** · U18 approuver · U19 refuser+motif · U20 retrait approuvé · U21 retrait refusé)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(26 sept. 2026 · **PASS** · hub Demandes Android)*
 - [ ] **📱** `AdminSuggestionsScreen` — idées communauté
 - [ ] **🤖** Idem
 
@@ -637,13 +666,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱** Push immédiat audience Tous
 - [ ] **📱** Push planifié · annuler
 - [x] **📱** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · partenaire + THE LOOP · super admin + délégué)*
+- [x] **🤖** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · parité iPhone)*
 - [x] **📱** Publier / archiver contenu *(26 sept. · **PASS web** catalogue · mobile aligné transfert)*
-- [ ] **🤖** Idem pour chaque action
+- [ ] **🤖** Publier / archiver contenu *(reste actions admin critiques 🤖 hors transfert)*
 
 ### Transfert contenu (code validation)
 - [x] **📱** THE LOOP → partenaire : code **partenaire** à la consommation *(26 sept. 2026 · **PASS**)*
 - [x] **📱** Partenaire → THE LOOP : code **équipe THE LOOP** *(26 sept. · **PASS**)*
-- [ ] **🤖** Idem *(26 sept. · à confirmer si même session Android admin)*
+- [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · Android admin)*
 
 ---
 
@@ -845,12 +875,13 @@ Liens Param. → pages satellites :
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
 | Modération décision → partenaire notifié | [ ] | [ ] |
-| Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(23 sept. 2026 · build 48 · 🤖 MTN · après cron)* |
+| Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 🤖 confirmé testeur · cf. 23 sept. MTN)* |
 
 ## C2 — Auth transversal
 
 - [x] **📱** Login → Accueil · logout → Auth bloqué *(login + logout membre OK · build 48 · 20 sept. 2026)*
-- [ ] **🤖** Idem
+- [ ] **🤖** Logout → Auth bloqué *(M-BOTH-1 · M1-U1)*
+- [x] **📱🤖** Compte **suspendu** → login refusé + message *(26 sept. 2026 · **PASS 🤖** · admin suspend · déconnexion · reconnect · message blocage)*
 - [ ] **📱** Inscription → mail → lien → connecté
 - [ ] **🤖** Idem
 - [x] **📱** Mot de passe oublié → **e-mail reçu** *(23 sept. 2026 · build 48)*
@@ -1074,7 +1105,16 @@ Admin-web (26 sept. 2026 · testeur · B9 + B5) :
   - **PASS B9-3** : menu délégué = Contenu · THE LOOP · Accueil · Insights (vue d’ensemble seule)
   - **PASS B9-2** (soir) : Demandes + modération · badge · approuver · event **Agenda** OK
   - **PASS W-12/W-13** : notif planifiée · modifier · détails · annuler · supprimer
+  - **PASS C1-PUSH-PASS** : achat PASS 📱 OM · inbox + push OS après cron
   - **UX** : bandeau **Prénom Nom · e-mail** (deploy suivant)
+Mobile (26 sept. 2026 · testeur · **Lot A Android** · build 48 · hors build 49) :
+  - **PASS C1** : achat PASS → inbox + push (**🤖** confirmé session)
+  - **PASS A2 🤖** : Accueil détails · Singulier · Fragment · parcours · Partner public · **SuggestionScreen** (idée)
+  - **PASS A1 🤖** : mode **activate** / invité
+  - **PASS Auth 🤖** : compte **suspendu** — login bloqué · message après déconnexion + blocage admin
+  - **PASS A5 🤖** : hub **Demandes** (partenariats + modération)
+  - **PASS 🤖** : **transfert contenu** THE LOOP ↔ partenaire (codes validation · parité iPhone)
+  - **Suite agent** : **M-BOTH-1** Auth · **M-BOTH-2** Param. admin mobile
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
