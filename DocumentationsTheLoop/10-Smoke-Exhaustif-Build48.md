@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **263 / 388** ≈ **68 %** global · **Web 74/109 (68 %)** · **iOS 110/181 (61 %)** · **Android 87/152 (57 %)** |
-| **Admin-web 💻 (hors build 49)** | **~96 %** — retests W-6 · W-11b · catalogue PASS · B9 négatif · B5 planif. *(option)* |
-| **Prochain test 💻** | Voir **« Liste web restante (hors build 49) »** ci-dessous · puis **📱 build 49+** |
+| **Avancement smoke** | **~268 / 388** ≈ **69 %** global · **Web ~86/90 lignes 💻 (≈96 %)** · **iOS 110/181** · **Android 87/152** |
+| **Admin-web 💻 (hors build 49)** | **≈96 %** — reste **B9** (3) · **B5 planif.** *(3 option)* |
+| **Prochain test 💻** | **B9-1 → B9-3** (délégué) · puis **W-12/W-13** si tu veux boucler notifs · **build 49+** = modération |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -68,13 +68,13 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |----|--------|-----------|
 | ~~**W-6**~~ | ~~Étoiles~~ — **PASS 26 sept.** (migration `20260944` + poids OK) | — |
 | ~~**W-11b**~~ | ~~Messages Modifier~~ — **PASS 26 sept.** | — |
-| **W-19b** | `/pass` → Catalogue — **Désactiver** forfait *(retest post-fix #46)* | Deploy admin-web |
-| ~~**W-19**~~ | Activer / archiver forfait · **Retirer** octroi · layout octroi — **PASS 26 sept.** | — |
+| ~~**W-19b**~~ | ~~Désactiver catalogue~~ — **PASS 26 sept.** (#47–#48) | — |
+| ~~**W-19**~~ | Activer / archiver · retirer octroi · prix sans « à vie » — **PASS 26 sept.** | — |
 | **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
 | **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
-| **B9-1** | Compte **admin délégué** — ouvrir une URL **sans** permission → refus clair | Overrides Param. → Permissions |
-| **B9-2** | Délégué **avec** `moderation` — modération OK | — |
-| **B9-3** | Délégué **sans** `manage_admins` / `pass_management` — `/parametres` et gestion PASS **inaccessibles** | — |
+| **B9-1** | Délégué — coller **`/parametres`** ou **`/pass`** dans la barre d’adresse → **refus / redirect** (pas le formulaire complet) | Compte délégué sans ces droits |
+| **B9-2** | Délégué **avec** droit modération — onglet **Modération** `/demandes` → valider une soumission *(sans refus/notif build 49)* | Grant `moderation` |
+| **B9-3** | Même délégué — menu **sans** Gestion PASS / Paramètres *(déjà OK visuellement · B9-1 confirme URL directe)* | — |
 
 **🔒 Reporté build 49+ (ne pas compter dans la session web actuelle) :** modération **refus** + notifs partenaire · retraits Phase 1 · filtres modération retest · LoopX / contenu prime · octroi individuel scan partenaire · etc. (voir tableau « Reporté build 49+ »).
 
@@ -754,8 +754,8 @@ Liens Param. → pages satellites :
 - [x] **💻** Messages — **modifier** un modèle *(26 sept. · **PASS** · W-11b)*
 - [x] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
 - [x] **💻** Catalogue PASS — activer / **archiver** forfait · **Retirer** octroi *(26 sept. · **PASS**)*
-- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** Pass intermédiaire : bouton **grisé** volontairement en code · fix #47 · **retest W-19b**)*
-- [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement)*
+- [x] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **PASS** · W-19b · #47–#48)*
+- [x] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement · clos)*
 
 ### Paiements & Compta
 - [x] **💻** Liste transactions · refs Djomy *(23 sept. 2026 · super admin · 2 lignes achat PASS test)*
