@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { getCountryLabel } from '../lib/countries';
+import { formatAdminIdentity } from '../lib/format';
 import { Sidebar } from './Sidebar';
 
 export function AdminLayout() {
@@ -31,8 +32,8 @@ export function AdminLayout() {
           <div>
             <p className="brand-kicker">THE LOOP · Control Tower</p>
             <h1 className="admin-page-title">Administration</h1>
-            <p className="muted">
-              {profile.email} · {profile.role}
+            <p className="muted" title={profile.role}>
+              {formatAdminIdentity(profile)}
             </p>
           </div>
           <div className="admin-topbar-actions">
