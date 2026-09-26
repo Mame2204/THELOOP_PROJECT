@@ -3369,6 +3369,7 @@ export type Database = {
       users: {
         Row: {
           account_status: string
+          auth_last_sign_in_at: string | null
           birth_date: string | null
           city: string | null
           company: string | null
@@ -3396,6 +3397,7 @@ export type Database = {
         }
         Insert: {
           account_status?: string
+          auth_last_sign_in_at?: string | null
           birth_date?: string | null
           city?: string | null
           company?: string | null
@@ -3423,6 +3425,7 @@ export type Database = {
         }
         Update: {
           account_status?: string
+          auth_last_sign_in_at?: string | null
           birth_date?: string | null
           city?: string | null
           company?: string | null
@@ -3635,6 +3638,10 @@ export type Database = {
       admin_upsert_partner_benefit_offer: {
         Args: { p_row: Json }
         Returns: string
+      }
+      admin_users_sign_in_activity: {
+        Args: { p_user_ids: string[] }
+        Returns: Json
       }
       admin_users_with_favorite_categories: {
         Args: {
@@ -3856,6 +3863,20 @@ export type Database = {
       is_partner_user: { Args: never; Returns: boolean }
       is_prime_member: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      list_admin_benefit_grants_analytics: {
+        Args: { p_country_code?: string | null }
+        Returns: {
+          catalog_id: string
+          catalog_local_id: string
+          expires_at: string
+          grant_audience: string
+          grant_country_code: string
+          local_id: string
+          role_entitlement: string
+          status: string
+          used_at: string
+        }[]
+      }
       list_admin_partner_benefit_offers: {
         Args: { p_country_code?: string }
         Returns: Json

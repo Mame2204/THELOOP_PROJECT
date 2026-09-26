@@ -22,7 +22,10 @@ export async function touchUserAuthPresence(
     if (Number.isFinite(prev) && Date.now() - prev < TOUCH_MIN_INTERVAL_MS) return;
 
     const now = new Date().toISOString();
-    const patch: Record<string, string> = { last_seen_at: now, updated_at: now };
+    const patch: { last_seen_at: string; updated_at: string; auth_last_sign_in_at?: string } = {
+      last_seen_at: now,
+      updated_at: now,
+    };
     if (lastSignInAt) {
       patch.auth_last_sign_in_at = lastSignInAt;
     }

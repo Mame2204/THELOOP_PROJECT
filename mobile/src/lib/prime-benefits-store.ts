@@ -287,9 +287,10 @@ function mapAnalyticsRpcRow(row: Record<string, unknown>): PrimeBenefit {
 /** Octrois pour KPI Insights admin — RPC admin puis fallback table. */
 async function loadGrantsForAdminAnalytics(countryCode?: string): Promise<PrimeBenefit[]> {
   if (isSupabaseConfigured() && supabase && (await isNetworkOnline())) {
+    const client = supabase;
     try {
       const loadRpc = async (cc: string | null) => {
-        const { data, error } = await supabase.rpc('list_admin_benefit_grants_analytics', {
+        const { data, error } = await client.rpc('list_admin_benefit_grants_analytics', {
           p_country_code: cc,
         });
         if (error) {

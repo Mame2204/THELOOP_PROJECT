@@ -616,7 +616,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const sessionFromLink = result.session;
         recoverySessionRef.current = sessionFromLink;
         rememberRecoverySession(sessionFromLink);
-        const { data } = await supabase.auth.getSession();
+        const { data } = await authClient.auth.getSession();
         const activeSession = data.session ?? sessionFromLink;
         if (activeSession) {
           if (result.kind === 'invite') {
