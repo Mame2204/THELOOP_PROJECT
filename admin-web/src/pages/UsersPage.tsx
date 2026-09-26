@@ -377,10 +377,10 @@ export function UsersPage() {
             </p>
           ) : null}
           <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>
-            <strong>Dernière connexion</strong> = dernier login mot de passe / OTP (Supabase Auth).{' '}
-            <strong>Dernière activité</strong> = dernier passage dans l’app mobile avec session
-            ouverte. Un compte peut avoir une activité app sans date Auth si l’invitation n’est pas
-            finalisée ou si les données Auth n’ont pas été remontées.
+            <strong>Dernière connexion (Auth)</strong> = login mot de passe / OTP.{' '}
+            <strong>Dernière activité (app)</strong> = session ouverte sur l’app mobile (ou admin-web
+            après migration <code>20260946</code>). Les deux se mettent à jour à la connexion ; après
+            déploiement, reconnectez-vous une fois pour remplir les comptes de test.
           </p>
 
           <div className="split-pane form-list-stack detail-on-top">

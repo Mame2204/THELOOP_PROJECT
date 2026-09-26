@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { supabase } from '../lib/supabase';
 import { isAnyAdminUser } from '../lib/permissions';
+import { syncAdminAuthPresence } from '../lib/user-auth-presence';
 
 export interface AdminProfile {
   id: string;
@@ -77,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       lastName: row.last_name,
       countryCode: (row as { country_code?: string | null }).country_code ?? null,
     });
+    void syncAdminAuthPresence(row.id, user.last_sign_in_at ?? null);
     initialBootstrapDone.current = true;
     setLoading(false);
   }, []);

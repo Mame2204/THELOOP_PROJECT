@@ -59,9 +59,24 @@ export interface WaitlistEntry {
 }
 
 const USER_SELECT =
-  'id, email, first_name, last_name, phone_number, user_role, is_active, account_status, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at, created_at';
+  'id, email, first_name, last_name, phone_number, user_role, is_active, account_status, country_code, city, birth_date, partner_can_manage_events, partner_can_manage_spots, partner_can_manage_tools, last_seen_at, auth_last_sign_in_at, created_at';
 
-function mapUser(row: Record<string, unknown>, lastSignInAt: string | null = null): AdminUserRow {
+function mergeLastSignIn(
+  fromRow: string | null | undefined,
+  fromAuth: string | null | undefined,
+): string | null {
+  const a = fromRow ?? null;
+  const b = fromAuth ?? null;
+  if (a && b) {
+    return new Date(a).getTime() >= new Date(b).getTime() ? a : b;
+  }
+  return a ?? b;
+}
+
+function mapUser(row: Record<string, unknown>, lastSignInFromAuthRpc: string | null = null): AdminUserRow {
+  const fromRow =
+    typeof row.auth_last_sign_in_at === 'string' ? row.auth_last_sign_in_at : null;
+  const lastSignInAt = mergeLastSignIn(fromRow, lastSignInFromAuthRpc);
   return {
     id: String(row.id),
     email: String(row.email ?? ''),

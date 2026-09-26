@@ -6,10 +6,13 @@ const TOUCH_KEY = 'loop_last_seen_touch_at';
 const TOUCH_MIN_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
- * Enregistre la dernière activité app sur public.users.last_seen_at
- * (nécessite migration 20260914_admin_monitoring).
+ * Activité app + connexion Auth sur public.users (migrations 20260914 + 20260946).
+ * lastSignInAt = session Supabase Auth (login MDP/OTP).
  */
-export async function touchUserLastSeen(userId: string): Promise<void> {
+export async function touchUserAuthPresence(
+  userId: string,
+  lastSignInAt: string | null | undefined,
+): Promise<void> {
   if (!userId || userId === 'anonymous') return;
   if (!isSupabaseConfigured() || !supabase) return;
 
@@ -19,15 +22,16 @@ export async function touchUserLastSeen(userId: string): Promise<void> {
     if (Number.isFinite(prev) && Date.now() - prev < TOUCH_MIN_INTERVAL_MS) return;
 
     const now = new Date().toISOString();
-    const { error } = await supabase
-      .from('users')
-      .update({ last_seen_at: now, updated_at: now })
-      .eq('id', userId);
+    const patch: Record<string, string> = { last_seen_at: now, updated_at: now };
+    if (lastSignInAt) {
+      patch.auth_last_sign_in_at = lastSignInAt;
+    }
+
+    const { error } = await supabase.from('users').update(patch).eq('id', userId);
 
     if (error) {
-      // Colonne absente tant que la migration n’est pas appliquée — silencieux.
-      if (/last_seen_at/i.test(error.message)) return;
-      console.warn('[activity] last_seen_at:', error.message);
+      if (/last_seen_at|auth_last_sign_in_at/i.test(error.message)) return;
+      console.warn('[activity] présence:', error.message);
       return;
     }
 
@@ -35,4 +39,9 @@ export async function touchUserLastSeen(userId: string): Promise<void> {
   } catch {
     /* ignore */
   }
+}
+
+/** @deprecated Utiliser touchUserAuthPresence avec last_sign_in_at session. */
+export async function touchUserLastSeen(userId: string): Promise<void> {
+  await touchUserAuthPresence(userId, undefined);
 }

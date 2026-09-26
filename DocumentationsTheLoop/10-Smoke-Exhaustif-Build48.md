@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **~300 / 388** ≈ **77 %** global *(après parité 📱→🤖 RN 26 sept.)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Hors build 49** : **C1** push · **D1** · **B9 mobile** délégué · **A4/A5** — **M2 PASS** (étoiles 📱 → bulle 49) |
+| **Prochain test** | **Hors build 49** : **D1** · **B9 mobile** délégué · **A4/A5** — **M2 PASS** · **C1 push** déjà OK testeur (26 sept.) |
 | **Bloqué bulle 49** | **M1-U2** set_password in-app (fix anti double `verifyOtp` · PR #52) · LoopX · octroi individuel scan · modération refus 💻 · Phase 1 retraits · perf mobile · etc. |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -142,7 +142,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 |----------|-----------|------|-----|--------|
 | **⏸ 49** | **M1-U2** set_password in-app | **bulle 49** | Render OK web | PR #52 · **pas de retest build 48** |
 | **P0** | **M2** Param. admin satellites | **PASS** *(26 sept. soir)* 📱🤖 | déjà PASS 💻 | Étoiles → **bulle 49** · reste signalé Users web |
-| **P1** | **C1** push (7 scénarios tableau) | [ ] | — | Campagnes · tirage · modération · ciblage |
+| **P1** | **C1** push (réception OS + inbox) | **PASS** *(testeur 26 sept.)* 📱🤖 | partiel 💻 | Achat PASS · campagnes déjà validées · cocher lignes Partie C au besoin |
 | **P1** | **D1** régression rapide (5×2) | [ ] | — | Cold start · background · images · refresh |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [ ] | — | Checklist transversale |
 | **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
@@ -1170,7 +1170,8 @@ Mobile (26 sept. 2026 · testeur · **M-BOTH-1**) :
 Mobile (26 sept. 2026 · testeur · **M-BOTH-2 Param. admin** · build 48) :
   - **PASS M2** 📱 : Parrainage · Automatisations (job) · Notifs auto · Modèles notif PASS · Légal · Prix PASS · Horaires spots · Permissions · Privilèges (création + types)
   - **⏸ Étoiles** 📱 : reporté **bulle 49** (alignement paliers / binaire)
-  - **Question UX 💻 Users** : colonne « Dernière connexion » = `last_sign_in_at` Auth · « Dernière activité » = `last_seen_at` app — fix RPC **20260945** + libellés admin-web
+  - **Question UX 💻 Users** : connexion Auth vs activité app — migrations **20260945** + **20260946** · sync à la connexion · redeploy admin-web · **re-login** comptes test
+  - **PASS C1 push** *(testeur)* : notifications push déjà validées — ne pas refaire sauf régression
   - **PASS M1-U4** 📱🤖 : inscription complète (gate ON)
 Mobile (26 sept. 2026 · pilotage parité) :
   - Règle : **📱🤖** = 1 device · **💻 Param. déjà PASS** → M2 = U0 (11 tuiles) + **1** save (M2-U★)

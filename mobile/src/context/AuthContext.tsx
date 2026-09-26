@@ -24,7 +24,7 @@ import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { undefinedIfNull } from '@/lib/supabase-types';
-import { touchUserLastSeen } from '@/lib/user-activity';
+import { touchUserAuthPresence } from '@/lib/user-activity';
 
 import {
 
@@ -417,7 +417,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return base;
       });
       setIsLoading(false);
-      void touchUserLastSeen(base.id);
+      const authLastSignIn = (activeSession.user as { last_sign_in_at?: string | null }).last_sign_in_at;
+      void touchUserAuthPresence(base.id, authLastSignIn);
       void finalizeUserSession(base)
         .then((ready) => {
           if (generation !== applyGenerationRef.current) return;
