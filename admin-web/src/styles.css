@@ -363,6 +363,16 @@ a { color: var(--accent); }
   width: 100%;
   overflow-x: auto;
 }
+/* Panneau détail / formulaire au-dessus, tableau en dessous (Users, Modération…) */
+.split-pane.form-list-stack.detail-on-top .table-wrap {
+  order: 2;
+}
+.split-pane.form-list-stack.detail-on-top > form,
+.split-pane.form-list-stack.detail-on-top > .edit-panel,
+.split-pane.form-list-stack.detail-on-top > .card.edit-panel,
+.split-pane.form-list-stack.detail-on-top > p.muted {
+  order: 1;
+}
 @media (max-width: 960px) {
   .split-pane { grid-template-columns: 1fr; }
 }

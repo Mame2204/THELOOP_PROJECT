@@ -198,7 +198,7 @@ export function PaymentsPage() {
               </div>
             </div>
 
-            <div className="split-pane" style={{ gap: 16 }}>
+            <div className="split-pane form-list-stack" style={{ gap: 16 }}>
               <div>
                 <h4>Par période d’abonnement</h4>
                 <table className="data-table">

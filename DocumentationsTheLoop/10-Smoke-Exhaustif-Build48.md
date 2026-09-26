@@ -47,8 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **263 / 388** ≈ **68 %** global · **Web 74/109 (68 %)** · **iOS 110/181 (61 %)** · **Android 87/152 (57 %)** |
-| **Admin-web 💻 (hors modération/retraits profonds)** | **~95 %** — reste B6 archiver/transfert · B8 · B9 négatif · PASS prix/messages · B5 planif. optionnel |
-| **Prochain test** | **💻** B6 archiver/transfert · **B8** · **B9** délégué · B5 planifier *(option)* · **📱 build 49+** modération · refus privilège · octroi scan · LoopX |
+| **Admin-web 💻 (hors build 49)** | **~96 %** — retests W-6 · W-11b · catalogue PASS · B9 négatif · B5 planif. *(option)* |
+| **Prochain test 💻** | Voir **« Liste web restante (hors build 49) »** ci-dessous · puis **📱 build 49+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -57,6 +57,27 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
+
+### Liste web restante *(hors build 49 · ne pas refaire ce qui est ✅)*
+
+> **Clarification :** **Paramètres** (`/parametres` + satellites automation / paliers / horaires) = **déjà PASS** (23–26 sept.) — rien à « parcourir » de plus sauf **Étoiles** (retest après migration SQL).
+
+**✅ Déjà validé — ne pas redemander :** B0 session · **B3 Paramètres** (Gates, Pays, Catégories, Permissions, Légal, Plus) · B4 Users / Inviter / Waitlist / Paiements / Compta · octroi manuel PASS *(24 + **26 sept.** héritage + retrait)* · B5 immédiat / historique / détails · B6 contenu + Accueil + Loop · B7 Privilèges / TEAMS / Tirage · standalone · onglets · notifications immédiates.
+
+| ID | Action | Prérequis |
+|----|--------|-----------|
+| **W-6** | `/etoiles` — modifier poids clics / favoris / notes → **Enregistrer** | Migration Supabase **`20260944_spot_star_settings_rls_is_admin.sql`** en prod |
+| **W-11b** | `/pass` → Messages — **Modifier** (ou clic ligne) → **Enregistrer** | Deploy admin-web PR #44 + **hard refresh** |
+| **W-19** | `/pass` → Ops catalogue — **activer / désactiver / archiver** un forfait | — |
+| **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
+| **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
+| **B9-1** | Compte **admin délégué** — ouvrir une URL **sans** permission → refus clair | Overrides Param. → Permissions |
+| **B9-2** | Délégué **avec** `moderation` — modération OK | — |
+| **B9-3** | Délégué **sans** `manage_admins` / `pass_management` — `/parametres` et gestion PASS **inaccessibles** | — |
+
+**🔒 Reporté build 49+ (ne pas compter dans la session web actuelle) :** modération **refus** + notifs partenaire · retraits Phase 1 · filtres modération retest · LoopX / contenu prime · octroi individuel scan partenaire · etc. (voir tableau « Reporté build 49+ »).
+
+**UX déployée :** formulaire / panneau détail **au-dessus**, tableau **en dessous** (`form-list-stack`) — PASS, paliers, étoiles, horaires, tirage, onglets, permissions, Users, Modération, Compta (tableaux empilés).
 
 ### Métriques — pourquoi deux pourcentages ?
 
@@ -725,7 +746,7 @@ Liens Param. → pages satellites :
 - [x] **💻** **Waitlist** → statut `invited` *(23 sept. 2026 · **PASS** · envoi invitation depuis waitlist = même flux que Inviter)*
 
 ### PASS
-- [x] **💻** Octroi manuel PASS *(24 sept. 2026 · héritage gratuit limité · utilisateur passe Prime puis retrait OK)*
+- [x] **💻** Octroi manuel PASS *(24 sept. · héritage gratuit limité · Prime puis retrait · **retest 26 sept.** octroi héritage + retrait OK)*
 - [x] **💻** Prix Guinée · enregistrer *(26 sept. 2026 · testeur **PASS** · W-10 · onglet Prix)*
 - [x] **💻** Messages — **activer / désactiver** modèle *(26 sept. · testeur **PASS**)*
 - [x] **💻** Messages — **archiver** modèle *(26 sept. · testeur **PASS**)*
@@ -1035,7 +1056,11 @@ Admin-web (26 sept. 2026 · testeur · session W) :
   - **FAIL** `/etoiles` — enregistrer poids (RLS super_admin · `20260944`)
   - **FAIL** PASS messages — pas de **Modifier** (fix UI admin-web deploy)
   - **UX** pages Paramètres : formulaire **au-dessus**, liste **en dessous** (`form-list-stack`)
-  - **⏸** B5 planifier/annuler · octroi manuel PASS
+  - **⏸** B5 planifier/annuler
+Admin-web (26 sept. 2026 · testeur · suite) :
+  - **PASS** octroi manuel PASS — héritage + **retrait** (confirmé testeur · ne pas refaire)
+  - **PASS** Users · Paiements · Compta · Privilèges · TEAMS · Tirage — déjà couverts 24 sept. (ne pas refaire)
+  - **Paramètres** : déjà PASS 24–26 sept. (pas un bloc « à parcourir » — seul **W-6 Étoiles** reste)
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
