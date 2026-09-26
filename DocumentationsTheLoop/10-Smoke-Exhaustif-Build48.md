@@ -47,8 +47,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | Élément | Valeur |
 |---------|--------|
 | **Avancement smoke** | **~268 / 388** ≈ **69 %** global · **Web ~86/90 lignes 💻 (≈96 %)** · **iOS 110/181** · **Android 87/152** |
-| **Admin-web 💻 (hors build 49)** | **≈99 %** — **B9-2** modération si grant Demandes · sinon **web bouclé** |
-| **Prochain test 💻** | **build 49+** modération web · ou **B9-2** après ajout droit Demandes au délégué · puis **mobile** |
+| **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
+| **Prochain test** | **📱 iOS** puis **🤖 Android** (parité) — voir synthèse mobile ci-dessous |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -73,7 +73,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
 | **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
 | ~~**B9-1**~~ | **`/pass`** → redirect **Insights** *(26 sept. · **PASS**)* | — |
-| **B9-2** | Délégué + modération **+ accès Demandes** → valider une soumission | **⏸ 26 sept.** modération sans module Demandes · pas d’onglet · retest si grant |
+| ~~**B9-2**~~ | Modération délégué · badge · approuver · Agenda — **PASS 26 sept.** | — |
 | ~~**B9-3**~~ | Menu = Contenu · THE LOOP · Accueil · Insights (vue d’ensemble seule) · **PASS 26 sept.** | — |
 | ~~**W-12–13**~~ | Planifier · modifier · détails · annuler · supprimer campagne — **PASS 26 sept.** | — |
 
@@ -825,7 +825,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Login admin délégué → sidebar / modules alignés sur le jeu sauvegardé *(24 sept. · **26 sept.** connexion URL OK · modules visibles = droits super admin · reste hors périmètre OK)*
 - [x] **💻** Hub **THE LOOP** — tuiles visibles seulement si modules cochés (`content`, `featured`, `insights`, `prime_benefits`…) *(24 sept. 2026 · **PASS** · pas un bug catalogue)*
 - [x] **💻** Module **sans** permission → redirect *(26 sept. · **PASS** · `/pass` → Insights · B9-1)*
-- [ ] **💻** Modération OK si grant `moderation` **+ Demandes visible** *(26 sept. · **SKIP** · modération sans accès module Demandes)*
+- [x] **💻** Modération OK si grant `moderation` **+ Demandes** *(26 sept. · **PASS** · badge · onglet Modération · approuver · event visible Agenda)*
 - [x] **💻** Paramètres / PASS **inaccessibles** *(26 sept. · **PASS** · menu + redirect · B9-3)*
 - [ ] **📱** Admin mobile délégué — thème gris bleu · modules masqués
 - [ ] **🤖** Idem
