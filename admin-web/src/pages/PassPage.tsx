@@ -470,7 +470,7 @@ export function PassPage() {
                               <button
                                 type="button"
                                 className="btn small ghost"
-                                disabled={busy || c.id === INTERMEDIATE_CATALOG_ID}
+                                disabled={busy}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   void setStatus(c, c.status === 'active' ? 'inactive' : 'active');
