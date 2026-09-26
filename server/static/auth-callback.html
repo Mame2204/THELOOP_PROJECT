@@ -455,17 +455,31 @@
         return 'invite';
       }
 
-      function verifyTokenHash(tokenHash, kind) {
+      function verifyTokenHashOnce(tokenHash, otpType) {
         return fetchWithTimeout(supabaseUrl + '/auth/v1/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'apikey': anon },
-          body: JSON.stringify({ type: otpVerifyType(kind), token_hash: tokenHash })
+          body: JSON.stringify({ type: otpType, token_hash: tokenHash })
         }, 20000).then(function (res) {
           return res.json().then(function (body) {
             if (!res.ok) throw new Error(authError(body));
             return body;
           });
         });
+      }
+
+      function verifyTokenHash(tokenHash, kind) {
+        var types =
+          kind === 'recovery'
+            ? ['recovery', 'email']
+            : [otpVerifyType(kind)];
+        var chain = Promise.reject(new Error('Lien invalide'));
+        types.forEach(function (otpType) {
+          chain = chain.catch(function () {
+            return verifyTokenHashOnce(tokenHash, otpType);
+          });
+        });
+        return chain;
       }
 
       function exchangeCode(code) {

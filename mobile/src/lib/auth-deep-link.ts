@@ -1,8 +1,9 @@
+import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
 export type AuthDeepLinkResult =
   | { ok: false }
-  | { ok: true; kind: 'session' | 'recovery' | 'invite' };
+  | { ok: true; kind: 'session' | 'recovery' | 'invite'; session: Session };
 
 /** Extrait hash + query (PKCE code ou tokens implicit). */
 export function extractAuthParams(url: string): Record<string, string> {
@@ -75,10 +76,17 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
       }
       if (data.session) {
         const resolvedKind = otpType === 'recovery' || kind === 'recovery' ? 'recovery' : kind;
+        const { error: persistErr } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        if (persistErr) {
+          console.warn('[Auth] setSession après verifyOtp:', persistErr.message);
+        }
         if (__DEV__) {
           console.log('[Auth] verifyOtp OK —', data.session.user.email ?? data.session.user.id, resolvedKind);
         }
-        return { ok: true, kind: resolvedKind };
+        return { ok: true, kind: resolvedKind, session: data.session };
       }
     }
     return { ok: false };
@@ -94,7 +102,15 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
     if (__DEV__ && data.session) {
       console.log('[Auth] session PKCE OK —', data.session.user.email ?? data.session.user.id, kind);
     }
-    return data.session ? { ok: true, kind } : { ok: false };
+    if (!data.session) return { ok: false };
+    const { error: persistErr } = await supabase.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    });
+    if (persistErr) {
+      console.warn('[Auth] setSession après PKCE:', persistErr.message);
+    }
+    return { ok: true, kind, session: data.session };
   }
 
   const accessToken = params.access_token;
@@ -117,5 +133,6 @@ export async function completeAuthSessionFromUrl(url: string): Promise<AuthDeepL
     console.log('[Auth] session implicit OK —', data.session.user.email ?? data.session.user.id, kind);
   }
 
-  return data.session ? { ok: true, kind } : { ok: false };
+  if (!data.session) return { ok: false };
+  return { ok: true, kind, session: data.session };
 }

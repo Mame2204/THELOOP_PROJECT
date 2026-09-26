@@ -532,16 +532,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!active) return;
         if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') return;
         if (event === 'PASSWORD_RECOVERY') {
-          passwordRecoveryPendingRef.current = true;
-          setPasswordRecoveryPending(true);
-          emitAuthFlowEvent('password_recovery');
-          setTimeout(() => {
-            if (!active) return;
-            void runApply(session);
-          }, 0);
+          beginPasswordRecovery();
+          // Ne pas runApply : évite navigation / enrichissement qui invalident la session recovery.
           return;
         }
         if (event === 'SIGNED_IN') {
+          if (passwordRecoveryPendingRef.current) {
+            return;
+          }
           void import('@/lib/home-refresh').then((m) => m.emitHomeRefresh('auth-session'));
           setTimeout(() => {
             if (!active) return;
@@ -564,7 +562,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
 
-  }, [finalizeUserSession]);
+  }, [beginPasswordRecovery, finalizeUserSession]);
 
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) return;
@@ -594,10 +592,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const result = await completeAuthSessionFromUrl(url);
       if (result.ok && supabase) {
+        const sessionFromLink = result.session;
         const { data } = await supabase.auth.getSession();
-        if (data.session) {
+        const activeSession = data.session ?? sessionFromLink;
+        if (activeSession) {
           if (result.kind === 'invite') {
-            const email = data.session.user.email ?? '';
+            const email = activeSession.user.email ?? '';
             const eligibility = email
               ? await checkAdminInviteActivationEligibility(email)
               : 'no_pending_invite';
@@ -615,7 +615,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               return;
             }
             beginPasswordRecovery();
-            await applySessionRef.current(data.session);
+            await applySessionRef.current(activeSession);
             if (__DEV__) console.log('[Auth] invite — saisie nouveau mot de passe');
             return;
           }
@@ -625,9 +625,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (__DEV__) console.log('[Auth] recovery — saisie nouveau mot de passe');
             return;
           }
-          await applySessionRef.current(data.session);
-          await syncAuthUserProfileRef.current(data.session.user);
-          await fulfillPendingWelcomeRef.current(data.session.user);
+          await applySessionRef.current(activeSession);
+          await syncAuthUserProfileRef.current(activeSession.user);
+          await fulfillPendingWelcomeRef.current(activeSession.user);
           if (__DEV__) console.log('[Auth] connecté via lien e-mail');
           void import('@/lib/home-refresh').then((m) => m.emitHomeRefresh('auth-session'));
           return;
@@ -1512,13 +1512,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!activeSession && recoveryLinkUrlRef.current) {
       const retry = await completeAuthSessionFromUrl(recoveryLinkUrlRef.current);
       if (retry.ok) {
-        activeSession = (await supabase.auth.getSession()).data.session;
+        activeSession =
+          (await supabase.auth.getSession()).data.session ?? retry.session ?? null;
         if (retry.kind === 'recovery') beginPasswordRecovery();
       }
     }
     if (!activeSession) {
       throw new Error(
-        'Lien expiré ou session perdue. Demandez un **nouvel** e-mail depuis l’app, ouvrez le lien **dans le mail** (pas l’aperçu) — l’app doit s’ouvrir seule.',
+        'Lien expiré ou session perdue. Demandez un nouvel e-mail depuis l’app, ouvrez le lien dans le mail (pas l’aperçu) — l’app doit s’ouvrir seule.',
       );
     }
     const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
