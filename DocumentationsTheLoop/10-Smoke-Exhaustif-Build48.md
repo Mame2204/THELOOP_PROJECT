@@ -68,8 +68,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |----|--------|-----------|
 | ~~**W-6**~~ | ~~Étoiles~~ — **PASS 26 sept.** (migration `20260944` + poids OK) | — |
 | ~~**W-11b**~~ | ~~Messages Modifier~~ — **PASS 26 sept.** | — |
-| **W-19b** | `/pass` → Catalogue — **Désactiver** forfait *(retest post-fix RPC + layout)* | Deploy admin-web |
-| ~~**W-19**~~ | Activer / archiver forfait · **Retirer** octroi — **PASS 26 sept.** | — |
+| **W-19b** | `/pass` → Catalogue — **Désactiver** forfait *(retest post-fix #46)* | Deploy admin-web |
+| ~~**W-19**~~ | Activer / archiver forfait · **Retirer** octroi · layout octroi — **PASS 26 sept.** | — |
 | **W-12** | `/notifications` — **planifier** campagne +3 min → statut `sent` *(⏳ cron)* | Optionnel |
 | **W-13** | Campagne planifiée — **modifier** puis **annuler** (`cancelled`) | Optionnel · après W-12 |
 | **B9-1** | Compte **admin délégué** — ouvrir une URL **sans** permission → refus clair | Overrides Param. → Permissions |
@@ -754,7 +754,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Messages — **modifier** un modèle *(26 sept. · **PASS** · W-11b)*
 - [x] **💻** Catalogue PASS — **création** forfait *(26 sept. · testeur **PASS** · onglet Ops)*
 - [x] **💻** Catalogue PASS — activer / **archiver** forfait · **Retirer** octroi *(26 sept. · **PASS**)*
-- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** · + chevauchement sticky formulaire · fix RPC `admin_set_app_setting` + CSS · **retest W-19b**)*
+- [ ] **💻** Catalogue PASS — **Désactiver** forfait *(26 sept. · **FAIL** puis layout OK · persistance statut · fix reload + legacy GN + formulaire ne réactive plus · **retest W-19b post-deploy**)*
 - [ ] **💻** Suppression définitive modèle ou forfait *(26 sept. · **N/A UI** — archiver seulement)*
 
 ### Paiements & Compta
@@ -821,7 +821,7 @@ Liens Param. → pages satellites :
 
 > Compte `admin` (non super) avec overrides **par utilisateur** (écran Param. → Permissions).
 
-- [x] **💻** Login admin délégué → sidebar / modules alignés sur le jeu sauvegardé *(24 sept. · **retest 26 sept. connexion OK** · reconnexion après edit permissions)*
+- [x] **💻** Login admin délégué → sidebar / modules alignés sur le jeu sauvegardé *(24 sept. · **26 sept.** connexion URL OK · modules visibles = droits super admin · reste hors périmètre OK)*
 - [x] **💻** Hub **THE LOOP** — tuiles visibles seulement si modules cochés (`content`, `featured`, `insights`, `prime_benefits`…) *(24 sept. 2026 · **PASS** · pas un bug catalogue)*
 - [ ] **💻** Module **sans** permission → refus / redirect explicite
 - [ ] **💻** Modération OK si grant `moderation`
