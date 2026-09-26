@@ -660,10 +660,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/payments` | Paiements | [x] | **PASS 24 sept.** · liste transactions | [x] |
 | `/compta` | Compta | [x] | **PASS 24 sept.** · export CSV · revenus · paniers · pagination | [x] |
 | `/notifications` | Notifications | [x] | **PASS 24 sept.** · envoi immédiat · rôles · favoris · anniversaire · e-mail ciblé (PR #36) | [x] |
-| `/automation` | Automatisations | [ ] | Jobs · exécuter | [x] |
-| `/milestones` | Paliers | [ ] | Éditer · archiver | [x] |
-| `/etoiles` | Étoiles | [ ] | Spots / outils / parcours | [x] |
-| `/horaires` | Horaires | [ ] | Presets ouverture | [x] |
+| `/automation` | Automatisations | [x] | **PASS 26 sept.** · W-4 | [x] |
+| `/milestones` | Paliers | [x] | **PASS 26 sept.** · W-5 | [x] |
+| `/etoiles` | Étoiles | [ ] | **FAIL 26 sept.** · W-6 · RLS `20260944` | [x] |
+| `/horaires` | Horaires | [x] | **PASS 26 sept.** · W-7 | [x] |
 | `/parametres` | Paramètres | [x] | **PASS 24 sept.** · B3 Gates · Pays · Catég. · Légal · Plus · Permissions (par admin) | [x] |
 | `/types-privileges` | Types privilèges | [x] | **PASS 24 sept.** · création types *(CRUD déjà en page)* | [x] |
 | `/privilege-standalone` | Standalone | [x] | **PASS 24 sept.** · CRUD · création **désactivée** · **Activer / Désactiver** · biblio octroi = actifs | [x] |
