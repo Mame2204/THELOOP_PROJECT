@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "gn.theloop.app",
-      "buildNumber": "48",
+      "buildNumber": "49",
       "icon": "./assets/icon.png",
       "backgroundColor": "#F4FCFD",
       "splash": {
@@ -46,7 +46,7 @@
         "imageWidth": 220
       },
       "package": "gn.theloop.app",
-      "versionCode": 48,
+      "versionCode": 49,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "android.permission.RECORD_AUDIO",
