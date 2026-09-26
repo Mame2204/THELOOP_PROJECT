@@ -151,7 +151,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **P2** | **C2** partenaire invité → Espace Pro | [ ] | — | |
 | **P2** | **C3/C4** mailto · filleul +1 | [ ] | — | |
 | **P2** | **B9** admin délégué **mobile** | **PASS** 📱🤖 | PASS web | Insights OK · approbation demandes → **49+** |
-| **🔒 build 49+** | LoopX · octroi individuel · modération refus 💻 · Phase 1 (7) | [ ] | [ ] | Hors session actuelle |
+| **🔒 build 49+** | **Réception push** (C1 · modération · refus privilège…) · M1-U2 · Étoiles 📱 · octroi individuel · LoopX · **🤖 D1** icône | [ ] | [ ] | **Modération métier** (refus/resoumission) OK 48 · **notifs** = 49 |
 
 **Non aligné parité (volontaire)** : A4-U15/U16/U17/U18/U19 🤖 marqués **⏸ N/A / reporté** (pas de contenu publié ou suite A4-4) — **ne pas** cocher 🤖 depuis 📱.
 
@@ -804,8 +804,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Onglet Modération
 
-> **Build 48** : valider OK · refuser / notif partenaire → reporter **build 49** (PR #7).  
-> **24 sept. testeur** : modération approfondie + **retraits** → **build 49+** (aligné bulle mobile).  
+> **Build 48** : **valider / refuser / resoumettre** — **PASS** testeur 26 sept. (💻 + 🤖 admin).  
+> **Notif partenaire** (push + inbox après décision modération) — **FAIL boucle infinie** · même famille que C1 · **retest bulle 49** (fix `NotificationsContext` / pas de ré-insert push). **Ne pas recocher C1 modération ni refaire le flux modération pour tester les notifs.**  
+> **Reste B2 💻** : **retraits** Phase 1 · filtres retest.  
 > **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
 
 - [x] **💻🤖✓** Chargement soumissions pending
@@ -813,7 +814,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **💻** **Valider** → publié mobile *(build 48 · 22 sept.)*
 - [ ] **💻** **Valider** spot → visible app · notif partenaire *(reprise build 49)*
 - [ ] **💻** **Valider** événement (intervenant sans titre) → Agenda
-- [ ] **💻** **Refuser** + motif → absent catalogue
+- [x] **💻** **Refuser** + motif → absent catalogue *(26 sept. soir · **PASS** métier · resoumission OK · **notif partenaire = boucle → 49**)*
 - [ ] **💻** Section **Demandes de retrait** — liste pending
 - [ ] **💻** **Approuver retrait** → disparaît app (Phase 1)
 - [ ] **💻** **Refuser retrait** → reste publié
@@ -944,13 +945,13 @@ Liens Param. → pages satellites :
 
 | Scénario | 📱 | 🤖 |
 |----------|----|----|
-| Campagne immédiate Membres → membre reçoit inbox + 1 push OS | [ ] | [ ] |
+| Campagne immédiate Membres → membre reçoit inbox + 1 push OS | [ ] | [x] *(26 sept. soir · testeur **PASS** · 💻 envoi + 🤖 réception · **sans boucle**)* |
 | Ciblage membre seul → Prime **ne reçoit pas** | [ ] | [ ] |
 | Campagne planifiée Prime → **⏳** Prime reçoit | [ ] | [ ] |
 | Annulation planifiée → pas d’envoi | [ ] | [ ] |
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
-| Modération décision → partenaire notifié | [ ] | [ ] |
+| Modération décision → partenaire notifié | [ ] | [ ] *(26 sept. · flux modération OK · **réception notif = boucle infinie** · **bulle 49**)* |
 | Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 🤖 confirmé testeur · cf. 23 sept. MTN)* |
 
 ## C2 — Auth transversal
@@ -1216,6 +1217,11 @@ Parité agent (26 sept. 2026) :
   - **Non aligné** : set_password · Phase 1 · A4 retraits 🤖 N/A · **🤖 D1** cold start icône · **Étoiles 📱** bulle 49
 Doc (26 sept. soir · agent) :
   - **Alignement journal ↔ checklist** : coches **M2** (sauf Étoiles) · **B9 mobile** · **D1 📱** · **A2-U2 N/A** · **Users** dernière connexion — le % pilotage suivait le journal sans cocher les lignes `- [ ]` (d’où % « figé »).
+Modération contenu (26 sept. soir · testeur · **build 48**) :
+  - **PASS** : refus 💻 · refus 🤖 admin · resoumission partenaire Android — **métier OK**
+  - **FAIL** : **notifications** partenaire (push/inbox) — **boucle infinie** → **bulle 49** · ne pas re-tester les notifs avant build
+Campagnes admin (26 sept. · testeur) :
+  - **PASS 💻 + mobile** : **campagne immédiate** (envoi admin B5 / module Notifications) — **pas de boucle** côté testeur · cocher C1 « campagne immédiate » après confirmation si besoin
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
