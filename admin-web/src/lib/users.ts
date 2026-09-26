@@ -135,7 +135,7 @@ export async function listAdminUsers(options: {
   accountStatus?: 'invited' | 'active' | 'suspended' | 'archived' | null;
   /** Sans activité app (last_seen_at) depuis N jours — filtre SQL, pas seulement la page courante. */
   inactiveDays?: number | null;
-}): Promise<{ users: AdminUserRow[]; total: number; error?: string }> {
+}): Promise<{ users: AdminUserRow[]; total: number; error?: string; activityWarning?: string }> {
   const pageSize = options.pageSize ?? 20;
   let query = supabase
     .from('users')
@@ -184,21 +184,53 @@ export async function listAdminUsers(options: {
   }
 
   const ids = (data ?? []).map((r) => String(r.id));
-  const activity = await fetchUsersActivity(ids);
+  const { activity, warning: activityWarning } = await fetchUsersActivity(ids);
 
   return {
     users: (data ?? []).map((r) =>
       mapUser(r as Record<string, unknown>, activity[String(r.id)]?.lastSignInAt ?? null),
     ),
     total: count ?? 0,
+    activityWarning,
   };
+}
+
+function parseSignInActivityJson(
+  raw: unknown,
+): Record<string, { lastSignInAt: string | null }> {
+  if (!raw || typeof raw !== 'object') return {};
+  const out: Record<string, { lastSignInAt: string | null }> = {};
+  for (const [id, entry] of Object.entries(raw as Record<string, unknown>)) {
+    const row = entry as { lastSignInAt?: string | null };
+    out[id] = { lastSignInAt: typeof row.lastSignInAt === 'string' ? row.lastSignInAt : null };
+  }
+  return out;
 }
 
 async function fetchUsersActivity(
   userIds: string[],
-): Promise<Record<string, { lastSignInAt: string | null }>> {
+): Promise<{
+  activity: Record<string, { lastSignInAt: string | null }>;
+  warning?: string;
+}> {
+  if (userIds.length === 0) return { activity: {} };
+
+  const slice = userIds.slice(0, 50);
+  const { data: rpcData, error: rpcError } = await supabase.rpc('admin_users_sign_in_activity', {
+    p_user_ids: slice,
+  });
+  if (!rpcError) {
+    return { activity: parseSignInActivityJson(rpcData) };
+  }
+
+  const rpcHint = rpcError.message.includes('admin_users_sign_in_activity')
+    ? 'Appliquer la migration SQL 20260945 sur Supabase.'
+    : rpcError.message;
+
   const API_URL = getApiUrl();
-  if (!API_URL || userIds.length === 0) return {};
+  if (!API_URL) {
+    return { activity: {}, warning: rpcHint };
+  }
   try {
     const res = await fetch(`${API_URL}/api/admin/users-activity`, {
       method: 'POST',
@@ -206,15 +238,18 @@ async function fetchUsersActivity(
         Authorization: `Bearer ${(await getAccessToken()) ?? ''}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ userIds }),
+      body: JSON.stringify({ userIds: slice }),
     });
     const body = (await res.json()) as {
       activity?: Record<string, { lastSignInAt: string | null }>;
+      error?: string;
     };
-    if (!res.ok) return {};
-    return body.activity ?? {};
+    if (!res.ok) {
+      return { activity: {}, warning: body.error ?? rpcHint };
+    }
+    return { activity: body.activity ?? {} };
   } catch {
-    return {};
+    return { activity: {}, warning: rpcHint };
   }
 }
 

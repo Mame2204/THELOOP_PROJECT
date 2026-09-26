@@ -67,6 +67,7 @@ export function UsersPage() {
   >('all');
   const [inactiveDays, setInactiveDays] = useState<0 | 7 | 30 | 90>(0);
   const [error, setError] = useState<string | null>(null);
+  const [activityWarning, setActivityWarning] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [selected, setSelected] = useState<AdminUserRow | null>(null);
@@ -90,6 +91,7 @@ export function UsersPage() {
 
   const loadUsers = useCallback(async () => {
     setError(null);
+    setActivityWarning(null);
     const res = await listAdminUsers({
       page,
       pageSize: PAGE,
@@ -102,6 +104,7 @@ export function UsersPage() {
       inactiveDays: inactiveDays || null,
     });
     if (res.error) setError(res.error);
+    if (res.activityWarning) setActivityWarning(res.activityWarning);
     setUsers(res.users);
     setTotal(res.total);
   }, [
@@ -368,6 +371,17 @@ export function UsersPage() {
           </div>
 
           {error ? <p className="error">{error}</p> : null}
+          {activityWarning ? (
+            <p className="muted" style={{ marginBottom: 12 }}>
+              Connexions Auth : {activityWarning}
+            </p>
+          ) : null}
+          <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>
+            <strong>Dernière connexion</strong> = dernier login mot de passe / OTP (Supabase Auth).{' '}
+            <strong>Dernière activité</strong> = dernier passage dans l’app mobile avec session
+            ouverte. Un compte peut avoir une activité app sans date Auth si l’invitation n’est pas
+            finalisée ou si les données Auth n’ont pas été remontées.
+          </p>
 
           <div className="split-pane form-list-stack detail-on-top">
             <div className="table-wrap">
@@ -378,8 +392,8 @@ export function UsersPage() {
                     <th>Rôle</th>
                     <th>Statut</th>
                     <th>Pays</th>
-                    <th>Dernière connexion</th>
-                    <th>Dernière activité</th>
+                    <th>Dernière connexion (Auth)</th>
+                    <th>Dernière activité (app)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -421,7 +435,9 @@ export function UsersPage() {
                       <td className="activity-cell">
                         <strong>{formatWhen(u.lastSignInAt)}</strong>
                         {u.lastSignInAt ? (
-                          <div className="meta">Auth Supabase</div>
+                          <div className="meta">Login Auth</div>
+                        ) : u.lastSeenAt ? (
+                          <div className="meta">Pas de login Auth enregistré</div>
                         ) : (
                           <div className="meta activity-stale">Jamais connecté</div>
                         )}

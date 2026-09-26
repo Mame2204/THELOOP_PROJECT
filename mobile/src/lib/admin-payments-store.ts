@@ -374,13 +374,39 @@ export async function createAccountingSettlement(input: {
   }
 }
 
+function parseSignInActivityRpc(
+  raw: unknown,
+): Record<string, { lastSignInAt: string | null; email: string | null }> {
+  if (!raw || typeof raw !== 'object') return {};
+  const out: Record<string, { lastSignInAt: string | null; email: string | null }> = {};
+  for (const [id, entry] of Object.entries(raw as Record<string, unknown>)) {
+    const row = entry as { lastSignInAt?: string | null };
+    out[id] = {
+      lastSignInAt: typeof row.lastSignInAt === 'string' ? row.lastSignInAt : null,
+      email: null,
+    };
+  }
+  return out;
+}
+
 export async function fetchUsersAuthActivity(userIds: string[]): Promise<{
   activity: Record<string, { lastSignInAt: string | null; email: string | null }>;
   error?: string;
 }> {
   if (!userIds.length) return { activity: {} };
+
+  if (supabase) {
+    const slice = userIds.slice(0, 50);
+    const { data, error } = await supabase.rpc('admin_users_sign_in_activity', {
+      p_user_ids: slice,
+    });
+    if (!error) {
+      return { activity: parseSignInActivityRpc(data) };
+    }
+  }
+
   if (!isAdminBackendConfigured()) {
-    return { activity: {} };
+    return { activity: {}, error: 'Activité Auth indisponible.' };
   }
   try {
     const response = await fetch(`${BACKEND_API_URL}/api/admin/users-activity`, {
