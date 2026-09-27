@@ -164,3 +164,4 @@ $$;
 
 REVOKE ALL ON FUNCTION public.apply_partner_benefit_validation(TEXT, TEXT[], BOOLEAN) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.apply_partner_benefit_validation(TEXT, TEXT[], BOOLEAN) TO anon, authenticated, service_role;
+-- applied via CI Supabase migrations (db push) 2026-09-27
