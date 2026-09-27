@@ -1053,18 +1053,15 @@ export async function sendPartnerBenefitValidatedNotification(input: {
   placeLabel?: string | null;
   displayContext?: string | null;
 }): Promise<void> {
-  const {
-    resolveBenefitNotificationPlace,
-    copyBenefitValidatedMessage,
-  } = await import('@/lib/benefit-notification-copy');
-  const place = resolveBenefitNotificationPlace({
-    contentTitle: input.displayContext,
-    placeLabel: input.placeLabel,
-    partnerName: input.partnerName,
-  });
+  const { copyBenefitValidatedMessage } = await import('@/lib/benefit-notification-copy');
   await appendUserNotification(input.memberUserId, {
     title: 'Privilège validé',
-    message: copyBenefitValidatedMessage(place),
+    message: copyBenefitValidatedMessage({
+      privilegeTitle: input.benefitTitle,
+      contentTitle: input.displayContext,
+      placeLabel: input.placeLabel,
+      partnerName: input.partnerName,
+    }),
     audience: 'individual',
   });
 }
@@ -1076,17 +1073,14 @@ export async function sendPartnerBenefitCancelledNotification(input: {
   partnerName: string;
   displayContext?: string | null;
 }): Promise<void> {
-  const {
-    resolveBenefitNotificationPlace,
-    copyBenefitCancelledMessage,
-  } = await import('@/lib/benefit-notification-copy');
-  const place = resolveBenefitNotificationPlace({
-    contentTitle: input.displayContext,
-    partnerName: input.partnerName,
-  });
+  const { copyBenefitCancelledMessage } = await import('@/lib/benefit-notification-copy');
   await appendUserNotification(input.memberUserId, {
     title: 'Validation annulée',
-    message: copyBenefitCancelledMessage(place),
+    message: copyBenefitCancelledMessage({
+      privilegeTitle: input.benefitTitle,
+      contentTitle: input.displayContext,
+      partnerName: input.partnerName,
+    }),
     audience: 'individual',
   });
 }
@@ -1099,17 +1093,17 @@ export async function sendBenefitValidationPendingNotification(input: {
   displayContext?: string | null;
   timeoutMinutes: number;
 }): Promise<void> {
-  const {
-    resolveBenefitNotificationPlace,
-    copyBenefitPendingMessage,
-  } = await import('@/lib/benefit-notification-copy');
-  const place = resolveBenefitNotificationPlace({
-    contentTitle: input.displayContext,
-    partnerName: input.partnerName,
-  });
+  const { copyBenefitPendingMessage } = await import('@/lib/benefit-notification-copy');
   await appendUserNotification(input.memberUserId, {
     title: 'En attente chez le partenaire',
-    message: copyBenefitPendingMessage(place, input.timeoutMinutes),
+    message: copyBenefitPendingMessage(
+      {
+        privilegeTitle: input.benefitTitle,
+        contentTitle: input.displayContext,
+        partnerName: input.partnerName,
+      },
+      input.timeoutMinutes,
+    ),
     audience: 'individual',
   });
 }

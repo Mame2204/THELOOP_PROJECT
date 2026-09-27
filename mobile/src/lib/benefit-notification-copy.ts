@@ -1,50 +1,88 @@
-/** Libellé lieu pour notifs privilège : contenu lié (spot / event / outil) > partenaire. */
-export function resolveBenefitNotificationPlace(input: {
+/** Contexte notif / push privilège : toujours le titre catalogue + lieu lié si distinct. */
+export type BenefitNotificationContext = {
+  privilegeTitle: string;
   contentTitle?: string | null;
   placeLabel?: string | null;
   partnerName?: string | null;
-}): string {
-  const content = input.contentTitle?.trim();
-  if (content) return content;
-  const place = input.placeLabel?.trim();
-  if (place) return place;
-  const partner = input.partnerName?.trim();
-  if (partner) return partner;
-  return "l'établissement";
+};
+
+function norm(s: string | null | undefined): string {
+  return (s ?? '').trim();
 }
 
-export function copyBenefitValidatedMessage(place: string): string {
-  return `Validation confirmée à ${place}.`;
+function sameLabel(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
 }
 
-export function copyBenefitCancelledMessage(place: string): string {
-  return `La validation à ${place} a été annulée. Vous pouvez réutiliser votre privilège.`;
+/** Lieu « chez … » = spot / événement / outil (content_title), sinon partenaire si ≠ nom privilège. */
+export function resolveBenefitLinkedPlace(input: BenefitNotificationContext): string | null {
+  const privilege = norm(input.privilegeTitle) || 'Privilège';
+  const content = norm(input.contentTitle);
+  if (content && !sameLabel(content, privilege)) return content;
+  if (content) return null;
+
+  const place = norm(input.placeLabel);
+  if (place && !sameLabel(place, privilege)) return place;
+
+  const partner = norm(input.partnerName);
+  if (partner && !sameLabel(partner, privilege)) return partner;
+
+  return null;
 }
 
-export function copyBenefitPendingMessage(place: string, timeoutMinutes: number): string {
-  return `Présentez votre QR code à ${place} (${timeoutMinutes} min max).`;
+export function normalizeBenefitNotificationLabels(input: BenefitNotificationContext): {
+  privilege: string;
+  place: string | null;
+} {
+  const privilege = norm(input.privilegeTitle) || 'Privilège';
+  const place = resolveBenefitLinkedPlace(input);
+  return { privilege, place };
 }
 
-/** Titre affiché côté partenaire (scan) : lieu lié, pas le nom catalogue seul. */
+export function copyBenefitValidatedMessage(input: BenefitNotificationContext): string {
+  const { privilege, place } = normalizeBenefitNotificationLabels(input);
+  if (place) {
+    return `Votre privilège « ${privilege} » a été validé chez ${place}.`;
+  }
+  return `Votre privilège « ${privilege} » a été validé.`;
+}
+
+export function copyBenefitCancelledMessage(input: BenefitNotificationContext): string {
+  const { privilege, place } = normalizeBenefitNotificationLabels(input);
+  if (place) {
+    return `La validation du privilège « ${privilege} » chez ${place} a été annulée. Vous pouvez réutiliser votre privilège.`;
+  }
+  return `La validation du privilège « ${privilege} » a été annulée. Vous pouvez réutiliser votre privilège.`;
+}
+
+export function copyBenefitPendingMessage(input: BenefitNotificationContext, timeoutMinutes: number): string {
+  const { privilege, place } = normalizeBenefitNotificationLabels(input);
+  if (place) {
+    return `Présentez votre QR code chez ${place} pour le privilège « ${privilege} » (${timeoutMinutes} min max).`;
+  }
+  return `Présentez votre QR code pour le privilège « ${privilege} » (${timeoutMinutes} min max).`;
+}
+
+/** Écran partenaire (scan) : lieu en titre, privilège catalogue en sous-ligne. */
 export function resolvePartnerPendingBenefitHeadline(input: {
   contentTitle?: string | null;
   establishmentTitle?: string | null;
   partnerName?: string | null;
   catalogTitle?: string | null;
 }): string {
+  const privilege = norm(input.catalogTitle) || 'Privilège';
   const linked =
-    input.contentTitle?.trim() ||
-    input.establishmentTitle?.trim() ||
-    input.partnerName?.trim();
-  if (linked) return linked;
-  return input.catalogTitle?.trim() || 'Demande de validation';
+    norm(input.contentTitle) || norm(input.establishmentTitle) || norm(input.partnerName);
+  if (linked && !sameLabel(linked, privilege)) return linked;
+  return privilege;
 }
 
-export function shouldShowCatalogSubtitle(
+/** Afficher la ligne « Privilège : … » sous le lieu (plusieurs privilèges sur un même spot). */
+export function shouldShowPrivilegeSubtitle(
   headline: string,
   catalogTitle?: string | null,
 ): boolean {
-  const cat = catalogTitle?.trim();
+  const cat = norm(catalogTitle);
   if (!cat) return false;
-  return cat.toLowerCase() !== headline.trim().toLowerCase();
+  return !sameLabel(headline, cat);
 }

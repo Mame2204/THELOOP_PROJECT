@@ -1230,7 +1230,8 @@ Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) 
   - **PASS C1-MOD** 🤖 : modération contenu · refus (+ resoumission) · 1 notif + push · **pas de boucle**
   - **UX 💻** : badge / onglets Demandes pas auto-incrémentés → fix admin-web (refresh 45s + event)
   - **UX 🤖** : aperçu image noir création event/spot → fix `ImageUploadField` (preview https après upload)
-  - **Suite** : refus privilège notifs → activate/date naissance → Étoiles
+  - **PASS C1-REFUS** 🤖 : scan QR · valider/annuler · 1 push + cloche · pas de boucle · copy lieu (fix messages)
+  - **Suite** : activate/date naissance → Étoiles · migration **20260947** Supabase + deploy API
   - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagne immédiate admin
 
 Phase 1 retests (7)     : PASS / FAIL —
