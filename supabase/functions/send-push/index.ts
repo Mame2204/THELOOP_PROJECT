@@ -37,6 +37,9 @@ type ExpoTicket =
   | { status: 'ok'; id: string }
   | { status: 'error'; message?: string; details?: { error?: string } };
 
+const NON_ADMIN_MAX_RECIPIENTS = 50;
+const INBOX_ECHO_WINDOW_MS = 15 * 60 * 1000;
+
 async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
@@ -84,7 +87,7 @@ Deno.serve(async (req) => {
     }
 
     const payload = (await req.json()) as PushBody;
-    const userIds = [...new Set((payload.userIds ?? []).filter((id) => /^[0-9a-f-]{36}$/i.test(id)))];
+    let userIds = [...new Set((payload.userIds ?? []).filter((id) => /^[0-9a-f-]{36}$/i.test(id)))];
     const title = (payload.title ?? '').trim();
     const body = (payload.body ?? '').trim();
 
@@ -96,6 +99,48 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
+
+    const { data: callerProfile } = await admin
+      .from('users')
+      .select('user_role, is_active')
+      .eq('id', authUser.id)
+      .maybeSingle();
+    const callerRole = String(callerProfile?.user_role ?? '');
+    const callerIsAdmin =
+      callerProfile?.is_active === true && (callerRole === 'admin' || callerRole === 'super_admin');
+
+    // Hors admin, le push n'est que l'écho d'une notification inbox tout juste
+    // écrite pour ce destinataire (les droits d'écriture inbox sont portés par
+    // la RLS / les RPC). Sans ce filtre, tout compte connecté pouvait envoyer
+    // un message arbitraire à n'importe quel utilisateur.
+    if (!callerIsAdmin) {
+      if (userIds.length > NON_ADMIN_MAX_RECIPIENTS) {
+        return new Response(JSON.stringify({ error: 'Trop de destinataires.' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const since = new Date(Date.now() - INBOX_ECHO_WINDOW_MS).toISOString();
+      const { data: inboxRows, error: inboxErr } = await admin
+        .from('user_notifications')
+        .select('user_id')
+        .in('user_id', userIds)
+        .gte('created_at', since);
+      if (inboxErr) {
+        return new Response(JSON.stringify({ error: inboxErr.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const withInbox = new Set((inboxRows ?? []).map((r) => String(r.user_id)));
+      userIds = userIds.filter((id) => withInbox.has(id));
+      if (!userIds.length) {
+        return new Response(JSON.stringify({ error: 'forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
     const { data: rows, error: tokenErr } = await admin
       .from('user_push_tokens')
       .select('expo_push_token, user_id')

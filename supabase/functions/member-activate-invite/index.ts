@@ -100,6 +100,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Cette route ne prouve pas la possession de la boîte mail : connaître l'e-mail
+    // suffit à fixer le mot de passe. Un compte d'administration passe donc
+    // obligatoirement par le lien reçu par e-mail (ou « Mot de passe oublié »).
+    const inviteRole = String(invite.user_role ?? '').trim().toLowerCase();
+    if (inviteRole === 'admin' || inviteRole === 'super_admin') {
+      return new Response(
+        JSON.stringify({
+          error:
+            'Pour un compte administrateur, ouvrez le lien d\'activation reçu par e-mail, ou utilisez « Mot de passe oublié » avec cette adresse.',
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const { data: listed, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     if (listErr) {
       return new Response(JSON.stringify({ error: listErr.message }), {
