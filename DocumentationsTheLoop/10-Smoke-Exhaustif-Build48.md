@@ -50,8 +50,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Admin-web 💻** | **≈ 97 %** · reste **B1** éditeurs contenu (3 routes) · opt. migration **39** |
 | **Prochain test device** | **Build 53** (*A1 activate* identité · CGU · DOB · PR **#64**) **puis / ou** **build 54+** (approve retrait **super admin mobile** · PR **#69**) |
 | **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** — **1 cas** checklist |
-| **⏸ Build 54+ (mobile admin)** | Approve retrait persistant + notifs partenaire retrait *(SQL **20260952** OK · code **#69** sur `main`)* |
-| **Binaire actif** | **🤖 Android 51** (Play test interne) · **53** en attente EAS · **54** = retrait mobile admin |
+| **⏸ Prochain build mobile** | Approve retrait **super admin app** *(faux positif bulle 51)* + notifs · activate CGU/DOB · SQL **52** OK · **#69** sur `main` |
+| **Binaire actif** | **🤖 Android 51** (Play test interne) · **Bulle 51 = clôturée testeur 27 sept.** |
+| **Prochain binaire EAS** | **Build 53** recommandé *(1 seul build : activate **#64** + retrait admin mobile **#69** · `main`)* |
 | **Bloqué avant 51** | ~~D1 🤖~~ · ~~M1-U2~~ · ~~modération notifs~~ — **PASS build 51** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -485,7 +486,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260949_admin_orphan_delete_auth_user.sql` — suppression orphelin inclut **auth.users** *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260950_invite_activation_preserve_names.sql` — identité activation > Membre/THE LOOP *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260952_admin_approve_partner_withdrawal.sql` — RPC approve retrait partenaire *(27 sept. · **OK Supabase** · testeur)*
-- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
+- [x] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(27 sept. · **OK Supabase** testeur · redeploy Edge invite **optionnel** — SQL `handle_new_auth_user` suffit pour défauts)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -542,8 +543,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱🤖** Mode **activate** — prénom/nom saisis enregistrés (pas Membre/THE LOOP) · **CGU** · **DOB** *(retest **build 53** · PR **#64** + **20260950**)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
-- [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
+- [x] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(27 sept. · **PASS** testeur bulle 51 · lien mail · boutons OK)*
+- [x] **🤖** Idem *(27 sept. · parité attestation · cf. 📱)*
 - [x] **🤖** Recovery → **set_password in-app** via « Ouvrir l’application » *(27 sept. 2026 · **PASS** · build 51 · latence Render au réveil · OK)*
 - [x] **📱** Idem *(27 sept. · **SANS53-M1-U2 PASS** · attestation testeur · parité 🤖 build 51)*
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
@@ -870,9 +871,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/onglets` | Onglets | [x] | **PASS 24 sept.** (testeur) | [x] |
 | `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* · onglets **Contenu / Privilèges / À la une / Performances** — retest si besoin post-deploy Insights | [x] |
 | `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
-| `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
-| `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
-| `/contenu/editer/tool` | ContentEditor | [ ] | Créer / modifier outil | [x] |
+| `/contenu/editer/event` | ContentEditor | [x] | Créer / modifier event *(27 sept. · **PASS** testeur)* | [x] |
+| `/contenu/editer/spot` | ContentEditor | [x] | Créer / modifier spot *(27 sept. · **PASS** testeur)* | [x] |
+| `/contenu/editer/tool` | ContentEditor | [x] | Créer / modifier outil *(27 sept. · **PASS** testeur)* | [x] |
 | `/users` | Users | [x] | **PASS 24 sept. soir** (testeur · navigation + usage courant) | [x] |
 | `/demandes` | Demandes | [x] | **Partenariats + Idées PASS** · Modération/retraits → **build 49+** | [x] |
 | `/privileges` | Privilèges | [x] | **PASS 24 sept.** (testeur · module Privilèges web) | [x] |
