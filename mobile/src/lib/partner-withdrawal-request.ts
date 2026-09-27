@@ -1,4 +1,5 @@
-import { deleteAdminContent } from '@/lib/admin-content-delete';
+import { syncPartnerViewsAfterAdminContentChange } from '@/lib/admin-content-partner-sync';
+import { markContentPermanentlyRemoved } from '@/lib/admin-content-store';
 import { clearPersistedContentCache, invalidateContentCache } from '@/lib/content-store';
 import { emitHomeRefresh } from '@/lib/home-refresh';
 import { invalidatePartnerCatalogIdsCache } from '@/lib/partner-catalog-ids';
@@ -229,6 +230,101 @@ async function refreshPublicCatalogAfterWithdrawal(): Promise<void> {
   emitHomeRefresh('admin-content-status');
 }
 
+async function ensureAdminSessionForWithdrawalModeration(): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { ok: false, error: 'Connexion requise.' };
+  }
+  const { clearPartnerSpotSession, getPartnerAuthUserIdFromSession, isAdminAuthUserId } =
+    await import('@/lib/partner-spot-auth');
+  await clearPartnerSpotSession();
+  const authUid = await getPartnerAuthUserIdFromSession();
+  if (!authUid) {
+    return { ok: false, error: 'Reconnectez-vous avec votre compte administrateur.' };
+  }
+  if (!(await isAdminAuthUserId(authUid))) {
+    return {
+      ok: false,
+      error: 'Session partenaire active — reconnectez-vous en super admin pour valider un retrait.',
+    };
+  }
+  return { ok: true };
+}
+
+type WithdrawalApproveRpcResult = {
+  ok?: boolean;
+  catalog_id?: string | null;
+};
+
+async function deleteCatalogRowForWithdrawal(
+  kind: PartnerContentKind,
+  catalogId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { ok: false, error: 'Connexion requise.' };
+  }
+  if (kind === 'event') {
+    const { error } = await supabase.from('events').delete().eq('id', catalogId);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+  if (kind === 'tool') {
+    const { error } = await supabase.from('tools').delete().eq('id', catalogId);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+  const { error } = await supabase.from('establishments').delete().eq('id', catalogId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function verifyWithdrawalRequestClosed(
+  kind: PartnerContentKind,
+  localId: string,
+): Promise<boolean> {
+  if (!isSupabaseConfigured() || !supabase) return false;
+  const table = remoteTable(kind);
+  const { data, error } = await supabase
+    .from(table)
+    .select('local_id')
+    .eq('local_id', localId)
+    .eq('status', 'withdrawal_requested')
+    .maybeSingle();
+  if (error) return false;
+  return !data;
+}
+
+async function approveWithdrawalViaLegacyRpc(
+  kind: PartnerContentKind,
+  item: StagingEvent | StagingSpot,
+  resolvedLocalId: string,
+  catalogId: string | null,
+): Promise<{ ok: boolean; error?: string; catalogId?: string | null }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { ok: false, error: 'Connexion requise.' };
+  }
+  const isTool = kind === 'tool';
+  if (!catalogId) {
+    return { ok: false, error: 'Aucune fiche publiée liée à cette demande.' };
+  }
+
+  const deleted = await deleteCatalogRowForWithdrawal(kind, catalogId);
+  if (!deleted.ok) return deleted;
+
+  const rpcKind = kind === 'event' ? 'event' : isTool ? 'tool' : 'spot';
+  const { error: rpcError } = await supabase.rpc('admin_withdraw_partner_content', {
+    p_kind: rpcKind,
+    p_catalog_id: catalogId,
+    p_local_id: resolvedLocalId,
+  });
+  if (rpcError) return { ok: false, error: rpcError.message };
+
+  const closed = await verifyWithdrawalRequestClosed(kind, resolvedLocalId);
+  if (!closed) {
+    return { ok: false, error: 'La demande de retrait est toujours en attente côté serveur.' };
+  }
+  return { ok: true, catalogId };
+}
+
 export async function countWithdrawalRequests(countryCode?: string): Promise<number> {
   const [ev, sp] = await Promise.all([
     listWithdrawalRequestedEvents(countryCode),
@@ -258,48 +354,48 @@ export async function approvePartnerWithdrawalRequest(
   kind: PartnerContentKind,
   item: StagingEvent | StagingSpot,
 ): Promise<{ ok: boolean; error?: string }> {
-  const isTool = kind === 'tool';
-  const catalogId = resolveWithdrawalCatalogId(kind, item);
+  const session = await ensureAdminSessionForWithdrawalModeration();
+  if (!session.ok) return session;
+
   const resolvedLocalId = await resolveSubmissionLocalId(kind, item.id);
   const localIds = [...new Set([item.id.trim(), resolvedLocalId].filter(Boolean))];
+  const catalogHint = resolveWithdrawalCatalogId(kind, item);
+  const rpcKind = kind === 'event' ? 'event' : kind === 'tool' ? 'tool' : 'spot';
 
-  if (!catalogId) {
-    if (isSupabaseConfigured() && supabase) {
-      const table = remoteTable(kind);
-      for (const localId of localIds) {
-        await supabase
-          .from(table)
-          .delete()
-          .eq('local_id', localId)
-          .eq('status', 'withdrawal_requested');
-      }
-    }
-    await purgeWithdrawalSubmissionLocal(kind, localIds);
-    await refreshPublicCatalogAfterWithdrawal();
-    const partnerUserId = await resolvePartnerNotifyUserId(kind, item);
-    if (partnerUserId) {
-      await notifyPartnerWithdrawalDecision({
-        partnerUserId,
-        partnerName: item.partnerName,
-        localId: resolvedLocalId,
-        kind,
-        title: contentTitle(kind, item),
-        approved: true,
-      }).catch(() => undefined);
-    }
-    return { ok: true };
-  }
-
-  const deleted = await deleteAdminContent(kind === 'event' ? 'event' : 'spot', catalogId, { isTool });
-  if (!deleted.ok) return deleted;
+  let effectiveCatalogId = catalogHint;
 
   if (isSupabaseConfigured() && supabase) {
-    const rpcKind = kind === 'event' ? 'event' : isTool ? 'tool' : 'spot';
-    await supabase.rpc('admin_withdraw_partner_content', {
+    const { data, error } = await supabase.rpc('admin_approve_partner_withdrawal_request', {
       p_kind: rpcKind,
-      p_catalog_id: catalogId,
       p_local_id: resolvedLocalId,
     });
+
+    if (!error) {
+      const payload = (data ?? {}) as WithdrawalApproveRpcResult;
+      if (payload.catalog_id) {
+        effectiveCatalogId = String(payload.catalog_id);
+      }
+    } else if (/does not exist|could not find|schema cache|PGRST202/i.test(error.message)) {
+      const legacy = await approveWithdrawalViaLegacyRpc(kind, item, resolvedLocalId, catalogHint);
+      if (!legacy.ok) return legacy;
+      effectiveCatalogId = legacy.catalogId ?? catalogHint;
+    } else {
+      return { ok: false, error: error.message };
+    }
+  }
+
+  const closed = await verifyWithdrawalRequestClosed(kind, resolvedLocalId);
+  if (!closed) {
+    return {
+      ok: false,
+      error: 'Impossible de finaliser le retrait — vérifiez la migration Supabase 20260952.',
+    };
+  }
+
+  if (effectiveCatalogId) {
+    const cascadeKind = kind === 'tool' ? 'tool' : kind === 'event' ? 'event' : 'spot';
+    await syncPartnerViewsAfterAdminContentChange(cascadeKind, effectiveCatalogId, 'removed');
+    await markContentPermanentlyRemoved(kind === 'event' ? 'event' : 'spot', effectiveCatalogId);
   }
 
   await purgeWithdrawalSubmissionLocal(kind, localIds);
