@@ -393,7 +393,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
 - [x] `20260940_admin_benefit_grants_analytics_rpc.sql` — RPC octrois Insights *(24 sept. 2026 · **OK Supabase prod** · testeur)*
 - [x] `20260941_admin_read_all_benefit_grants.sql` — admin lit tous les octrois *(24 sept. 2026 · **OK Supabase prod** · KPI Insights Privilèges PASS)*
-- [x] `20260948_benefit_validation_notify_privilege_place_copy.sql` — notifs validation privilège : **nom catalogue + lieu lié** *(27 sept. 2026 · PR **#58** · CI `Supabase migrations`)*
+- [ ] `20260948_benefit_validation_notify_privilege_place_copy.sql` — notifs validation privilège : **nom catalogue + lieu lié** *(27 sept. · PR **#58** · **à coller SQL Editor** — secret `SUPABASE_ACCESS_TOKEN` absent en CI)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
