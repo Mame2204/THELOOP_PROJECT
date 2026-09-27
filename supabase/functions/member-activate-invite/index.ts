@@ -140,13 +140,41 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Priorité identité : saisie à l'activation > invite admin > placeholders rôle.
+    const bodyFirst = (body.firstName ?? '').trim();
+    const bodyLast = (body.lastName ?? '').trim();
+    const inviteFirst = (invite.first_name ?? '').trim();
+    const inviteLast = (invite.last_name ?? '').trim();
     const profileFirst =
-      (body.firstName ?? invite.first_name ?? '').trim() || defaultInviteFirstName(invite.user_role);
-    const profileLast = (body.lastName ?? invite.last_name ?? '').trim() || 'THE LOOP';
+      bodyFirst || inviteFirst || defaultInviteFirstName(invite.user_role);
+    const profileLast = bodyLast || inviteLast || 'THE LOOP';
     const birthDate = (body.birthDate ?? '').trim() || null;
     const city = (body.city ?? invite.city ?? '').trim() || null;
     const countryCode = (body.countryCode ?? invite.country_code ?? 'GN').trim().toUpperCase().slice(0, 2);
     const phoneNumber = (body.phoneNumber ?? '').trim() || null;
+
+    const { error: profileErr } = await admin
+      .from('users')
+      .update({
+        first_name: profileFirst,
+        last_name: profileLast,
+        birth_date: birthDate,
+        city,
+        country_code: countryCode,
+        phone_number: phoneNumber,
+        user_role: invite.user_role ?? undefined,
+        is_active: true,
+        account_status: 'active',
+        updated_at: new Date().toISOString(),
+      })
+      .ilike('email', email);
+    if (profileErr) {
+      return new Response(JSON.stringify({ error: profileErr.message }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { error: updateErr } = await admin.auth.admin.updateUserById(authUser.id, {
       password,
       email_confirm: true,
@@ -173,22 +201,6 @@ Deno.serve(async (req) => {
         p_email: email,
       });
     }
-
-    await admin
-      .from('users')
-      .update({
-        first_name: profileFirst,
-        last_name: profileLast,
-        birth_date: birthDate,
-        city,
-        country_code: countryCode,
-        phone_number: phoneNumber,
-        user_role: invite.user_role ?? undefined,
-        is_active: true,
-        account_status: 'active',
-        updated_at: new Date().toISOString(),
-      })
-      .ilike('email', email);
 
     return new Response(JSON.stringify({ ok: true, userId: authUser.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
