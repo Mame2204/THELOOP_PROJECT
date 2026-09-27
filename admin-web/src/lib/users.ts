@@ -352,8 +352,11 @@ export async function deleteUserIfOrphan(
     if (/NOT_PENDING_INVITE/i.test(error.message)) {
       return { ok: false, error: 'Compte actif — utilisez Archiver ou Suspendre.' };
     }
+    if (/FORBIDDEN_SELF/i.test(error.message)) {
+      return { ok: false, error: 'Vous ne pouvez pas supprimer votre propre compte.' };
+    }
     if (/FORBIDDEN_ADMIN/i.test(error.message)) {
-      return { ok: false, error: 'Impossible de supprimer un administrateur.' };
+      return { ok: false, error: 'Seul un super admin peut supprimer un administrateur.' };
     }
     return { ok: false, error: error.message };
   }
