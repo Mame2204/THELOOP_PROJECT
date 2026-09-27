@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **337 / 394** ≈ **86 %** global *(recalcul grep 26 sept. soir · cochage aligné journal testeur)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **🤖 build 51** — **Pack session 1** : **D1** icône · **M1-U2** · **C1 modération notifs** · **refus privilège notifs** · **Étoiles** · activate invité (date naissance) |
+| **Prochain test** | **🤖 build 52+** — **Étoiles** · activate invité (date naissance) · copy notifs privilège visible après **20260948** + build **52** |
 | **Binaire actif** | **Android 51** (Play test interne · fix `expo-font` SDK 54) · iOS → **build 51** avant retest M1-U2 |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
@@ -393,6 +393,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260937_catalog_fingerprint_featured.sql` — resync mobile après « À la une » admin-web *(23 sept. 2026 · **OK Supabase prod** · retest « À la une » après build **49+**)*
 - [x] `20260940_admin_benefit_grants_analytics_rpc.sql` — RPC octrois Insights *(24 sept. 2026 · **OK Supabase prod** · testeur)*
 - [x] `20260941_admin_read_all_benefit_grants.sql` — admin lit tous les octrois *(24 sept. 2026 · **OK Supabase prod** · KPI Insights Privilèges PASS)*
+- [x] `20260948_benefit_validation_notify_privilege_place_copy.sql` — notifs validation privilège : **nom catalogue + lieu lié** *(27 sept. 2026 · PR **#58** · CI `Supabase migrations`)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -953,6 +954,7 @@ Liens Param. → pages satellites :
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
 | Modération décision → partenaire notifié | [x] *(27 sept. **PASS** 🤖 · build 51 · 1 push + 1 cloche · pas de boucle · refus ×2 + resoumission)* | [x] *(parité code · session testeur 🤖)* |
+| Validation privilège scan → membre **inbox + push** (validé / annulé · sans boucle) | [x] *(27 sept. **PASS** 🤖 · build 51 · **C1-REFUS** · métier + notifs)* | [x] *(27 sept. · idem · copy texte PR **#58** + **20260948**)* |
 | Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 🤖 confirmé testeur · cf. 23 sept. MTN)* |
 
 ## C2 — Auth transversal
@@ -1230,8 +1232,9 @@ Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) 
   - **PASS C1-MOD** 🤖 : modération contenu · refus (+ resoumission) · 1 notif + push · **pas de boucle**
   - **UX 💻** : badge / onglets Demandes pas auto-incrémentés → fix admin-web (refresh 45s + event)
   - **UX 🤖** : aperçu image noir création event/spot → fix `ImageUploadField` (preview https après upload)
-  - **PASS C1-REFUS** 🤖 : scan QR · valider/annuler · 1 push + cloche · pas de boucle · copy lieu (fix messages)
-  - **Suite** : activate/date naissance → Étoiles · migration **20260947** Supabase + deploy API
+  - **PASS C1-REFUS** 🤖 : scan QR · valider/annuler · 1 push + cloche · pas de boucle
+  - **PASS copy notifs privilège** *(27 sept. · PR **#58** mergée · privilège « X » + **chez** lieu · dédup)* · Supabase **20260948** · Render **main** auto
+  - **Suite** : build **52+** (copy in-app) · activate/date naissance → Étoiles
   - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagne immédiate admin
 
 Phase 1 retests (7)     : PASS / FAIL —
