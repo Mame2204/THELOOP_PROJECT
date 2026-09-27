@@ -1315,7 +1315,7 @@ Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
   - **PASS SANS53-C1-A** : campagne Membres · Prime ne reçoit pas
   - **PASS SANS53-C1-B** : campagne Prime planifiée · **1×** push/inbox
   - **PASS SANS53-C1-C** : pas de doublon · **1 notif / compte**
-  - **FAIL SANS53-B2-WEB** 💻 : onglets modération Demandes — retraits **non filtrés** par type *(fix admin-web DemandesPage · retest deploy)*
+  - **FAIL SANS53-B2-WEB** 💻 : onglets modération Demandes — retraits **non filtrés** · **détail staging restait ouvert** en changeant d’onglet *(fix DemandesPage · deploy · retest)*
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

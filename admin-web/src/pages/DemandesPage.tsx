@@ -205,6 +205,23 @@ export function DemandesPage() {
     [permissionedQueue],
   );
 
+  const changeModFilter = useCallback((next: ModFilter) => {
+    setModFilter(next);
+    setSelected(null);
+    setRejectReason('');
+  }, []);
+
+  useEffect(() => {
+    if (!selected) return;
+    const stillInList = filteredQueue.some(
+      (item) => item.localId === selected.localId && item.kind === selected.kind,
+    );
+    if (!stillInList) {
+      setSelected(null);
+      setRejectReason('');
+    }
+  }, [filteredQueue, selected]);
+
   const partnershipPendingCount = useMemo(
     () =>
       partnerships.filter((p) =>
@@ -515,7 +532,7 @@ export function DemandesPage() {
             <button
               type="button"
               className={`tab ${modFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setModFilter('all')}
+              onClick={() => changeModFilter('all')}
             >
               Tous ({permissionedQueue.length + withdrawals.length})
             </button>
@@ -523,7 +540,7 @@ export function DemandesPage() {
               <button
                 type="button"
                 className={`tab ${modFilter === 'event' ? 'active' : ''}`}
-                onClick={() => setModFilter('event')}
+                onClick={() => changeModFilter('event')}
               >
                 Événements ({modCountByKind('event') + withdrawals.filter((w) => w.kind === 'event').length})
               </button>
@@ -532,7 +549,7 @@ export function DemandesPage() {
               <button
                 type="button"
                 className={`tab ${modFilter === 'spot' ? 'active' : ''}`}
-                onClick={() => setModFilter('spot')}
+                onClick={() => changeModFilter('spot')}
               >
                 Spots ({modCountByKind('spot') + withdrawals.filter((w) => w.kind === 'spot').length})
               </button>
@@ -541,7 +558,7 @@ export function DemandesPage() {
               <button
                 type="button"
                 className={`tab ${modFilter === 'tool' ? 'active' : ''}`}
-                onClick={() => setModFilter('tool')}
+                onClick={() => changeModFilter('tool')}
               >
                 Outils ({modCountByKind('tool') + withdrawals.filter((w) => w.kind === 'tool').length})
               </button>
