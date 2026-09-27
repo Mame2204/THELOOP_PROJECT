@@ -543,7 +543,7 @@ export async function createUserInvite(input: {
       user_id: existingUser.id,
       title: 'Invitation THE LOOP',
       message:
-        'Vous avez été invité(e) sur THE LOOP. Ouvrez le lien reçu par e-mail pour activer votre accès.',
+        'Vous avez été invité(e) sur THE LOOP. Ouvrez l’application → Connexion → « Activer un compte invité par THE LOOP ».',
       audience: 'individual',
       sent_at: new Date().toISOString(),
     });

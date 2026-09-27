@@ -6,6 +6,7 @@ import { isSuperAdminUser } from '../lib/permissions';
 import { COUNTRY_OPTIONS } from '../lib/countries';
 import { formatRetryDuration } from '../lib/auth-email-errors';
 import { formatWhen } from '../lib/format';
+import { formatInviteAdminFeedback } from '../lib/invite-admin-copy';
 import {
   accountStatusLabel,
   archiveUser,
@@ -236,13 +237,7 @@ export function UsersPage() {
     }
     beginInviteResendCooldown(10);
     const sentEmail = res.email ?? inviteForm.email.trim().toLowerCase();
-    const mailKind =
-      res.mailMode === 'recovery_resent'
-        ? 'E-mail de réinitialisation envoyé (lien mot de passe)'
-        : 'E-mail d\'invitation envoyé (activation dans l\'app THE LOOP)';
-    setInviteMsg(
-      `${mailKind} à ${sentEmail}. L'invité ouvre l'app → Connexion → « Activer un compte invité par l'équipe ». Vérifiez les spams.`,
-    );
+    setInviteMsg(formatInviteAdminFeedback(sentEmail, res.mailMode));
     setInviteForm({
       email: '',
       firstName: '',
@@ -673,7 +668,7 @@ export function UsersPage() {
                             else beginInviteResendCooldown(10);
                             setFormMsg(
                               r.ok
-                                ? `Invitation renvoyée à ${selected.email}.`
+                                ? formatInviteAdminFeedback(selected.email, r.mailMode)
                                 : r.error ?? 'Renvoi impossible.',
                             );
                           });
