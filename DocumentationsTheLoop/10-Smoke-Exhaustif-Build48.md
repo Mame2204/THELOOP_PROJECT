@@ -238,7 +238,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 |-------|-----------|----------:|------------------------:|--------------|
 | **1 · Build 53** | *A1 activate* — prénom/nom · CGU · DOB (PR **#64**) | **1** | **1** | **EAS 53** |
 | **2 · Build 54+** | Approve retrait **super admin mobile** · notifs partenaire retrait · Phase 1 #3 📱🤖 | **2** | **4** *(2 lignes notif + 2 cellules Phase 1)* | **EAS 54+** *(#69)* |
-| **3 · Sans build EAS** | B1 éditeurs 💻 · recovery **HTML navigateur** · retest 💻 approve retrait *(SQL **52**)* · opt. SQL **39** | **4** | **8** *(6 lignes + 3 cellules B1 − chevauchement 1 SQL ligne)* | **💻 / Render / Supabase** |
+| **3 · Sans build EAS** | B1 éditeurs 💻 · recovery **HTML navigateur** · retest 💻 approve retrait *(SQL **52**)* · opt. SQL **39** | **3–4** | **6** *(3 cellules B1 + 2 HTML + 1 SQL **39**)* | **💻 / Render / Supabase** |
 | **4 · N/A / optionnel** | A4 parité 🤖 sans contenu publié · stress **10 filleuls/an** | **0–1** | **6** | Données ou sandbox long |
 
 **Total cases ouvertes (grep honnête) : 17** *(12 lignes markdown + 3 B1 + 2 Phase 1)* · **Cas go-live prioritaires : 7** *(quarts 1–3, hors N/A)*.
