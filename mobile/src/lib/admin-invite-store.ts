@@ -396,18 +396,53 @@ export async function sendAdminInviteEmail(input: {
   }
 }
 
+/** Envoie le code de vérification (e-mail « Nouveau mot de passe ») pour activer une invitation. */
+export async function requestInviteActivationCode(
+  email: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase requis.' };
+  const emailCheck = validateSignupEmail(email);
+  if (!emailCheck.ok) return { ok: false, error: emailCheck.message };
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
+  if (!supabaseUrl) return { ok: false, error: 'URL Supabase manquante.' };
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/member-activate-invite`, {
+      method: 'POST',
+      headers: {
+        apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'send_code', email: emailCheck.email }),
+    });
+    const body = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+    if (!response.ok) {
+      return { ok: false, error: body.message ?? body.error ?? `Erreur HTTP ${response.status}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Envoi du code impossible.' };
+  }
+}
+
 /** Active un compte invité (Auth déjà créé par l'admin) — définit le MDP côté serveur. */
 export async function activateInvitedMemberAccount(input: {
   email: string;
   password: string;
   inviteId: string;
+  emailCode?: string;
   firstName?: string;
   lastName?: string;
   birthDate?: string | null;
   city?: string | null;
   countryCode?: string;
   phoneNumber?: string | null;
-}): Promise<{ ok: boolean; error?: string; needsSignUp?: boolean; accountAlreadyActive?: boolean }> {
+}): Promise<{
+  ok: boolean;
+  error?: string;
+  needsSignUp?: boolean;
+  accountAlreadyActive?: boolean;
+  emailCodeRequired?: boolean;
+}> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: false, error: 'Supabase requis.' };
   }
@@ -428,6 +463,7 @@ export async function activateInvitedMemberAccount(input: {
         email: emailCheck.email,
         password: input.password,
         inviteId: input.inviteId,
+        emailCode: input.emailCode?.replace(/\s/g, '') || null,
         firstName: input.firstName?.trim() || null,
         lastName: input.lastName?.trim() || null,
         birthDate: input.birthDate?.trim() || null,
@@ -439,8 +475,15 @@ export async function activateInvitedMemberAccount(input: {
     const body = (await response.json().catch(() => ({}))) as {
       error?: string;
       message?: string;
+      code?: string;
       ok?: boolean;
     };
+    if (response.status === 403 && body.code === 'email_code_required') {
+      return { ok: false, emailCodeRequired: true, error: body.error };
+    }
+    if (response.status === 400 && body.error === 'invalid_email_code') {
+      return { ok: false, error: body.message ?? 'Code invalide ou expiré.' };
+    }
     if (response.status === 404 && body.error === 'no_auth_user') {
       return { ok: false, needsSignUp: true };
     }
