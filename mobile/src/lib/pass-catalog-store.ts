@@ -58,6 +58,9 @@ const LEGACY_REMOTE = 'pass_catalog_v1';
 export const HERITAGE_CATALOG_ID = 'pass-heritage-builtin';
 /** PASS catalogue pour gel admin Prime → membre (restauration du PASS d'origine). */
 export const INTERMEDIATE_CATALOG_ID = 'pass-intermediaire-builtin';
+/** Octroi automatique parrainage uniquement (pas boutique, pas octroi manuel). */
+export const REFERRAL_CATALOG_ID = 'pass-parrainage-builtin';
+export const REFERRAL_PASS_LABEL = 'PASS Parrainage';
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -97,11 +100,31 @@ function defaultCatalog(): PassCatalogEntry[] {
       createdAt,
       updatedAt: createdAt,
     },
+    {
+      id: REFERRAL_CATALOG_ID,
+      label: REFERRAL_PASS_LABEL,
+      description:
+        '1 mois Loop Prime par palier de filleuls. Dates de début et fin fixées à l’octroi (non visible en boutique).',
+      priceGnf: 0,
+      /** Durée indicative catalogue ; les dates réelles sont calculées à l’octroi RPC. */
+      validityDays: 30,
+      grantableBySuperAdmin: false,
+      purchasableInShop: false,
+      shopBillingPeriod: null,
+      status: 'active',
+      isBuiltin: true,
+      sortOrder: 2,
+      createdAt,
+      updatedAt: createdAt,
+    },
   ];
 }
 
 function normalizeEntry(raw: PassCatalogEntry): PassCatalogEntry {
-  const purchasableInShop = raw.id === HERITAGE_CATALOG_ID ? false : Boolean(raw.purchasableInShop);
+  const purchasableInShop =
+    raw.id === HERITAGE_CATALOG_ID || raw.id === REFERRAL_CATALOG_ID
+      ? false
+      : Boolean(raw.purchasableInShop);
   let shopBillingPeriod: PassShopBillingPeriod | null = purchasableInShop
     ? (raw.shopBillingPeriod ?? inferShopPeriodFromValidityDays(raw.validityDays))
     : null;

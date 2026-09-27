@@ -282,7 +282,7 @@ export function AdminPassManagementScreen({ navigation, route }: Props) {
   }
 
   const grantableCatalog = useMemo(
-    () => passCatalog.filter((c) => c.status === 'active'),
+    () => passCatalog.filter((c) => c.status === 'active' && c.grantableBySuperAdmin),
     [passCatalog],
   );
 

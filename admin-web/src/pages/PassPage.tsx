@@ -6,6 +6,7 @@ import { usePermissions } from '../context/PermissionsContext';
 import { formatWhen } from '../lib/format';
 import {
   HERITAGE_CATALOG_ID,
+  REFERRAL_CATALOG_ID,
   INTERMEDIATE_CATALOG_ID,
   PERIOD_LABELS,
   SHOP_BILLING_PERIODS,
@@ -185,7 +186,11 @@ export function PassPage() {
               /** Statut catalogue : uniquement via Activer / Désactiver / Archiver (pas le formulaire). */
               status: c.status,
               purchasableInShop:
-                editingId === HERITAGE_CATALOG_ID ? false : draft.purchasableInShop,
+                editingId === HERITAGE_CATALOG_ID || editingId === REFERRAL_CATALOG_ID
+                  ? false
+                  : draft.purchasableInShop,
+              grantableBySuperAdmin:
+                editingId === REFERRAL_CATALOG_ID ? false : draft.grantableBySuperAdmin,
             }
           : c,
       );

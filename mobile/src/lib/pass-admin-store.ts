@@ -13,6 +13,7 @@ import {
   computePassCatalogExpiry,
   getPassCatalogEntry,
   HERITAGE_CATALOG_ID,
+  REFERRAL_CATALOG_ID,
   resolveIntermediatePassCatalog,
   type PassCatalogEntry,
 } from '@/lib/pass-catalog-store';
@@ -77,6 +78,7 @@ async function syncPassRoleToSupabase(userId: string, dbRole: 'prime' | 'member'
 
 function catalogPassKind(catalog: PassCatalogEntry): SubscriptionRecord['passKind'] {
   if (catalog.id === HERITAGE_CATALOG_ID) return 'heritage';
+  if (catalog.id === REFERRAL_CATALOG_ID) return 'referral';
   // PASS gratuit sans date = même famille que Heritage (offert)
   if (catalog.priceGnf === 0 && catalog.validityDays == null) return 'bonus';
   return 'custom';
@@ -771,7 +773,7 @@ function isCloudAdminGrantRow(row: Record<string, unknown>): boolean {
   const amount = row.amount_gnf != null ? Number(row.amount_gnf) : 0;
   if (payment || amount > 0) return false;
   const kind = String(row.pass_kind ?? '').toLowerCase();
-  return kind === 'heritage' || kind === 'bonus' || kind === 'custom';
+  return kind === 'heritage' || kind === 'bonus' || kind === 'referral' || kind === 'custom';
 }
 
 async function listGrantedPassesFromCloud(): Promise<GrantedPassRow[] | null> {

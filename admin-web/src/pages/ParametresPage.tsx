@@ -35,8 +35,9 @@ import {
   type LegalKey,
 } from '../lib/settings';
 import type { AdminPermissionId } from '../lib/permissions';
+import { loadReferralSettings, saveReferralSettings, type ReferralSettings } from '../lib/referral';
 
-type Tab = 'gates' | 'countries' | 'categories' | 'permissions' | 'legal' | 'more';
+type Tab = 'gates' | 'countries' | 'categories' | 'permissions' | 'legal' | 'referral' | 'more';
 
 export function ParametresPage() {
   const { refreshEnabledCountries } = useAdminCountry();
@@ -50,6 +51,7 @@ export function ParametresPage() {
   const canCategories = can('categories') || can('manage_admins');
   const canPermissions = (can('admin_permissions') || can('manage_admins')) && isSuper;
   const canLegal = can('legal') || can('manage_admins');
+  const canReferral = isSuper || can('manage_admins');
 
   const defaultTab: Tab = canGates
     ? 'gates'
@@ -68,6 +70,7 @@ export function ParametresPage() {
     tabParam === 'categories' ||
     tabParam === 'permissions' ||
     tabParam === 'legal' ||
+    tabParam === 'referral' ||
     tabParam === 'more'
       ? tabParam
       : defaultTab;
@@ -99,6 +102,11 @@ export function ParametresPage() {
   const [legalKey, setLegalKey] = useState<LegalKey>('cgu');
   const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
 
+  const [referral, setReferral] = useState<ReferralSettings | null>(null);
+  const [referralsPerReward, setReferralsPerReward] = useState('10');
+  const [rewardMonths, setRewardMonths] = useState('1');
+  const [maxRewardMonthsPerYear, setMaxRewardMonthsPerYear] = useState('5');
+
   const loadGates = useCallback(async () => {
     const [g, s] = await Promise.all([loadAppGates(), loadSuggestionButton()]);
     setGates(g);
@@ -126,6 +134,15 @@ export function ParametresPage() {
     setLegalDoc(await loadLegalDoc(legalKey));
   }, [legalKey]);
 
+  const loadReferral = useCallback(async () => {
+    const { settings, error } = await loadReferralSettings();
+    setReferral(settings);
+    setReferralsPerReward(String(settings.referralsPerReward));
+    setRewardMonths(String(settings.rewardMonths));
+    setMaxRewardMonthsPerYear(String(settings.maxRewardMonthsPerYear));
+    if (error) setMsg(error);
+  }, []);
+
   useEffect(() => {
     setMsg(null);
     if (tab === 'gates' && canGates) void loadGates();
@@ -133,6 +150,7 @@ export function ParametresPage() {
     if (tab === 'categories' && canCategories) void loadCats();
     if (tab === 'permissions' && canPermissions) void loadPerms();
     if (tab === 'legal' && canLegal) void loadLegal();
+    if (tab === 'referral' && canReferral) void loadReferral();
   }, [
     tab,
     canGates,
@@ -140,11 +158,13 @@ export function ParametresPage() {
     canCategories,
     canPermissions,
     canLegal,
+    canReferral,
     loadGates,
     loadCountries,
     loadCats,
     loadPerms,
     loadLegal,
+    loadReferral,
   ]);
 
   useEffect(() => {
@@ -201,6 +221,15 @@ export function ParametresPage() {
         {canLegal ? (
           <button type="button" className={`tab ${tab === 'legal' ? 'active' : ''}`} onClick={() => setTab('legal')}>
             Légal
+          </button>
+        ) : null}
+        {canReferral ? (
+          <button
+            type="button"
+            className={`tab ${tab === 'referral' ? 'active' : ''}`}
+            onClick={() => setTab('referral')}
+          >
+            Parrainage
           </button>
         ) : null}
         <button type="button" className={`tab ${tab === 'more' ? 'active' : ''}`} onClick={() => setTab('more')}>
@@ -534,6 +563,80 @@ export function ParametresPage() {
               <p className="muted">Sélectionnez un admin.</p>
             )}
           </div>
+        </div>
+      ) : null}
+
+      {tab === 'referral' && canReferral ? (
+        <div className="card" style={{ maxWidth: 560 }}>
+          <h3>Parrainage</h3>
+          <p className="meta" style={{ marginBottom: 16 }}>
+            Récompenses membres — filleuls validés et mois Prime offerts (PASS Parrainage à l’octroi).
+          </p>
+          {referral ? (
+            <p className="meta" style={{ marginBottom: 12 }}>
+              Dernière mise à jour : {formatWhen(referral.updatedAt)}
+            </p>
+          ) : null}
+          <div className="field">
+            <label>Filleuls par récompense</label>
+            <input
+              type="number"
+              min={1}
+              value={referralsPerReward}
+              onChange={(e) => setReferralsPerReward(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label>Mois Prime offerts (par palier)</label>
+            <input
+              type="number"
+              min={1}
+              value={rewardMonths}
+              onChange={(e) => setRewardMonths(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label>Plafond mois offerts / an</label>
+            <input
+              type="number"
+              min={1}
+              value={maxRewardMonthsPerYear}
+              onChange={(e) => setMaxRewardMonthsPerYear(e.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            className="btn"
+            disabled={busy}
+            onClick={() => {
+              const per = Number.parseInt(referralsPerReward.trim(), 10);
+              const months = Number.parseInt(rewardMonths.trim(), 10);
+              const maxYear = Number.parseInt(maxRewardMonthsPerYear.trim(), 10);
+              if (!Number.isFinite(per) || per <= 0 || !Number.isFinite(months) || months <= 0 || !Number.isFinite(maxYear) || maxYear <= 0) {
+                setMsg('Saisissez des nombres entiers strictement positifs.');
+                return;
+              }
+              setBusy(true);
+              void saveReferralSettings({
+                referralsPerReward: per,
+                rewardMonths: months,
+                maxRewardMonthsPerYear: maxYear,
+              }).then((r) => {
+                setBusy(false);
+                if (!r.ok) {
+                  setMsg(r.error ?? 'Enregistrement impossible.');
+                  return;
+                }
+                setMsg(
+                  `Enregistré — ${per} filleul${per > 1 ? 's' : ''} → ${months} mois · plafond ${maxYear} mois/an.`,
+                );
+                if (r.settings) setReferral(r.settings);
+                void loadReferral();
+              });
+            }}
+          >
+            Enregistrer
+          </button>
         </div>
       ) : null}
 

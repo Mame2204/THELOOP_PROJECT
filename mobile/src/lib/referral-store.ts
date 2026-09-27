@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { asCountryCode } from '@/lib/countries';
 import { extendSubscriptionByMonths } from '@/lib/prime-plans';
+import { REFERRAL_CATALOG_ID, REFERRAL_PASS_LABEL } from '@/lib/pass-catalog-store';
 import { loadReferralSettings } from '@/lib/referral-config-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import {
@@ -397,12 +398,15 @@ export async function applyPendingPrimeRewards(user: User): Promise<User | null>
   const remaining = pending.filter((p) => p.userId !== user.id);
   await savePendingRewards(remaining);
 
+  const startedAt = new Date().toISOString();
   await upsertActiveSubscription(user.id, {
     type: 'prime',
     status: 'active',
-    startedAt: new Date().toISOString(),
+    startedAt,
     expiresAt: newExpiresAt,
-    label: `PASS Parrainage (${totalMonths} mois offerts)`,
+    label: `${REFERRAL_PASS_LABEL} (${totalMonths} mois offerts)`,
+    passKind: 'referral',
+    passCatalogId: REFERRAL_CATALOG_ID,
     grantNote: 'Octroi parrainage',
   });
 
@@ -416,7 +420,7 @@ export async function applyPendingPrimeRewards(user: User): Promise<User | null>
   await sendPassActivationNotification({
     userId: user.id,
     firstName: user.firstName,
-    passLabel: `PASS Parrainage (${totalMonths} mois offerts)`,
+    passLabel: `${REFERRAL_PASS_LABEL} (${totalMonths} mois offerts)`,
     passType: 'referral',
     countryCode: asCountryCode(user.countryCode),
   });

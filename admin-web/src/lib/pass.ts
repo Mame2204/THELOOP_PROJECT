@@ -61,6 +61,7 @@ export interface ActiveGrantRow {
 
 export const HERITAGE_CATALOG_ID = 'pass-heritage-builtin';
 export const INTERMEDIATE_CATALOG_ID = 'pass-intermediaire-builtin';
+export const REFERRAL_CATALOG_ID = 'pass-parrainage-builtin';
 
 export const SHOP_PERIOD_VALIDITY_DAYS: Record<BillingPeriod, number | null> = {
   monthly: 30,
@@ -144,6 +145,22 @@ function defaultCatalog(): PassCatalogEntry[] {
       status: 'active',
       isBuiltin: true,
       sortOrder: 1,
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: REFERRAL_CATALOG_ID,
+      label: 'PASS Parrainage',
+      description:
+        'Octroi automatique (palier filleuls). Dates calculées à l’activation — non octroyable manuellement.',
+      priceGnf: 0,
+      validityDays: 30,
+      grantableBySuperAdmin: false,
+      purchasableInShop: false,
+      shopBillingPeriod: null,
+      status: 'active',
+      isBuiltin: true,
+      sortOrder: 2,
       createdAt,
       updatedAt: createdAt,
     },
@@ -354,6 +371,11 @@ export async function countActiveGrantsForCatalog(catalogId: string): Promise<nu
       if (kind === 'heritage' || cid === HERITAGE_CATALOG_ID) n += 1;
       continue;
     }
+    if (catalogId === REFERRAL_CATALOG_ID) {
+      const kind = String(row.pass_kind ?? '').toLowerCase();
+      if (kind === 'referral' || cid === REFERRAL_CATALOG_ID || cid === 'referral') n += 1;
+      continue;
+    }
     if (catalogId === INTERMEDIATE_CATALOG_ID) {
       const kind = String(row.pass_kind ?? '').toLowerCase();
       if (kind.includes('intermediaire') || /intermediaire/i.test(cid) || /intermediaire/i.test(String(row.label ?? ''))) {
@@ -402,7 +424,9 @@ export async function grantPass(
   const passKind =
     catalog.id === HERITAGE_CATALOG_ID
       ? 'heritage'
-      : catalog.shopBillingPeriod ?? 'custom';
+      : catalog.id === REFERRAL_CATALOG_ID
+        ? 'referral'
+        : catalog.shopBillingPeriod ?? 'custom';
 
   const { error } = await supabase.rpc('upsert_user_pass_grant_admin', {
     p_user_id: targetUserId,
