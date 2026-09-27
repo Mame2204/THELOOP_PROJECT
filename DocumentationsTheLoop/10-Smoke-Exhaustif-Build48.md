@@ -256,9 +256,9 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | ~~**💻 Modération**~~ | ~~B2 SANS53~~ | **PASS 27 sept.** |
 | ~~**A5 mobile**~~ | Octroi manuel PASS | **PASS 27 sept.** |
 | ~~**Mobile P2**~~ | Suggestions · CreateUser · Waitlist · Featured · hub | **PASS 27 sept.** *(transitif + attestation)* |
-| **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | P2 si besoin |
-| **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
-| **Auth web** | Page recovery HTML (Storage text/plain) | **SANS53-AUTH-HTML** |
+| **Retraits** | Notif approve/refuse **retrait** 📱🤖 | **Pas encore testé** testeur |
+| ~~**C3/C4**~~ | mailto · filleul · PASS Parrainage palier | **PASS 27 sept.** |
+| ~~**Auth web**~~ | Page recovery HTML navigateur | **PASS 27 sept. soir** *(build 51)* |
 | **Infra opt.** | Migration `20260939` · ⏳ doublon push | hors session device |
 | **A4 🤖 N/A** | Pas contenu publié | — |
 
@@ -534,8 +534,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱🤖** Mode **activate** — prénom/nom saisis enregistrés (pas Membre/THE LOOP) · **CGU** · **DOB** *(retest **build 53** · PR **#64** + **20260950**)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
-- [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
+- [x] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(27 sept. soir · **PASS** testeur · navigateur · boutons + redirections OK · build **51**)*
+- [x] **🤖** Idem *(27 sept. soir · **PASS** testeur · parité)*
 - [x] **🤖** Recovery → **set_password in-app** via « Ouvrir l’application » *(27 sept. 2026 · **PASS** · build 51 · latence Render au réveil · OK)*
 - [x] **📱** Idem *(27 sept. · **SANS53-M1-U2 PASS** · attestation testeur · parité 🤖 build 51)*
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
@@ -1076,7 +1076,9 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026 · membre + Prime)*
 - [x] **📱** Nouveau filleul → compteur +1 *(27 sept. · **SANS53-C4 PASS** · attestation testeur · incrémentation OK)*
 - [x] **🤖** Idem *(parité)*
-- [ ] **📱** 10 filleuls / an → mois Prime *(test long sandbox)*
+- [x] **📱** Palier **1 filleul → 1 mois** · **PASS Parrainage** *(27 sept. soir · **PASS** testeur · réglage sandbox)*
+- [x] **🤖** Idem *(parité)*
+- [ ] **📱** Stress **plafond annuel max** (ex. 6×/an · many comptes) *(reporté · **ne pas refaire** le palier simple)*
 
 ---
 
