@@ -39,6 +39,7 @@ import {
   checkAdminInviteActivationEligibility,
   findPendingInviteByEmail,
   activateInvitedMemberAccount,
+  applyInvitedActivationProfile,
 } from '@/lib/admin-invite-store';
 import { resolveInviteDisplayName } from '@/lib/invite-default-names';
 import { accountExistsForEmail } from '@/lib/email-account';
@@ -85,6 +86,7 @@ export function AuthScreen({ navigation, route }: Props) {
     resendSignupConfirmationEmail,
     completePasswordRecovery,
     passwordRecoveryPending,
+    refreshUserSession,
   } = useAuthContext();
   const { shell } = useMemberTheme();
   const { enabledCountries } = useContentCountries();
@@ -417,6 +419,21 @@ export function AuthScreen({ navigation, route }: Props) {
     }
   }
 
+  async function persistIdentityAfterInviteActivation(): Promise<void> {
+    const normalizedPhone = phone.trim()
+      ? normalizeInternationalPhone(phone, phoneDialCode)
+      : null;
+    await applyInvitedActivationProfile({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      birthDate: birthDate.trim() || null,
+      city: city.trim() || null,
+      phoneNumber: normalizedPhone,
+      countryCode: accountCountry,
+    });
+    await refreshUserSession();
+  }
+
   async function handleCompleteSignup() {
     if (mode === 'activate') {
       const emailCheck = validateSignupEmail(email);
@@ -431,6 +448,13 @@ export function AuthScreen({ navigation, route }: Props) {
       const pwdError = validateSignupPassword(signupPassword, confirmPassword);
       if (pwdError) {
         Alert.alert('Mot de passe', pwdError);
+        return;
+      }
+      if (!acceptedCgu) {
+        Alert.alert(
+          'Acceptation requise',
+          'Veuillez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.',
+        );
         return;
       }
       const eligibility = await checkAdminInviteActivationEligibility(emailCheck.email);
@@ -477,6 +501,7 @@ export function AuthScreen({ navigation, route }: Props) {
 
           if (activated.ok) {
             await signIn(emailCheck.email, signupPassword);
+            await persistIdentityAfterInviteActivation();
             Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
             resetToAccueil(navigation);
             return;
@@ -499,6 +524,7 @@ export function AuthScreen({ navigation, route }: Props) {
             // Peut-être MDP déjà défini → tenter connexion directe
             try {
               await signIn(emailCheck.email, signupPassword);
+              await persistIdentityAfterInviteActivation();
               const { markInviteActivated } = await import('@/lib/admin-invite-store');
               await markInviteActivated(invite.id, emailCheck.email);
               Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
@@ -540,6 +566,7 @@ export function AuthScreen({ navigation, route }: Props) {
         });
         const { markInviteActivated } = await import('@/lib/admin-invite-store');
         await markInviteActivated(invite.id, emailCheck.email);
+        await persistIdentityAfterInviteActivation();
         Alert.alert('Compte activé', 'Vous pouvez compléter votre profil à tout moment.');
         resetToAccueil(navigation);
       } catch (err) {
@@ -1013,6 +1040,25 @@ export function AuthScreen({ navigation, route }: Props) {
             maximumDate={new Date()}
             shell={shell}
           />
+
+          <View style={styles.cguRow}>
+            <Pressable onPress={() => setAcceptedCgu((v) => !v)} accessibilityRole="checkbox" accessibilityState={{ checked: acceptedCgu }}>
+              <View style={[styles.cguCheck, { borderColor: shell.filterInactiveBorder }, acceptedCgu && { backgroundColor: shell.filterActiveBg }]}>
+                {acceptedCgu ? <Text style={{ color: shell.filterActiveText, fontWeight: '800' }}>✓</Text> : null}
+              </View>
+            </Pressable>
+            <Text style={[styles.cguText, { color: shell.pageKicker }]}>
+              J'ai lu et j'accepte les{' '}
+              <Text style={[styles.legalLink, { color: shell.tabIndicator }]} onPress={() => void openLegalDoc('cgu')}>
+                Conditions Générales d'Utilisation
+              </Text>
+              {' '}et la{' '}
+              <Text style={[styles.legalLink, { color: shell.tabIndicator }]} onPress={() => void openLegalDoc('privacy_policy')}>
+                Politique de confidentialité
+              </Text>
+              {' '}de THE LOOP.
+            </Text>
+          </View>
 
           <Pressable
             style={[styles.btn, { backgroundColor: shell.filterActiveBg }]}

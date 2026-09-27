@@ -467,6 +467,53 @@ export async function activateInvitedMemberAccount(input: {
   }
 }
 
+/** Après connexion post-activation : force prénom/nom saisis (évite écrasement Membre/THE LOOP). */
+export async function applyInvitedActivationProfile(input: {
+  firstName: string;
+  lastName: string;
+  birthDate?: string | null;
+  city?: string | null;
+  phoneNumber?: string | null;
+  countryCode?: string | null;
+}): Promise<void> {
+  if (!isSupabaseConfigured() || !supabase) return;
+  const first = input.firstName.trim();
+  const last = input.lastName.trim();
+  if (!first || !last) return;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.id) return;
+
+  const patch: Record<string, unknown> = {
+    first_name: first,
+    last_name: last,
+    updated_at: new Date().toISOString(),
+  };
+  if (input.birthDate !== undefined) {
+    patch.birth_date = input.birthDate?.trim() || null;
+  }
+  if (input.city !== undefined) {
+    patch.city = input.city?.trim() || null;
+  }
+  if (input.phoneNumber !== undefined) {
+    patch.phone_number = input.phoneNumber?.trim() || null;
+  }
+  if (input.countryCode?.trim()) {
+    patch.country_code = input.countryCode.trim().toUpperCase().slice(0, 2);
+  }
+
+  await supabase.from('users').update(asDbUpdate('users', patch)).eq('id', user.id);
+
+  await supabase.auth.updateUser({
+    data: {
+      first_name: first,
+      last_name: last,
+    },
+  });
+}
+
 export async function markInviteActivated(inviteId: string, userIdOrPhone: string): Promise<void> {
   const now = new Date().toISOString();
   let userId = userIdOrPhone;
