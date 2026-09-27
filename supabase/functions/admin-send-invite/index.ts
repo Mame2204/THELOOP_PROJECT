@@ -272,38 +272,15 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Compte Auth déjà présent (statut invited ou profil absent) : e-mail de réinitialisation
-      const recoverRes = await fetch(`${supabaseUrl}/auth/v1/recover`, {
-        method: 'POST',
-        headers: {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, redirect_to: redirectTo }),
-      });
-      if (!recoverRes.ok) {
-        const recoverBody = await recoverRes.text();
-        const recoverErr = parseAuthApiError(recoverBody, recoverRes.status);
-        return new Response(
-          JSON.stringify({
-            error: recoverErr.message,
-            retry_after_seconds: recoverErr.retryAfterSeconds ?? null,
-          }),
-          {
-            status: recoverRes.status === 429 ? 429 : 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          },
-        );
-      }
+      // Compte Auth déjà présent : ne pas envoyer un e-mail « réinitialisation » (confusion avec activation).
+      // Parcours attendu : app → Connexion → « Activer un compte invité par THE LOOP ».
       if (body.inviteId) {
         await adminClient
           .from('admin_user_invites')
           .update({ otp_sent_at: new Date().toISOString() })
           .eq('id', body.inviteId);
       }
-      const activationLink = await buildActivationLink('recovery');
-      return new Response(JSON.stringify({ ok: true, mode: 'recovery_resent', activationLink }), {
+      return new Response(JSON.stringify({ ok: true, mode: 'invite_in_app', activationLink: null }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

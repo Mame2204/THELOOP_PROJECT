@@ -1,5 +1,5 @@
 /**
- * Finalise l'activation d'un compte invité par l'équipe (sans repasser par le lien e-mail).
+ * Finalise l'activation d'un compte invité par THE LOOP (sans repasser par le lien e-mail).
  *
  * Déploiement :
  *   supabase functions deploy member-activate-invite

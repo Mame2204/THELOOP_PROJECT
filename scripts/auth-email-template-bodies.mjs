@@ -61,7 +61,7 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
       STORE_URL +
       '" style="color:#0a0a0a;">theloop-app.com</a> · Google Play / App Store).<br />' +
       '<strong>2.</strong> Ouvrez l’application → <strong>Connexion</strong>.<br />' +
-      '<strong>3.</strong> Touchez <strong>« Activer un compte invité par l’équipe »</strong>.<br />' +
+      '<strong>3.</strong> Touchez <strong>« Activer un compte invité par THE LOOP »</strong>.<br />' +
       '<strong>4.</strong> Saisissez <strong>cette adresse e-mail</strong>, prénom, nom et mot de passe.<br /><br />' +
       'Pas de lien d’activation : tout se fait dans l’application.',
     footer:

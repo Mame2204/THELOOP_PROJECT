@@ -508,7 +508,7 @@ export function AuthScreen({ navigation, route }: Props) {
               Alert.alert(
                 'Activation impossible',
                 activated.error ??
-                  'Demandez à l\'équipe THE LOOP de renvoyer l\'invitation, puis réessayez ici.',
+                  'Demandez à THE LOOP de renvoyer l\'invitation, puis réessayez ici.',
                 [{ text: 'OK', style: 'cancel' }],
               );
               return;
@@ -783,7 +783,7 @@ export function AuthScreen({ navigation, route }: Props) {
 
           <Pressable onPress={() => switchMode('activate')} style={styles.inlineLink}>
             <Text style={[styles.link, { color: shell.pageKicker }]}>
-              Activer un compte invité par l'équipe
+              Activer un compte invité par THE LOOP
             </Text>
           </Pressable>
         </View>
