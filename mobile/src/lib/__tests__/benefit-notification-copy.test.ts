@@ -2,42 +2,56 @@ import {
   copyBenefitCancelledMessage,
   copyBenefitPendingMessage,
   copyBenefitValidatedMessage,
-  resolveBenefitNotificationPlace,
+  resolveBenefitLinkedPlace,
   resolvePartnerPendingBenefitHeadline,
-  shouldShowCatalogSubtitle,
+  shouldShowPrivilegeSubtitle,
 } from '@/lib/benefit-notification-copy';
 
 describe('benefit-notification-copy', () => {
-  it('privilège le titre du contenu lié', () => {
+  it('lieu lié distinct du nom privilège', () => {
     expect(
-      resolveBenefitNotificationPlace({
+      resolveBenefitLinkedPlace({
+        privilegeTitle: 'Menu Secret',
         contentTitle: 'Restaurant Le Patio',
-        partnerName: 'Menu Secret',
       }),
     ).toBe('Restaurant Le Patio');
+    expect(
+      copyBenefitValidatedMessage({
+        privilegeTitle: 'Menu Secret',
+        contentTitle: 'Restaurant Le Patio',
+      }),
+    ).toBe('Votre privilège « Menu Secret » a été validé chez Restaurant Le Patio.');
   });
 
-  it('messages sans répéter le nom catalogue', () => {
-    const place = 'Restaurant Le Patio';
-    expect(copyBenefitValidatedMessage(place)).toBe('Validation confirmée à Restaurant Le Patio.');
-    expect(copyBenefitCancelledMessage(place)).toContain('Restaurant Le Patio');
-    expect(copyBenefitPendingMessage(place, 15)).toBe(
-      'Présentez votre QR code à Restaurant Le Patio (15 min max).',
-    );
+  it('évite la double répétition si lieu = nom privilège', () => {
+    expect(
+      copyBenefitValidatedMessage({
+        privilegeTitle: 'Menu Secret',
+        contentTitle: 'Menu Secret',
+        partnerName: 'Menu Secret',
+      }),
+    ).toBe('Votre privilège « Menu Secret » a été validé.');
+    expect(
+      copyBenefitPendingMessage(
+        { privilegeTitle: 'Menu Secret', contentTitle: 'Menu Secret' },
+        15,
+      ),
+    ).toBe('Présentez votre QR code pour le privilège « Menu Secret » (15 min max).');
   });
 
-  it('headline partenaire = lieu lié', () => {
+  it('deux privilèges même nom : le lieu distingue', () => {
+    const ctx = { privilegeTitle: 'Menu Secret', contentTitle: 'Le Singulier' };
+    expect(copyBenefitCancelledMessage(ctx)).toContain('Menu Secret');
+    expect(copyBenefitCancelledMessage(ctx)).toContain('Le Singulier');
+  });
+
+  it('headline partenaire = lieu si distinct', () => {
     expect(
       resolvePartnerPendingBenefitHeadline({
         contentTitle: 'Le Singulier',
         catalogTitle: 'Menu Secret',
-        partnerName: 'Lavenue',
       }),
     ).toBe('Le Singulier');
-  });
-
-  it('masque sous-titre catalogue si identique au headline', () => {
-    expect(shouldShowCatalogSubtitle('Menu Secret', 'Menu Secret')).toBe(false);
-    expect(shouldShowCatalogSubtitle('Le Patio', 'Menu Secret')).toBe(true);
+    expect(shouldShowPrivilegeSubtitle('Le Singulier', 'Menu Secret')).toBe(true);
   });
 });

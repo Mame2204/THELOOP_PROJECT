@@ -21,7 +21,7 @@ import { scannedMemberRoleLabel } from '@/lib/member-qr-scan';
 import { notifyPartnerBenefitOutcomeViaBackend } from '@/lib/partner-validation-backend-api';
 import {
   resolvePartnerPendingBenefitHeadline,
-  shouldShowCatalogSubtitle,
+  shouldShowPrivilegeSubtitle,
 } from '@/lib/benefit-notification-copy';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -417,7 +417,7 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
             partnerName,
             catalogTitle: benefit.title,
           });
-          const showCatalog = shouldShowCatalogSubtitle(headline, benefit.title);
+          const showCatalog = shouldShowPrivilegeSubtitle(headline, benefit.title);
           return (
             <Pressable
               key={redemption.id}
@@ -435,7 +435,7 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
                 <Text style={[styles.benefitTitle, { color: shell.pageTitle }]}>{headline}</Text>
                 {showCatalog ? (
                   <Text style={[styles.meta, { color: shell.pageKicker }]}>
-                    Privilège catalogue : {benefit.title}
+                    Privilège : {benefit.title}
                   </Text>
                 ) : null}
                 {roleBadge ? (

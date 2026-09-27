@@ -1,0 +1,166 @@
+-- Notifs membre validation privilège : titre catalogue + lieu lié (spot / événement / outil), sans double répétition.
+
+CREATE OR REPLACE FUNCTION public.apply_partner_benefit_validation(
+  p_partner_code TEXT,
+  p_redemption_local_ids TEXT[],
+  p_validate BOOLEAN DEFAULT TRUE
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_code TEXT := upper(trim(p_partner_code));
+  v_count INTEGER := 0;
+  v_red RECORD;
+  v_benefit_title TEXT;
+  v_content TEXT;
+  v_partner TEXT;
+  v_linked TEXT;
+BEGIN
+  IF p_redemption_local_ids IS NULL OR array_length(p_redemption_local_ids, 1) IS NULL THEN
+    RETURN 0;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.partner_validation_codes pvc WHERE pvc.validation_code = v_code
+  ) THEN
+    RAISE EXCEPTION 'invalid_partner_code';
+  END IF;
+
+  FOR v_red IN
+    SELECT
+      br.local_id,
+      br.benefit_id,
+      br.user_id,
+      br.partner_key,
+      br.partner_name,
+      br.partner_code,
+      br.content_title,
+      br.status,
+      br.expires_at
+    FROM public.benefit_redemptions br
+    WHERE br.local_id = ANY(p_redemption_local_ids)
+      AND br.status = 'pending'
+      AND br.expires_at > NOW()
+      AND EXISTS (
+        SELECT 1
+        FROM public.partner_validation_codes pvc
+        WHERE pvc.validation_code = v_code
+          AND (
+            upper(trim(COALESCE(br.partner_code, ''))) = v_code
+            OR br.partner_key = pvc.partner_key
+            OR lower(trim(br.partner_name)) = lower(trim(pvc.partner_name))
+            OR (
+              pvc.establishment_id IS NOT NULL
+              AND NULLIF(trim(COALESCE(br.content_id, '')), '') ~* '^[0-9a-f-]{36}$'
+              AND br.content_id::uuid = pvc.establishment_id
+            )
+            OR (
+              pvc.user_id IS NOT NULL
+              AND (
+                br.partner_key = pvc.user_id::text
+                OR br.partner_key = ('user:' || pvc.user_id::text)
+              )
+            )
+          )
+      )
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1
+      FROM public.prime_benefit_grants pg
+      WHERE pg.local_id = v_red.benefit_id
+        AND pg.user_id = v_red.user_id
+        AND pg.status IN ('pending_validation', 'active')
+    ) THEN
+      CONTINUE;
+    END IF;
+
+    SELECT pg.title
+    INTO v_benefit_title
+    FROM public.prime_benefit_grants pg
+    WHERE pg.local_id = v_red.benefit_id
+      AND pg.user_id = v_red.user_id
+    LIMIT 1;
+
+    v_benefit_title := COALESCE(NULLIF(trim(v_benefit_title), ''), 'Privilège');
+    v_content := NULLIF(trim(v_red.content_title), '');
+    v_partner := NULLIF(trim(v_red.partner_name), '');
+
+    IF v_content IS NOT NULL AND lower(v_content) <> lower(v_benefit_title) THEN
+      v_linked := v_content;
+    ELSIF v_content IS NOT NULL THEN
+      v_linked := NULL;
+    ELSIF v_partner IS NOT NULL AND lower(v_partner) <> lower(v_benefit_title) THEN
+      v_linked := v_partner;
+    ELSE
+      v_linked := NULL;
+    END IF;
+
+    IF p_validate THEN
+      UPDATE public.benefit_redemptions
+      SET status = 'validated', validated_at = NOW()
+      WHERE local_id = v_red.local_id;
+
+      UPDATE public.prime_benefit_grants
+      SET status = 'used', used_at = NOW()
+      WHERE local_id = v_red.benefit_id
+        AND user_id = v_red.user_id
+        AND status IN ('pending_validation', 'active');
+
+      INSERT INTO public.user_notifications (user_id, title, message, audience, sent_at)
+      VALUES (
+        v_red.user_id,
+        'Privilège validé',
+        CASE
+          WHEN v_linked IS NOT NULL THEN
+            format('Votre privilège « %s » a été validé chez %s.', v_benefit_title, v_linked)
+          ELSE
+            format('Votre privilège « %s » a été validé.', v_benefit_title)
+        END,
+        'individual',
+        NOW()
+      );
+    ELSE
+      UPDATE public.benefit_redemptions
+      SET status = 'cancelled'
+      WHERE local_id = v_red.local_id;
+
+      UPDATE public.prime_benefit_grants
+      SET status = 'active'
+      WHERE local_id = v_red.benefit_id
+        AND user_id = v_red.user_id
+        AND status IN ('pending_validation', 'active');
+
+      INSERT INTO public.user_notifications (user_id, title, message, audience, sent_at)
+      VALUES (
+        v_red.user_id,
+        'Validation annulée',
+        CASE
+          WHEN v_linked IS NOT NULL THEN
+            format(
+              'La validation du privilège « %s » chez %s a été annulée. Vous pouvez réutiliser votre privilège.',
+              v_benefit_title,
+              v_linked
+            )
+          ELSE
+            format(
+              'La validation du privilège « %s » a été annulée. Vous pouvez réutiliser votre privilège.',
+              v_benefit_title
+            )
+        END,
+        'individual',
+        NOW()
+      );
+    END IF;
+
+    v_count := v_count + 1;
+  END LOOP;
+
+  RETURN v_count;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.apply_partner_benefit_validation(TEXT, TEXT[], BOOLEAN) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.apply_partner_benefit_validation(TEXT, TEXT[], BOOLEAN) TO anon, authenticated, service_role;
