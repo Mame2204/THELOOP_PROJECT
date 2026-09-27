@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
 | **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
-| **Prochain test** | **SANS53-A5-U23** *(app admin · Octroi PASS)* · **SANS53-C3** *(Profil · Nous contacter)* · **build 53** plus tard |
+| **Prochain test** | **Build 53** (*activate* identité · CGU · DOB) · opt. plafond parrainage / 10 filleuls |
 | **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
 | **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
@@ -202,7 +202,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [x] | — | **27 sept.** prérequis transitifs · cf. règle ci-dessous |
 | **P2** | **A5** octroi manuel mobile · tirage · push admin | [ ] | partiel web | U23 = **build 49+** (PR #7) |
 | **P2** | **C2** partenaire invité → Espace Pro | [x] | — | **27 sept.** parité invite |
-| **P2** | **C3/C4** mailto · filleul +1 | [ ] | — | |
+| **P2** | **C3/C4** mailto · filleul +1 | [x] | — | **27 sept.** C3 + C4 PASS |
 | **P2** | **B9** admin délégué **mobile** | **PASS** 📱🤖 | PASS web | Insights OK · approbation demandes → **49+** |
 | **🔒 build 49+** | LoopX · **A5-U23** octroi manuel mobile · Phase 1 **notifs retrait** · écrans admin P2 · **📱 M1-U2** · **activate build 53** | partiel | partiel | Notifs C1 **OK build 51** · **D1 🤖 icône OK** |
 
@@ -254,7 +254,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **📱 iOS** | M1-U2 set_password in-app | **SANS53-M1-U2** |
 | **C1 push** | Ciblage Membres→Prime · Prime planifiée device | **SANS53-C1-A/B** |
 | ~~**💻 Modération**~~ | ~~B2 SANS53~~ | **PASS 27 sept.** |
-| **A5 mobile** | Octroi manuel PASS (A5-U23) | **SANS53-A5-U23** |
+| ~~**A5 mobile**~~ | Octroi manuel PASS | **PASS 27 sept.** |
 | ~~**Mobile P2**~~ | Suggestions · CreateUser · Waitlist · Featured · hub | **PASS 27 sept.** *(transitif + attestation)* |
 | **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | P2 si besoin |
 | **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
@@ -822,7 +822,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Modération — approuver retrait catalogue *(20 sept. 2026 · build 48 · A5-U20 PASS)*
 - [x] **📱** Modération — refuser retrait · notif partenaire *(20 sept. 2026 · build 48 · A5-U21 PASS)*
 - [x] **📱** Users — changer rôle · suspendre *(20 sept. 2026 · build 48 · A5-U22 PASS)*
-- [ ] **📱** PASS — octroi manuel · prix Guinée *(20 sept. 2026 · build 48 · **A5-U23 FAIL** recherche membre · **SANS53-A5-U23** = retest app admin **Gestion PASS** → section **Octroi PASS** · cf. glossaire smoke)*
+- [x] **📱** PASS — octroi manuel · prix Guinée *(27 sept. · **SANS53-A5-U23 PASS** · Héritage · recherche e-mail · notif activation · rôle Prime)*
 - [x] **📱** Tirage — lancer · historique · notif gagnant *(27 sept. · **PASS parité** · 💻 tirage 24–26 sept. · notif gagnant alignée C1)*
 - [x] **📱** Push immédiat audience Tous *(26–27 sept. · **PASS** · campagne immédiate admin + réception 🤖 · parité 📱)*
 - [x] **📱** Push planifié · annuler *(26 sept. · **PASS parité** · W-12/W-13 💻 · ne pas refaire)*
@@ -1064,9 +1064,9 @@ Liens Param. → pages satellites :
 
 - [x] **📱** Profil → `contact@theloop-app.com` *(20 sept. 2026 · build 48 · A2)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48)*
-- [ ] **📱** mailto / WhatsApp sheet
-- [ ] **📱** FAQ / CGU → e-mail support à jour
-- [ ] **🤖** Idem
+- [x] **📱** mailto / WhatsApp sheet *(27 sept. · **SANS53-C3 PASS** · Profil · Nous contacter)*
+- [x] **📱** FAQ / CGU → e-mail support à jour *(27 sept. · coordonnées THE LOOP OK)*
+- [x] **🤖** Idem *(parité)*
 
 ## C4 — Parrainage
 
@@ -1331,6 +1331,8 @@ Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
   - **PASS SANS53-C1-C** : pas de doublon · **1 notif / compte**
   - **PASS SANS53-B2-WEB** + **B2-RETRAIT** 💻 *(27 sept. · modération approuver/refuser · filtres OK post-deploy · ne pas refaire)*
   - **PASS SANS53-P2-ADMIN** *(27 sept. · transitif + attestation)* : Suggestions · Inviter≈CreateUser · Waitlist · Featured · soumission↔modération
+  - **PASS SANS53-A5-U23** : octroi **Héritage** app admin · recherche e-mail · notif · Prime
+  - **PASS SANS53-C3** : Profil · Nous contacter · coordonnées THE LOOP
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
