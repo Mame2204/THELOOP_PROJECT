@@ -485,6 +485,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260949_admin_orphan_delete_auth_user.sql` — suppression orphelin inclut **auth.users** *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260950_invite_activation_preserve_names.sql` — identité activation > Membre/THE LOOP *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260952_admin_approve_partner_withdrawal.sql` — RPC approve retrait partenaire *(27 sept. · **OK Supabase** · testeur)*
+- [ ] `20260953_security_hardening_roles_invites_submissions.sql` — audit sécurité : rôle jamais repris du client, garde soumissions partenaires, invitations, suppression orphelin *(+ redeploy Edge **`member-activate-invite`** et **`send-push`**)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
