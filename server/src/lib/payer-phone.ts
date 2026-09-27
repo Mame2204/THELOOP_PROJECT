@@ -76,3 +76,10 @@ export function formatGuineaLocalPhone(djomyPhone: string): string {
   const local = extractGuineaLocal9(djomyPhone);
   return local.length === 9 ? local : djomyPhone;
 }
+
+/** Pour les journaux : ne garde que les 3 derniers chiffres. */
+export function maskPhone(raw: string): string {
+  const digits = digitsOnly(raw);
+  if (digits.length <= 3) return '***';
+  return `***${digits.slice(-3)}`;
+}

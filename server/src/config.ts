@@ -59,8 +59,15 @@ if (isDjomyProduction && !djomyPartnerCode) {
   );
 }
 
+// Jamais de montants réduits sur l'API Djomy de production : un vrai paiement
+// à 1 000 GNF ouvrirait un PASS complet.
 const useSandboxAmounts =
-  parseBoolEnv('PAYMENT_SANDBOX_AMOUNTS') || djomyBaseUrl.includes('sandbox-api.djomy');
+  !isDjomyProduction
+  && (parseBoolEnv('PAYMENT_SANDBOX_AMOUNTS') || djomyBaseUrl.includes('sandbox-api.djomy'));
+
+if (isDjomyProduction && parseBoolEnv('PAYMENT_SANDBOX_AMOUNTS')) {
+  console.warn('[config] PAYMENT_SANDBOX_AMOUNTS ignoré : Djomy production → tarifs normaux.');
+}
 
 const productionPassPrices = {
   monthly: parseIntEnv('PASS_PRICE_MONTHLY_GNF', 850_000),
