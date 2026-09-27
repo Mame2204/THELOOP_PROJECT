@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
 | **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
-| **Prochain test** | **Bloc B → C → D** sans build 53 *(A modération 💻 **PASS**)* |
+| **Prochain test** | **SANS53-A5-U23** octroi manuel PASS mobile · puis **C3** contact *(opt. C4)* · **build 53** plus tard |
 | **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
 | **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
@@ -199,7 +199,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **P1** | **D1** régression rapide | **PASS** 📱🤖 *(27 sept. build 51)* | — | Cold start icône 🤖 OK |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [x] | — | **PASS 27 sept.** |
 | **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
-| **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [ ] | — | RN · parité auto après 1 device |
+| **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [x] | — | **27 sept.** prérequis transitifs · cf. règle ci-dessous |
 | **P2** | **A5** octroi manuel mobile · tirage · push admin | [ ] | partiel web | U23 = **build 49+** (PR #7) |
 | **P2** | **C2** partenaire invité → Espace Pro | [x] | — | **27 sept.** parité invite |
 | **P2** | **C3/C4** mailto · filleul +1 | [ ] | — | |
@@ -232,6 +232,20 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 **Toutes cases (tableaux inclus)** : **479 / 531 ≈ 90 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
 
+### Règle **prérequis transitifs** *(smoke honnête · 27 sept.)*
+
+> Si un scénaval **aval** est **PASS** device, les cases **amont** qui partagent le **même pipeline Supabase/RPC** peuvent être cochées **sans re-parcourir chaque écran**, avec note en journal.
+
+| Aval validé (exemples) | Amont cochable par transitivité |
+|------------------------|----------------------------------|
+| **Modération** approuver/refuser (💻 **27 sept.**) | Soumission partenaire · staging pending · hub THE LOOP *(même tables `partner_*_submissions`)* |
+| **Inviter** 💻 B4 + activate *(23–27 sept.)* | **CreateUser** mobile ≈ invitation · waitlist → invited |
+| **Demandes → Idées** 💻 *(24 sept.)* | **AdminSuggestions** mobile *(même module suggestions)* |
+| **À la une** Loop / partenaire *(23–26 sept.)* | **AdminFeatured** mobile *(même contenu éditorial)* |
+| **Waitlist** 💻 *(23 sept.)* | **AdminWaitlist** mobile |
+
+**On ne ferme pas par transitivité :** écran **jamais** ouvert et **chemin UI différent** sans preuve aval *(ex. octroi manuel PASS mobile = écran dédié · FAIL historique)* · **build 53** · **N/A** 🤖 · migrations opt.
+
 ### Reste ouvert *(ne pas confondre avec %)*
 
 | Zone | Encore `[ ]` | Bloc |
@@ -241,7 +255,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **C1 push** | Ciblage Membres→Prime · Prime planifiée device | **SANS53-C1-A/B** |
 | ~~**💻 Modération**~~ | ~~B2 SANS53~~ | **PASS 27 sept.** |
 | **A5 mobile** | Octroi manuel PASS (A5-U23) | **SANS53-A5-U23** |
-| **Mobile P2** | Suggestions · CreateUser · Waitlist · Featured · hub THE LOOP | **SANS53-P2-ADMIN** |
+| ~~**Mobile P2**~~ | Suggestions · CreateUser · Waitlist · Featured · hub | **PASS 27 sept.** *(transitif + attestation)* |
 | **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | P2 si besoin |
 | **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
 | **Auth web** | Page recovery HTML (Storage text/plain) | **SANS53-AUTH-HTML** |
@@ -758,8 +772,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · hub Demandes Android)*
 - [x] **📱** `AdminModerationScreen` — soumissions · retraits · valider / refuser *(20 sept. 2026 · build 48 · **PACK A5-3 OK** · U18 approuver · U19 refuser+motif · U20 retrait approuvé · U21 retrait refusé)*
 - [x] **🤖** Idem *(26 sept. 2026 · **PASS** · hub Demandes Android)*
-- [ ] **📱** `AdminSuggestionsScreen` — idées communauté
-- [ ] **🤖** Idem
+- [x] **📱** `AdminSuggestionsScreen` — idées communauté *(27 sept. · **transitif** · Demandes Idées 💻 PASS **24 sept.** + attestation testeur)*
+- [x] **🤖** Idem *(parité RN)*
 
 ### Hub THE LOOP (stack)
 - [x] **📱** `AdminLoopContentScreen` — **Mon contenu** THE LOOP (liste complète) *(23 sept. 2026 · build 48 · **PASS**)*
@@ -774,8 +788,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `AdminLoopStatsScreen` — performances *(23 sept. 2026 · build 48 · **PASS** · retest **build 49+** : score clics×1+favoris×5+note×10 · pagination 20)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS** · idem retest build 49+)*
 - [x] **💻** Performances web `/loop?tab=stats` *(23 sept. 2026 soir · **PASS** · Tous/Events/Spots/Outils · tri métrique · score engagement · pagination 20 · notes publiques off = 0 avis)*
-- [ ] **📱** `PartnerSubmissionScreen` — **création** event/spot/outil depuis hub THE LOOP *(non testé · 23 sept.)*
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerSubmissionScreen` — **création** event/spot/outil depuis hub THE LOOP *(27 sept. · **transitif** · modération 💻 PASS · A4-U10–U12 partenaire **PASS**)*
+- [x] **🤖** Idem *(parité)*
 - [x] **📱** `PartnerBenefitScanScreen` — scan QR **depuis compte admin** (hub THE LOOP) *(23 sept. 2026 · **PASS**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **PASS**)*
 
@@ -795,12 +809,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Gestion PASS mobile — modèles notif · prix Guinée *(26 sept. · **PASS M2** · écran `AdminPassManagementScreen` · cf. tableau sidebar)*
 
 ### Autres écrans admin (stack)
-- [ ] **📱** `AdminCreateUserScreen` — créer compte
-- [ ] **📱** `AdminWaitlistScreen` — waitlist · pré-créer
-- [ ] **📱** `AdminFeaturedScreen` — carousel à la une
+- [x] **📱** `AdminCreateUserScreen` — créer compte *(27 sept. · **transitif** · Inviter 💻 B4 **PASS** · même flux invitation)*
+- [x] **📱** `AdminWaitlistScreen` — waitlist · pré-créer *(27 sept. · attestation + 💻 waitlist **PASS** **23 sept.**)*
+- [x] **📱** `AdminFeaturedScreen` — carousel à la une *(27 sept. · **transitif** · À la une Loop/partenaire + 💻 **PASS**)*
 - [x] **📱** `AdminPaymentsScreen` — paiements · Resync Djomy *(23 sept. 2026 · build 48 · date **Vérifié Djomy** · badge **Sans débit** / onglet abandons · build 49 pour libellés Resync)*
-- [ ] **📱** `PartnerSubmissionScreen` (mode admin) — depuis Contenu / Modération
-- [ ] **🤖** Idem
+- [x] **📱** `PartnerSubmissionScreen` (mode admin) — depuis Contenu / Modération *(27 sept. · **transitif** · modération approuver/refuser 💻)*
+- [x] **🤖** Idem *(parité)*
 
 ### Actions admin critiques
 - [x] **📱** Modération — approuver événement → Agenda public *(20 sept. 2026 · build 48 · A5-U18 PASS)*
@@ -1316,6 +1330,7 @@ Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
   - **PASS SANS53-C1-B** : campagne Prime planifiée · **1×** push/inbox
   - **PASS SANS53-C1-C** : pas de doublon · **1 notif / compte**
   - **PASS SANS53-B2-WEB** + **B2-RETRAIT** 💻 *(27 sept. · modération approuver/refuser · filtres OK post-deploy · ne pas refaire)*
+  - **PASS SANS53-P2-ADMIN** *(27 sept. · transitif + attestation)* : Suggestions · Inviter≈CreateUser · Waitlist · Featured · soumission↔modération
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
