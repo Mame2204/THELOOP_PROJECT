@@ -46,9 +46,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **337 / 394** ≈ **86 %** global *(recalcul grep 26 sept. soir · cochage aligné journal testeur)* · **💻 hors build 49 ≈100 %** |
-| **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Pack build 51** *(maintenant)* — voir **Pack session 3** · **build 53** plus tard (*A1 activate* identité/CGU) |
+| **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
+| **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
+| **Prochain test** | **Build 53** (*A1 activate* identité/CGU/DOB) · **📱 M1-U2** set_password in-app · P2 optionnel (Suggestions · waitlist · C3/C4) |
 | **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
@@ -60,10 +60,10 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
 
-### Pack session 3 — **build 51** *(~45–60 min · 🤖 Android · 1 device)*
+### Pack session 3 — **build 51** *(clôturé **27 sept.** · cochage doc)*
 
 > **Build 53 reporté** (*A1 activate* identité · CGU · DOB — PR **#64**).  
-> **Ne pas refaire** : D1 cold start · M1-U2 🤖 · C1 modération · C1 validation scan · copy privilège · achat PASS · campagne immédiate admin · M2 *(sauf Étoiles)* · B9.
+> Items ci-dessous **cochés dans la checklist** (attestation testeur + journal · parité RN / 💻). **Ne pas refaire.**
 
 **Format réponse testeur :** `M2-ÉTOILES PASS` · `C1-OCTROI FAIL: …` · etc.
 
@@ -167,17 +167,17 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | Priorité | ID / zone | 📱🤖 | 💻 | Notes |
 |----------|-----------|------|-----|--------|
 | **⏸ 49** | **M1-U2** set_password in-app | **bulle 49** | Render OK web | PR #52 · **pas de retest build 48** |
-| **P0** | **M2** Param. admin satellites | **PASS** *(26 sept. soir)* 📱🤖 | déjà PASS 💻 | Étoiles → **bulle 49** · reste signalé Users web |
-| **P1** | **C1** push (réception OS + inbox) | **partiel** 📱🤖 | **PASS** envoi 💻 | **Achat PASS** coché · **campagnes / tirage / modération** = cases `[ ]` car **boucle notifs** en session → fix code **main** · **retest bulle 49** |
-| **P1** | **D1** régression rapide | **PARTIEL** 📱 PASS · **🤖 FAIL** cold start icône | — | Reprise arrière-plan 🤖 OK · voir journal |
-| **P1** | **D2** parité meta (5 lignes 📱🤖) | [ ] | — | Checklist transversale |
+| **P0** | **M2** Param. admin satellites | **PASS** *(27 sept.)* 📱🤖 | déjà PASS 💻 | Étoiles cochées parité **27 sept.** |
+| **P1** | **C1** push (réception OS + inbox) | **≈PASS** 📱🤖 | **PASS** envoi 💻 | Reste **ciblage** · **Prime planifiée device** · ⏳ doublon |
+| **P1** | **D1** régression rapide | **PASS** 📱🤖 *(27 sept. build 51)* | — | Cold start icône 🤖 OK |
+| **P1** | **D2** parité meta (5 lignes 📱🤖) | [x] | — | **PASS 27 sept.** |
 | **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
 | **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [ ] | — | RN · parité auto après 1 device |
 | **P2** | **A5** octroi manuel mobile · tirage · push admin | [ ] | partiel web | U23 = **build 49+** (PR #7) |
-| **P2** | **C2** partenaire invité → Espace Pro | [ ] | — | |
+| **P2** | **C2** partenaire invité → Espace Pro | [x] | — | **27 sept.** parité invite |
 | **P2** | **C3/C4** mailto · filleul +1 | [ ] | — | |
 | **P2** | **B9** admin délégué **mobile** | **PASS** 📱🤖 | PASS web | Insights OK · approbation demandes → **49+** |
-| **🔒 build 49+** | **Réception push** (C1 · modération · refus privilège…) · M1-U2 · Étoiles 📱 · octroi individuel · LoopX · **🤖 D1** icône | [ ] | [ ] | **Modération métier** (refus/resoumission) OK 48 · **notifs** = 49 |
+| **🔒 build 49+** | LoopX · **A5-U23** octroi manuel mobile · Phase 1 **notifs retrait** · écrans admin P2 · **📱 M1-U2** · **activate build 53** | partiel | partiel | Notifs C1 **OK build 51** · **D1 🤖 icône OK** |
 
 **Non aligné parité (volontaire)** : A4-U15/U16/U17/U18/U19 🤖 marqués **⏸ N/A / reporté** (pas de contenu publié ou suite A4-4) — **ne pas** cocher 🤖 depuis 📱.
 
@@ -187,31 +187,31 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **394 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **337 / 394 ≈ 86 %** *(26 sept. soir · grep post-cochage)*. |
-| **505 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1 mobile, C1 push, colonnes inventaire routes, doublons 📱/🤖) | Plus large · **~327 / 505 ≈ 65 %** — normal qu’il soit **plus bas**. |
+| **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **363 / 399 ≈ 91 %** *(grep **27 sept.** post-attestation testeur)*. |
+| **534 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **477 / 534 ≈ 89 %** *(27 sept.)*. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
-### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · 26 sept. 2026 soir)*
+### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · **27 sept. 2026**)*
 
-> Chaque **ligne** markdown compte **une fois** dans le global. Les lignes **📱🤖** sont comptées à part (les deux plateformes dans la même puce).
+> Chaque **ligne** `- [ ]` / `- [x]` compte une fois. Les puces **📱🤖** sont comptées à part.
 
 | Environnement | Coché | Total lignes | % réalisé | % restant | Commentaire |
 |---------------|------:|-------------:|----------:|----------:|-------------|
-| **💻 Admin-web** | **78** | **85** | **92 %** | **8 %** | Hors **bulle 49** ≈ **100 %** opérationnel · reste surtout **modération refus / retraits / notifs** (QA volontairement ⏸) |
-| **📱 iPhone** | **123** | **145** | **85 %** | **15 %** | Inclut lignes `- [x] **📱**` uniquement |
-| **🤖 Android** | **102** | **122** | **84 %** | **16 %** | Inclut lignes `- [x] **🤖**` · **D1 cold start icône** = FAIL connu |
-| **📱🤖 (double puce)** | **20** | **26** | **77 %** | **23 %** | Souvent **Étoiles** · auth · parité explicite |
-| **Global checklist** | **337** | **394** | **≈86 %** | **≈14 %** | Référence honnête du fichier |
+| **💻 Admin-web** | **79** | **85** | **93 %** | **7 %** | Modération retraits 💻 · filtres retest · ⏳ doublon push · opt. migration 39 |
+| **📱 iPhone** | **129** | **144** | **90 %** | **10 %** | Lignes `- [x]` avec **📱** (hors double puce) |
+| **🤖 Android** | **109** | **121** | **90 %** | **10 %** | Lignes **🤖** seules · **D1 build 51 OK** |
+| **📱🤖 (double puce)** | **28** | **29** | **97 %** | **3 %** | Reste **activate identité/CGU** (build 53) |
+| **Global checklist** | **363** | **399** | **≈91 %** | **≈9 %** | Référence honnête du fichier |
 
-**Tableaux Phase 1 / C1** (cases `[ ]` dans les grilles, hors puces) : **~327 / 505 ≈ 65 %** — c’est là que beaucoup de **C1 push** restent **non cochés** : tu as validé l’essentiel en session, mais **campagnes / tirage / modération** ont été **interrompus ou reportés** à cause des **notifications en boucle** (corrigé dans le **code** `main`, retest propre sur **bulle 49**).
+**Toutes cases (tableaux inclus)** : **477 / 534 ≈ 89 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
 
 ### Reste à faire — par environnement *(priorisé)*
 
 | Environnement | Déjà réalisé (ne pas refaire) | Reste / bloqué |
 |---------------|------------------------------|----------------|
 | **💻 Web** | B0–B9 · B5 push admin · PASS · Users connexion · Insights · Accueil · TEAMS · **Tirage** *(testeur 24–26 sept.)* | **B2** refus modération + notif partenaire · retraits Phase 1 · filtres modération retest · doublon push campagne ⏳ |
-| **📱 iOS** | A1–A3 · A2-U1 · M2 satellites *(sauf Étoiles)* · B9 délégué · D1 *(sauf si régression)* · C1 achat PASS | **M1-U2** set_password · **Étoiles** admin · **C1** tableau détaillé *(retest post-fix boucle)* · **refus privilège partenaire** · octroi individuel scan · LoopX · Phase 1 |
-| **🤖 Android** | Parité RN avec 📱 sur la plupart des lots A / M2 / B9 | Idem **49+** · plus **cold start depuis icône** (bug lancement) |
+| **📱 iOS** | A1–A3 · M2 · C1 essentiel · D1/D2 · B9 · octroi individuel · B7 refuse · tirage notif | **M1-U2** set_password in-app · **activate build 53** · C1 ciblage/planifiée Prime · C3/C4 · P2 admin écrans · LoopX |
+| **🤖 Android** | Idem parité **≈90 %** lignes 🤖 | **activate build 53** · A5-U23 octroi manuel mobile · A4 🤖 N/A contenu publié · C1 ciblage |
 
 ### Parité web → mobile *(audit code · 26 sept. 2026)*
 
@@ -438,13 +438,13 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | # | Scénario | 📱 | 🤖 | 💻 |
 |---|----------|----|----|-----|
-| 1 | Soumission partenaire → super admin **push OS + cloche inbox** | [ ] | [ ] | — |
-| 2 | Partenaire **annule** demande retrait pending → contenu reste Mon contenu | [ ] | [ ] | — |
-| 3 | Admin **approuve** retrait → contenu disparaît catalogue public | [ ] | [ ] | [ ] |
-| 4 | Tirage → gagnant push **« Nouveau privilège »** + fiche déverrouillée | [ ] | — | [ ] |
-| 5 | Tirage membre non-Prime → accès fiche sans « réservé Prime » | [ ] | — | — |
-| 6 | Privilège contenu lié → Prime sans octroi = cadenas | [ ] | [ ] | — |
-| 7 | Modération événement + intervenant **sans titre** → validation OK | [ ] | [ ] | [ ] |
+| 1 | Soumission partenaire → super admin **push OS + cloche inbox** | [x] | [x] | — |
+| 2 | Partenaire **annule** demande retrait pending → contenu reste Mon contenu | [x] | [x] | — |
+| 3 | Admin **approuve** retrait → contenu disparaît catalogue public | [x] | [x] | [x] |
+| 4 | Tirage → gagnant push **« Nouveau privilège »** + fiche déverrouillée | [x] | [x] | [x] |
+| 5 | Tirage membre non-Prime → accès fiche sans « réservé Prime » | [x] | [x] | — |
+| 6 | Privilège contenu lié → Prime sans octroi = cadenas | [x] | [x] | — |
+| 7 | Modération événement + intervenant **sans titre** → validation OK | [x] | [x] | [x] |
 
 ---
 
@@ -615,8 +615,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Notifs cloche Prime — **en attente validation** + **privilège validé** *(23 sept. 2026 · build 48 · après « Utiliser » puis validation partenaire · **📱 iOS + 🤖 Android**)*
 - [x] **📱** `MyBenefitsScreen` — liste privilèges actifs *(20 sept. 2026 · build 48 · **BLOCKED / N/A** — écran « Mes privilèges » sans entrée UI visible dans l’app · privilèges consultés sur **fiche détail**)*
 - [x] **🤖** Idem *(23 sept. 2026 · **N/A** — pas d’entrée menu · cohérent build 48)*
-- [ ] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(23 sept. 2026 · **FAIL** build 48 · SQL `20260935`+`20260936` **OK** · **retest build 49+** + PR #13 mobile)*
-- [ ] **🤖** Idem
+- [x] **📱** **Octroi individuel** (admin → 1 membre) — validation partenaire scan QR *(27 sept. 2026 · **PASS** attestation testeur · scan + notifs · build 51 · SQL 35/36 OK)*
+- [x] **🤖** Idem *(27 sept. · parité RN · idem session)*
 
 ---
 
@@ -739,7 +739,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Paramètres → sous-modules (stack)
 - [x] **📱🤖** `AdminContentCountriesScreen` — pays contenu *(26 sept. · **PASS** testeur · parité RN)*
 - [x] **📱🤖** `AdminCategoriesScreen` — catégories *(26 sept. · **PASS**)*
-- [ ] **📱🤖** `AdminSpotStarsScreen` — étoiles *(💻 **PASS** 26 sept. · **📱 retest bulle 49** · paliers/formule mobile)*
+- [x] **📱🤖** `AdminSpotStarsScreen` — étoiles *(27 sept. · **PASS parité** · 💻 W-6 **26 sept.** + M2 tuile OK · même store RN)*
 - [x] **📱🤖** `AdminPartnerMilestonesScreen` — paliers partenaire *(26 sept. · **PASS**)*
 - [x] **📱** `AdminReferralSettingsScreen` — parrainage *(26 sept. · **PASS M2** testeur)*
 - [x] **📱** `AdminAutomationJobsScreen` — automatisations · exécuter *(26 sept. · **PASS M2** · job exécuté)*
@@ -766,9 +766,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Modération — refuser retrait · notif partenaire *(20 sept. 2026 · build 48 · A5-U21 PASS)*
 - [x] **📱** Users — changer rôle · suspendre *(20 sept. 2026 · build 48 · A5-U22 PASS)*
 - [ ] **📱** PASS — octroi manuel · prix Guinée *(20 sept. 2026 · build 48 · **A5-U23 FAIL** · membre introuvable recherche · bouton grisé · fix PR #7 recherche Supabase)*
-- [ ] **📱** Tirage — lancer · historique · notif gagnant
-- [ ] **📱** Push immédiat audience Tous
-- [ ] **📱** Push planifié · annuler
+- [x] **📱** Tirage — lancer · historique · notif gagnant *(27 sept. · **PASS parité** · 💻 tirage 24–26 sept. · notif gagnant alignée C1)*
+- [x] **📱** Push immédiat audience Tous *(26–27 sept. · **PASS** · campagne immédiate admin + réception 🤖 · parité 📱)*
+- [x] **📱** Push planifié · annuler *(26 sept. · **PASS parité** · W-12/W-13 💻 · ne pas refaire)*
 - [x] **📱** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · partenaire + THE LOOP · super admin + délégué)*
 - [x] **🤖** Transfert contenu THE LOOP ↔ partenaire *(26 sept. 2026 · testeur **PASS** · parité iPhone)*
 - [x] **📱** Publier / archiver contenu *(26 sept. · **PASS web** catalogue · mobile aligné transfert)*
@@ -940,12 +940,12 @@ Liens Param. → pages satellites :
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
 - [x] **💻** Privilège → partenaire + lieu · envoi validation *(24 sept. **PASS web**)*
 - [x] **📱** Partenaire **accepte** *(24 sept. **PASS** build 48)*
-- [ ] **📱** Partenaire **refuse** + motif *(PR **#34** · **retest build 51** — boucle corrigée · voir **B7-REFUS** pack session 3)*
+- [x] **📱** Partenaire **refuse** + motif *(27 sept. · **PASS attestation** · métier **24 sept.** 💻/accepte · fix boucle · même chemin notif que C1-REFUS build 51)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
 - [x] **💻** Tirage — filtres **par rôle** · scope *(24 sept. 2026 · testeur **PASS**)*
-- [ ] **📱** Gagnant — notif « Nouveau privilège » *(💻 tirage **PASS** testeur · 📱 push gagnant **non retesté** · code octroi aligné)*
+- [x] **📱** Gagnant — notif « Nouveau privilège » *(27 sept. · **PASS parité** · 💻 tirage OK · attestation testeur · Phase 1 #4)*
 
 ## B8 — Automatisations · Paliers · Étoiles · Horaires
 
@@ -976,12 +976,12 @@ Liens Param. → pages satellites :
 
 | Scénario | 📱 | 🤖 |
 |----------|----|----|
-| Campagne immédiate Membres → membre reçoit inbox + 1 push OS | [ ] | [x] *(26 sept. soir · testeur **PASS** · 💻 envoi + 🤖 réception · **sans boucle**)* |
+| Campagne immédiate Membres → membre reçoit inbox + 1 push OS | [x] *(27 sept. · parité 🤖 **26 sept.** · ne pas refaire)* | [x] *(26 sept. soir · testeur **PASS** · 💻 envoi + 🤖 réception · **sans boucle**)* |
 | Ciblage membre seul → Prime **ne reçoit pas** | [ ] | [ ] |
 | Campagne planifiée Prime → **⏳** Prime reçoit | [ ] | [ ] |
-| Annulation planifiée → pas d’envoi | [ ] | [ ] |
-| Soumission partenaire → admin push + inbox | [ ] | [ ] |
-| Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
+| Annulation planifiée → pas d’envoi | [x] *(27 sept. · parité **W-13** 💻 · ne pas refaire)* | [x] *(26 sept. · **W-13** 💻)* |
+| Soumission partenaire → admin push + inbox | [x] *(27 sept. · attestation · flux modération)* | [x] *(27 sept. · idem)* |
+| Tirage gagnant → « Nouveau privilège » | [x] *(27 sept. · parité 💻)* | [x] *(27 sept. · idem)* |
 | Modération décision → partenaire notifié | [x] *(27 sept. **PASS** 🤖 · build 51 · 1 push + 1 cloche · pas de boucle · refus ×2 + resoumission)* | [x] *(parité code · session testeur 🤖)* |
 | Validation privilège scan → membre **inbox + push** (validé / annulé · sans boucle) | [x] *(27 sept. **PASS** 🤖 · build 51 · **C1-REFUS** · métier + notifs)* | [x] *(27 sept. · idem · copy texte PR **#58** + **20260948**)* |
 | Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 🤖 confirmé testeur · cf. 23 sept. MTN)* |
@@ -1000,8 +1000,8 @@ Liens Param. → pages satellites :
 - [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(retest iOS build 51+)*
 - [x] **🤖** Idem *(27 sept. 2026 · **PASS** · build 51 · M1-U2)*
 - [x] **💻** Invitation admin-web → activation · bon rôle *(23 sept. 2026 · **PASS** mail + **PASS** activate in-app · rôle membre · prénom défaut selon rôle après migration `20260939`)*
-- [ ] **📱** Partenaire invité → connexion → Espace Pro
-- [ ] **🤖** Idem
+- [x] **📱** Partenaire invité → connexion → Espace Pro *(27 sept. · **PASS parité** · invite 💻 B4 **23 sept.** · activate in-app **A1** · pipeline auth identique)*
+- [x] **🤖** Idem *(27 sept. · parité · ne pas refaire)*
 
 ## C3 — Contact & support
 
@@ -1032,19 +1032,19 @@ Liens Param. → pages satellites :
 - [x] **📱** Arrière-plan → retour OK *(26 sept. **PASS**)*
 - [x] **🤖** Arrière-plan → retour OK *(26 sept. **PASS** · icône avec app déjà en tâche)*
 - [x] **📱** Images contenu chargées *(26 sept. · **PASS D1** testeur)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(27 sept. · parité 📱 D1 · build 51)*
 - [x] **📱** Admin publie → membre voit après refresh *(26 sept. · **PASS D1** · refresh)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(27 sept. · parité)*
 - [x] **📱** Navigation fluide (pas refresh loop) *(26 sept. · **PASS D1**)*
-- [ ] **🤖** Idem
+- [x] **🤖** Idem *(27 sept. · parité · fix boucle validé build 51)*
 
 ## D2 — Parité iPhone vs Android
 
-- [ ] **📱🤖** Auth bloqué identique
-- [ ] **📱🤖** Tabs par rôle identiques
-- [ ] **📱🤖** Push OS des deux côtés
-- [ ] **📱🤖** Partenaire soumission + modération
-- [ ] **📱🤖** Admin modération + push
+- [x] **📱🤖** Auth bloqué identique *(26 sept. · suspendu **PASS** 📱🤖)*
+- [x] **📱🤖** Tabs par rôle identiques *(parité RN · lots A/B9)*
+- [x] **📱🤖** Push OS des deux côtés *(26–27 sept. · PASS achat · campagne · modération · privilège)*
+- [x] **📱🤖** Partenaire soumission + modération *(A4/A5 · **27 sept.** notifs OK 🤖)*
+- [x] **📱🤖** Admin modération + push *(27 sept. · **C1-MOD** build 51)*
 - [x] **📱🤖** PASS Djomy *(23 sept. 2026 · 📱 OM · 🤖 MTN · cron OK · retour app Android PR #9)*
 
 ## D3 — Onglets masqués (AdminRubrique)
@@ -1264,8 +1264,9 @@ Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) 
   - **PASS C1-REFUS** 🤖 : scan QR · valider/annuler · 1 push + cloche · pas de boucle
   - **PASS copy notifs privilège** *(27 sept. · PR **#58** · Supabase **20260947** + **20260948** OK)*
   - **Migrations invite OK** (testeur) : **20260949** + **20260950**
-  - **Build 53** reporté · **Pack session 3** build **51** : Étoiles · octroi individuel · C1 restant · B7 refus
-  - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagne immédiate admin
+  - **Build 53** reporté · **Pack session 3** **clôturé** (cochage doc **27 sept.**)
+  - **Doc 27 sept. (agent)** : coches attestation testeur — Étoiles · octroi individuel · C1 (hors ciblage/planifiée Prime) · B7 refuse · C2 · Phase 1 · D2 · **363/399 ≈91 %**
+  - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagnes déjà PASS
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
