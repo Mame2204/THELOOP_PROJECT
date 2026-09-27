@@ -48,7 +48,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
 | **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
-| **Prochain test** | **Build 53** (*A1 activate* identité/CGU/DOB) · **📱 M1-U2** set_password in-app · P2 optionnel (Suggestions · waitlist · C3/C4) |
+| **Prochain test** | **Bloc sans build 53** *(ci-dessous)* · binaire **🤖 51** / **📱 48+** / **💻** |
+| **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
 | **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
@@ -59,6 +60,32 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
+
+### Bloc tests **sans build 53** *(~40–55 min · ordre fixe)*
+
+> **Exclu de ce bloc :** activate invité avec identité + CGU + date de naissance → **uniquement build 53**.  
+> **Binaire :** 🤖 Android **51** (Play interne) · 📱 iOS **48+** où indiqué · 💻 admin-web.  
+> **Format réponse :** `SANS53-C1-A PASS` · `SANS53-A5-U23 FAIL: …`
+
+| Ordre | ID | Durée | Où | Action | Attendu |
+|------:|----|------:|-----|--------|---------|
+| 1 | **SANS53-M1-U2** | ~8 min | **📱** iPhone *(🤖 déjà PASS)* | Mot de passe oublié → mail → **Ouvrir l’application** → **set_password in-app** → login | Pas de session expirée · MDP appliqué · **1** parcours |
+| 2 | **SANS53-C1-A** | ~8 min | 💻 + **membre** + **Prime** (2 devices ou Prime déco) | Campagne **immédiate** audience **Membres** seulement | Membre : inbox + **1** push OS · **Prime : rien** |
+| 3 | **SANS53-C1-B** | ~10 min | 💻 + compte **Prime** 🤖/📱 | **Planifier** campagne audience **Prime** +3 min *(⏳ cron)* | À l’heure : **1** inbox + push Prime · **pas de boucle** |
+| 4 | **SANS53-C1-C** | ~3 min | 💻 | Vérifier **1 campagne = 1 notif** sur dernière campagne immédiate *(optionnel ⏳)* | Pas de doublon OS/inbox |
+| 5 | **SANS53-B2-WEB** | ~15 min | 💻 `/moderation` | Filtres event/spot/tool · **Valider** spot → app · **Valider** event (intervenant **sans titre**) → Agenda | Catalogue + notif partenaire si prévu |
+| 6 | **SANS53-B2-RETRAIT** | ~12 min | 💻 puis 📱/🤖 partenaire | Section **Demandes de retrait** · **Approuver** → disparaît app · **Refuser** → reste publié · notifs partenaire retrait | Métier + **1** notif retrait si applicable |
+| 7 | **SANS53-A5-U23** | ~10 min | **📱 ou 🤖** admin app | **PASS** → octroi **manuel** · recherche membre · prix Guinée | Membre trouvé · octroi OK *(fix PR #7)* |
+| 8 | **SANS53-P2-ADMIN** | ~15 min | Admin app *(1 device)* | `AdminSuggestionsScreen` · `AdminCreateUserScreen` · `AdminWaitlistScreen` · `AdminFeaturedScreen` · `PartnerSubmissionScreen` hub THE LOOP | Chaque écran charge · **1** action save si possible |
+| 9 | **SANS53-C3** | ~5 min | Membre 📱/🤖 | Profil → **Nous contacter** (mailto / WhatsApp sheet) · FAQ/CGU → e-mail support | Sheet s’ouvre · coordonnées à jour |
+| 10 | **SANS53-C4** | ~5 min | Membre *(opt.)* | Parrainage · **nouveau filleul** → compteur **+1** | Compteur incrémenté *(sandbox)* |
+| 11 | **SANS53-AUTH-HTML** | ~5 min | 📱/🤖 | Lien reset MDP → page recovery **HTML rendue** (boutons visibles · pas de balises brutes) | Si FAIL : fix Render/Storage · pas bloquant si M1-U2 in-app OK |
+
+**Ne pas refaire** *(déjà cochés **27 sept.**)* : D1 · M2 · C1 modération/scan/tirage immédiat · octroi individuel · B7 refuse · invite C2 · Phase 1 mobile · parité D2.
+
+**Après merge PR doc / sans attendre 53 :** cocher les lignes checklist correspondantes + journal `SANS53-* PASS/FAIL`.
+
+---
 
 ### Pack session 3 — **build 51** *(clôturé **27 sept.** · cochage doc)*
 
@@ -207,19 +234,19 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 ### Reste ouvert *(ne pas confondre avec %)*
 
-| Zone | Encore `[ ]` | Priorité |
-|------|----------------|----------|
-| **Build 53** | Activate identité · CGU · DOB | P0 après EAS |
-| **📱 iOS** | M1-U2 set_password in-app | P0 |
-| **Auth web** | Page recovery HTML (Storage text/plain) | P1 Render |
-| **C1 push** | Ciblage Membres→Prime · réception campagne **Prime planifiée** sur device | P1 |
-| **💻 Modération** | Filtres · valider spot/event 💻 · retraits web Phase 1 | P1 *(métier mobile OK)* |
-| **Mobile P2** | Suggestions · CreateUser · Waitlist · Featured · hub THE LOOP submission | P2 |
-| **A5 mobile** | Octroi manuel PASS (A5-U23 FAIL historique) | P1 retest PR #7 |
-| **Retraits** | Notif approve/refuse **retrait** 📱🤖 | P2 |
-| **C3/C4** | mailto · filleul +1 · sandbox 10 filleuls | P2 |
-| **Infra** | Migration `20260939` · ⏳ doublon push campagne | opt. |
-| **A4 🤖** | Lignes **N/A** (pas contenu publié) | — pas des FAIL |
+| Zone | Encore `[ ]` | Bloc |
+|------|----------------|------|
+| **Build 53 uniquement** | Activate identité · CGU · DOB | **Hors** bloc sans 53 |
+| **📱 iOS** | M1-U2 set_password in-app | **SANS53-M1-U2** |
+| **C1 push** | Ciblage Membres→Prime · Prime planifiée device | **SANS53-C1-A/B** |
+| **💻 Modération** | Filtres · valider spot/event · retraits web | **SANS53-B2-*** |
+| **A5 mobile** | Octroi manuel PASS (A5-U23) | **SANS53-A5-U23** |
+| **Mobile P2** | Suggestions · CreateUser · Waitlist · Featured · hub THE LOOP | **SANS53-P2-ADMIN** |
+| **Retraits** | Notif approve/refuse retrait 📱🤖 | **SANS53-B2-RETRAIT** |
+| **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
+| **Auth web** | Page recovery HTML (Storage text/plain) | **SANS53-AUTH-HTML** |
+| **Infra opt.** | Migration `20260939` · ⏳ doublon push | hors session device |
+| **A4 🤖 N/A** | Pas contenu publié | — |
 
 ### Reste à faire — par environnement *(priorisé)*
 
