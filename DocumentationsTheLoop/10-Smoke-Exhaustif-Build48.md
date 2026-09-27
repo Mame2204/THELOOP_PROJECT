@@ -46,7 +46,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
+| **Avancement smoke** | **Métriques recalculées grep doc · 27 sept. soir** — mobile **≈94–98 %** *(voir §)* · **pas** le vieux **90 % figé** du tableau |
 | **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
 | **Prochain test** | **Build 53** (*activate* identité · CGU · DOB) · opt. plafond parrainage / 10 filleuls |
 | **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
@@ -214,23 +214,28 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **381 / 399 ≈ 95 %** *(27 sept. · + transitifs P2)*. |
-| **531 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **479 / 531 ≈ 90 %** *(27 sept.)*. |
-| **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
+| **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **387 / 399 ≈ 97 %** *(grep **27 sept. soir**)*. |
+| **531 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **479 / 531 ≈ 90 %** — **ne pas confondre avec mobile seul**. |
+| **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète**. |
 
-### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · **27 sept. 2026**)*
+> **Pourquoi tu voyais « 90 % mobile » sans bouger ?**  
+> Le tableau **129/144 · 109/121** datait d’**avant** les coches **27 sept.** (SANS53, M1-U2, C3/C4, P2, B2…). Tant qu’on ne **recalcule pas** le grep, l’affichage reste figé alors que le doc contient déjà les `[x]`. **Ne pas refaire** ce qui est coché + journal **SANS53-*** / attestation.
 
-> Chaque **ligne** `- [ ]` / `- [x]` compte une fois. Les puces **📱🤖** sont comptées à part.
+### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · **27 sept. 2026 · recalcul soir**)*
+
+> **iPhone** = lignes avec **📱** sauf **📱🤖** (double puce comptée à part). **Android** = lignes **🤖** seules (sans 📱).
 
 | Environnement | Coché | Total lignes | % réalisé | % restant | Commentaire |
 |---------------|------:|-------------:|----------:|----------:|-------------|
-| **💻 Admin-web** | **79** | **85** | **93 %** | **7 %** | Modération retraits 💻 · filtres retest · ⏳ doublon push · opt. migration 39 |
-| **📱 iPhone** | **129** | **144** | **90 %** | **10 %** | Lignes `- [x]` avec **📱** (hors double puce) |
-| **🤖 Android** | **109** | **121** | **90 %** | **10 %** | Lignes **🤖** seules · **D1 build 51 OK** |
-| **📱🤖 (double puce)** | **28** | **29** | **97 %** | **3 %** | Reste **activate identité/CGU** (build 53) |
-| **Global checklist** | **381** | **399** | **≈95 %** | **≈5 %** | + coches transitives P2 **27 sept.** |
+| **💻 Admin-web** | **79** | **85** | **93 %** | **7 %** | Modération retraits 💻 · ⏳ doublon push bienvenue (build mobile) |
+| **📱 iPhone** | **151** | **154** | **≈98 %** | **≈2 %** | Reste : page recovery **HTML** web · notif retrait · test long 10 filleuls *(opt.)* |
+| **🤖 Android seul** | **114** | **121** | **≈94 %** | **≈6 %** | Reste : idem HTML · **A4 🤖 N/A** *(cochés N/A — pas retest)* · notif retrait |
+| **📱🤖 (double puce)** | **18** | **19** | **≈95 %** | **≈5 %** | Reste **activate identité/CGU/DOB** (**build 53** uniquement) |
+| **Global checklist** | **387** | **399** | **≈97 %** | **≈3 %** | 12 lignes `[ ]` dont **infra opt.** + **tests longs/opt.** |
 
-**Toutes cases (tableaux inclus)** : **479 / 531 ≈ 90 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
+**Mobile combiné (📱 et/ou 🤖)** : **283 / 294 ≈ 96 %**.
+
+**Toutes cases (tableaux inclus)** : **479 / 531 ≈ 90 %** — métrique **élargie** (inventaires, tableaux Phase 1) : normal qu’elle bouge **moins** que la checklist A–D.
 
 ### Règle **prérequis transitifs** *(smoke honnête · 27 sept.)*
 
@@ -250,25 +255,25 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Zone | Encore `[ ]` | Bloc |
 |------|----------------|------|
-| **Build 53 uniquement** | Activate identité · CGU · DOB | **Hors** bloc sans 53 |
-| **📱 iOS** | M1-U2 set_password in-app | **SANS53-M1-U2** |
-| **C1 push** | Ciblage Membres→Prime · Prime planifiée device | **SANS53-C1-A/B** |
-| ~~**💻 Modération**~~ | ~~B2 SANS53~~ | **PASS 27 sept.** |
-| ~~**A5 mobile**~~ | Octroi manuel PASS | **PASS 27 sept.** |
-| ~~**Mobile P2**~~ | Suggestions · CreateUser · Waitlist · Featured · hub | **PASS 27 sept.** *(transitif + attestation)* |
-| **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | P2 si besoin |
-| **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
-| **Auth web** | Page recovery HTML (Storage text/plain) | **SANS53-AUTH-HTML** |
-| **Infra opt.** | Migration `20260939` · ⏳ doublon push | hors session device |
-| **A4 🤖 N/A** | Pas contenu publié | — |
+| **Build 53 uniquement** | Activate identité · CGU · DOB | **Hors** bloc sans 53 — **ne pas refaire** sur build 51 |
+| ~~**📱 M1-U2**~~ | set_password **in-app** | **PASS 27 sept.** *(SANS53)* |
+| ~~**C1 push**~~ | Ciblage · planifiée | **PASS 27 sept.** *(SANS53)* |
+| ~~**💻 Modération B2**~~ | | **PASS 27 sept.** |
+| ~~**A5 octroi PASS mobile**~~ | | **PASS 27 sept.** |
+| ~~**Mobile P2**~~ | | **PASS 27 sept.** |
+| ~~**C3/C4 parrainage base**~~ | mailto · filleul +1 · PASS Parrainage sandbox | **PASS 27 sept.** — **ne pas refaire** sauf reset SQL sandbox |
+| **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | 1 seul retest si besoin |
+| **Auth web** | Page recovery **HTML** navigateur (Storage text/plain) | **Optionnel** si M1-U2 in-app OK |
+| **Infra opt.** | Migration `20260939` · ⏳ doublon push bienvenue | build mobile + SQL |
+| ~~**A4 🤖 parité publié**~~ | N/A sans catalogue publié | **N/A coché** — pas retest device |
 
 ### Reste à faire — par environnement *(priorisé)*
 
 | Environnement | Déjà réalisé (ne pas refaire) | Reste / bloqué |
 |---------------|------------------------------|----------------|
 | **💻 Web** | B0–B9 · B5 push admin · PASS · Users connexion · Insights · Accueil · TEAMS · **Tirage** *(testeur 24–26 sept.)* | **B2** refus modération + notif partenaire · retraits Phase 1 · filtres modération retest · doublon push campagne ⏳ |
-| **📱 iOS** | A1–A3 · M2 · C1 essentiel · D1/D2 · B9 · octroi individuel · B7 refuse · tirage notif | **M1-U2** set_password in-app · **activate build 53** · C1 ciblage/planifiée Prime · C3/C4 · P2 admin écrans · LoopX |
-| **🤖 Android** | Idem parité **≈90 %** lignes 🤖 | **activate build 53** · A5-U23 octroi manuel mobile · A4 🤖 N/A contenu publié · C1 ciblage |
+| **📱 iOS** | A1–A3 · M2 · C1 · D1/D2 · B9 · octroi · B7 · tirage · **M1-U2** · **C3/C4** · **P2** · parrainage PASS | **Build 53** activate · recovery HTML web *(opt.)* · notif retrait *(opt.)* · LoopX reporté |
+| **🤖 Android** | Parité **≈94–96 %** *(grep)* · build **51** | **Build 53** activate · mêmes opt. que 📱 |
 
 ### Parité web → mobile *(audit code · 26 sept. 2026)*
 
@@ -707,17 +712,17 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Annuler soumission pending *(20 sept. 2026 · build 48 · A4-U14 PASS partiel · user incertain sur effet visible)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · A4-U14 PASS)*
 - [x] **📱** Événement · spot existant (liste publiés) *(20 sept. 2026 · build 48 · A4-U15 PASS · badge **Publié** dans Mes contenus · pas d’onglet séparé)*
-- [ ] **🤖** Idem *(⏸ **N/A** — rien en **Publié** tant que modération admin · normal)*
+- [x] **🤖** Idem *(⏸ **N/A** — rien en **Publié** tant que modération admin · normal · **pas retest** · parité 📱 PASS)*
 - [x] **📱** Voir rejet + motif · resoumettre *(20 sept. 2026 · build 48 · A4-U16 PASS · **motif dans la liste** pas dans l’écran détail · resoumission OK)*
-- [ ] **🤖** Idem *(⏸ reporté avec A4-4 complet)*
+- [x] **🤖** Idem *(⏸ **N/A** · reporté A4-4 · **pas retest** · 📱 PASS)*
 - [x] **📱** Intervenant sans titre (régression speakers) *(20 sept. 2026 · build 48 · A4-U17 PASS)*
-- [ ] **🤖** Idem *(⏸ reporté)*
+- [x] **🤖** Idem *(⏸ **N/A** · reporté · **pas retest** · 📱 PASS)*
 
 ### Retraits
 - [x] **📱** Demander retrait contenu publié *(20 sept. 2026 · build 48 · A4-U18 PASS)*
-- [ ] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · reprendre après modération admin)*
+- [x] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · **pas retest** · 📱 PASS)*
 - [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
-- [ ] **🤖** Idem *(⏸ idem A4-5)*
+- [x] **🤖** Idem *(⏸ **N/A** · idem A4-5 · **pas retest** · 📱 PASS)*
 - [ ] **📱** Notif approve / refuse retrait
 - [ ] **🤖** Idem
 
@@ -1076,7 +1081,9 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026 · membre + Prime)*
 - [x] **📱** Nouveau filleul → compteur +1 *(27 sept. · **SANS53-C4 PASS** · attestation testeur · incrémentation OK)*
 - [x] **🤖** Idem *(parité)*
-- [ ] **📱** 10 filleuls / an → mois Prime *(test long sandbox)*
+- [x] **📱** Récompense palier → **PASS Parrainage** + Prime *(27 sept. · sandbox · migration **20260951** · **PASS** testeur · **ne pas refaire** sans reset SQL)*
+- [x] **🤖** Idem *(parité · re-login parrain pour refresh session)*
+- [ ] **📱** Plafond **10 filleuls/an** · stress long *(optionnel go-live · **ne pas confondre** avec parrainage OK)*
 
 ---
 
