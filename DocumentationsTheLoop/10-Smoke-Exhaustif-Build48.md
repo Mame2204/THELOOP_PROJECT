@@ -487,6 +487,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260952_admin_approve_partner_withdrawal.sql` — RPC approve retrait partenaire *(27 sept. · **OK Supabase** · testeur)*
 - [ ] `20260953_security_hardening_roles_invites_submissions.sql` — audit sécurité : rôle jamais repris du client, garde soumissions partenaires, invitations, suppression orphelin *(+ redeploy Edge **`member-activate-invite`** et **`send-push`**)*
 - [ ] `20260954_security_revoke_demo_spot_and_guards.sql` — SPOT-DEMO-2026 révoqué, rôle imposé à la création du profil, octrois de privilèges non modifiables par le membre (révocation admin réparée), RPC internes fermées
+- [ ] `20260955_security_anon_sweep_notifications_pass.sql` — droits « sans compte » remis à plat (et coupés par défaut pour les futures fonctions), inbox par téléphone limitée à son numéro, notify_user partenaire limité à ses clients, PASS non prolongeable par le membre, limite d'essais « Code établissement » *(+ redeploy Edge **`member-activate-invite`** : activation par code e-mail, interrupteur `INVITE_REQUIRE_EMAIL_CODE` à passer à `true` quand toutes les apps installées ont l'écran code)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
