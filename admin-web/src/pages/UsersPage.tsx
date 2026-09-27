@@ -727,7 +727,14 @@ export function UsersPage() {
                         type="button"
                         disabled={busy || editingSelf}
                         onClick={() => {
-                          if (!window.confirm('Supprimer définitivement si orphelin ?')) return;
+                          if (
+                            !window.confirm(
+                              'Supprimer définitivement si orphelin (sans contenu lié) ?\n\n' +
+                                'Invitation en attente : préférez « Annuler l’invitation ».\n' +
+                                'Compte actif sans activité : la fiche public.users et le compte Auth Supabase seront retirés.',
+                            )
+                          )
+                            return;
                           void deleteUserIfOrphan(selected.id).then((r) => {
                             if (!r.ok) setFormMsg(r.error ?? 'Erreur');
                             else if (!r.orphan) setFormMsg('Non orphelin — utilisez Archiver.');
