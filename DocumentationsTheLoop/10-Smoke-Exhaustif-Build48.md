@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
 | **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
-| **Prochain test** | **SANS53-A5-U23** octroi manuel PASS mobile · puis **C3** contact *(opt. C4)* · **build 53** plus tard |
+| **Prochain test** | **SANS53-A5-U23** *(app admin · Octroi PASS)* · **SANS53-C3** *(Profil · Nous contacter)* · **build 53** plus tard |
 | **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
 | **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
@@ -822,7 +822,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Modération — approuver retrait catalogue *(20 sept. 2026 · build 48 · A5-U20 PASS)*
 - [x] **📱** Modération — refuser retrait · notif partenaire *(20 sept. 2026 · build 48 · A5-U21 PASS)*
 - [x] **📱** Users — changer rôle · suspendre *(20 sept. 2026 · build 48 · A5-U22 PASS)*
-- [ ] **📱** PASS — octroi manuel · prix Guinée *(20 sept. 2026 · build 48 · **A5-U23 FAIL** · membre introuvable recherche · bouton grisé · fix PR #7 recherche Supabase)*
+- [ ] **📱** PASS — octroi manuel · prix Guinée *(20 sept. 2026 · build 48 · **A5-U23 FAIL** recherche membre · **SANS53-A5-U23** = retest app admin **Gestion PASS** → section **Octroi PASS** · cf. glossaire smoke)*
 - [x] **📱** Tirage — lancer · historique · notif gagnant *(27 sept. · **PASS parité** · 💻 tirage 24–26 sept. · notif gagnant alignée C1)*
 - [x] **📱** Push immédiat audience Tous *(26–27 sept. · **PASS** · campagne immédiate admin + réception 🤖 · parité 📱)*
 - [x] **📱** Push planifié · annuler *(26 sept. · **PASS parité** · W-12/W-13 💻 · ne pas refaire)*
@@ -1074,8 +1074,8 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · membre + Prime)*
 - [x] **📱** Compteur filleuls visible *(23 sept. 2026 · build 48 · pas test +1 filleul)*
 - [x] **🤖** Idem *(23 sept. 2026 · membre + Prime)*
-- [ ] **📱** Nouveau filleul → compteur +1
-- [ ] **🤖** Idem
+- [x] **📱** Nouveau filleul → compteur +1 *(27 sept. · **SANS53-C4 PASS** · attestation testeur · incrémentation OK)*
+- [x] **🤖** Idem *(parité)*
 - [ ] **📱** 10 filleuls / an → mois Prime *(test long sandbox)*
 
 ---
