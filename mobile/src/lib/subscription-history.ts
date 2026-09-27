@@ -163,8 +163,7 @@ export function passDisplayLabel(record: SubscriptionRecord): string {
     return `${orig.label?.trim() || 'PASS'} (gelé · ${record.label})`;
   }
   if (isReferralPass(record)) {
-    const label = record.label?.trim();
-    return label || REFERRAL_PASS_LABEL;
+    return REFERRAL_PASS_LABEL;
   }
   if (isHeritagePass(record)) return HERITAGE_PASS_LABEL;
   if (record.passKind === 'intermediate') {
@@ -488,6 +487,40 @@ export function getPurchasedPassHistory(
 export function formatPassAmount(amountGnf?: number): string {
   if (amountGnf == null) return '—';
   return `${amountGnf.toLocaleString('fr-FR')} GNF`;
+}
+
+/** Durée offerte (parrainage) déduite du libellé ou des dates début/fin. */
+export function inferReferralOfferMonths(record: Pick<SubscriptionRecord, 'label' | 'startedAt' | 'expiresAt'>): number {
+  const fromLabel = record.label?.match(/(\d+)\s*mois/i);
+  if (fromLabel) {
+    const n = Number.parseInt(fromLabel[1], 10);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  if (record.startedAt && record.expiresAt) {
+    const days =
+      (new Date(record.expiresAt).getTime() - new Date(record.startedAt).getTime()) / 86_400_000;
+    return Math.max(1, Math.round(days / 30));
+  }
+  return 1;
+}
+
+/** Prix / offre affiché dans l’historique PASS (évite « 0 GNF » pour octrois gratuits). */
+export function formatPassHistoryPriceTag(record: SubscriptionRecord): string {
+  if (isHeritagePass(record)) return 'Offert';
+  if (isReferralPass(record)) {
+    const months = inferReferralOfferMonths(record);
+    return months === 1 ? '1 mois offert' : `${months} mois offerts`;
+  }
+  if (
+    !record.paymentMethod &&
+    (record.amountGnf == null || record.amountGnf === 0) &&
+    isAdminGrantedPass(record)
+  ) {
+    return 'Offert';
+  }
+  if (record.amountGnf != null && record.amountGnf > 0) return formatPassAmount(record.amountGnf);
+  if (record.amountGnf === 0) return 'Offert';
+  return '';
 }
 
 export const PASS_PAYMENT_LABELS: Record<PassPaymentMethod, string> = {

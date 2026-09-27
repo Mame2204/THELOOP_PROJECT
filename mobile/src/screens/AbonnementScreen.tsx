@@ -7,7 +7,7 @@ import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { formatDateFr } from '@/lib/date-utils';
 import { getProfileAccent } from '@/lib/profile-accent';
 import {
-  formatPassAmount,
+  formatPassHistoryPriceTag,
   getActiveSubscription,
   getPastSubscriptions,
   getPendingSubscriptions,
@@ -16,6 +16,7 @@ import {
   isAdminGrantedPass,
   isFreePass,
   isHeritagePass,
+  isReferralPass,
   passDisplayLabel,
   PASS_PAYMENT_LABELS,
   type SubscriptionRecord,
@@ -49,8 +50,10 @@ function PassRow({
       <Text style={[styles.rowLabel, { color: shell.pageTitle }]}>{passDisplayLabel(record)}</Text>
       <Text style={[styles.rowMeta, { color: shell.pageKicker }]}>
         {STATUS_LABELS[record.status] ?? record.status}
-        {isHeritagePass(record) ? ' · Offert' : ''}
-        {!isHeritagePass(record) && record.amountGnf != null ? ` · ${formatPassAmount(record.amountGnf)}` : ''}
+        {(() => {
+          const priceTag = formatPassHistoryPriceTag(record);
+          return priceTag ? ` · ${priceTag}` : '';
+        })()}
         {record.paymentMethod ? ` · ${PASS_PAYMENT_LABELS[record.paymentMethod]}` : ''}
       </Text>
       {record.status === 'active' ? (
@@ -58,9 +61,11 @@ function PassRow({
           Depuis le {formatDateFr(record.startedAt)}
           {isHeritagePass(record)
             ? ' · Sans expiration'
-            : record.expiresAt
-              ? ` · Échéance ${formatDateFr(record.expiresAt)}`
-              : ' · PASS à vie'}
+            : isReferralPass(record) && record.expiresAt
+              ? ` · Valable jusqu'au ${formatDateFr(record.expiresAt)}`
+              : record.expiresAt
+                ? ` · Échéance ${formatDateFr(record.expiresAt)}`
+                : ' · PASS à vie'}
         </Text>
       ) : null}
       {isHeritagePass(record) && record.grantNote ? (

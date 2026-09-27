@@ -5,6 +5,7 @@ import {
   isAdminGrantedPass,
   isHeritagePass,
   isReferralPass,
+  formatPassHistoryPriceTag,
   passOccupiesPrimeSlot,
   type SubscriptionRecord,
 } from '@/lib/subscription-history';
@@ -36,6 +37,19 @@ describe('subscription-history PASS slot & queue', () => {
     const monthly = pass();
     expect(isHeritagePass(monthly)).toBe(false);
     expect(isAdminGrantedPass(monthly)).toBe(false);
+  });
+
+  it('historique PASS parrainage affiche mois offert, pas 0 GNF', () => {
+    const referral = pass({
+      passKind: 'referral',
+      passCatalogId: 'pass-parrainage-builtin',
+      label: 'PASS Parrainage (1 mois offerts)',
+      amountGnf: 0,
+      paymentMethod: undefined,
+      billingPeriod: undefined,
+      status: 'expired',
+    });
+    expect(formatPassHistoryPriceTag(referral)).toBe('1 mois offert');
   });
 
   it('PASS Parrainage (referral) n’est pas Heritage', () => {
