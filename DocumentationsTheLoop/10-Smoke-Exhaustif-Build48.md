@@ -48,8 +48,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **337 / 394** ≈ **86 %** global *(recalcul grep 26 sept. soir · cochage aligné journal testeur)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Build 53** — **A1 activate** (identité + CGU + DOB) · puis **M2 Étoiles** *(1 device 🤖)* |
-| **Binaire actif** | **Android 53** *(EAS en attente)* · **51** OK smoke passé · Supabase invite **20260949** + **20260950** OK testeur |
+| **Prochain test** | **Pack build 51** *(maintenant)* — voir **Pack session 3** · **build 53** plus tard (*A1 activate* identité/CGU) |
+| **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
@@ -59,6 +59,30 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
+
+### Pack session 3 — **build 51** *(~45–60 min · 🤖 Android · 1 device)*
+
+> **Build 53 reporté** (*A1 activate* identité · CGU · DOB — PR **#64**).  
+> **Ne pas refaire** : D1 cold start · M1-U2 🤖 · C1 modération · C1 validation scan · copy privilège · achat PASS · campagne immédiate admin · M2 *(sauf Étoiles)* · B9.
+
+**Format réponse testeur :** `M2-ÉTOILES PASS` · `C1-OCTROI FAIL: …` · etc.
+
+| Ordre | ID | Durée | Compte / outil | Action | Attendu |
+|------:|----|------:|----------------|--------|---------|
+| 1 | **M2-ÉTOILES** | ~8 min | `admin@theloop.gn` · app | Admin → **Paramètres** → **Étoiles** | Grille paliers / formule charge · modifier un poids ou palier → **enregistrer** sans erreur *(💻 déjà PASS · preuve parité mobile)* |
+| 2 | **C1-OCTROI** | ~15 min | 💻 super admin + **membre** perso *(sans PASS ou avec)* + **partenaire** `contact@lavenue.gn` | 💻 `/privileges` → privilège catalogue → **octroi individuel** (e-mail du membre) · membre : fiche → **Utiliser chez le partenaire** · partenaire : **Scan QR** → valider | Octroi visible membre · scan **OK** *(migrations **20260935+36**)* · **1** notif cloche + push membre · **pas de boucle** |
+| 3 | **B7-REFUS** | ~10 min | Partenaire + membre avec privilège **en attente** *(nouvel « Utiliser » si besoin)* | `PartnerBenefitsScreen` → offre → **Refuser** + motif | Statut refusé · membre notifié · **1** push + inbox · **pas de double notif** *(fix boucle validé build 51)* |
+| 4 | **C1-PUSH-A** | ~5 min | 💻 admin + **membre** `membre@theloop.gn` · **Prime** déconnecté ou autre device | Campagne **immédiate** audience **Membres** uniquement | Membre reçoit inbox + **1** OS · **Prime ne reçoit pas** |
+| 5 | **C1-PUSH-B** | ~8 min | 💻 + compte **Prime** | Planifier campagne **Prime** +3 min *(⏳ cron)* **ou** annuler une planifiée existante | Prime reçoit à l’heure **ou** annulation = **aucun** envoi |
+| 6 | **C1-PUSH-C** | ~5 min | Partenaire soumet **spot/event** pending · admin connecté app ou web | Soumission → super admin **push + cloche** | **1** notif admin · pas de spam refresh |
+| 7 | **C1-PUSH-D** | ~10 min | 💻 `/tirage` + membre gagnant 🤖 | Lancer tirage (pool existant) | Gagnant 🤖 : push **« Nouveau privilège »** + fiche déverrouillée |
+| 8 | **C2-PARTENAIRE** | ~10 min | Nouvel e-mail partenaire *(invite 💻)* | Mail → app → **activate** *(MDP)* → login | **Espace Pro** · bottom nav partenaire · pas d’écran Auth bloqué |
+| 9 | *(opt.)* **C3/C4** | ~10 min | Membre | Profil → **Nous contacter** (mailto) · parrainage filleul | Sheet / compteur +1 si filleul test |
+| 10 | *(opt.)* **A5 mobile** | ~10 min | Admin app | Tirage · push immédiat Tous · octroi manuel PASS *(A5-U23)* | Si temps · sinon reporté |
+
+**⏸ Reporté build 53 :** ligne **A1 activate** (prénom/nom · CGU · DOB) — ne pas bloquer la session 3.
+
+**📱 iOS :** même pack possible sur build 48+ ; cocher parité après PASS 🤖 sauf **M1-U2 set_password** *(📱 seul)*.
 
 ### Liste web restante *(hors build 49 · ne pas refaire ce qui est ✅)*
 
@@ -109,7 +133,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | 6 | **A2-U1/U2** | ~5 min | PassPayment · Mes privilèges (membre perso) |
 | 7 | **C2–C4** | ~15 min | Partenaire invité · mailto · filleul |
 
-**Ne pas lancer** (bulle 49+) : M1-U2 in-app · LoopX · octroi individuel scan · refus privilège partenaire · Phase 1 retraits · slider À la une · A5-U23.
+**Ne pas lancer** (hors **Pack session 3**) : LoopX · Phase 1 retraits · slider À la une · **A1 activate** identité/CGU *(build 53)*.  
+**Session 3 build 51** : octroi individuel · refus privilège · C1 restants · Étoiles — **OK à lancer**.
 
 ### Règle parité smoke *(éviter de retester 3× la même logique)*
 
@@ -395,6 +420,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260941_admin_read_all_benefit_grants.sql` — admin lit tous les octrois *(24 sept. 2026 · **OK Supabase prod** · KPI Insights Privilèges PASS)*
 - [x] `20260947_benefit_validation_notify_place_copy.sql` — RPC validation *(27 sept. 2026 · **OK Supabase prod** · testeur)*
 - [x] `20260948_benefit_validation_notify_privilege_place_copy.sql` — notifs : **nom catalogue + lieu lié** *(27 sept. 2026 · **OK Supabase prod** · PR **#58**)*
+- [x] `20260949_admin_orphan_delete_auth_user.sql` — suppression orphelin inclut **auth.users** *(27 sept. · **OK Supabase** · testeur)*
+- [x] `20260950_invite_activation_preserve_names.sql` — identité activation > Membre/THE LOOP *(27 sept. · **OK Supabase** · testeur)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -447,6 +474,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
 - [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · mode activate / invité)*
+- [ ] **📱🤖** Mode **activate** — prénom/nom saisis enregistrés (pas Membre/THE LOOP) · **CGU** · **DOB** *(retest **build 53** · PR **#64** + **20260950**)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
 - [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
@@ -912,7 +940,7 @@ Liens Param. → pages satellites :
 - [x] **💻** Privilèges — module `/privileges` *(24 sept. · testeur **PASS** · octroi individuel côté **web** OK)*
 - [x] **💻** Privilège → partenaire + lieu · envoi validation *(24 sept. **PASS web**)*
 - [x] **📱** Partenaire **accepte** *(24 sept. **PASS** build 48)*
-- [ ] **📱** Partenaire **refuse** + motif *(code **PR #34** + verrou anti double-notif mobile · **retest build 49+** — boucle notifs en session build 48)*
+- [ ] **📱** Partenaire **refuse** + motif *(PR **#34** · **retest build 51** — boucle corrigée · voir **B7-REFUS** pack session 3)*
 - [x] **💻** TEAMS — navigation · overrides *(24 sept. soir · testeur **PASS web** · cas limites onglets vides = connu build 48)*
 - [x] **💻** TEAMS — pack **Admin** (ensemble) + ajustements **par admin** *(24 sept. 2026 · testeur **PASS** · octroi / overrides individuels)*
 - [x] **💻** Tirage — module `/tirage` *(24 sept. · testeur **PASS web** · pool · lancer · historique — smoke global)*
@@ -944,7 +972,7 @@ Liens Param. → pages satellites :
 
 ## C1 — Push mobile (réception)
 
-> **26 sept. testeur :** plusieurs scénarios **non cochés** car **notifications en boucle** pendant les tests (inbox / badge / refresh). **Correctifs mergés sur `main`** (`NotificationsContext` · modération · pas de ré-insert push). **Ne pas recocher** sans **retest sur bulle 49**. **Achat PASS → push** reste **PASS** (ligne ci-dessous).
+> **26 sept.** : boucle notifs → **corrigée** sur `main`. **27 sept. build 51** : modération + validation scan **PASS**. **Pack session 3** : recocher les lignes `[ ]` du tableau ci-dessous après retest 🤖.
 
 | Scénario | 📱 | 🤖 |
 |----------|----|----|
@@ -1235,7 +1263,8 @@ Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) 
   - **UX 🤖** : aperçu image noir création event/spot → fix `ImageUploadField` (preview https après upload)
   - **PASS C1-REFUS** 🤖 : scan QR · valider/annuler · 1 push + cloche · pas de boucle
   - **PASS copy notifs privilège** *(27 sept. · PR **#58** · Supabase **20260947** + **20260948** OK)*
-  - **Pack session 2** : build **52** → **M2 Étoiles** → **activate + date naissance** → *(opt.) C1 copy*
+  - **Migrations invite OK** (testeur) : **20260949** + **20260950**
+  - **Build 53** reporté · **Pack session 3** build **51** : Étoiles · octroi individuel · C1 restant · B7 refus
   - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagne immédiate admin
 
 Phase 1 retests (7)     : PASS / FAIL —
