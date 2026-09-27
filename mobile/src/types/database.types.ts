@@ -3653,6 +3653,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_approve_partner_withdrawal_request: {
+        Args: { p_kind: string; p_local_id: string }
+        Returns: Json
+      }
       admin_withdraw_partner_content: {
         Args: { p_catalog_id?: string; p_kind: string; p_local_id?: string }
         Returns: Json

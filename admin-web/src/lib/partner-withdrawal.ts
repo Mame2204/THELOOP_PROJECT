@@ -130,6 +130,26 @@ async function deleteCatalogRow(
 export async function approveWithdrawalRequest(
   item: WithdrawalQueueItem,
 ): Promise<{ ok: boolean; error?: string }> {
+  const rpcKind = item.kind === 'event' ? 'event' : item.kind === 'tool' ? 'tool' : 'spot';
+  const { error: approveError } = await supabase.rpc('admin_approve_partner_withdrawal_request', {
+    p_kind: rpcKind,
+    p_local_id: item.localId,
+  });
+
+  if (!approveError) {
+    await notifyWithdrawalDecision({
+      partnerUserId: item.partnerUserId,
+      kind: item.kind,
+      title: item.title,
+      approved: true,
+    });
+    return { ok: true };
+  }
+
+  if (!/does not exist|could not find|schema cache|PGRST202/i.test(approveError.message)) {
+    return { ok: false, error: approveError.message };
+  }
+
   if (!item.catalogId) {
     return { ok: false, error: 'Aucune fiche publiée liée à cette demande.' };
   }
@@ -137,7 +157,6 @@ export async function approveWithdrawalRequest(
   const deleted = await deleteCatalogRow(item.kind, item.catalogId);
   if (!deleted.ok) return deleted;
 
-  const rpcKind = item.kind === 'event' ? 'event' : item.kind === 'tool' ? 'tool' : 'spot';
   const { error: rpcError } = await supabase.rpc('admin_withdraw_partner_content', {
     p_kind: rpcKind,
     p_catalog_id: item.catalogId,
