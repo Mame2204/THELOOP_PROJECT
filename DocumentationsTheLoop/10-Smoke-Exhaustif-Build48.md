@@ -188,7 +188,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
 | **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **363 / 399 ≈ 91 %** *(grep **27 sept.** post-attestation testeur)*. |
-| **534 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **477 / 534 ≈ 89 %** *(27 sept.)*. |
+| **531 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **479 / 531 ≈ 90 %** *(27 sept.)*. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
 ### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · **27 sept. 2026**)*
@@ -203,7 +203,23 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **📱🤖 (double puce)** | **28** | **29** | **97 %** | **3 %** | Reste **activate identité/CGU** (build 53) |
 | **Global checklist** | **363** | **399** | **≈91 %** | **≈9 %** | Référence honnête du fichier |
 
-**Toutes cases (tableaux inclus)** : **477 / 534 ≈ 89 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
+**Toutes cases (tableaux inclus)** : **479 / 531 ≈ 90 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
+
+### Reste ouvert *(ne pas confondre avec %)*
+
+| Zone | Encore `[ ]` | Priorité |
+|------|----------------|----------|
+| **Build 53** | Activate identité · CGU · DOB | P0 après EAS |
+| **📱 iOS** | M1-U2 set_password in-app | P0 |
+| **Auth web** | Page recovery HTML (Storage text/plain) | P1 Render |
+| **C1 push** | Ciblage Membres→Prime · réception campagne **Prime planifiée** sur device | P1 |
+| **💻 Modération** | Filtres · valider spot/event 💻 · retraits web Phase 1 | P1 *(métier mobile OK)* |
+| **Mobile P2** | Suggestions · CreateUser · Waitlist · Featured · hub THE LOOP submission | P2 |
+| **A5 mobile** | Octroi manuel PASS (A5-U23 FAIL historique) | P1 retest PR #7 |
+| **Retraits** | Notif approve/refuse **retrait** 📱🤖 | P2 |
+| **C3/C4** | mailto · filleul +1 · sandbox 10 filleuls | P2 |
+| **Infra** | Migration `20260939` · ⏳ doublon push campagne | opt. |
+| **A4 🤖** | Lignes **N/A** (pas contenu publié) | — pas des FAIL |
 
 ### Reste à faire — par environnement *(priorisé)*
 
