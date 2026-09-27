@@ -48,8 +48,9 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **337 / 394** ≈ **86 %** global *(recalcul grep 26 sept. soir · cochage aligné journal testeur)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Hors build 49** : **C1** lignes tableau détaillées · **C2–C4** · admin RN secondaire · **A4** si contenu publié · **🤖 D1** cold start icône (bug) |
-| **Bloqué bulle 49** | **M1-U2** set_password in-app (fix anti double `verifyOtp` · PR #52) · LoopX · octroi individuel scan · modération refus 💻 · Phase 1 retraits · perf mobile · etc. |
+| **Prochain test** | **🤖 build 51** — **Pack session 1** : **D1** icône · **M1-U2** · **C1 modération notifs** · **refus privilège notifs** · **Étoiles** · activate invité (date naissance) |
+| **Binaire actif** | **Android 51** (Play test interne · fix `expo-font` SDK 54) · iOS → **build 51** avant retest M1-U2 |
+| **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
@@ -1222,6 +1223,10 @@ Modération contenu (26 sept. soir · testeur · **build 48**) :
   - **FAIL** : **notifications** partenaire (push/inbox) — **boucle infinie** → **bulle 49** · ne pas re-tester les notifs avant build
 Campagnes admin (26 sept. · testeur) :
   - **PASS 💻 + mobile** : **campagne immédiate** (envoi admin B5 / module Notifications) — **pas de boucle** côté testeur · cocher C1 « campagne immédiate » après confirmation si besoin
+
+Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) :
+  - **En cours** : Pack 1 — voir ordre agent · réponses `D1 PASS` · `M1-U2 PASS/FAIL` · etc.
+  - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · modération métier refus/resoumission (48) · campagne immédiate admin
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
