@@ -39,6 +39,7 @@ import {
   type SuggestionType,
 } from '../lib/suggestions';
 import { loadDemandesCounts, type DemandesCounts } from '../lib/demandes-counts';
+import { notifyDemandesCountsChanged } from '../lib/demandes-events';
 
 type HubTab = 'partnerships' | 'moderation' | 'ideas';
 type ModFilter = 'all' | StagingKind;
@@ -106,6 +107,7 @@ export function DemandesPage() {
 
   const refreshHubCounts = useCallback(async () => {
     setHubCounts(await loadDemandesCounts(countryCode));
+    notifyDemandesCountsChanged();
   }, [countryCode]);
 
   const loadPartnerships = useCallback(async () => {
@@ -150,6 +152,28 @@ export function DemandesPage() {
     loadModeration,
     loadIdeas,
     refreshHubCounts,
+  ]);
+
+  /** Nouvelles soumissions partenaire pendant que l’admin reste sur la page. */
+  useEffect(() => {
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return;
+      void refreshHubCounts();
+      if (tab === 'partnerships' && canPartnerships) void loadPartnerships();
+      if (tab === 'moderation' && canModeration) void loadModeration();
+      if (tab === 'ideas' && canIdeas) void loadIdeas();
+    };
+    const interval = window.setInterval(tick, 45_000);
+    return () => window.clearInterval(interval);
+  }, [
+    tab,
+    canPartnerships,
+    canModeration,
+    canIdeas,
+    refreshHubCounts,
+    loadPartnerships,
+    loadModeration,
+    loadIdeas,
   ]);
 
   const filteredPartnerships = useMemo(
@@ -260,6 +284,7 @@ export function DemandesPage() {
     setMsg('Contenu publié.');
     setSelected(null);
     void loadModeration();
+    void refreshHubCounts();
   }
 
   async function handleApproveWithdrawal(item: WithdrawalQueueItem) {
@@ -307,6 +332,7 @@ export function DemandesPage() {
     setRejectReason('');
     setSelected(null);
     void loadModeration();
+    void refreshHubCounts();
   }
 
   async function cycleIdea(s: CommunitySuggestion) {

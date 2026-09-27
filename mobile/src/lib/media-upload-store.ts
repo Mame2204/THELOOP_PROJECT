@@ -45,7 +45,7 @@ export function normalizeLocalFileUri(uri: string): string {
   return trimmed;
 }
 
-async function ensureReadableFileUri(localUri: string): Promise<string> {
+export async function ensureReadableFileUri(localUri: string): Promise<string> {
   const normalized = normalizeLocalFileUri(localUri);
   if (normalized.startsWith('file://')) {
     return normalized;

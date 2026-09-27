@@ -88,7 +88,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | # | Action | Attendu |
 |---|--------|---------|
 | ~~**M1-U1**~~ | ~~Logout membre~~ — **PASS 26 sept.** 📱🤖 · retour **Accueil sans session** (visiteur) — OK testeur | — |
-| **M1-U2** | Recovery → **« Ouvrir l’application »** → **set_password in-app** | **⏸ bulle 49** · FAIL 26 sept. · fix PR #52 (dedupe deep link) · **ne pas retester sur build 48** |
+| ~~**M1-U2**~~ | ~~Recovery → set_password in-app~~ | **PASS** 🤖 **27 sept.** build 51 · 📱 iOS à refaire |
 | ~~**M1-U3**~~ | ~~Connexion SPOT~~ — **N/A** · entrée **retirée** app mobile (partenaire = **e-mail / MDP** uniquement) | — |
 | ~~**M1-U4**~~ | Inscription complète (gate ON) — **PASS 26 sept.** 📱🤖 | — |
 
@@ -451,7 +451,6 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
 - [x] **🤖** Recovery → **set_password in-app** via « Ouvrir l’application » *(27 sept. 2026 · **PASS** · build 51 · latence Render au réveil · OK)*
 - [ ] **📱** Idem *(retest iOS build 51+)*
-- [ ] **🤖** Idem
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** CGU / Politique confidentialité (modales) *(23 sept. 2026 · build 48)*
@@ -953,7 +952,7 @@ Liens Param. → pages satellites :
 | Annulation planifiée → pas d’envoi | [ ] | [ ] |
 | Soumission partenaire → admin push + inbox | [ ] | [ ] |
 | Tirage gagnant → « Nouveau privilège » | [ ] | [ ] |
-| Modération décision → partenaire notifié | [ ] | [ ] *(26 sept. · flux modération OK · **réception notif = boucle infinie** · **bulle 49**)* |
+| Modération décision → partenaire notifié | [x] *(27 sept. **PASS** 🤖 · build 51 · 1 push + 1 cloche · pas de boucle · refus ×2 + resoumission)* | [x] *(parité code · session testeur 🤖)* |
 | Achat PASS Djomy → membre **inbox + push** (nouveau PASS) | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 📱 OM · confirmé testeur)* | [x] *(26 sept. 2026 · **C1-PUSH-PASS** · 🤖 confirmé testeur · cf. 23 sept. MTN)* |
 
 ## C2 — Auth transversal
@@ -967,8 +966,8 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** Lien e-mail → page **auth-callback** (choix app / web) *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · même UX que iOS)*
-- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(26 sept. **FAIL** · session expirée app · web JWT session_id · retest post-deploy Render)*
-- [ ] **🤖** Idem *(26 sept. **FAIL** · même cause · fix auth-callback)*
+- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(retest iOS build 51+)*
+- [x] **🤖** Idem *(27 sept. 2026 · **PASS** · build 51 · M1-U2)*
 - [x] **💻** Invitation admin-web → activation · bon rôle *(23 sept. 2026 · **PASS** mail + **PASS** activate in-app · rôle membre · prénom défaut selon rôle après migration `20260939`)*
 - [ ] **📱** Partenaire invité → connexion → Espace Pro
 - [ ] **🤖** Idem
@@ -1226,8 +1225,13 @@ Campagnes admin (26 sept. · testeur) :
   - **PASS 💻 + mobile** : **campagne immédiate** (envoi admin B5 / module Notifications) — **pas de boucle** côté testeur · cocher C1 « campagne immédiate » après confirmation si besoin
 
 Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) :
-  - **En cours** : Pack 1 — voir ordre agent · réponses `D1 PASS` · `M1-U2 PASS/FAIL` · etc.
-  - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · modération métier refus/resoumission (48) · campagne immédiate admin
+  - **PASS D1** 🤖 : cold start icône · build 51
+  - **PASS M1-U2** 🤖 : set_password in-app · latence Render (cold start API) · OK après réveil
+  - **PASS C1-MOD** 🤖 : modération contenu · refus (+ resoumission) · 1 notif + push · **pas de boucle**
+  - **UX 💻** : badge / onglets Demandes pas auto-incrémentés → fix admin-web (refresh 45s + event)
+  - **UX 🤖** : aperçu image noir création event/spot → fix `ImageUploadField` (preview https après upload)
+  - **Suite** : refus privilège notifs → activate/date naissance → Étoiles
+  - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagne immédiate admin
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

@@ -12,6 +12,7 @@ import { Image } from 'expo-image';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import {
   cropToAspect,
+  ensureReadableFileUri,
   normalizeLocalFileUri,
   pickImageFromLibrary,
   uploadContentImage,
@@ -65,11 +66,13 @@ export function ImageUploadField({
       if (!rawUri) return;
 
       const preparedUri = normalizeLocalFileUri(await cropToAspect(rawUri, cropAspect, 'top'));
-      // Aperçu local immédiat (ne pas écrire file:// dans value — risque d’enregistrement).
-      setPreviewUri(preparedUri);
+      const previewReady = normalizeLocalFileUri(await ensureReadableFileUri(preparedUri));
+      setPreviewUri(previewReady);
 
       const url = await uploadContentImage(preparedUri, folder, { aspect: cropAspect });
       onChange(url);
+      // Aperçu local (file/content) peut rester noir sur Android alors que l’URL https est OK.
+      setPreviewUri(null);
 
       if (!isSupabaseConfigured()) {
         Alert.alert(

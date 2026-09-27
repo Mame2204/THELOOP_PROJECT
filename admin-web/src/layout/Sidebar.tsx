@@ -4,6 +4,7 @@ import { LoopLogo } from '../components/LoopLogo';
 import { useAdminCountry } from '../context/AdminCountryContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { loadDemandesCounts } from '../lib/demandes-counts';
+import { DEMANDES_COUNTS_EVENT } from '../lib/demandes-events';
 import type { AdminPermissionId } from '../lib/permissions';
 
 export interface NavItem {
@@ -55,7 +56,26 @@ export function Sidebar() {
       setDemandesBadge(0);
       return;
     }
-    void loadDemandesCounts(countryCode).then((c) => setDemandesBadge(c.total));
+    let cancelled = false;
+    const refresh = () => {
+      void loadDemandesCounts(countryCode).then((c) => {
+        if (!cancelled) setDemandesBadge(c.total);
+      });
+    };
+    refresh();
+    const onEvent = () => refresh();
+    window.addEventListener(DEMANDES_COUNTS_EVENT, onEvent);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = window.setInterval(refresh, 45_000);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(DEMANDES_COUNTS_EVENT, onEvent);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+    };
   }, [canDemandes, countryCode, location.pathname]);
 
   const visible = ADMIN_NAV.filter((item) => {
