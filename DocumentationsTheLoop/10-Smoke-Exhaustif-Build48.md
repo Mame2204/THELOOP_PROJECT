@@ -449,7 +449,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
 - [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
 - [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
-- [ ] **📱** Recovery → **set_password in-app** via « Ouvrir l’application » *(retest post-deploy auth-callback)*
+- [x] **🤖** Recovery → **set_password in-app** via « Ouvrir l’application » *(27 sept. 2026 · **PASS** · build 51 · latence Render au réveil · OK)*
+- [ ] **📱** Idem *(retest iOS build 51+)*
 - [ ] **🤖** Idem
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
 - [x] **🤖** Idem *(23 sept. 2026)*
@@ -997,7 +998,7 @@ Liens Param. → pages satellites :
 ## D1 — Régression rapide (5 min)
 
 - [x] **📱** Cold start sans crash *(26 sept. 2026 · testeur **PASS**)*
-- [ ] **🤖** Cold start depuis icône *(26 sept. **FAIL** · fermeture / arrière-plan · reprise OK si déjà ouverte)*
+- [x] **🤖** Cold start depuis icône *(27 sept. 2026 · **PASS** testeur · **build 51**)*
 - [x] **📱** Arrière-plan → retour OK *(26 sept. **PASS**)*
 - [x] **🤖** Arrière-plan → retour OK *(26 sept. **PASS** · icône avec app déjà en tâche)*
 - [x] **📱** Images contenu chargées *(26 sept. · **PASS D1** testeur)*
