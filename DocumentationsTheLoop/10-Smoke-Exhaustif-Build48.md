@@ -46,26 +46,28 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 
 | Élément | Valeur |
 |---------|--------|
-| **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
-| **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
-| **Prochain test** | **Build 53** (*activate* identité · CGU · DOB) · opt. plafond parrainage / 10 filleuls |
-| **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
-| **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
-| **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
+| **Avancement smoke** | **388 / 400 ≈ 97 %** lignes checklist · **506 / 530 ≈ 95 %** toutes cases *(resync **27 sept.**)* |
+| **Admin-web 💻** | **≈ 97 %** · reste **B1** éditeurs contenu (3 routes) · opt. migration **39** |
+| **Prochain test device** | **Build 53** (*A1 activate* identité · CGU · DOB · PR **#64**) **puis / ou** **build 54+** (approve retrait **super admin mobile** · PR **#69**) |
+| **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** — **1 cas** checklist |
+| **⏸ Build 54+ (mobile admin)** | Approve retrait persistant + notifs partenaire retrait *(SQL **20260952** OK · code **#69** sur `main`)* |
+| **Binaire actif** | **🤖 Android 51** (Play test interne) · **53** en attente EAS · **54** = retrait mobile admin |
+| **Bloqué avant 51** | ~~D1 🤖~~ · ~~M1-U2~~ · ~~modération notifs~~ — **PASS build 51** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
 | **📱 iOS build 48** | A1 · A2 · A3 · A4 · A5 partiel · **achat PASS OM OK** |
 | **🤖 Android build 48** | **Lot A Android 26 sept.** (C1 PASS · A2 détails · activate · suspendu · hub Demandes · transfert contenu) · achat PASS MTN OK |
-| **Reporté build 49+** | LoopX · octroi individuel · **Accueil slider À la une** (migration `20260937`) · événements sans date (fallback app) · **A5-U23–U25 · Phase 1 · B2 refus · notifs modération** (PR #7) · **A4-4/5/6** 🤖 |
+| **Reporté / BLOCKED build futur** | LoopX · filtres Prime · contenu `visibility: prime` · slider À la une (`20260937`) · **A4 🤖 N/A** sans contenu publié |
+| **Bloc SANS53** | **Clôturé 27 sept.** — ne **pas** refaire *(journal `SANS53-* PASS`)* |
 | **Règle session** | Bug identifié → noter FAIL · fix PR · retest build cible |
 
 > Le testeur n’a pas à choisir la suite : l’agent tient ce tableau + le journal.
 
-### Bloc tests **sans build 53** *(~40–55 min · ordre fixe)*
+### Bloc tests **sans build 53** *(clôturé **27 sept.** · archive)*
 
-> **Exclu de ce bloc :** activate invité avec identité + CGU + date de naissance → **uniquement build 53**.  
-> **Binaire :** 🤖 Android **51** (Play interne) · 📱 iOS **48+** où indiqué · 💻 admin-web.  
-> **Format réponse :** `SANS53-C1-A PASS` · `SANS53-A5-U23 FAIL: …`
+> **Statut :** **PASS** testeur — items **1–10** cochés en checklist · **11** (AUTH-HTML navigateur) = **sans build EAS** *(Render/Storage)*.  
+> **Exclu volontairement :** *A1 activate* identité + CGU + DOB → **build 53** uniquement.  
+> **Ne pas relancer** ce pack sauf régression signalée.
 
 | Ordre | ID | Durée | Où | Action | Attendu |
 |------:|----|------:|-----|--------|---------|
@@ -82,10 +84,6 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 | 11 | **SANS53-AUTH-HTML** | ~5 min | 📱/🤖 | Lien reset MDP → page recovery **HTML rendue** (boutons visibles · pas de balises brutes) | Si FAIL : fix Render/Storage · pas bloquant si M1-U2 in-app OK |
 
 **Ne pas refaire** *(déjà cochés **27 sept.**)* : D1 · M2 · C1 modération/scan/tirage immédiat · octroi individuel · B7 refuse · invite C2 · Phase 1 mobile · parité D2.
-
-**Après merge PR doc / sans attendre 53 :** cocher les lignes checklist correspondantes + journal `SANS53-* PASS/FAIL`.
-
----
 
 ### Pack session 3 — **build 51** *(clôturé **27 sept.** · cochage doc)*
 
@@ -198,13 +196,13 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **P1** | **C1** push (réception OS + inbox) | **≈PASS** 📱🤖 | **PASS** envoi 💻 | Reste **ciblage** · **Prime planifiée device** · ⏳ doublon |
 | **P1** | **D1** régression rapide | **PASS** 📱🤖 *(27 sept. build 51)* | — | Cold start icône 🤖 OK |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [x] | — | **PASS 27 sept.** |
-| **P2** | **A4** retraits notifs · 🤖 reportés N/A | partiel | Phase 1 | Reprendre quand contenu **publié** côté partenaire 🤖 |
+| **P2** | **A4** retraits · notifs · approve mobile | partiel | Phase 1 | **💻 PASS** · **📱🤖 approve admin** → **build 54+** *(#69)* · notifs retrait → retest même build |
 | **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [x] | — | **27 sept.** prérequis transitifs · cf. règle ci-dessous |
-| **P2** | **A5** octroi manuel mobile · tirage · push admin | [ ] | partiel web | U23 = **build 49+** (PR #7) |
+| **P2** | **A5** octroi manuel mobile · tirage · push admin | [x] | partiel web | **PASS 27 sept.** *(SANS53-A5-U23 · build 51)* |
 | **P2** | **C2** partenaire invité → Espace Pro | [x] | — | **27 sept.** parité invite |
 | **P2** | **C3/C4** mailto · filleul +1 | [x] | — | **27 sept.** C3 + C4 PASS |
 | **P2** | **B9** admin délégué **mobile** | **PASS** 📱🤖 | PASS web | Insights OK · approbation demandes → **49+** |
-| **🔒 build 49+** | LoopX · **A5-U23** octroi manuel mobile · Phase 1 **notifs retrait** · écrans admin P2 · **📱 M1-U2** · **activate build 53** | partiel | partiel | Notifs C1 **OK build 51** · **D1 🤖 icône OK** |
+| **🔒 build futur** | LoopX · contenu prime · **activate build 53** · **approve retrait mobile build 54+** | partiel | partiel | C1 · D1 · M1-U2 · A5-U23 · P2 admin = **PASS 51** |
 
 **Non aligné parité (volontaire)** : A4-U15/U16/U17/U18/U19 🤖 marqués **⏸ N/A / reporté** (pas de contenu publié ou suite A4-4) — **ne pas** cocher 🤖 depuis 📱.
 
@@ -214,23 +212,36 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **381 / 399 ≈ 95 %** *(27 sept. · + transitifs P2)*. |
-| **531 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **479 / 531 ≈ 90 %** *(27 sept.)*. |
-| **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
+| **400 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **388 / 400 ≈ 97 %** *(grep **27 sept.** resync)* |
+| **530 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **506 / 530 ≈ 95 %** *(grep **27 sept.** resync)* |
+| **Cas QA prioritaires go-live** | **4 quarts** ci-dessous *(build 53 · build 54+ · sans build · N/A/opt.)* | Pilotage testeur — **ne pas confondre avec % checklist** |
 
-### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · **27 sept. 2026**)*
+### Avancement par plateforme *(grep lignes `- [ ]` / `- [x]` · **27 sept. 2026 · resync)*
 
 > Chaque **ligne** `- [ ]` / `- [x]` compte une fois. Les puces **📱🤖** sont comptées à part.
 
 | Environnement | Coché | Total lignes | % réalisé | % restant | Commentaire |
 |---------------|------:|-------------:|----------:|----------:|-------------|
-| **💻 Admin-web** | **79** | **85** | **93 %** | **7 %** | Modération retraits 💻 · filtres retest · ⏳ doublon push · opt. migration 39 |
-| **📱 iPhone** | **129** | **144** | **90 %** | **10 %** | Lignes `- [x]` avec **📱** (hors double puce) |
-| **🤖 Android** | **109** | **121** | **90 %** | **10 %** | Lignes **🤖** seules · **D1 build 51 OK** |
-| **📱🤖 (double puce)** | **28** | **29** | **97 %** | **3 %** | Reste **activate identité/CGU** (build 53) |
-| **Global checklist** | **381** | **399** | **≈95 %** | **≈5 %** | + coches transitives P2 **27 sept.** |
+| **💻 Admin-web** | **82** | **85** | **≈ 96 %** | **≈ 4 %** | **3×** B1 éditeurs contenu `[ ]` · opt. SQL **39** |
+| **📱 iPhone** | **≈ 132** | **≈ 144** | **≈ 92 %** | **≈ 8 %** | **53** activate · **54+** retrait/notif · AUTH-HTML · opt. stress parrainage |
+| **🤖 Android** | **≈ 112** | **≈ 121** | **≈ 93 %** | **≈ 7 %** | Idem · **5×** A4 🤖 **N/A** (données) |
+| **📱🤖 (double puce)** | **28** | **29** | **≈ 97 %** | **≈ 3 %** | **1×** activate identité/CGU/DOB (**build 53**) |
+| **Global checklist** | **388** | **400** | **≈ 97 %** | **≈ 3 %** | **12** lignes `- [ ]` ouvertes |
 
-**Toutes cases (tableaux inclus)** : **479 / 531 ≈ 90 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
+**Toutes cases (tableaux inclus)** : **506 / 530 ≈ 95 %** — Phase 1 #3 📱🤖 **décoché** jusqu’à **build 54+**.
+
+### Pilotage — **4 quarts** restants *(cas actionnables · resync 27 sept.)*
+
+> **Cas** = scénario QA distinct (une ligne checklist ou une ligne Phase 1). **Parité 📱🤖** : souvent **1 device** suffit sauf **53** (ligne unique 📱🤖) et **notifs retrait** (2 lignes).
+
+| Quart | Périmètre | Nb **cas** | Nb **lignes** `- [ ]` | Build requis |
+|-------|-----------|----------:|------------------------:|--------------|
+| **1 · Build 53** | *A1 activate* — prénom/nom · CGU · DOB (PR **#64**) | **1** | **1** | **EAS 53** |
+| **2 · Build 54+** | Approve retrait **super admin mobile** · notifs partenaire retrait · Phase 1 #3 📱🤖 | **2** | **4** *(2 lignes notif + 2 cellules Phase 1)* | **EAS 54+** *(#69)* |
+| **3 · Sans build EAS** | B1 éditeurs 💻 · recovery **HTML navigateur** · retest 💻 approve retrait *(SQL **52**)* · opt. SQL **39** | **4** | **8** *(6 lignes + 3 cellules B1 − chevauchement 1 SQL ligne)* | **💻 / Render / Supabase** |
+| **4 · N/A / optionnel** | A4 parité 🤖 sans contenu publié · stress **10 filleuls/an** | **0–1** | **6** | Données ou sandbox long |
+
+**Total cases ouvertes (grep honnête) : 17** *(12 lignes markdown + 3 B1 + 2 Phase 1)* · **Cas go-live prioritaires : 7** *(quarts 1–3, hors N/A)*.
 
 ### Règle **prérequis transitifs** *(smoke honnête · 27 sept.)*
 
@@ -246,29 +257,23 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 **On ne ferme pas par transitivité :** écran **jamais** ouvert et **chemin UI différent** sans preuve aval *(ex. octroi manuel PASS mobile = écran dédié · FAIL historique)* · **build 53** · **N/A** 🤖 · migrations opt.
 
-### Reste ouvert *(ne pas confondre avec %)*
+### Reste ouvert *(aligné grep **27 sept.** resync)*
 
-| Zone | Encore `[ ]` | Bloc |
-|------|----------------|------|
-| **Build 53 uniquement** | Activate identité · CGU · DOB | **Hors** bloc sans 53 |
-| **📱 iOS** | M1-U2 set_password in-app | **SANS53-M1-U2** |
-| **C1 push** | Ciblage Membres→Prime · Prime planifiée device | **SANS53-C1-A/B** |
-| ~~**💻 Modération**~~ | ~~B2 SANS53~~ | **PASS 27 sept.** |
-| ~~**A5 mobile**~~ | Octroi manuel PASS | **PASS 27 sept.** |
-| ~~**Mobile P2**~~ | Suggestions · CreateUser · Waitlist · Featured · hub | **PASS 27 sept.** *(transitif + attestation)* |
-| **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | P2 si besoin |
-| **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
-| **Auth web** | Page recovery HTML (Storage text/plain) | **SANS53-AUTH-HTML** |
-| **Infra opt.** | Migration `20260939` · ⏳ doublon push | hors session device |
-| **A4 🤖 N/A** | Pas contenu publié | — |
+| Zone | Encore `[ ]` | Bloc / build |
+|------|----------------|--------------|
+| **Build 53** | **1×** activate identité · CGU · DOB | PR **#64** |
+| **Build 54+** | Approve retrait admin **mobile** · **2×** notif retrait partenaire | PR **#69** · SQL **20260952** ✅ |
+| **Sans build** | **3×** B1 éditeurs 💻 · **2×** recovery HTML navigateur · **1×** SQL **39** opt. | 💻 / Render |
+| **N/A / opt.** | **5×** A4 🤖 parité · **1×** stress 10 filleuls | Données / sandbox |
+| ~~**SANS53 pack**~~ | ~~M1-U2 · C1 · B2 · A5 · P2 · C3/C4~~ | **PASS 27 sept.** |
 
 ### Reste à faire — par environnement *(priorisé)*
 
 | Environnement | Déjà réalisé (ne pas refaire) | Reste / bloqué |
 |---------------|------------------------------|----------------|
-| **💻 Web** | B0–B9 · B5 push admin · PASS · Users connexion · Insights · Accueil · TEAMS · **Tirage** *(testeur 24–26 sept.)* | **B2** refus modération + notif partenaire · retraits Phase 1 · filtres modération retest · doublon push campagne ⏳ |
-| **📱 iOS** | A1–A3 · M2 · C1 essentiel · D1/D2 · B9 · octroi individuel · B7 refuse · tirage notif | **M1-U2** set_password in-app · **activate build 53** · C1 ciblage/planifiée Prime · C3/C4 · P2 admin écrans · LoopX |
-| **🤖 Android** | Idem parité **≈90 %** lignes 🤖 | **activate build 53** · A5-U23 octroi manuel mobile · A4 🤖 N/A contenu publié · C1 ciblage |
+| **💻 Web** | B0–B9 · B2 modération/retraits **PASS 27 sept.** · push · PASS · Users · Insights · Accueil · TEAMS · Tirage | **B1** 3 éditeurs contenu · opt. **39** |
+| **📱 iOS** | A1–A5 essentiel · M2 · C1 · D1/D2 · B9 · octroi · B7 · SANS53 pack | **53** activate · **54+** retrait admin mobile · AUTH-HTML |
+| **🤖 Android** | Idem **≈ 93 %** | **53** activate · **54+** retrait/notifs · A4 🤖 **N/A** données |
 
 ### Parité web → mobile *(audit code · 26 sept. 2026)*
 
@@ -479,7 +484,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260948_benefit_validation_notify_privilege_place_copy.sql` — notifs : **nom catalogue + lieu lié** *(27 sept. 2026 · **OK Supabase prod** · PR **#58**)*
 - [x] `20260949_admin_orphan_delete_auth_user.sql` — suppression orphelin inclut **auth.users** *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260950_invite_activation_preserve_names.sql` — identité activation > Membre/THE LOOP *(27 sept. · **OK Supabase** · testeur)*
-- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(à appliquer Supabase · puis redeploy Edge `member-activate-invite`)*
+- [x] `20260952_admin_approve_partner_withdrawal.sql` — RPC approve retrait partenaire *(27 sept. · **OK Supabase** · testeur)*
+- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -497,11 +503,13 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 |---|----------|----|----|-----|
 | 1 | Soumission partenaire → super admin **push OS + cloche inbox** | [x] | [x] | — |
 | 2 | Partenaire **annule** demande retrait pending → contenu reste Mon contenu | [x] | [x] | — |
-| 3 | Admin **approuve** retrait → contenu disparaît catalogue public | [x] | [x] | [x] |
+| 3 | Admin **approuve** retrait → contenu disparaît catalogue public | [ ] | [ ] | [x] |
 | 4 | Tirage → gagnant push **« Nouveau privilège »** + fiche déverrouillée | [x] | [x] | [x] |
 | 5 | Tirage membre non-Prime → accès fiche sans « réservé Prime » | [x] | [x] | — |
 | 6 | Privilège contenu lié → Prime sans octroi = cadenas | [x] | [x] | — |
 | 7 | Modération événement + intervenant **sans titre** → validation OK | [x] | [x] | [x] |
+
+> **Phase 1 #3 📱🤖 :** approve retrait **super admin mobile** = **FAIL** build 51 (succès UI local · pas persisté) — **retest build 54+** *(PR **#69** · SQL **20260952** OK)* · **💻** reste **PASS**.
 
 ---
 
@@ -718,8 +726,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · reprendre après modération admin)*
 - [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
 - [ ] **🤖** Idem *(⏸ idem A4-5)*
-- [ ] **📱** Notif approve / refuse retrait
-- [ ] **🤖** Idem
+- [ ] **📱** Notif approve / refuse retrait *(retest **build 54+** · après approve/refuse mobile admin OK · SQL **20260952**)*
+- [ ] **🤖** Idem *(parité RN · même build)*
 
 ### Validation privilèges
 - [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
@@ -894,7 +902,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 > **Build 48** : **valider / refuser / resoumettre** — **PASS** testeur 26 sept. (💻 + 🤖 admin).  
 > **Notif partenaire** (push + inbox après décision modération) — **FAIL boucle infinie** · même famille que C1 · **retest bulle 49** (fix `NotificationsContext` / pas de ré-insert push). **Ne pas recocher C1 modération ni refaire le flux modération pour tester les notifs.**  
-> **Reste B2 💻** : **retraits** Phase 1 · filtres retest.  
+> **Retraits 💻** : **PASS 27 sept.** *(SANS53-B2-RETRAIT)* · retest rapide possible post-**20260952**. **Approve mobile admin** → **build 54+**.  
 > **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
 
 - [x] **💻🤖✓** Chargement soumissions pending
@@ -1333,6 +1341,11 @@ Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
   - **PASS SANS53-P2-ADMIN** *(27 sept. · transitif + attestation)* : Suggestions · Inviter≈CreateUser · Waitlist · Featured · soumission↔modération
   - **PASS SANS53-A5-U23** : octroi **Héritage** app admin · recherche e-mail · notif · Prime
   - **PASS SANS53-C3** : Profil · Nous contacter · coordonnées THE LOOP
+Doc / prod (27 sept. soir · agent · resync checklist) :
+  - **SQL 20260952** OK testeur · **PR #69** merge `main` (approve retrait mobile)
+  - **Phase 1 #3** 📱🤖 **décoché** — retest **build 54+** (FAIL approve mobile build 51)
+  - **Métriques** : **388/400 ≈ 97 %** · **506/530 ≈ 95 %** · pilotage **4 quarts** (§ métriques)
+  - **Pack SANS53** = archive · ne pas relancer
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
