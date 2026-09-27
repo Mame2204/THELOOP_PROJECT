@@ -186,9 +186,8 @@ partnerValidationRouter.post('/partner/apply-validation', async (req, res) => {
         .maybeSingle();
 
       const benefitTitle = String(grant?.title ?? 'Privilège').trim() || 'Privilège';
-      const placeLabel =
-        String(redemptionMeta?.content_title ?? row.partner_name ?? partner.partner_name).trim()
-        || 'le partenaire';
+      const contentTitle = String(redemptionMeta?.content_title ?? row.partner_name ?? '').trim() || null;
+      const partnerName = String(row.partner_name ?? partner.partner_name).trim() || null;
 
       if (validate) {
         const { error: redError } = await supabase
@@ -206,7 +205,9 @@ partnerValidationRouter.post('/partner/apply-validation', async (req, res) => {
         if (!redError && !grantError) {
           applied += 1;
           notifyTasks.push(
-            notifyMemberBenefitValidated(row.user_id, benefitTitle, placeLabel).catch(() => undefined),
+            notifyMemberBenefitValidated(row.user_id, benefitTitle, partnerName ?? '', contentTitle).catch(
+              () => undefined,
+            ),
           );
         }
       } else {
@@ -225,7 +226,9 @@ partnerValidationRouter.post('/partner/apply-validation', async (req, res) => {
         if (!redError && !grantError) {
           applied += 1;
           notifyTasks.push(
-            notifyMemberBenefitCancelled(row.user_id, benefitTitle, placeLabel).catch(() => undefined),
+            notifyMemberBenefitCancelled(row.user_id, benefitTitle, partnerName ?? '', contentTitle).catch(
+              () => undefined,
+            ),
           );
         }
       }
@@ -296,13 +299,13 @@ partnerValidationRouter.post('/partner/benefit-notify', async (req, res) => {
         .maybeSingle();
 
       const benefitTitle = String(grant?.title ?? 'Privilège').trim() || 'Privilège';
-      const placeLabel =
-        String(row.content_title ?? row.partner_name ?? partner.partner_name).trim() || 'le partenaire';
+      const contentTitle = String(row.content_title ?? '').trim() || null;
+      const partnerName = String(row.partner_name ?? partner.partner_name).trim() || null;
 
       if (action === 'validated') {
-        await pushMemberBenefitValidated(String(row.user_id), benefitTitle, placeLabel);
+        await pushMemberBenefitValidated(String(row.user_id), benefitTitle, partnerName ?? '', contentTitle);
       } else {
-        await pushMemberBenefitCancelled(String(row.user_id), benefitTitle, placeLabel);
+        await pushMemberBenefitCancelled(String(row.user_id), benefitTitle, partnerName ?? '', contentTitle);
       }
       pushed += 1;
     }

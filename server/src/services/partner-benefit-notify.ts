@@ -1,4 +1,9 @@
 import { getSupabaseAdmin } from '../lib/supabase-admin.js';
+import {
+  copyBenefitCancelledMessage,
+  copyBenefitValidatedMessage,
+  resolveBenefitNotificationPlace,
+} from './benefit-notification-copy.js';
 import { sendExpoPushToUserIds } from './expo-push.js';
 
 async function insertBenefitInbox(
@@ -21,13 +26,22 @@ async function insertBenefitInbox(
 }
 
 /** Inbox + push OS après validation privilège (fallback route serveur). */
+function placeFrom(contentTitle: string | null | undefined, partnerName: string | null | undefined): string {
+  return resolveBenefitNotificationPlace({
+    contentTitle,
+    partnerName,
+  });
+}
+
 export async function notifyMemberBenefitValidated(
   memberUserId: string,
-  benefitTitle: string,
+  _benefitTitle: string,
   placeLabel: string,
+  contentTitle?: string | null,
 ): Promise<void> {
   const title = 'Privilège validé';
-  const message = `Votre privilège « ${benefitTitle.trim()} » a été validé — ${placeLabel.trim() || 'le partenaire'}.`;
+  const place = placeFrom(contentTitle, placeLabel);
+  const message = copyBenefitValidatedMessage(place);
   await insertBenefitInbox(memberUserId, title, message);
   await pushMemberBenefitOutcome(memberUserId, title, message, 'benefit_validated');
 }
@@ -35,11 +49,13 @@ export async function notifyMemberBenefitValidated(
 /** Inbox + push OS après annulation validation privilège. */
 export async function notifyMemberBenefitCancelled(
   memberUserId: string,
-  benefitTitle: string,
+  _benefitTitle: string,
   placeLabel: string,
+  contentTitle?: string | null,
 ): Promise<void> {
   const title = 'Validation annulée';
-  const message = `La validation de « ${benefitTitle.trim()} » chez ${placeLabel.trim() || 'le partenaire'} a été annulée. Vous pouvez réutiliser le privilège.`;
+  const place = placeFrom(contentTitle, placeLabel);
+  const message = copyBenefitCancelledMessage(place);
   await insertBenefitInbox(memberUserId, title, message);
   await pushMemberBenefitOutcome(memberUserId, title, message, 'benefit_cancelled');
 }
@@ -47,21 +63,25 @@ export async function notifyMemberBenefitCancelled(
 /** Push OS uniquement (inbox déjà créée par RPC Supabase). */
 export async function pushMemberBenefitValidated(
   memberUserId: string,
-  benefitTitle: string,
+  _benefitTitle: string,
   placeLabel: string,
+  contentTitle?: string | null,
 ): Promise<void> {
   const title = 'Privilège validé';
-  const message = `Votre privilège « ${benefitTitle.trim()} » a été validé — ${placeLabel.trim() || 'le partenaire'}.`;
+  const place = placeFrom(contentTitle, placeLabel);
+  const message = copyBenefitValidatedMessage(place);
   await pushMemberBenefitOutcome(memberUserId, title, message, 'benefit_validated');
 }
 
 export async function pushMemberBenefitCancelled(
   memberUserId: string,
-  benefitTitle: string,
+  _benefitTitle: string,
   placeLabel: string,
+  contentTitle?: string | null,
 ): Promise<void> {
   const title = 'Validation annulée';
-  const message = `La validation de « ${benefitTitle.trim()} » chez ${placeLabel.trim() || 'le partenaire'} a été annulée. Vous pouvez réutiliser le privilège.`;
+  const place = placeFrom(contentTitle, placeLabel);
+  const message = copyBenefitCancelledMessage(place);
   await pushMemberBenefitOutcome(memberUserId, title, message, 'benefit_cancelled');
 }
 

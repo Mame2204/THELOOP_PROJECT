@@ -19,6 +19,10 @@ import {
 import { establishmentTypeLabel } from '@/lib/partner-establishments';
 import { scannedMemberRoleLabel } from '@/lib/member-qr-scan';
 import { notifyPartnerBenefitOutcomeViaBackend } from '@/lib/partner-validation-backend-api';
+import {
+  resolvePartnerPendingBenefitHeadline,
+  shouldShowCatalogSubtitle,
+} from '@/lib/benefit-notification-copy';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PartnerBenefitConfirm'>;
@@ -407,6 +411,13 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
         items.map(({ redemption, benefit }) => {
           const checked = selected.has(redemption.id);
           const roleBadge = getRoleEntitlementBadge(benefit);
+          const headline = resolvePartnerPendingBenefitHeadline({
+            contentTitle: redemption.contentTitle ?? benefit.contentTitle,
+            establishmentTitle,
+            partnerName,
+            catalogTitle: benefit.title,
+          });
+          const showCatalog = shouldShowCatalogSubtitle(headline, benefit.title);
           return (
             <Pressable
               key={redemption.id}
@@ -421,15 +432,22 @@ export function PartnerBenefitConfirmScreen({ navigation, route }: Props) {
             >
               <Text style={{ fontSize: 18 }}>{checked ? '☑' : '☐'}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.benefitTitle, { color: shell.pageTitle }]}>{benefit.title}</Text>
+                <Text style={[styles.benefitTitle, { color: shell.pageTitle }]}>{headline}</Text>
+                {showCatalog ? (
+                  <Text style={[styles.meta, { color: shell.pageKicker }]}>
+                    Privilège catalogue : {benefit.title}
+                  </Text>
+                ) : null}
                 {roleBadge ? (
                   <View style={[styles.sourcePill, { borderColor: '#10b981' }]}>
                     <Text style={[styles.sourcePillText, { color: '#10b981' }]}>{roleBadge}</Text>
                   </View>
                 ) : null}
-                <Text style={[styles.meta, { color: shell.pageKicker }]}>{benefit.description}</Text>
+                {benefit.description?.trim() ? (
+                  <Text style={[styles.meta, { color: shell.pageKicker }]}>{benefit.description}</Text>
+                ) : null}
                 <Text style={[styles.meta, { color: '#10b981', marginTop: 4 }]}>
-                  Demande initiée par le membre · {establishmentTitle ?? benefit.contentTitle ?? partnerName}
+                  Demande initiée par le membre
                 </Text>
               </View>
             </Pressable>
