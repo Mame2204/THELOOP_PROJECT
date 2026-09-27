@@ -6,7 +6,7 @@ import {
 } from '@/lib/remote-settings-sync';
 import { countryCacheKey, countryRemoteKey, resolveCountryCode } from '@/lib/country-settings-keys';
 import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
-import { HERITAGE_CATALOG_ID } from '@/lib/pass-catalog-store';
+import { HERITAGE_CATALOG_ID, REFERRAL_CATALOG_ID } from '@/lib/pass-catalog-store';
 import {
   HERITAGE_PASS_LABEL,
   isHeritagePass,
@@ -194,6 +194,7 @@ export function resolvePassActivationType(
 ): PassActivationType {
   if (record?.passCatalogId) {
     if (record.passCatalogId === HERITAGE_CATALOG_ID) return 'heritage';
+    if (record.passCatalogId === REFERRAL_CATALOG_ID) return 'referral';
   }
   if (record && isHeritagePass(record as SubscriptionRecord)) return 'heritage';
   const label = (record?.label ?? '').toLowerCase();

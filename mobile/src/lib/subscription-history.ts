@@ -7,12 +7,14 @@ import {
 import { DEFAULT_COUNTRY_CODE, type CountryCode } from '@/lib/countries';
 import { getPassPrices } from '@/lib/pass-pricing-store';
 import { DEFAULT_MAX_PENDING_PASSES } from '@/lib/pass-shop-settings-store';
+import { REFERRAL_CATALOG_ID, REFERRAL_PASS_LABEL } from '@/lib/pass-catalog-store';
 import type { SubscriptionStatus } from '@/types';
 
 export const HERITAGE_PASS_LABEL = 'PASS Heritage';
 export const INTERMEDIATE_PASS_LABEL = 'PASS intermédiaire';
+export { REFERRAL_PASS_LABEL };
 
-export type PassKind = 'standard' | 'heritage' | 'bonus' | 'custom' | 'intermediate';
+export type PassKind = 'standard' | 'heritage' | 'bonus' | 'custom' | 'intermediate' | 'referral';
 export type SubscriptionPlanType = 'prime' | 'partner';
 export type PassPaymentMethod =
   | 'all'
@@ -106,12 +108,22 @@ export function getUserFacingPrimePass(
   return getSuspendedSubscription(history, 'prime');
 }
 
-/** PASS Heritage (octroi admin sans expiration) — pas les achats ni PassIntermediaire. */
+export function isReferralPass(record: SubscriptionRecord): boolean {
+  if (record.passKind === 'referral') return true;
+  if (record.passCatalogId === REFERRAL_CATALOG_ID) return true;
+  const label = (record.label ?? '').toLowerCase();
+  return label.includes('parrainage');
+}
+
+/** PASS Heritage (octroi admin sans expiration) — pas les achats ni PassIntermediaire ni parrainage. */
 export function isHeritagePass(record: SubscriptionRecord): boolean {
+  if (isReferralPass(record)) return false;
   if (isRoleFreezeIntermediatePass(record)) return false;
   if (record.passKind === 'intermediate') return false;
   if (record.paymentMethod || (record.amountGnf != null && record.amountGnf > 0)) return false;
-  if (record.passKind === 'heritage' || record.passKind === 'bonus') return true;
+  if (record.passKind === 'heritage') return true;
+  /** Legacy : bonus sans parrainage = ancien modèle Heritage. */
+  if (record.passKind === 'bonus') return true;
   return isLegacyHeritageLabel(record.label);
 }
 
@@ -149,6 +161,10 @@ export function passDisplayLabel(record: SubscriptionRecord): string {
   if (isRoleFreezeIntermediatePass(record) && record.frozenPassSnapshot) {
     const orig = record.frozenPassSnapshot;
     return `${orig.label?.trim() || 'PASS'} (gelé · ${record.label})`;
+  }
+  if (isReferralPass(record)) {
+    const label = record.label?.trim();
+    return label || REFERRAL_PASS_LABEL;
   }
   if (isHeritagePass(record)) return HERITAGE_PASS_LABEL;
   if (record.passKind === 'intermediate') {

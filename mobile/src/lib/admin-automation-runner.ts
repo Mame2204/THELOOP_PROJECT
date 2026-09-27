@@ -210,17 +210,6 @@ async function runBirthdayJob(job: AutomationJob, date = new Date()): Promise<nu
 async function runWelcomeJobForUser(job: AutomationJob, user: RegistryUser): Promise<number> {
   if (!userMatchesJobGeo(user, job)) return 0;
 
-  const name = user.firstName?.trim() || 'Membre';
-  const customMessage = job.payload.welcomeMessage?.trim();
-  const defaultMessage =
-    'Ton compte THE LOOP est actif. Découvre les événements, spots et outils près de toi. ' +
-    'Tu peux à tout moment mettre à jour ton profil en cliquant sur le petit bonhomme en bas à droite.';
-
-  await appendUserNotification(user.id, {
-    title: `Bienvenue ${name} !`,
-    message: customMessage || defaultMessage,
-    audience: 'individual',
-  });
   const count = 1;
 
   if (!jobGrantsBenefits(job)) return count;
@@ -245,10 +234,17 @@ export async function processWelcomeAutomationForUser(
   const jobs = (await listActiveAutomationJobs()).filter((j) => j.jobType === 'welcome_benefit');
   if (jobs.length === 0) return 0;
 
+  const { sendWelcomeNotification } = await import('@/lib/user-notifications-store');
+  let welcomeSent = false;
   let total = 0;
   for (const job of jobs) {
     const blocked = await ensureJobCatalogReady(job);
     if (blocked) continue;
+
+    if (!welcomeSent && userMatchesJobGeo(user as RegistryUser, job)) {
+      await sendWelcomeNotification(user);
+      welcomeSent = true;
+    }
 
     const count = await runWelcomeJobForUser(job, user as RegistryUser);
     if (count > 0) {
@@ -256,7 +252,7 @@ export async function processWelcomeAutomationForUser(
       total += count;
     }
   }
-  return total;
+  return welcomeSent ? Math.max(total, 1) : total;
 }
 
 async function scoreMemberEngagement(userId: string): Promise<number> {

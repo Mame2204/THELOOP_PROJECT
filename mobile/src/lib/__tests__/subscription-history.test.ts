@@ -4,6 +4,7 @@ import {
   getPendingSubscriptions,
   isAdminGrantedPass,
   isHeritagePass,
+  isReferralPass,
   passOccupiesPrimeSlot,
   type SubscriptionRecord,
 } from '@/lib/subscription-history';
@@ -35,6 +36,19 @@ describe('subscription-history PASS slot & queue', () => {
     const monthly = pass();
     expect(isHeritagePass(monthly)).toBe(false);
     expect(isAdminGrantedPass(monthly)).toBe(false);
+  });
+
+  it('PASS Parrainage (referral) n’est pas Heritage', () => {
+    const referral = pass({
+      passKind: 'referral',
+      passCatalogId: 'pass-parrainage-builtin',
+      label: 'PASS Parrainage (1 mois offerts)',
+      amountGnf: 0,
+      paymentMethod: undefined,
+      billingPeriod: undefined,
+    });
+    expect(isReferralPass(referral)).toBe(true);
+    expect(isHeritagePass(referral)).toBe(false);
   });
 
   it('tri pending par date d’achat', () => {

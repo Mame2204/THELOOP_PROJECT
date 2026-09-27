@@ -799,31 +799,16 @@ async function createUserNotification(
   withoutDup.unshift(entry);
   await saveAll(withoutDup);
 
-  // Alerte OS (arrière-plan / app fermée) — en plus de l’inbox.
+  // Push OS (Expo / backend) — une seule alerte : pas de doublon avec une notif locale en plus.
   if (!options?.skipOsDelivery && /^[0-9a-f-]{36}$/i.test(userId)) {
-    void import('@/lib/push-notifications').then(async (m) => {
-      await m.requestExpoPushDelivery({
+    void import('@/lib/push-notifications').then((m) =>
+      m.requestExpoPushDelivery({
         userIds: [userId],
         title: input.title,
         body: input.message,
         data: { notificationId: id, audience: input.audience },
-      });
-      // Si c’est le compte connecté sur cet appareil : bannière OS aussi en premier plan.
-      try {
-        if (isSupabaseConfigured() && supabase) {
-          const { data } = await supabase.auth.getUser();
-          if (data.user?.id === userId) {
-            await m.presentLocalOsNotification({
-              title: input.title,
-              body: input.message,
-              data: { notificationId: id, audience: input.audience },
-            });
-          }
-        }
-      } catch {
-        /* ignore */
-      }
-    });
+      }),
+    );
   }
 
   return entry;
