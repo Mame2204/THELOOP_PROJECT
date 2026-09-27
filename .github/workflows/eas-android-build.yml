@@ -1,0 +1,59 @@
+# Build Android AAB via EAS (Play test interne). Secret requis : EXPO_TOKEN
+name: EAS Android (AAB)
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Profil EAS (production = AAB pour Play)
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - preview
+
+jobs:
+  android-aab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli@16.28.0
+
+      - name: Vérifier version Android (app.json)
+        run: grep -E '"versionCode"|"package"' app.json
+
+      - name: Build Android (EAS cloud)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_BUILD_NO_EXPO_GO_WARNING: "true"
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Secret GitHub EXPO_TOKEN absent. Créez un token sur https://expo.dev/settings/access-tokens puis ajoutez-le dans Settings → Secrets → Actions."
+            exit 1
+          fi
+          eas whoami
+          eas build --platform android --profile "${{ inputs.profile }}" --non-interactive --wait
+
+      - name: Lien de téléchargement
+        if: success()
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          echo "Build terminé. Téléchargement :"
+          eas build:list --platform android --limit 3 --json --non-interactive | head -c 4000
