@@ -234,8 +234,8 @@ async function ensureAdminSessionForWithdrawalModeration(): Promise<{ ok: boolea
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: false, error: 'Connexion requise.' };
   }
-  const { clearPartnerSpotSession, getPartnerAuthUserIdFromSession, isAdminAuthUserId } =
-    await import('@/lib/partner-spot-auth');
+  const { clearPartnerSpotSession } = await import('@/lib/partner-session-store');
+  const { getPartnerAuthUserIdFromSession, isAdminAuthUserId } = await import('@/lib/partner-spot-auth');
   await clearPartnerSpotSession();
   const authUid = await getPartnerAuthUserIdFromSession();
   if (!authUid) {
