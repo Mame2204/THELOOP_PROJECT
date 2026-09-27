@@ -523,7 +523,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
 - [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
 - [x] **🤖** Recovery → **set_password in-app** via « Ouvrir l’application » *(27 sept. 2026 · **PASS** · build 51 · latence Render au réveil · OK)*
-- [ ] **📱** Idem *(retest iOS build 51+)*
+- [x] **📱** Idem *(27 sept. · **SANS53-M1-U2 PASS** · attestation testeur · parité 🤖 build 51)*
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** CGU / Politique confidentialité (modales) *(23 sept. 2026 · build 48)*
@@ -884,7 +884,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 > **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
 
 - [x] **💻🤖✓** Chargement soumissions pending
-- [ ] **💻** Filtres event / spot / tool *(UI présente — retest build 49)*
+- [ ] **💻** Filtres event / spot / tool *(27 sept. · **SANS53-B2-WEB FAIL** · onglets ne filtrent pas retraits · fix PR DemandesPage · retest après deploy)*
 - [x] **💻** **Valider** → publié mobile *(build 48 · 22 sept.)*
 - [ ] **💻** **Valider** spot → visible app · notif partenaire *(reprise build 49)*
 - [ ] **💻** **Valider** événement (intervenant sans titre) → Agenda
@@ -954,7 +954,7 @@ Liens Param. → pages satellites :
 - [x] **💻** **Planifier** campagne *(26 sept. 2026 · testeur **PASS** · W-12)*
 - [x] **💻** Modifier campagne planifiée · **Détails** *(26 sept. · **PASS** · W-13)*
 - [x] **💻** **Annuler** planifiée · **Supprimer** *(26 sept. · **PASS**)*
-- [ ] **⏳** Pas de doublon push (1 campagne = 1 notif)
+- [x] **⏳** Pas de doublon push (1 campagne = 1 notif) *(27 sept. · **SANS53-C1-C PASS** · 1 notif / compte)*
 
 > Détail : `07-Smoke-Push.md`
 
@@ -1020,8 +1020,8 @@ Liens Param. → pages satellites :
 | Scénario | 📱 | 🤖 |
 |----------|----|----|
 | Campagne immédiate Membres → membre reçoit inbox + 1 push OS | [x] *(27 sept. · parité 🤖 **26 sept.** · ne pas refaire)* | [x] *(26 sept. soir · testeur **PASS** · 💻 envoi + 🤖 réception · **sans boucle**)* |
-| Ciblage membre seul → Prime **ne reçoit pas** | [ ] | [ ] |
-| Campagne planifiée Prime → **⏳** Prime reçoit | [ ] | [ ] |
+| Ciblage membre seul → Prime **ne reçoit pas** | [x] *(27 sept. · **SANS53-C1-A PASS**)* | [x] *(27 sept. · testeur Prime ne reçoit pas)* |
+| Campagne planifiée Prime → **⏳** Prime reçoit | [x] *(27 sept. · **SANS53-C1-B PASS** · 1×)* | [x] *(27 sept. · idem)* |
 | Annulation planifiée → pas d’envoi | [x] *(27 sept. · parité **W-13** 💻 · ne pas refaire)* | [x] *(26 sept. · **W-13** 💻)* |
 | Soumission partenaire → admin push + inbox | [x] *(27 sept. · attestation · flux modération)* | [x] *(27 sept. · idem)* |
 | Tirage gagnant → « Nouveau privilège » | [x] *(27 sept. · parité 💻)* | [x] *(27 sept. · idem)* |
@@ -1040,7 +1040,7 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026)*
 - [x] **📱** Lien e-mail → page **auth-callback** (choix app / web) *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · même UX que iOS)*
-- [ ] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(retest iOS build 51+)*
+- [x] **📱** Bouton « Ouvrir l’application » → **set_password in-app** *(27 sept. · **SANS53-M1-U2 PASS**)*
 - [x] **🤖** Idem *(27 sept. 2026 · **PASS** · build 51 · M1-U2)*
 - [x] **💻** Invitation admin-web → activation · bon rôle *(23 sept. 2026 · **PASS** mail + **PASS** activate in-app · rôle membre · prénom défaut selon rôle après migration `20260939`)*
 - [x] **📱** Partenaire invité → connexion → Espace Pro *(27 sept. · **PASS parité** · invite 💻 B4 **23 sept.** · activate in-app **A1** · pipeline auth identique)*
@@ -1310,6 +1310,12 @@ Mobile (27 sept. 2026 · **session smoke build 51** · testeur · 🤖 Android) 
   - **Build 53** reporté · **Pack session 3** **clôturé** (cochage doc **27 sept.**)
   - **Doc 27 sept. (agent)** : coches attestation testeur — Étoiles · octroi individuel · C1 (hors ciblage/planifiée Prime) · B7 refuse · C2 · Phase 1 · D2 · **363/399 ≈91 %**
   - **Ne pas refaire** : Lot A · M2 · B9 · achat PASS · campagnes déjà PASS
+Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
+  - **PASS SANS53-M1-U2** 📱 : set_password in-app *(déjà OK 🤖)*
+  - **PASS SANS53-C1-A** : campagne Membres · Prime ne reçoit pas
+  - **PASS SANS53-C1-B** : campagne Prime planifiée · **1×** push/inbox
+  - **PASS SANS53-C1-C** : pas de doublon · **1 notif / compte**
+  - **FAIL SANS53-B2-WEB** 💻 : onglets modération Demandes — retraits **non filtrés** par type *(fix admin-web DemandesPage · retest deploy)*
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —

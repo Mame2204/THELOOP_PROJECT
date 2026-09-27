@@ -195,6 +195,16 @@ export function DemandesPage() {
     return permissionedQueue.filter((item) => item.kind === modFilter);
   }, [permissionedQueue, modFilter]);
 
+  const filteredWithdrawals = useMemo(() => {
+    if (modFilter === 'all') return withdrawals;
+    return withdrawals.filter((item) => item.kind === modFilter);
+  }, [withdrawals, modFilter]);
+
+  const modCountByKind = useCallback(
+    (kind: StagingKind) => permissionedQueue.filter((item) => item.kind === kind).length,
+    [permissionedQueue],
+  );
+
   const partnershipPendingCount = useMemo(
     () =>
       partnerships.filter((p) =>
@@ -501,10 +511,50 @@ export function DemandesPage() {
           {modError ? <p className="error-text">{modError}</p> : null}
           {withdrawalError ? <p className="error-text">{withdrawalError}</p> : null}
 
-          {withdrawals.length > 0 ? (
+          <div className="tabs" style={{ marginBottom: 12 }}>
+            <button
+              type="button"
+              className={`tab ${modFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setModFilter('all')}
+            >
+              Tous ({permissionedQueue.length + withdrawals.length})
+            </button>
+            {canModEvents ? (
+              <button
+                type="button"
+                className={`tab ${modFilter === 'event' ? 'active' : ''}`}
+                onClick={() => setModFilter('event')}
+              >
+                Événements ({modCountByKind('event') + withdrawals.filter((w) => w.kind === 'event').length})
+              </button>
+            ) : null}
+            {canModSpots ? (
+              <button
+                type="button"
+                className={`tab ${modFilter === 'spot' ? 'active' : ''}`}
+                onClick={() => setModFilter('spot')}
+              >
+                Spots ({modCountByKind('spot') + withdrawals.filter((w) => w.kind === 'spot').length})
+              </button>
+            ) : null}
+            {canModTools ? (
+              <button
+                type="button"
+                className={`tab ${modFilter === 'tool' ? 'active' : ''}`}
+                onClick={() => setModFilter('tool')}
+              >
+                Outils ({modCountByKind('tool') + withdrawals.filter((w) => w.kind === 'tool').length})
+              </button>
+            ) : null}
+          </div>
+          <p className="meta" style={{ margin: '0 0 12px' }}>
+            Filtre par type (onglets) — staging en attente et demandes de retrait.
+          </p>
+
+          {filteredWithdrawals.length > 0 ? (
             <div className="card-stack" style={{ marginBottom: 16 }}>
-              <h3 style={{ margin: '0 0 8px' }}>Demandes de retrait ({withdrawals.length})</h3>
-              {withdrawals.map((item) => (
+              <h3 style={{ margin: '0 0 8px' }}>Demandes de retrait ({filteredWithdrawals.length})</h3>
+              {filteredWithdrawals.map((item) => (
                 <article
                   key={`w-${item.kind}-${item.localId}`}
                   className="card"
@@ -549,43 +599,6 @@ export function DemandesPage() {
               ))}
             </div>
           ) : null}
-
-          <div className="tabs" style={{ marginBottom: 12 }}>
-            <button
-              type="button"
-              className={`tab ${modFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setModFilter('all')}
-            >
-              Tous ({permissionedQueue.length})
-            </button>
-            {canModEvents ? (
-              <button
-                type="button"
-                className={`tab ${modFilter === 'event' ? 'active' : ''}`}
-                onClick={() => setModFilter('event')}
-              >
-                Événements
-              </button>
-            ) : null}
-            {canModSpots ? (
-              <button
-                type="button"
-                className={`tab ${modFilter === 'spot' ? 'active' : ''}`}
-                onClick={() => setModFilter('spot')}
-              >
-                Spots
-              </button>
-            ) : null}
-            {canModTools ? (
-              <button
-                type="button"
-                className={`tab ${modFilter === 'tool' ? 'active' : ''}`}
-                onClick={() => setModFilter('tool')}
-              >
-                Outils
-              </button>
-            ) : null}
-          </div>
 
           <div className="split-pane form-list-stack detail-on-top">
             <div className="table-wrap">
