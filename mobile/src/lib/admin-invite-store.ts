@@ -2,8 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { canonicalPhone, phonesEqual } from '@/lib/phone-canonical';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { inferCountryCodeFromPhone } from '@/lib/otp-auth';
-import { buildAuthLoginEmailCandidates } from '@/lib/auth-login';
-import { DEV_MEMBER_PASSWORD } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { asDbUpdate, callRpc } from '@/lib/supabase-types';
 import { upsertRegistryUser } from '@/lib/user-registry-store';
@@ -800,10 +798,9 @@ export async function requestAdminPasswordReset(
   return { ok: true };
 }
 
-/** Après OTP validé — tente mise à jour Supabase Auth (comptes dev Loop1234!). */
+/** Après OTP validé : renvoie un lien de réinitialisation sur l'e-mail du compte (aucun mot de passe partagé). */
 export async function applyPasswordResetAfterOtp(
   phone: string,
-  newPassword: string,
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: true };
@@ -817,22 +814,6 @@ export async function applyPasswordResetAfterOtp(
   if (error) return { ok: false, error: error.message };
   if (!userRow?.email) return { ok: false, error: 'Compte introuvable' };
 
-  const loginEmails = buildAuthLoginEmailCandidates(userRow.email, phoneNumber);
-  const candidates = [DEV_MEMBER_PASSWORD, 'Loop1234!'];
-  for (const authEmail of loginEmails) {
-    for (const candidate of candidates) {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: authEmail,
-        password: candidate,
-      });
-      if (!signInError && data.session) {
-        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-        await supabase.auth.signOut();
-        if (updateError) return { ok: false, error: updateError.message };
-        return { ok: true };
-      }
-    }
-  }
   const { getAuthMemberFacingRedirectUrl } = await import('@/lib/auth-redirect');
   await supabase.auth.resetPasswordForEmail(userRow.email, {
     redirectTo: getAuthMemberFacingRedirectUrl(),

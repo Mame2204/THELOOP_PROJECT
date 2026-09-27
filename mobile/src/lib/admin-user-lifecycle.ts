@@ -147,6 +147,12 @@ export async function setUserAccountStatus(
         const links = await countLinks(userId);
         return { ok: false, error: 'Compte rattaché à du contenu — archivez-le.', links };
       }
+      if (error.message.includes('FORBIDDEN_SELF')) {
+        return { ok: false, error: 'Vous ne pouvez pas supprimer votre propre compte.' };
+      }
+      if (error.message.includes('FORBIDDEN_ADMIN')) {
+        return { ok: false, error: 'Seul un super admin peut supprimer un administrateur.' };
+      }
       return { ok: false, error: error.message };
     }
     if (data === false) {

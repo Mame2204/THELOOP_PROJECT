@@ -46,7 +46,7 @@ import type { DbUser, MemberSignUpInput } from '@/types/user-db';
 
 import { PASSWORD_HASH_AUTH_PLACEHOLDER, USER_BASE_COLUMNS, USER_PUBLIC_COLUMNS } from '@/types/user-db';
 
-import { DEV_MEMBER_PASSWORD, isPhoneIdentifier, normalizePhone, syntheticEmailFromPhone } from '@/lib/otp-auth';
+import { isPhoneIdentifier, normalizePhone, syntheticEmailFromPhone } from '@/lib/otp-auth';
 import {
   buildAuthLoginEmailCandidates,
   resolveAuthLoginEmailCandidates,
@@ -1194,95 +1194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-    let email = identifier.includes('@')
+    throw new Error('Connexion par code désactivée. Utilisez votre e-mail et votre mot de passe.');
 
-      ? identifier.trim().toLowerCase()
-
-      : syntheticEmailFromPhone(normalizePhone(identifier));
-
-
-
-    if (isPhoneIdentifier(identifier)) {
-
-      const phone = normalizePhone(identifier);
-
-      const { data: userRow } = await supabase
-
-        .from('users')
-
-        .select('email, is_active, account_status')
-
-        .eq('phone_number', phone)
-
-        .maybeSingle();
-
-      if (!userRow?.email) {
-        throw new Error('Compte introuvable. Créez un compte d\'abord.');
-      }
-
-      const access = resolveAccountAccessStatus(userRow);
-      if (!isAccountAccessAllowedForSession(access)) {
-        throw new Error(accountLoginBlockedMessage(access));
-      }
-
-      const candidates = buildAuthLoginEmailCandidates(userRow.email, phone);
-      signInFlightRef.current += 1;
-      try {
-        let lastError: Error | null = null;
-        for (const candidate of candidates) {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: candidate,
-            password: DEV_MEMBER_PASSWORD,
-          });
-          if (!error && data.user) {
-            await completeAuthenticatedSignIn(data.user);
-            return;
-          }
-          lastError = error ?? new Error('Connexion impossible.');
-        }
-        if (lastError?.message.toLowerCase().includes('invalid') || lastError?.message.toLowerCase().includes('credentials')) {
-          throw new Error('Compte inconnu. Créez un compte d\'abord.');
-        }
-        throw lastError ?? new Error('Compte inconnu. Créez un compte d\'abord.');
-      } finally {
-        signInFlightRef.current = Math.max(0, signInFlightRef.current - 1);
-      }
-    }
-
-    signInFlightRef.current += 1;
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: DEV_MEMBER_PASSWORD,
-      });
-
-      if (error) {
-        if (error.message.toLowerCase().includes('invalid') || error.message.toLowerCase().includes('credentials')) {
-          throw new Error('Compte inconnu. Créez un compte d\'abord.');
-        }
-        throw error;
-      }
-
-      if (data.user) {
-        const { data: statusRow } = await supabase
-          .from('users')
-          .select('is_active, account_status')
-          .eq('id', data.user.id)
-          .maybeSingle();
-        const access = statusRow
-          ? resolveAccountAccessStatus(statusRow)
-          : 'deleted';
-        if (!isAccountAccessAllowedForSession(access)) {
-          await supabase.auth.signOut();
-          throw new Error(accountLoginBlockedMessage(access));
-        }
-        await applySession({ user: data.user });
-      }
-    } finally {
-      signInFlightRef.current = Math.max(0, signInFlightRef.current - 1);
-    }
-
-  }, [setDemoUser, applySession, completeAuthenticatedSignIn]);
+  }, [setDemoUser]);
 
 
 
@@ -1607,7 +1521,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const resetPasswordWithOtp = useCallback(async (phone: string, otp: string, newPassword: string) => {
+  const resetPasswordWithOtp = useCallback(async (phone: string, otp: string) => {
+    if (supabase) {
+      throw new Error('Réinitialisation par code désactivée. Utilisez « Mot de passe oublié » avec votre e-mail.');
+    }
     if (!isValidOtp(otp)) {
       throw new Error('Code OTP incorrect.');
     }
@@ -1615,7 +1532,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!pending) {
       throw new Error('Code expiré ou demande introuvable. Relancez « Mot de passe oublié » pour recevoir un nouveau OTP.');
     }
-    const res = await applyPasswordResetAfterOtp(phone, newPassword);
+    const res = await applyPasswordResetAfterOtp(phone);
     if (!res.ok) {
       throw new Error(res.error ?? 'Réinitialisation impossible.');
     }
