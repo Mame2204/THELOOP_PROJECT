@@ -48,7 +48,7 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **Voir métriques § ci-dessous** *(recalcul **27 sept.** post-cochage attestation testeur)* |
 | **Admin-web 💻 (hors build 49)** | **≈96 %** lignes checklist · reste modération retraits 💻 · doublon push ⏳ · migration 39 opt. |
-| **Prochain test** | **Bloc sans build 53** *(ci-dessous)* · binaire **🤖 51** / **📱 48+** / **💻** |
+| **Prochain test** | **Bloc B → C → D** sans build 53 *(A modération 💻 **PASS**)* |
 | **⏸ Build 53 seulement** | *A1 activate* — prénom/nom · **CGU** · **DOB** (PR **#64**) — **ne pas mélanger** avec le bloc courant |
 | **Binaire actif** | **🤖 Android 51** (Play test interne) · **build 53** en attente EAS · migrations invite **49+50** OK |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
@@ -239,10 +239,10 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **Build 53 uniquement** | Activate identité · CGU · DOB | **Hors** bloc sans 53 |
 | **📱 iOS** | M1-U2 set_password in-app | **SANS53-M1-U2** |
 | **C1 push** | Ciblage Membres→Prime · Prime planifiée device | **SANS53-C1-A/B** |
-| **💻 Modération** | Filtres · valider spot/event · retraits web | **SANS53-B2-*** |
+| ~~**💻 Modération**~~ | ~~B2 SANS53~~ | **PASS 27 sept.** |
 | **A5 mobile** | Octroi manuel PASS (A5-U23) | **SANS53-A5-U23** |
 | **Mobile P2** | Suggestions · CreateUser · Waitlist · Featured · hub THE LOOP | **SANS53-P2-ADMIN** |
-| **Retraits** | Notif approve/refuse retrait 📱🤖 | **SANS53-B2-RETRAIT** |
+| **Retraits** | Notif approve/refuse retrait 📱🤖 *(optionnel)* | P2 si besoin |
 | **C3/C4** | mailto · filleul +1 | **SANS53-C3/C4** |
 | **Auth web** | Page recovery HTML (Storage text/plain) | **SANS53-AUTH-HTML** |
 | **Infra opt.** | Migration `20260939` · ⏳ doublon push | hors session device |
@@ -884,14 +884,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 > **Types** : sous-onglets **Tous · Événements · Spots · Outils** + badge Type dans le tableau (liste « Tous » = les 3 types mélangés, c’est normal).
 
 - [x] **💻🤖✓** Chargement soumissions pending
-- [ ] **💻** Filtres event / spot / tool *(27 sept. · **SANS53-B2-WEB FAIL** · onglets ne filtrent pas retraits · fix PR DemandesPage · retest après deploy)*
+- [x] **💻** Filtres event / spot / tool *(27 sept. · **SANS53-B2-WEB PASS** · deploy DemandesPage · détail se ferme au changement d’onglet)*
 - [x] **💻** **Valider** → publié mobile *(build 48 · 22 sept.)*
-- [ ] **💻** **Valider** spot → visible app · notif partenaire *(reprise build 49)*
-- [ ] **💻** **Valider** événement (intervenant sans titre) → Agenda
+- [x] **💻** **Valider** spot → visible app · notif partenaire *(27 sept. · **SANS53-B2 PASS** · approuver/refuser testeur)*
+- [x] **💻** **Valider** événement (intervenant sans titre) → Agenda *(27 sept. · idem session modération 💻)*
 - [x] **💻** **Refuser** + motif → absent catalogue *(26 sept. soir · **PASS** métier · resoumission OK · **notif partenaire = boucle → 49**)*
-- [ ] **💻** Section **Demandes de retrait** — liste pending
-- [ ] **💻** **Approuver retrait** → disparaît app (Phase 1)
-- [ ] **💻** **Refuser retrait** → reste publié
+- [x] **💻** Section **Demandes de retrait** — liste pending *(27 sept. · **SANS53-B2-RETRAIT PASS** · testeur)*
+- [x] **💻** **Approuver retrait** → disparaît app (Phase 1) *(27 sept. · idem)*
+- [x] **💻** **Refuser retrait** → reste publié *(27 sept. · idem)*
 
 ### Onglet Idées
 - [x] **💻🤖✓** Chargement suggestions *(24 sept. 2026 · 2 pending visibles après clic onglet · compte dans badge menu)*
@@ -1315,7 +1315,7 @@ Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
   - **PASS SANS53-C1-A** : campagne Membres · Prime ne reçoit pas
   - **PASS SANS53-C1-B** : campagne Prime planifiée · **1×** push/inbox
   - **PASS SANS53-C1-C** : pas de doublon · **1 notif / compte**
-  - **FAIL SANS53-B2-WEB** 💻 : onglets modération Demandes — retraits **non filtrés** · **détail staging restait ouvert** en changeant d’onglet *(fix DemandesPage · deploy · retest)*
+  - **PASS SANS53-B2-WEB** + **B2-RETRAIT** 💻 *(27 sept. · modération approuver/refuser · filtres OK post-deploy · ne pas refaire)*
 
 Phase 1 retests (7)     : PASS / FAIL —
 Partie A Mobile         : PASS / FAIL —
