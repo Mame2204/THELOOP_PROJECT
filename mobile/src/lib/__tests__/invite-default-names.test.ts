@@ -13,4 +13,21 @@ describe('invite-default-names', () => {
     expect(defaultInviteFirstName('member')).toBe('Membre');
     expect(defaultInviteFirstName(undefined)).toBe('Membre');
   });
+
+  it('priorité activation : saisie membre > invite admin > défaut', () => {
+    expect(
+      resolveInviteDisplayName({
+        firstName: 'Aïssata',
+        lastName: 'Camara',
+        userRole: 'member',
+      }),
+    ).toEqual({ firstName: 'Aïssata', lastName: 'Camara' });
+    expect(
+      resolveInviteDisplayName({
+        firstName: 'Vrai',
+        lastName: 'Nom',
+        userRole: 'member',
+      }),
+    ).toEqual({ firstName: 'Vrai', lastName: 'Nom' });
+  });
 });

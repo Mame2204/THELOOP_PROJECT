@@ -521,8 +521,8 @@ export function AuthScreen({ navigation, route }: Props) {
           ? normalizeInternationalPhone(phone, phoneDialCode)
           : null;
         const displayName = resolveInviteDisplayName({
-          firstName: invite.firstName ?? (firstName.trim() || null),
-          lastName: invite.lastName ?? (lastName.trim() || null),
+          firstName: firstName.trim() || invite.firstName || null,
+          lastName: lastName.trim() || invite.lastName || null,
           userRole: invite.userRole,
         });
         await signUpMember({
@@ -530,6 +530,7 @@ export function AuthScreen({ navigation, route }: Props) {
           password: signupPassword,
           firstName: displayName.firstName,
           lastName: displayName.lastName,
+          birthDate: birthDate.trim() || null,
           phoneNumber: normalizedPhone,
           countryCode: invite.countryCode ?? accountCountry,
           phoneDialCode,
