@@ -214,7 +214,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Libellé | Décompte | Rôle |
 |---------|----------|------|
-| **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **363 / 399 ≈ 91 %** *(grep **27 sept.** post-attestation testeur)*. |
+| **399 · checklists markdown** | Chaque ligne `- [ ]` / `- [x]` (Parties A–D, packs mobile, B5, etc.) | **Référence honnête** — **~375 / 399 ≈ 94 %** *(27 sept. · + transitifs P2)*. |
 | **531 · toutes cases `[ ]` / `[x]`** | Inclut **tableaux** (Phase 1, C1 push, inventaire routes, etc.) | **479 / 531 ≈ 90 %** *(27 sept.)*. |
 | **« 378 / 299 » (ancien pilotage)** | Estimation **manuelle** « cas QA prioritaires go-live », pas un grep automatique | **Obsolète** — remplacé par **388**. **Ce n’était pas un bug build 49.** |
 
@@ -228,7 +228,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **📱 iPhone** | **129** | **144** | **90 %** | **10 %** | Lignes `- [x]` avec **📱** (hors double puce) |
 | **🤖 Android** | **109** | **121** | **90 %** | **10 %** | Lignes **🤖** seules · **D1 build 51 OK** |
 | **📱🤖 (double puce)** | **28** | **29** | **97 %** | **3 %** | Reste **activate identité/CGU** (build 53) |
-| **Global checklist** | **363** | **399** | **≈91 %** | **≈9 %** | Référence honnête du fichier |
+| **Global checklist** | **~375** | **399** | **≈94 %** | **≈6 %** | + coches transitives P2 **27 sept.** |
 
 **Toutes cases (tableaux inclus)** : **479 / 531 ≈ 90 %** — Phase 1 et C1 largement cochés **27 sept.** (attestation + parité journal).
 
