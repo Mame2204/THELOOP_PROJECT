@@ -48,8 +48,8 @@ Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1
 |---------|--------|
 | **Avancement smoke** | **337 / 394** ≈ **86 %** global *(recalcul grep 26 sept. soir · cochage aligné journal testeur)* · **💻 hors build 49 ≈100 %** |
 | **Admin-web 💻 (hors build 49)** | **≈100 %** — **B9** complet **26 sept.** · reste **modération build 49+** (refus · retraits · notifs) |
-| **Prochain test** | **Pack session 2 · build 52** — voir tableau ci-dessous *(1 device 🤖 ou 📱)* |
-| **Binaire actif** | **Android 52** *(à publier Play test interne)* · iOS **52** · **51** encore OK pour smoke déjà PASS |
+| **Prochain test** | **Build 53** — **A1 activate** (identité + CGU + DOB) · puis **M2 Étoiles** *(1 device 🤖)* |
+| **Binaire actif** | **Android 53** *(EAS en attente)* · **51** OK smoke passé · Supabase invite **20260949** + **20260950** OK testeur |
 | **Bloqué avant 51** | ~~D1 🤖 cold start~~ · ~~crash logo 49~~ · M1-U2 / notifs modération = **retest 51+** |
 | **Doc smoke** | **`DocumentationsTheLoop/10-Smoke-Exhaustif-Build48.md`** (build 48+) — pas une « version app », checklist QA |
 | **Compte** | `admin@theloop.gn` (web) · membre perso achat PASS |
