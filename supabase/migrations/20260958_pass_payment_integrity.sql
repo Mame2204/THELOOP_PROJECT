@@ -24,6 +24,8 @@
 --      (table en lecture seule pour les membres).
 --      local_id est désormais toujours renseigné (= id à défaut) : l'app s'en
 --      sert pour retrouver la ligne lors du gel de rôle.
+--   4. Tâche d'expiration : le message n'invite à racheter un PASS que si
+--      l'achat est ouvert.
 --
 -- Relançable. À appliquer après 20260956 et 20260957, puis redéployer le
 -- serveur de paiement (il appelle fulfill_payment_intent).
@@ -430,3 +432,156 @@ CREATE TRIGGER trg_user_pass_grants_guard_self
   BEFORE INSERT OR UPDATE ON public.user_pass_grants
   FOR EACH ROW
   EXECUTE FUNCTION public.tg_user_pass_grants_guard_self();
+
+-- -----------------------------------------------------------------------------
+-- 4. Tâche d'expiration : pas d'invitation à racheter quand la vente est fermée
+-- -----------------------------------------------------------------------------
+-- Corps identique à 20260933, seul le message d'expiration dépend de
+-- l'interrupteur « Achat PASS » (app_settings.app_gates.passPurchaseEnabled).
+
+CREATE OR REPLACE FUNCTION public.expire_due_pass_grants_internal(p_limit INTEGER DEFAULT 500)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_now TIMESTAMPTZ := NOW();
+  v_expired INTEGER := 0;
+  v_activated INTEGER := 0;
+  v_demoted INTEGER := 0;
+  v_expired_users UUID[] := ARRAY[]::UUID[];
+  v_notified_users UUID[] := ARRAY[]::UUID[];
+  r RECORD;
+  v_purchase_open BOOLEAN := COALESCE((
+    SELECT (s.value ->> 'passPurchaseEnabled')::BOOLEAN
+    FROM public.app_settings s
+    WHERE s.key = 'app_gates' AND jsonb_typeof(s.value) = 'object'
+  ), FALSE);
+BEGIN
+  -- 1. Échéances dépassées ---------------------------------------------------
+  WITH due AS (
+    SELECT g.id
+    FROM public.user_pass_grants g
+    WHERE g.status IN ('active', 'suspended')
+      AND g.expires_at IS NOT NULL
+      AND g.expires_at <= v_now
+      AND NOT public.pass_grant_never_expires(
+        g.pass_kind, g.label, g.payment_method, g.amount_gnf,
+        g.frozen_pass_snapshot, g.pass_catalog_id, g.granted_by
+      )
+    ORDER BY g.expires_at
+    LIMIT p_limit
+  ),
+  updated AS (
+    UPDATE public.user_pass_grants g
+    SET status = 'expired', updated_at = v_now
+    FROM due
+    WHERE g.id = due.id
+    RETURNING g.user_id
+  )
+  SELECT COUNT(*)::INTEGER, COALESCE(ARRAY_AGG(DISTINCT user_id), ARRAY[]::UUID[])
+  INTO v_expired, v_expired_users
+  FROM updated;
+
+  -- 2. Démarrage du PASS suivant dans la file --------------------------------
+  FOR r IN
+    SELECT DISTINCT ON (p.user_id)
+      p.id,
+      p.user_id,
+      COALESCE(NULLIF(trim(p.billing_period), ''), 'monthly') AS period
+    FROM public.user_pass_grants p
+    WHERE p.status = 'pending'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.user_pass_grants h
+        WHERE h.user_id = p.user_id
+          AND h.status IN ('active', 'suspended')
+          AND (h.expires_at IS NULL OR h.expires_at > v_now)
+      )
+    ORDER BY p.user_id, COALESCE(p.paid_at, p.started_at)
+    LIMIT p_limit
+  LOOP
+    UPDATE public.user_pass_grants g
+    SET status = 'active',
+        started_at = v_now,
+        expires_at = CASE r.period
+          WHEN 'monthly' THEN v_now + INTERVAL '1 month'
+          WHEN 'quarterly' THEN v_now + INTERVAL '3 months'
+          WHEN 'annual' THEN v_now + INTERVAL '1 year'
+          WHEN 'lifetime' THEN NULL
+          ELSE v_now + INTERVAL '1 month'
+        END,
+        scheduled_start_at = NULL,
+        pass_kind = CASE WHEN g.pass_kind = 'intermediate' THEN 'standard' ELSE g.pass_kind END,
+        updated_at = v_now
+    WHERE g.id = r.id;
+
+    v_activated := v_activated + 1;
+  END LOOP;
+
+  -- 3. Retour au rôle « member » quand plus aucun PASS n'est actif -----------
+  WITH demoted AS (
+    UPDATE public.users u
+    SET user_role = 'member', updated_at = v_now
+    WHERE u.user_role = 'prime'
+      AND EXISTS (
+        SELECT 1 FROM public.user_pass_grants g WHERE g.user_id = u.id
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.user_pass_grants g
+        WHERE g.user_id = u.id
+          AND g.status = 'active'
+          AND (g.expires_at IS NULL OR g.expires_at > v_now)
+      )
+    RETURNING u.id
+  )
+  SELECT COUNT(*)::INTEGER INTO v_demoted FROM demoted;
+
+  -- 4. Information du membre --------------------------------------------------
+  WITH concerned AS (
+    SELECT DISTINCT e.id
+    FROM unnest(v_expired_users) AS e(id)
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM public.user_pass_grants g
+      WHERE g.user_id = e.id
+        AND g.status = 'active'
+        AND (g.expires_at IS NULL OR g.expires_at > v_now)
+    )
+  ),
+  inserted AS (
+    INSERT INTO public.user_notifications (user_id, title, message, audience, sent_at)
+    SELECT
+      c.id,
+      'Votre PASS Loop Prime a expiré',
+      CASE WHEN v_purchase_open THEN
+        'Votre abonnement est arrivé à échéance. Renouvelez-le depuis l''onglet '
+          || 'Abonnement pour retrouver l''accès aux contenus et avantages Loop Prime.'
+      ELSE
+        'Votre PASS est arrivé à échéance : les contenus et avantages Loop Prime '
+          || 'ne sont plus accessibles sur votre compte.'
+      END,
+      'individual',
+      v_now
+    FROM concerned c
+    RETURNING user_id
+  )
+  SELECT COALESCE(ARRAY_AGG(user_id), ARRAY[]::UUID[])
+  INTO v_notified_users
+  FROM inserted;
+
+  RETURN jsonb_build_object(
+    'ranAt', v_now,
+    'expiredGrants', v_expired,
+    'activatedGrants', v_activated,
+    'demotedUsers', v_demoted,
+    'notifiedUsers', COALESCE(array_length(v_notified_users, 1), 0),
+    'notifiedUserIds', to_jsonb(v_notified_users)
+  );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.expire_due_pass_grants_internal(INTEGER) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.expire_due_pass_grants_internal(INTEGER) FROM anon, authenticated, service_role;
