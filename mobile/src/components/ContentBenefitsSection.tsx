@@ -47,7 +47,7 @@ import type { RoleEntitlementKind } from '@/lib/role-benefit-entitlements-store'
 import { resolveStaffAdminEntitlementEntries } from '@/lib/staff-benefit-overrides-store';
 import type { ShellTheme } from '@/lib/member-grade-theme';
 import { resolveCountryCode } from '@/lib/country-settings-keys';
-import { isPassPurchaseUiEnabled } from '@/lib/pass-purchase-ui';
+import { isPassPurchaseUiEnabled, isPrivilegesUiEnabled } from '@/lib/pass-purchase-ui';
 import type { RootStackParamList } from '@/navigation/types';
 import { subscribeHomeRefresh } from '@/lib/home-refresh';
 
@@ -195,7 +195,7 @@ function getLockedPrivilegePresentation(
       title: 'Un privilège réservé aux membres Prime',
       body: passPurchaseEnabled
         ? 'Ce lieu cache une expérience pensée pour ceux qui vivent Conakry autrement. Passez en Loop Prime pour débloquer ce privilège.'
-        : 'Ce privilège est réservé aux membres Loop Prime. L\'abonnement en ligne arrive bientôt.',
+        : 'Ce privilège est réservé aux membres Loop Prime.',
       ctaMode: passPurchaseEnabled ? 'prime' : 'none',
       ctaLabel: 'Passer en Loop Prime',
     };
@@ -250,6 +250,7 @@ export function ContentBenefitsSection({
   const { user, role } = useAuthContext();
   const { gates } = useAppGates();
   const passPurchaseEnabled = isPassPurchaseUiEnabled(gates);
+  const privilegesVisible = isPrivilegesUiEnabled(gates);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { openSignupSheet } = useFavoritesSignup();
   const loggedIn = isAuthenticated(role);
@@ -354,7 +355,7 @@ export function ContentBenefitsSection({
   }, [contentId, contentType, user?.id, user?.countryCode, user?.phoneNumber, user?.email, role]);
 
   useEffect(() => {
-    if (!passPurchaseEnabled) {
+    if (!privilegesVisible) {
       setLines([]);
       setLoading(false);
       return;
@@ -393,20 +394,20 @@ export function ContentBenefitsSection({
     return () => {
       cancelled = true;
     };
-  }, [buildLines, user?.id, passPurchaseEnabled]);
+  }, [buildLines, user?.id, privilegesVisible]);
 
   useEffect(() => {
-    if (!passPurchaseEnabled) return;
+    if (!privilegesVisible) return;
     const unsubHome = subscribeHomeRefresh((reason) => {
       if (reason !== 'benefit-catalog' && reason !== 'benefit-grants') return;
       void buildLines(true).then(setLines).catch(() => undefined);
     });
     return unsubHome;
-  }, [buildLines, passPurchaseEnabled]);
+  }, [buildLines, privilegesVisible]);
 
   // Au retour sur la fiche : cache local (pas de sync remote systématique — egress).
   useEffect(() => {
-    if (!passPurchaseEnabled) return;
+    if (!privilegesVisible) return;
     const unsub = navigation.addListener('focus', () => {
       if (!user || user.id === 'anonymous') {
         void buildLines(false).then(setLines).catch(() => undefined);
@@ -419,7 +420,7 @@ export function ContentBenefitsSection({
       })();
     });
     return unsub;
-  }, [navigation, user?.id, buildLines, passPurchaseEnabled]);
+  }, [navigation, user?.id, buildLines, privilegesVisible]);
 
   function openLine(line: ContentBenefitLine) {
     if (!line.unlocked) {
@@ -428,11 +429,7 @@ export function ContentBenefitsSection({
         openSignupSheet(navigation);
         return;
       }
-      // Compte connecté mais non éligible à ce privilège.
-      if (!passPurchaseEnabled) {
-        Alert.alert('Privilège réservé', 'Ce privilège n’est pas disponible sur votre compte.');
-        return;
-      }
+      // Compte connecté mais non éligible : sans achat PASS, la fiche verrouillée n’a pas de bouton d’achat.
       setModal({ kind: 'locked', line });
       return;
     }
@@ -612,8 +609,8 @@ export function ContentBenefitsSection({
     navigation.navigate('Abonnement');
   }
 
-  // Gate Achat PASS OFF → aucune section privilèges sur fiches Agenda / Spot / Outil.
-  if (!passPurchaseEnabled) return null;
+  // Gate « Privilèges » OFF → aucune section privilèges sur fiches Agenda / Spot / Outil.
+  if (!privilegesVisible) return null;
 
   if (loading) {
     return (
@@ -731,7 +728,7 @@ export function ContentBenefitsSection({
             ) : null}
             <Pressable onPress={() => setModal(null)} style={{ marginTop: 14 }}>
               <Text style={{ color: shell.pageKicker, textAlign: 'center', fontSize: 13 }}>
-                Pas maintenant
+                {lockedPresentation?.ctaMode === 'prime' ? 'Pas maintenant' : 'Fermer'}
               </Text>
             </Pressable>
           </Pressable>

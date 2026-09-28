@@ -116,6 +116,8 @@ export function formatUserDeleteImpact(
       `• ${links.benefitOffers} soumission(s) partenaire`,
       '',
       'Seule l’archivage est possible : le compte deviendra inaccessible.',
+      '',
+      'Anonymiser : archive et efface nom, e-mail, téléphone, favoris et notifications. Le contenu reste publié. Irréversible — à utiliser pour une demande de suppression (automatique si le membre l’a demandée depuis l’app).',
     ].join('\n');
   }
 
@@ -189,4 +191,24 @@ export async function deleteOrArchiveUser(
     return setUserAccountStatus(userId, 'archived', phone);
   }
   return setUserAccountStatus(userId, 'deleted', phone);
+}
+
+/** Super admin : efface l'identité d'un compte archivé (nom, e-mail, téléphone…) et bloque la connexion. */
+export async function anonymizeUser(userId: string, phone?: string | null): Promise<UserLifecycleResult> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { ok: false, error: 'Supabase requis.' };
+  }
+  const { data, error } = await supabase.rpc('admin_anonymize_user', { p_user_id: userId });
+  if (error) {
+    if (error.message.includes('FORBIDDEN_SELF')) {
+      return { ok: false, error: 'Vous ne pouvez pas anonymiser votre propre compte.' };
+    }
+    if (/Could not find the function|schema cache|PGRST202/i.test(error.message)) {
+      return { ok: false, error: 'Migration 20260956 requise sur Supabase.' };
+    }
+    return { ok: false, error: error.message };
+  }
+  if (data === false) return { ok: false, error: 'Compte introuvable.' };
+  if (phone) await setPhoneDeactivated(phone, true);
+  return { ok: true, action: 'archived' };
 }

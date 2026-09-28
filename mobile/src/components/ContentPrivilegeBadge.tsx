@@ -1,4 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useAppGates } from '@/context/AppGatesContext';
+import { isPrivilegesUiEnabled } from '@/lib/pass-purchase-ui';
 import { colors } from '@/theme/colors';
 
 type Props = {
@@ -9,6 +11,9 @@ type Props = {
 
 /** Indique qu’au moins un privilège catalogue actif est lié à ce contenu. */
 export function ContentPrivilegeBadge({ variant = 'overlay', accent = colors.gold }: Props) {
+  const { gates } = useAppGates();
+  if (!isPrivilegesUiEnabled(gates)) return null;
+
   if (variant === 'inline') {
     return (
       <View style={[styles.inline, { backgroundColor: `${accent}22`, borderColor: accent }]}>

@@ -9,6 +9,8 @@ export type PrelaunchMode = 'text' | 'countdown';
 export interface AppGates {
   signupEnabled: boolean;
   passPurchaseEnabled: boolean;
+  /** Privilèges visibles sur les fiches / cartes de l’app (indépendant de l’achat PASS). */
+  privilegesVisible: boolean;
   prelaunch: {
     enabled: boolean;
     mode: PrelaunchMode;
@@ -26,6 +28,7 @@ export interface AppGates {
 export const DEFAULT_APP_GATES: AppGates = {
   signupEnabled: false,
   passPurchaseEnabled: false,
+  privilegesVisible: true,
   prelaunch: {
     enabled: false,
     mode: 'text',
@@ -63,6 +66,7 @@ export function normalizeAppGates(raw: unknown): AppGates {
   return {
     signupEnabled: asBool(row.signupEnabled, DEFAULT_APP_GATES.signupEnabled),
     passPurchaseEnabled: asBool(row.passPurchaseEnabled, DEFAULT_APP_GATES.passPurchaseEnabled),
+    privilegesVisible: asBool(row.privilegesVisible, DEFAULT_APP_GATES.privilegesVisible),
     prelaunch: {
       enabled: asBool(pre.enabled, DEFAULT_APP_GATES.prelaunch.enabled),
       mode: pre.mode === 'countdown' ? 'countdown' : 'text',
