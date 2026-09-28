@@ -133,6 +133,7 @@ Le fichier `mobile/google-services.json` est inclus dans l'app : sa clé API est
 | L1 | App : Inscription → lien CGU / Politique de confidentialité | Nouveaux textes (e-mail + mot de passe, Fermer mon compte) |
 | L2 | Site : /cgu, /privacy, /mentions | Mêmes textes que l'app, date du jour de la migration |
 | L3 | Control Tower → Légal : modifier une phrase de la CGU | Visible sur le site /cgu après rechargement |
+| L5 | Compte connecté : Profil → Paramètres → Informations légales | CGU, Politique de confidentialité et Mentions légales s'ouvrent (texte de la base) |
 | L4 | Membre gratuit : fiche avec privilège Prime | « Ce privilège est réservé aux membres Loop Prime. », sans bouton d'achat |
 | P1 | Achat PASS **coupé**, Privilèges **Visible** : Prime ouvre une fiche avec privilège | Section « Privilèges » affichée ; le privilège s'utilise normalement |
 | P2 | Même réglage : membre gratuit sur la même fiche | Fiche verrouillée, bouton « Fermer », aucun prix ni bouton d'achat |
