@@ -5,9 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FormTextInput } from '@/components/FormTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { useAuthContext } from '@/context/AuthContext';
-import { useViewingCountry } from '@/context/ViewingCountryContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
-import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { formatDateFr } from '@/lib/date-utils';
 import { getProfileAccent } from '@/lib/profile-accent';
 import { processPassPayment } from '@/lib/pass-payment-service';
@@ -23,7 +21,12 @@ import {
 } from '@/lib/djomy-payment-api';
 import { syncPassAfterDjomyPayment } from '@/lib/pass-purchase-store';
 import * as WebBrowser from 'expo-web-browser';
-import { getPassPrices, passPriceCurrency, type PassPriceMap } from '@/lib/pass-pricing-store';
+import {
+  getPassPrices,
+  PASS_PURCHASE_COUNTRY_CODE,
+  passPriceCurrency,
+  type PassPriceMap,
+} from '@/lib/pass-pricing-store';
 import { getMaxPendingPasses } from '@/lib/pass-shop-settings-store';
 import {
   computeSubscriptionExpiry,
@@ -51,8 +54,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const { purchasePrimePass, role, user, refreshUserSession } = useAuthContext();
   const { gates } = useAppGates();
   const passPurchaseEnabled = isPassPurchaseUiEnabled(gates);
-  const { viewingCountryCode } = useViewingCountry();
-  const priceCountry = (viewingCountryCode ?? user?.countryCode ?? DEFAULT_COUNTRY_CODE) as typeof viewingCountryCode;
+  const priceCountry = PASS_PURCHASE_COUNTRY_CODE;
   const priceCurrency = passPriceCurrency(priceCountry);
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);

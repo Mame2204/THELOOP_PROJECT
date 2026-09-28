@@ -8,7 +8,7 @@ import { useAuthContext } from '@/context/AuthContext';
 import { useViewingCountry } from '@/context/ViewingCountryContext';
 import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
-import { DEFAULT_COUNTRY_CODE, getCountryLabel } from '@/lib/countries';
+import { getCountryLabel } from '@/lib/countries';
 import { formatDateFr } from '@/lib/date-utils';
 import { formatLegalBodyForDisplay } from '@/lib/legal-display';
 import { getLegalContent } from '@/lib/legal-content-store';
@@ -18,7 +18,12 @@ import {
   PASS_INCLUDED_BENEFITS,
   PASS_SHOP_FAQ,
 } from '@/lib/pass-shop-copy';
-import { getPassPrices, passPriceCurrency, type PassPriceMap } from '@/lib/pass-pricing-store';
+import {
+  getPassPrices,
+  PASS_PURCHASE_COUNTRY_CODE,
+  passPriceCurrency,
+  type PassPriceMap,
+} from '@/lib/pass-pricing-store';
 import { listPassCatalog } from '@/lib/pass-catalog-store';
 import {
   isRecommendedPlan,
@@ -64,8 +69,7 @@ export function PrimeScreen({ navigation }: Props) {
   const { gates } = useAppGates();
   const passPurchaseEnabled = isPassPurchaseUiEnabled(gates);
   const { viewingCountryCode, isExploringOtherCountry } = useViewingCountry();
-  const priceCountry = (viewingCountryCode ?? user?.countryCode ?? DEFAULT_COUNTRY_CODE) as typeof viewingCountryCode;
-  const accountCountry = (user?.countryCode ?? DEFAULT_COUNTRY_CODE) as typeof viewingCountryCode;
+  const priceCountry = PASS_PURCHASE_COUNTRY_CODE;
   const priceCurrency = passPriceCurrency(priceCountry);
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);
@@ -291,11 +295,10 @@ export function PrimeScreen({ navigation }: Props) {
             Profitez des privilèges négociés chez nos établissements partenaires.
           </Text>
 
-          {isExploringOtherCountry && accountCountry !== priceCountry ? (
+          {isExploringOtherCountry && viewingCountryCode !== priceCountry ? (
             <View style={[styles.countryHint, { borderColor: shell.tabIndicator, backgroundColor: shell.filterInactiveBg }]}>
               <Text style={[styles.countryHintText, { color: shell.pageKicker }]}>
-                Tarifs affichés pour {getCountryLabel(priceCountry)} ({priceCurrency}).
-                Pays du compte : {getCountryLabel(accountCountry)}.
+                Le PASS s'achète au tarif {getCountryLabel(priceCountry)} ({priceCurrency}), quel que soit le pays que vous explorez.
               </Text>
             </View>
           ) : (
