@@ -15,6 +15,7 @@ import {
   setMaintenanceGate as persistMaintenanceGate,
   setPassPurchaseEnabled as persistPassPurchaseEnabled,
   setPrelaunchGate as persistPrelaunchGate,
+  setPrivilegesVisible as persistPrivilegesVisible,
   setSignupEnabled as persistSignupEnabled,
   type ActiveSystemGate,
   type AppGates,
@@ -31,6 +32,7 @@ interface AppGatesContextValue {
   refreshGates: (force?: boolean) => Promise<void>;
   setSignupEnabled: (enabled: boolean) => Promise<{ synced: boolean; error?: string }>;
   setPassPurchaseEnabled: (enabled: boolean) => Promise<{ synced: boolean; error?: string }>;
+  setPrivilegesVisible: (visible: boolean) => Promise<{ synced: boolean; error?: string }>;
   setPrelaunchGate: (patch: Partial<PrelaunchGateConfig>) => Promise<{ synced: boolean; error?: string }>;
   setMaintenanceGate: (patch: Partial<MaintenanceGateConfig>) => Promise<{ synced: boolean; error?: string }>;
 }
@@ -77,6 +79,13 @@ export function AppGatesProvider({ children }: { children: ReactNode }) {
     return { synced: result.synced, error: result.error };
   }, []);
 
+  const setPrivilegesVisible = useCallback(async (visible: boolean) => {
+    setGates((prev) => ({ ...prev, privilegesVisible: visible }));
+    const result = await persistPrivilegesVisible(visible);
+    setGates(result.gates);
+    return { synced: result.synced, error: result.error };
+  }, []);
+
   const setPrelaunchGate = useCallback(async (patch: Partial<PrelaunchGateConfig>) => {
     setGates((prev) => ({
       ...prev,
@@ -109,6 +118,7 @@ export function AppGatesProvider({ children }: { children: ReactNode }) {
       refreshGates,
       setSignupEnabled,
       setPassPurchaseEnabled,
+      setPrivilegesVisible,
       setPrelaunchGate,
       setMaintenanceGate,
     }),
@@ -121,6 +131,7 @@ export function AppGatesProvider({ children }: { children: ReactNode }) {
       refreshGates,
       setSignupEnabled,
       setPassPurchaseEnabled,
+      setPrivilegesVisible,
       setPrelaunchGate,
       setMaintenanceGate,
     ],
@@ -141,6 +152,7 @@ export function useAppGates(): AppGatesContextValue {
       refreshGates: async () => {},
       setSignupEnabled: async () => ({ synced: true }),
       setPassPurchaseEnabled: async () => ({ synced: true }),
+      setPrivilegesVisible: async () => ({ synced: true }),
       setPrelaunchGate: async () => ({ synced: true }),
       setMaintenanceGate: async () => ({ synced: true }),
     };

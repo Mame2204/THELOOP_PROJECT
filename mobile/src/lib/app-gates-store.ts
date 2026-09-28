@@ -22,6 +22,8 @@ export interface AppGates {
   signupEnabled: boolean;
   /** Achat PASS / Djomy visible dans l’app. OFF par défaut — activable sans rebuild. */
   passPurchaseEnabled: boolean;
+  /** Privilèges visibles sur les fiches et cartes (indépendant de l’achat PASS). ON par défaut. */
+  privilegesVisible: boolean;
   prelaunch: PrelaunchGateConfig;
   maintenance: MaintenanceGateConfig;
 }
@@ -33,6 +35,7 @@ export const DEFAULT_APP_GATES: AppGates = {
   /** Invite-only par défaut (lancement public / Dec). Activer via super admin si besoin. */
   signupEnabled: false,
   passPurchaseEnabled: false,
+  privilegesVisible: true,
   prelaunch: {
     enabled: false,
     mode: 'text',
@@ -72,6 +75,7 @@ export function normalizeAppGates(raw: unknown): AppGates {
   return {
     signupEnabled: asBool(row.signupEnabled, DEFAULT_APP_GATES.signupEnabled),
     passPurchaseEnabled: asBool(row.passPurchaseEnabled, DEFAULT_APP_GATES.passPurchaseEnabled),
+    privilegesVisible: asBool(row.privilegesVisible, DEFAULT_APP_GATES.privilegesVisible),
     prelaunch: {
       enabled: asBool(pre.enabled, DEFAULT_APP_GATES.prelaunch.enabled),
       mode,
@@ -181,6 +185,15 @@ export async function setPassPurchaseEnabled(enabled: boolean): Promise<{
 }> {
   const current = await getAppGates();
   return commitGates({ ...current, passPurchaseEnabled: enabled });
+}
+
+export async function setPrivilegesVisible(visible: boolean): Promise<{
+  gates: AppGates;
+  synced: boolean;
+  error?: string;
+}> {
+  const current = await getAppGates();
+  return commitGates({ ...current, privilegesVisible: visible });
 }
 
 export async function setPrelaunchGate(

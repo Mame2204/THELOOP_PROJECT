@@ -40,6 +40,7 @@ import { subscribeHomeRefresh } from '@/lib/home-refresh';
 import { listLoopWalks, type LoopWalk } from '@/lib/loop-walks-store';
 import { filterPublicWalks } from '@/lib/walk-public-visibility';
 import { countUserActiveBenefits } from '@/lib/prime-benefits-store';
+import { isPrivilegesUiEnabled } from '@/lib/pass-purchase-ui';
 import { filterEventsByQuery, filterLocationsByQuery } from '@/lib/search-utils';
 import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
 import { isAuthenticated } from '@/types';
@@ -220,15 +221,17 @@ export function AccueilScreen({ navigation }: Props) {
     };
   }, [user?.id, user?.phoneNumber, user?.email, refreshKey]);
 
+  const privilegesVisible = isPrivilegesUiEnabled(gates);
+
   const welcomeSub = useMemo(() => {
-    if (activeBenefits > 0) {
+    if (privilegesVisible && activeBenefits > 0) {
       return activeBenefits === 1
         ? 'Votre privilège vous attend.'
         : `Vos ${activeBenefits} privilèges vous attendent.`;
     }
     const seed = `${user?.id ?? 'guest'}-${new Date().toDateString()}`;
     return pickWelcomeLine(seed);
-  }, [activeBenefits, user?.id]);
+  }, [activeBenefits, privilegesVisible, user?.id]);
 
   const toggleSearch = useCallback(() => {
     setSearchOpen((prev) => {

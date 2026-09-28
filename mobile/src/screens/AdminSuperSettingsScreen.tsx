@@ -142,6 +142,7 @@ export function AdminSuperSettingsScreen({ navigation }: Props) {
     gates,
     setSignupEnabled,
     setPassPurchaseEnabled,
+    setPrivilegesVisible,
     setPrelaunchGate,
     setMaintenanceGate,
   } = useAppGates();
@@ -249,13 +250,32 @@ export function AdminSuperSettingsScreen({ navigation }: Props) {
       <View style={[styles.settingsCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
         <Text style={[styles.settingsLabel, { color: shell.pageTitle }]}>Achat PASS</Text>
         <Text style={[styles.settingsHint, { color: shell.pageKicker }]}>
-          Affiche ou masque l’achat / renouvellement PASS (Djomy) dans l’app. Désactivé = aucun rebuild pour le garder masqué jusqu’au lancement.
+          Affiche ou masque l’achat / renouvellement PASS (Djomy) : écran Prime, prix, paiement et bouton « Passer en Loop Prime ». Les privilèges restent gérés par l’interrupteur « Privilèges ».
         </Text>
         <TogglePill
           value={gates.passPurchaseEnabled}
           onChange={(next) => {
             void (async () => {
               syncWarn(await setPassPurchaseEnabled(next));
+            })();
+          }}
+          activeLabel="Visible"
+          inactiveLabel="Masqué"
+          activeColor={ADMIN_THEME.accent}
+          shell={shell}
+        />
+      </View>
+
+      <View style={[styles.settingsCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
+        <Text style={[styles.settingsLabel, { color: shell.pageTitle }]}>Privilèges</Text>
+        <Text style={[styles.settingsHint, { color: shell.pageKicker }]}>
+          Affiche ou masque les privilèges sur les fiches (Agenda, Spots, Outils) et le badge « 🎁 Privilège » des cartes, que l’achat PASS soit ouvert ou non.
+        </Text>
+        <TogglePill
+          value={gates.privilegesVisible}
+          onChange={(next) => {
+            void (async () => {
+              syncWarn(await setPrivilegesVisible(next));
             })();
           }}
           activeLabel="Visible"
