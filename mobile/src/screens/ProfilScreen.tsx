@@ -283,7 +283,7 @@ export function ProfilScreen({ navigation }: Props) {
             <Text style={[styles.primeKicker, { color: accent.accent }]}>Prime</Text>
             <Text style={[styles.primeTitle, { color: accent.accent }]}>Passez à l'expérience premium</Text>
             <Text style={[styles.primeBody, { color: shell.pageKicker }]} numberOfLines={2} ellipsizeMode="tail">
-              Invitations prioritaires, thème exclusif doré, accès aux meilleurs événements et privilèges membres…
+              Privilèges chez nos partenaires, événements LoopX et invitations prioritaires…
             </Text>
             <Text style={[styles.primeCta, { color: accent.accent }]}>Découvrir Prime →</Text>
           </Pressable>

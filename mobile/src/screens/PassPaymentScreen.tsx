@@ -513,7 +513,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           </Text>
           <Text style={[styles.sandboxBody, { color: djomyReady ? '#047857' : '#78350f' }]}>
             {djomyReady
-              ? `Montants test ≤ 10 000 GNF. Orange Money est indisponible en test — utilisez PayCard, Soutra ou carte.`
+              ? `Montants test ≤ 10 000 GNF. Orange Money est indisponible en test — utilisez PayCard, Soutra ou carte.`
               : 'Paiement simulé localement. Configurez le serveur de paiement pour un parcours réel.'}
           </Text>
         </View>
@@ -535,7 +535,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       </View>
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
-        Vous choisirez Orange Money, Soutra, PayCard ou carte sur le portail de paiement sécurisé.
+        Vous choisirez Orange Money, MTN MoMo, Soutra Money, PayCard ou carte bancaire sur le portail de paiement sécurisé.
       </Text>
 
       <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Numéro de paiement</Text>
