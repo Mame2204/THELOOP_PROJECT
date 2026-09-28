@@ -21,7 +21,9 @@ import {
 import { isAuthenticated, type UserRole } from '@/types';
 import { formatDateDdMmYyyy } from '@/lib/date-utils';
 import {
+  contentHasLinkedActiveBenefit,
   listCatalogBenefitsForContent,
+  listContentIdsWithBenefits,
   mapCatalogIdsToRoles,
   type ContentBenefitContentType,
 } from '@/lib/content-benefits-index';
@@ -49,7 +51,7 @@ import type { ShellTheme } from '@/lib/member-grade-theme';
 import { resolveCountryCode } from '@/lib/country-settings-keys';
 import { isPassPurchaseUiEnabled, isPrivilegesUiEnabled } from '@/lib/pass-purchase-ui';
 import type { RootStackParamList } from '@/navigation/types';
-import { subscribeHomeRefresh } from '@/lib/home-refresh';
+import { emitHomeRefresh, subscribeHomeRefresh } from '@/lib/home-refresh';
 
 export interface ContentBenefitsSectionProps {
   contentId: string;
@@ -256,6 +258,7 @@ export function ContentBenefitsSection({
   const loggedIn = isAuthenticated(role);
   const [lines, setLines] = useState<ContentBenefitLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [catalogLinkHint, setCatalogLinkHint] = useState(false);
   const [modal, setModal] = useState<DetailModal | null>(null);
   const [using, setUsing] = useState(false);
   const syncedForUser = useRef<string | null>(null);
@@ -372,7 +375,16 @@ export function ContentBenefitsSection({
         if (!cancelled) setLines(fromCache);
         const fromRemote = await buildLines(true);
         if (!cancelled) {
-          setLines(fromRemote.length > 0 ? fromRemote : fromCache);
+          const merged = fromRemote.length > 0 ? fromRemote : fromCache;
+          setLines(merged);
+          if (merged.length > 0) {
+            emitHomeRefresh('benefit-catalog');
+          } else {
+            const ids = await listContentIdsWithBenefits();
+            setCatalogLinkHint(
+              contentHasLinkedActiveBenefit(ids, contentId, contentType),
+            );
+          }
         }
       } catch (err) {
         console.warn('[ContentBenefits]', err instanceof Error ? err.message : err);
@@ -631,7 +643,36 @@ export function ContentBenefitsSection({
     );
   }
 
-  if (!lines.length) return null;
+  if (!lines.length) {
+    if (!catalogLinkHint) return null;
+    return (
+      <View style={styles.wrap}>
+        <Text style={[styles.title, { color: shell.pageTitle }]}>Privilèges</Text>
+        <Text style={[styles.rowPreview, { color: shell.pageKicker, marginTop: 4 }]}>
+          Les privilèges liés à cette fiche n’ont pas pu être chargés. Vérifiez votre connexion puis réessayez.
+        </Text>
+        <Pressable
+          style={[styles.useBtn, { backgroundColor: shell.tabIndicator, marginTop: 12, alignSelf: 'flex-start' }]}
+          onPress={() => {
+            setLoading(true);
+            void (async () => {
+              try {
+                const cached = await buildLines(false);
+                const synced = await buildLines(true);
+                const merged = synced.length > 0 ? synced : cached;
+                setLines(merged);
+                if (merged.length > 0) emitHomeRefresh('benefit-catalog');
+              } finally {
+                setLoading(false);
+              }
+            })();
+          }}
+        >
+          <Text style={styles.useBtnTextDark}>Réessayer</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   const lockedModal = modal?.kind === 'locked' ? modal.line : null;
   const unlockedModal = modal?.kind === 'unlocked' ? modal.line : null;

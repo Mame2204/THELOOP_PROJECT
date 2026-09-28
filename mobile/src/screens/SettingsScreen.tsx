@@ -21,6 +21,7 @@ const LEGAL_LINKS: { key: LegalContentKey; label: string }[] = [
   { key: 'cgu', label: 'Conditions générales d’utilisation' },
   { key: 'privacy_policy', label: 'Politique de confidentialité' },
   { key: 'mentions_legales', label: 'Mentions légales' },
+  { key: 'conditions_pass_prime', label: 'Conditions du PASS Loop Prime' },
 ];
 
 export function SettingsScreen({ navigation }: Props) {
