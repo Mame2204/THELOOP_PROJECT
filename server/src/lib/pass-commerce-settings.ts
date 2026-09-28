@@ -58,6 +58,16 @@ export async function resolveChargedPassPrice(
   return prices[period];
 }
 
+/**
+ * Interrupteur « Achat PASS » (`app_settings.app_gates.passPurchaseEnabled`, réglé
+ * par le super admin). Absent ou illisible → achat fermé, comme le défaut de l'app.
+ */
+export async function isPassPurchaseOpen(): Promise<boolean> {
+  const gates = await fetchAppSettingValue('app_gates');
+  if (!gates || typeof gates !== 'object') return false;
+  return (gates as { passPurchaseEnabled?: unknown }).passPurchaseEnabled === true;
+}
+
 /** File d’attente max — même clé que l’admin mobile (`pass_shop_settings_v1_GN`). */
 export async function resolveMaxPendingPasses(countryCode = DEFAULT_COUNTRY): Promise<number> {
   const remote = await fetchAppSettingValue(`${SHOP_REMOTE_BASE}_${countryCode.toUpperCase()}`);

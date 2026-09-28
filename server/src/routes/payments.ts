@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { config, type BillingPeriod } from '../config.js';
+import { config, passLabel, type BillingPeriod } from '../config.js';
 import {
   createPaymentGateway,
   mapPaymentMethodToDjomy,
@@ -21,6 +21,7 @@ import {
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
 import { maskPhone, normalizePayerIdentifierForDjomy } from '../lib/payer-phone.js';
+import { isPassPurchaseOpen } from '../lib/pass-commerce-settings.js';
 
 export const paymentsRouter = Router();
 
@@ -43,6 +44,11 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
 
     if (!period) {
       res.status(400).json({ error: 'Période PASS invalide.' });
+      return;
+    }
+
+    if (!(await isPassPurchaseOpen())) {
+      res.status(403).json({ error: 'L\'achat de PASS n\'est pas disponible pour le moment.' });
       return;
     }
 
@@ -103,7 +109,7 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       countryCode: 'GN',
       payerNumber: payerPhone,
       ...(allowedPaymentMethods ? { allowedPaymentMethods } : {}),
-      description: `THE LOOP — ${period}`,
+      description: `THE LOOP — ${passLabel(period)}`,
       merchantPaymentReference: merchantReference,
       returnUrl: config.djomyReturnUrl,
       cancelUrl: config.djomyCancelUrl,
