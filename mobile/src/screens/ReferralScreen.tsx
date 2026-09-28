@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Share } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { PageHeader } from '@/components/PageHeader';
 import { getProfileAccent } from '@/lib/profile-accent';
-import { getReferralStats, type ReferralStats } from '@/lib/referral-store';
+import { getReferralStats, referralProgressView, type ReferralStats } from '@/lib/referral-store';
 import { isAuthenticated } from '@/types';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -12,7 +13,7 @@ import type { RootStackParamList } from '@/navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Referral'>;
 
 export function ReferralScreen({ navigation }: Props) {
-  const { user, role } = useAuthContext();
+  const { user, role, refreshUserSession } = useAuthContext();
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);
   const isAdminReferrer = role === 'ADMIN';
@@ -29,6 +30,15 @@ export function ReferralScreen({ navigation }: Props) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void (async () => {
+        await refreshUserSession();
+        await load();
+      })();
+    }, [refreshUserSession, load]),
+  );
 
   if (!user || !isAuthenticated(role)) {
     return (
@@ -49,9 +59,7 @@ export function ReferralScreen({ navigation }: Props) {
     }
   }
 
-  const progress = stats
-    ? stats.progressToNextReward / stats.referralsPerReward
-    : 0;
+  const progressView = stats ? referralProgressView(stats) : null;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
@@ -94,11 +102,25 @@ export function ReferralScreen({ navigation }: Props) {
       {showReferralRewards ? (
         <>
           <View style={[styles.progressTrack, { backgroundColor: shell.filterInactiveBg }]}>
-            <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: shell.tabIndicator }]} />
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${Math.round((progressView?.fillRatio ?? 0) * 100)}%`,
+                  backgroundColor: shell.tabIndicator,
+                },
+              ]}
+            />
           </View>
           <Text style={[styles.progressLabel, { color: shell.pageTitle }]}>
-            {stats?.progressToNextReward ?? 0} / {stats?.referralsPerReward ?? 10} vers le prochain mois offert
+            {progressView?.label ?? '0 / 10 vers le prochain mois offert'}
           </Text>
+          {(stats?.pendingRewardTiers ?? 0) > 0 ? (
+            <Text style={[styles.body, { color: accent.accent, marginTop: 8 }]}>
+              Récompense en attente sur votre compte — restez connecté quelques secondes ou rouvrez
+              l’écran pour activer Loop Prime.
+            </Text>
+          ) : null}
         </>
       ) : (
         <Text style={[styles.progressLabel, { color: shell.pageTitle }]}>

@@ -16,7 +16,7 @@ import {
   getOrCreateTheLoopTeamValidationCode,
   THE_LOOP_TEAM_PARTNER_NAME,
 } from '@/lib/partner-validation-code-store';
-import { getReferralStats, type ReferralStats } from '@/lib/referral-store';
+import { getReferralStats, referralProgressView, type ReferralStats } from '@/lib/referral-store';
 import {
   getUserFacingPrimePass,
   hasMeaningfulPrimePassHistory,
@@ -33,7 +33,7 @@ import type { TabScreenProps } from '@/navigation/types';
 type Props = TabScreenProps<'Profil'>;
 
 export function ProfilScreen({ navigation }: Props) {
-  const { user, role, signOut } = useAuthContext();
+  const { user, role, signOut, refreshUserSession } = useAuthContext();
   const { gates } = useAppGates();
   const passPurchaseEnabled = isPassPurchaseUiEnabled(gates);
   const { shell, grade, theme } = useMemberTheme();
@@ -105,6 +105,8 @@ export function ProfilScreen({ navigation }: Props) {
 
   useFocusLoad(
     async () => {
+      await refreshUserSession();
+      await loadReferral();
       await loadPassProfile();
       await loadPartnerCode();
       // syncExpiredBenefitPendingStates retiré du focus Profil (egress) — reste sur Mes privilèges.
@@ -209,7 +211,9 @@ export function ProfilScreen({ navigation }: Props) {
               ? 'Invitez des membres avec ce code LOOP — distinct du code partenaire de validation.'
               : isAdminOrganizer
                 ? `${referralStats?.totalReferrals ?? 0} filleul${(referralStats?.totalReferrals ?? 0) > 1 ? 's' : ''} · suivi sans récompense`
-                : `${referralStats?.progressToNextReward ?? 0}/${referralStats?.referralsPerReward ?? 10} filleuls vers 1 mois Prime`}
+                : referralStats
+                  ? referralProgressView(referralStats).label
+                  : '0/10 filleuls vers 1 mois Prime'}
           </Text>
           <Text style={[styles.referralLink, { color: accent.accent }]}>Voir mon parrainage →</Text>
         </Pressable>

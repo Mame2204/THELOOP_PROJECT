@@ -47,10 +47,35 @@ export interface ReferralStats {
   rewardsGrantedThisYear: number;
   monthsGrantedThisYear: number;
   monthsRemainingThisYear: number;
+  /** Filleuls dans le palier en cours (0 = palier complet). */
   progressToNextReward: number;
+  /** Paliers mathématiquement dus cette année (floor(filleuls / seuil)). */
+  tiersEarnedThisYear: number;
+  /** Paliers déjà enregistrés en base (referral_rewards). */
+  tiersGrantedThisYear: number;
+  /** Paliers dus mais pas encore octroyés — le parrain doit rafraîchir sa session. */
+  pendingRewardTiers: number;
   referralsPerReward: number;
   rewardMonths: number;
   maxRewardMonthsPerYear: number;
+}
+
+/** Barre de progression parrainage (évite 0 % quand un palier vient d’être atteint). */
+export function referralProgressView(stats: Pick<
+  ReferralStats,
+  'referralsThisYear' | 'referralsPerReward' | 'progressToNextReward'
+>): { fillRatio: number; label: string } {
+  const per = Math.max(1, stats.referralsPerReward);
+  const inTier =
+    stats.referralsThisYear > 0 && stats.progressToNextReward === 0
+      ? per
+      : stats.progressToNextReward;
+  const fillRatio = Math.min(1, inTier / per);
+  const label =
+    stats.referralsThisYear > 0 && stats.progressToNextReward === 0
+      ? `${per} / ${per} — palier atteint`
+      : `${inTier} / ${per} vers le prochain mois offert`;
+  return { fillRatio, label };
 }
 
 const REFERRALS_KEY = 'loop_referrals_v1';
@@ -363,7 +388,11 @@ export async function getReferralStats(
   const yearRewards = rewards.filter((r) => r.referrerUserId === userId && r.rewardYear === year);
   const monthsGrantedThisYear = yearRewards.reduce((sum, r) => sum + r.monthsGranted, 0);
   const monthsRemainingThisYear = Math.max(0, settings.maxRewardMonthsPerYear - monthsGrantedThisYear);
-  const progressToNextReward = yearReferrals.length % settings.referralsPerReward;
+  const per = settings.referralsPerReward;
+  const progressToNextReward = per > 0 ? yearReferrals.length % per : 0;
+  const tiersEarnedThisYear = per > 0 ? Math.floor(yearReferrals.length / per) : 0;
+  const tiersGrantedThisYear = yearRewards.length;
+  const pendingRewardTiers = Math.max(0, tiersEarnedThisYear - tiersGrantedThisYear);
 
   return {
     referralCode,
@@ -373,6 +402,9 @@ export async function getReferralStats(
     monthsGrantedThisYear,
     monthsRemainingThisYear,
     progressToNextReward,
+    tiersEarnedThisYear,
+    tiersGrantedThisYear,
+    pendingRewardTiers,
     referralsPerReward: settings.referralsPerReward,
     rewardMonths: settings.rewardMonths,
     maxRewardMonthsPerYear: settings.maxRewardMonthsPerYear,
