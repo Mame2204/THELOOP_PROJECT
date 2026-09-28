@@ -71,9 +71,6 @@ export function SpotCard({
               <Text style={styles.categoryBadge} numberOfLines={1}>
                 {categoryText}
               </Text>
-              {hasLinkedPrivilege ? (
-                <ContentPrivilegeBadge variant="overlay" accent={theme.colors.accent} />
-              ) : null}
             </View>
             <FavoriteHeartButton
               active={isFavorite}
@@ -82,19 +79,24 @@ export function SpotCard({
               variant="overlay"
             />
           </View>
-          <View style={styles.bottomBlock}>
-            <Text style={styles.titleOverlay} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
-              {spot.name}
-            </Text>
-            {authorLine ? (
-              <Text style={styles.metaOverlay} numberOfLines={1}>
-                Par {authorLine}
+          <View style={styles.bottomRow}>
+            <View style={styles.bottomBlock}>
+              <Text style={styles.titleOverlay} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
+                {spot.name}
               </Text>
-            ) : null}
-            {locationLine ? (
-              <Text style={styles.metaOverlay} numberOfLines={1}>
-                {locationLine}
-              </Text>
+              {authorLine ? (
+                <Text style={styles.metaOverlay} numberOfLines={1}>
+                  Par {authorLine}
+                </Text>
+              ) : null}
+              {locationLine ? (
+                <Text style={styles.metaOverlay} numberOfLines={1}>
+                  {locationLine}
+                </Text>
+              ) : null}
+            </View>
+            {hasLinkedPrivilege ? (
+              <ContentPrivilegeBadge variant="cardGift" accent={theme.colors.accent} />
             ) : null}
           </View>
         </View>
@@ -131,7 +133,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     maxWidth: '100%',
   },
-  bottomBlock: { position: 'absolute', bottom: 10, left: 12, right: 12, gap: 3 },
+  bottomRow: {
+    position: 'absolute',
+    bottom: 10,
+    left: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  bottomBlock: { flex: 1, gap: 3, minWidth: 0 },
   titleOverlay: { fontSize: 15, fontWeight: '800', color: colors.white, lineHeight: 20 },
   metaOverlay: { fontSize: 11, color: 'rgba(255,255,255,0.88)', lineHeight: 15 },
 });

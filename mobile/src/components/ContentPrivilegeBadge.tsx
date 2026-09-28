@@ -5,7 +5,7 @@ import { colors } from '@/theme/colors';
 
 type Props = {
   /** Sur la couverture des cartes catalogue (Agenda, Spots, …). */
-  variant?: 'overlay' | 'inline';
+  variant?: 'overlay' | 'inline' | 'cardGift';
   accent?: string;
 };
 
@@ -14,11 +14,19 @@ export function ContentPrivilegeBadge({ variant = 'overlay', accent = colors.gol
   const { gates } = useAppGates();
   if (!isPrivilegesUiEnabled(gates)) return null;
 
+  if (variant === 'cardGift') {
+    return (
+      <View style={styles.cardGift} accessibilityLabel="Privilège disponible">
+        <Text style={styles.cardGiftEmoji}>🎁</Text>
+      </View>
+    );
+  }
+
   if (variant === 'inline') {
     return (
       <View style={[styles.inline, { backgroundColor: `${accent}22`, borderColor: accent }]}>
         <Text style={[styles.inlineText, { color: accent }]} numberOfLines={1}>
-          🎁 Privilège
+          🎁
         </Text>
       </View>
     );
@@ -27,13 +35,25 @@ export function ContentPrivilegeBadge({ variant = 'overlay', accent = colors.gol
   return (
     <View style={[styles.overlay, { backgroundColor: accent }]}>
       <Text style={styles.overlayText} numberOfLines={1}>
-        🎁 Privilège
+        🎁
       </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  cardGift: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardGiftEmoji: {
+    fontSize: 16,
+    lineHeight: 18,
+  },
   overlay: {
     borderRadius: 999,
     paddingHorizontal: 8,
@@ -42,9 +62,8 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: colors.white,
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: 0.3,
   },
   inline: {
     borderRadius: 999,
@@ -54,8 +73,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   inlineText: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '800',
-    letterSpacing: 0.2,
   },
 });

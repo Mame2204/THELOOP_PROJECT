@@ -269,7 +269,7 @@ export function AdminSuperSettingsScreen({ navigation }: Props) {
       <View style={[styles.settingsCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
         <Text style={[styles.settingsLabel, { color: shell.pageTitle }]}>Privilèges</Text>
         <Text style={[styles.settingsHint, { color: shell.pageKicker }]}>
-          Affiche ou masque les privilèges sur les fiches (Agenda, Spots, Outils) et le badge « 🎁 Privilège » des cartes, que l’achat PASS soit ouvert ou non.
+          Affiche ou masque les privilèges sur les fiches (Agenda, Spots, Outils) et l’icône 🎁 sur les cartes, que l’achat PASS soit ouvert ou non.
         </Text>
         <TogglePill
           value={gates.privilegesVisible}
