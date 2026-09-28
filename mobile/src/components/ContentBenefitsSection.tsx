@@ -195,7 +195,7 @@ function getLockedPrivilegePresentation(
       title: 'Un privilège réservé aux membres Prime',
       body: passPurchaseEnabled
         ? 'Ce lieu cache une expérience pensée pour ceux qui vivent Conakry autrement. Passez en Loop Prime pour débloquer ce privilège.'
-        : 'Ce privilège est réservé aux membres Loop Prime. L\'abonnement en ligne arrive bientôt.',
+        : 'Ce privilège est réservé aux membres Loop Prime.',
       ctaMode: passPurchaseEnabled ? 'prime' : 'none',
       ctaLabel: 'Passer en Loop Prime',
     };
