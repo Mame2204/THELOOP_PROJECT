@@ -1,5 +1,5 @@
 /**
- * Vérifie que la migration 20260930 empêche un membre de s'offrir un PASS,
+ * Vérifie que les migrations 20260930 et 20260958 empêchent un membre de s'offrir un PASS,
  * sans casser les écritures légitimes (gel de rôle, octroi administrateur,
  * fulfillment serveur).
  *
@@ -213,16 +213,96 @@ async function main() {
     }
   }
 
+  // --- 958 : fonctions de livraison fermées au client ----------------------
+  const directFulfill = await client.rpc('fulfill_payment_intent', {
+    p_intent_id: '00000000-0000-0000-0000-000000000000',
+    p_transaction_id: 'x',
+    p_paid_amount: 1,
+  });
+  if (directFulfill.error) {
+    ok('Livraison PASS (fulfill_payment_intent) fermée au client', directFulfill.error.message);
+  } else {
+    ko('fulfill_payment_intent appelable depuis le client');
+  }
+  const legacyFulfill = await client.rpc('fulfill_djomy_pass_payment', {
+    p_user_id: userId,
+    p_local_pass_id: `verif-legacy-${stamp}`,
+    p_pass_catalog_id: 'prime-lifetime',
+    p_label: 'PASS à vie',
+    p_status: 'active',
+    p_started_at: now(),
+    p_expires_at: null,
+    p_amount_gnf: 1,
+    p_payment_method: 'orange_money',
+    p_paid_at: now(),
+    p_billing_period: 'lifetime',
+    p_scheduled_start_at: null,
+    p_promote_prime: true,
+    p_djomy_transaction_id: 'x',
+    p_merchant_reference: 'x',
+  });
+  if (legacyFulfill.error && (await statusOf(`verif-legacy-${stamp}`)) === null) {
+    ok('fulfill_djomy_pass_payment fermée au client', legacyFulfill.error.message);
+  } else {
+    ko('fulfill_djomy_pass_payment appelable depuis le client');
+  }
+
+  // --- 958 : PASS en file auto-créé (la tâche pg_cron l'activerait) --------
+  const queuedId = `verif-queued-${stamp}`;
+  const selfQueued = await client.rpc('upsert_user_pass_purchase', {
+    p_user_id: userId,
+    p_pass_catalog_id: 'prime-lifetime',
+    p_label: 'PASS à vie',
+    p_pass_kind: 'custom',
+    p_status: 'pending',
+    p_started_at: now(),
+    p_expires_at: null,
+    p_local_id: queuedId,
+    p_amount_gnf: null,
+    p_payment_method: null,
+    p_paid_at: null,
+    p_billing_period: 'lifetime',
+    p_scheduled_start_at: null,
+  });
+  if (selfQueued.error && (await statusOf(queuedId)) === null) {
+    ok('PASS en file auto-créé bloqué', selfQueued.error.message);
+  } else {
+    ko('PASS en file auto-créé PASSE');
+  }
+
   // --- Régression 1 : écriture technique du gel de rôle --------------------
+  // Le gel suspend un PASS existant (même local_id) ; il ne crée rien.
   const freezeId = `verif-freeze-${stamp}`;
-  const freeze = await client.rpc(
-    'upsert_user_pass_grant_admin',
-    grantPayload({ p_local_id: freezeId, p_status: 'suspended', p_grant_note: 'Gel rôle membre' }),
-  );
-  if (freeze.error) {
-    ko('Régression — gel de rôle refusé', freeze.error.message);
+  const seedFreeze = await admin.from('user_pass_grants').insert({
+    user_id: userId,
+    pass_catalog_id: 'prime-annual',
+    label: 'PASS à geler',
+    pass_kind: 'custom',
+    status: 'active',
+    started_at: now(),
+    expires_at: future,
+    local_id: freezeId,
+  });
+  const freeze = seedFreeze.error
+    ? seedFreeze
+    : await client.rpc(
+      'upsert_user_pass_grant_admin',
+      grantPayload({ p_local_id: freezeId, p_status: 'suspended', p_grant_note: 'Gel rôle membre' }),
+    );
+  if (freeze.error || (await statusOf(freezeId)) !== 'suspended') {
+    ko('Régression — gel de rôle refusé', freeze.error?.message ?? 'statut inchangé');
   } else {
     ok('Régression OK — le gel de rôle s\'écrit toujours');
+  }
+
+  const newSuspended = await client.rpc(
+    'upsert_user_pass_grant_admin',
+    grantPayload({ p_local_id: `verif-new-susp-${stamp}`, p_status: 'suspended', p_expires_at: null }),
+  );
+  if (newSuspended.error) {
+    ok('Création d\'un PASS suspendu (réactivable à vie) bloquée', newSuspended.error.message);
+  } else {
+    ko('Création d\'un PASS suspendu depuis le client PASSE');
   }
 
   // --- Régression 2 : restauration refusée tant que le rôle est membre -----
