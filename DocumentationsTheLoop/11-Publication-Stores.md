@@ -10,11 +10,16 @@
 | Chemin dans l'app | **Profil → Paramètres → Fermer mon compte → Demander la suppression** (build 54+) |
 | Enregistrement | Table `account_deletion_requests` via la fonction `request_account_deletion` (migration `20260956`) |
 | Alerte admin | Notification + push au **super admin** : nom, e-mail, téléphone du membre |
-| Traitement | Super admin : Utilisateurs → fiche du membre → **Supprimer** (la demande passe automatiquement en « traitée ») |
+| Traitement | Super admin : Utilisateurs → fiche du membre → **Supprimer**. La demande passe automatiquement en « traitée » |
+| Compte rattaché à du contenu (partenaire) | « Supprimer » propose **Archiver** ou **Anonymiser**. L'anonymisation est automatique à l'archivage si le membre a fait la demande dans l'app |
 | Délai affiché au membre | 30 jours maximum |
 | URL web (exigée par Google) | https://www.theloop-app.com/suppression ✅ déjà en ligne |
 
-⚠️ **Compte lié à des données (privilèges, PASS, parrainage)** : l'app propose seulement « Archiver ». Un compte archivé garde nom, e-mail et téléphone. Pour respecter la promesse « supprimées ou anonymisées », il faut effacer ces champs à l'archivage (chantier suivant, à valider).
+**Anonymisation** (`admin_anonymize_user`, super admin uniquement) :
+- **Effacé :** prénom, nom, e-mail, téléphone, date de naissance, ville, fonction, carte QR, favoris, notifications, jetons push, coordonnées des votes et des suggestions, ligne de liste d'attente et invitations au même e-mail.
+- **Compte de connexion :** e-mail remplacé, mot de passe vidé, compte bloqué définitivement, sessions fermées.
+- **Conservé, sans identité :** nom de l'établissement, contenu publié, historique des privilèges et des paiements (comptabilité).
+- **Pour une demande reçue par e-mail ou WhatsApp :** Utilisateurs → fiche → Supprimer → **Anonymiser**.
 
 ## 2. Google Play — formulaire « Sécurité des données »
 
@@ -51,27 +56,29 @@ Non collectés : localisation GPS, contacts, micro, SMS, historique web. La cam�
 | Données d'utilisation | Interactions avec le produit |
 | Autres données | Date de naissance, ville, pays |
 
-## 4. Textes légaux à corriger (landing **et** app)
+## 4. Textes légaux — une seule source (base Supabase)
 
-Les deux versions contiennent des phrases qui ne correspondent plus à l'app. Relecteurs Apple et Google comparent ces textes avec l'app.
+Les textes affichés par l'app et par le site viennent désormais tous de la table `app_legal_content`.
 
-- App : Control Tower → Légal → `cgu` / `privacy_policy`.
-- Site : pages `/cgu` et `/privacy`.
-
-| Où | Texte actuel | Proposition |
-|----|--------------|-------------|
-| CGU §2 | « L'inscription nécessite un numéro de téléphone valide et une vérification par code (OTP). » | « L'inscription se fait avec une adresse e-mail et un mot de passe. Un numéro de téléphone est demandé pour le compte et le paiement mobile money. » |
-| Confidentialité §9 | « La connexion … se fait par code de vérification (OTP) envoyé par SMS, sans stockage de mot de passe. » | « La connexion se fait par adresse e-mail et mot de passe. Le mot de passe est stocké chiffré (haché) par notre prestataire d'authentification et n'est jamais lisible par THE LOOP. Un code envoyé par e-mail peut être demandé pour activer une invitation ou réinitialiser le mot de passe. » |
-| Confidentialité §2 | Liste des données | Ajouter : ville et pays, entreprise et poste (comptes partenaires), photos publiées par les partenaires, jeton de notification de l'appareil, historique des achats PASS. Préciser : « La caméra sert uniquement à scanner les QR codes ; aucune image n'est enregistrée. » |
-| Confidentialité §5 | « … avec le service technique d'envoi des notifications. » | « … avec nos prestataires techniques : hébergement et base de données (Supabase), envoi des notifications (Expo / Google Firebase), paiement mobile money (Djomy). Ils n'utilisent pas vos données pour leur propre compte. » |
-| Confidentialité §8 | Droits | Ajouter : « Depuis l'application : Profil → Paramètres → Fermer mon compte. » |
-| Page `/suppression` | « Depuis l'application THE LOOP, si l'option est disponible dans Profil. » | « Depuis l'application : Profil → Paramètres → Fermer mon compte. » |
+- **Migration `20260957_legal_texts_unified.sql` :** réécrit `cgu`, `privacy_policy`, `mentions_legales`, `conditions_pass_prime` et `politique_cookies`, alignés sur l'app actuelle :
+  - connexion e-mail + mot de passe ;
+  - suppression de compte dans l'app, puis anonymisation ;
+  - toutes les données collectées, dont le téléphone visible par le partenaire au scan de la carte ;
+  - prestataires techniques ;
+  - aucun cookie ni suivi ;
+  - PASS présenté comme un accès à des privilèges consommés sur place.
+- **Modifier ensuite un texte :** Control Tower → Légal. Le site suit automatiquement, sans redéploiement.
+- **Landing (dépôt `theloop-landing`) :** copier le contenu de `DocumentationsTheLoop/landing-legal/` à la racine du dépôt landing, puis pousser (Vercel redéploie) :
+  - `assets/legal-loader.js` : charge le texte depuis la base ;
+  - `cgu/`, `privacy/`, `mentions/` : texte de secours identique, affiché si la base est injoignable ;
+  - `suppression/` : page statique, chemin exact dans l'app, délai et anonymisation.
+- ⚠️ **À compléter par toi :** « Directeur de la publication » dans les mentions légales (nom du responsable).
 
 ## 5. Notes pour les relecteurs (App Review / Play Console)
 
 Texte à coller dans « Notes pour la vérification » :
 
-> THE LOOP est un guide de sorties à Conakry (Guinée). Les privilèges du PASS Prime sont des réductions et avantages consommés physiquement chez des établissements partenaires (restaurants, lieux, événements) : le membre présente sa carte QR au comptoir et le partenaire valide sur place. Le paiement du PASS se fait par mobile money local (Orange Money / MTN via Djomy), le moyen de paiement dominant en Guinée.
+> THE LOOP est un guide de sorties à Conakry (Guinée). Les privilèges (réductions, accueil privilégié) sont consommés physiquement chez des établissements partenaires : le membre présente sa carte QR au comptoir et le partenaire valide sur place. Cette version ne vend rien dans l'application : le statut Prime est attribué par THE LOOP (parrainage, invitations).
 > Compte membre de test : [e-mail] / [mot de passe]. Compte Prime de test : [e-mail] / [mot de passe].
 > Suppression de compte : Profil → Paramètres → Fermer mon compte.
 
@@ -79,14 +86,22 @@ Texte à coller dans « Notes pour la vérification » :
 - [ ] Un compte **membre** et un compte **Prime** dédiés à la relecture, avec un contenu visible au Guinée. Ne pas utiliser un compte admin.
 - [ ] Vérifier que ces comptes voient bien l'Accueil (l'app sans compte n'affiche que l'écran de connexion).
 
-## 6. PASS vendu hors achat intégré (Apple 3.1.1 · Google Paiements)
+## 6. PASS Prime et achats intégrés (Apple 3.1.1 / 3.1.3(e) · Google Paiements)
 
-C'est le risque de refus principal, surtout chez Apple. Il y a deux lignes de défense.
+**V1 (build 54+) : achat coupé** (`passPurchaseEnabled` = false, valeur par défaut). Vérifié dans le code :
+- l'écran Prime, l'écran de paiement et le bouton « Passer en Loop Prime » sont masqués ;
+- les prix et la carte « Passez à l'expérience premium » du profil sont masqués ;
+- le message « L'abonnement en ligne arrive bientôt » est retiré, car Apple refuse les annonces de fonctions à venir.
 
-1. **Argument « service physique »** (Apple 3.1.3(e), Google « biens ou services physiques ») : le PASS donne accès à des avantages consommés hors de l'app, chez des partenaires. C'est défendable, mais les écrans Prime qui mettent en avant du contenu *dans* l'app (thème doré, événements LoopX) affaiblissent l'argument.
-2. **Repli** : désactiver l'achat sur iOS avec l'interrupteur à distance `passPurchaseEnabled`, et vendre le PASS ailleurs (site, partenaires). L'app n'affiche alors plus ni prix ni lien d'achat (Apple 3.1.3(b), service multiplateforme).
-   - Interdit : couper l'achat seulement pendant la relecture puis le rallumer. C'est une fonction cachée (Apple 2.3.1), sanctionnée par un retrait de l'app.
-   - L'interrupteur est aujourd'hui commun à Android et iOS : le séparer par plateforme serait à développer si ce repli est choisi.
+Le statut Prime reste possible via le parrainage ou une attribution admin : aucune vente, donc aucune règle d'achat intégré ne s'applique.
+
+**Plus tard, pour ouvrir la vente :**
+- **Qualification :** le PASS est bien une vente, mais d'un **accès à des services physiques** consommés chez les partenaires. Apple 3.1.3(e) et Google (biens et services physiques) **interdisent** alors l'achat intégré : le paiement mobile money est autorisé.
+- **Condition :** ce que l'app met en avant comme contrepartie du PASS doit rester physique (privilèges chez les partenaires). Avant d'activer :
+  - retirer de l'argumentaire Prime les avantages purement numériques, comme le « thème exclusif doré » ;
+  - présenter les événements LoopX comme des événements réels réservés aux membres, pas comme du contenu à débloquer.
+- **Ne jamais activer la vente seulement après la relecture :** c'est une fonction cachée (Apple 2.3.1). Annoncer l'ouverture dans une mise à jour relue par Apple et Google, avec une note qui explique le PASS.
+- **Repli si Apple refuse :** laisser l'achat coupé sur iOS seulement et vendre le PASS ailleurs (site, partenaires), sans lien ni prix dans l'app iOS (Apple 3.1.3(b)). Cela demande de séparer l'interrupteur par plateforme.
 
 ## 7. Clé Firebase (Android)
 
@@ -96,7 +111,7 @@ Le fichier `mobile/google-services.json` est inclus dans l'app : sa clé API est
 - [ ] Restrictions d'API : limiter aux API Firebase utilisées (Firebase Installations API, FCM Registration API).
 - [ ] Après restriction : tester une notification push sur un build installé depuis Play.
 
-## 8. Tests à ajouter au smoke (build 54+, après migration `20260956`)
+## 8. Tests à ajouter au smoke (build 54+, après migrations `20260956` et `20260957`)
 
 | # | Test | Attendu |
 |---|------|---------|
@@ -108,3 +123,10 @@ Le fichier `mobile/google-services.json` est inclus dans l'app : sa clé API est
 | W1 | Landing : inscription avec un nouvel e-mail | « Tu fais désormais partie du cercle » ; ligne visible dans Admin → Liste d'attente (`source` = landing) |
 | W2 | Landing : même e-mail | « Tu es déjà dans le cercle » |
 | W3 | Landing : 21ᵉ inscription en moins d’une heure depuis le même réseau | « Une erreur s'est produite » (limite anti-robot, normal) |
+| A1 | Super admin : partenaire test avec contenu → Supprimer → **Anonymiser** | Fiche « Compte supprimé », sans e-mail ni téléphone ; le contenu reste publié |
+| A2 | Se connecter avec l'ancien e-mail et mot de passe du compte anonymisé | Connexion impossible |
+| A3 | Compte de test avec demande dans l'app, puis super admin → **Archiver** | Anonymisation automatique (comme A1) |
+| L1 | App : Inscription → lien CGU / Politique de confidentialité | Nouveaux textes (e-mail + mot de passe, Fermer mon compte) |
+| L2 | Site : /cgu, /privacy, /mentions | Mêmes textes que l'app, date du jour de la migration |
+| L3 | Control Tower → Légal : modifier une phrase de la CGU | Visible sur le site /cgu après rechargement |
+| L4 | Membre gratuit : fiche avec privilège Prime | « Ce privilège est réservé aux membres Loop Prime. », sans bouton d'achat |
