@@ -22,8 +22,11 @@
 --      Le parrainage (apply_referral_rewards_for) reste autorisé : sa ligne
 --      referral_rewards, écrite dans la même transaction, en fait la preuve
 --      (table en lecture seule pour les membres).
+--      local_id est désormais toujours renseigné (= id à défaut) : l'app s'en
+--      sert pour retrouver la ligne lors du gel de rôle.
 --
--- Relançable.
+-- Relançable. À appliquer après 20260956 et 20260957, puis redéployer le
+-- serveur de paiement (il appelle fulfill_payment_intent).
 
 -- -----------------------------------------------------------------------------
 -- 1. fulfill_djomy_pass_payment : serveur uniquement, idempotente
@@ -329,6 +332,12 @@ LANGUAGE plpgsql
 SET search_path = public
 AS $$
 BEGIN
+  -- L'app identifie un PASS par local_id, à défaut par id : les deux doivent
+  -- coïncider pour que ses écritures retombent sur la ligne existante.
+  IF TG_OP = 'INSERT' AND NEW.local_id IS NULL THEN
+    NEW.local_id := NEW.id::text;
+  END IF;
+
   IF COALESCE(auth.role(), '') <> 'authenticated' OR public.is_admin() THEN
     RETURN NEW;
   END IF;
@@ -413,6 +422,8 @@ $$;
 
 REVOKE ALL ON FUNCTION public.tg_user_pass_grants_guard_self() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.tg_user_pass_grants_guard_self() FROM anon, authenticated;
+
+UPDATE public.user_pass_grants SET local_id = id::text WHERE local_id IS NULL;
 
 DROP TRIGGER IF EXISTS trg_user_pass_grants_guard_self ON public.user_pass_grants;
 CREATE TRIGGER trg_user_pass_grants_guard_self
