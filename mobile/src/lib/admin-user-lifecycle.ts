@@ -125,9 +125,10 @@ export function formatUserDeleteImpact(
     `Supprimer définitivement « ${fullName} » ?`,
     '',
     'Conséquences :',
-    '• Le compte sera effacé de THE LOOP',
-    '• PASS, favoris et notifications seront supprimés en cascade',
-    '• Cette action est irréversible',
+    '• Nom, e-mail, téléphone et favoris seront effacés',
+    '• Le compte Auth sera retiré (plus de connexion)',
+    '• Demande « Fermer mon compte » marquée comme traitée',
+    '• Irréversible',
   ].join('\n');
 }
 
