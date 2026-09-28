@@ -261,7 +261,10 @@ export function ContentBenefitsSection({
   const syncedForUser = useRef<string | null>(null);
 
   const buildLines = useCallback(async (refreshCatalog = false): Promise<ContentBenefitLine[]> => {
-    const items = await listCatalogBenefitsForContent(contentId, contentType, { refreshCatalog });
+    let items = await listCatalogBenefitsForContent(contentId, contentType, { refreshCatalog });
+    if (!items.length && contentType) {
+      items = await listCatalogBenefitsForContent(contentId, undefined, { refreshCatalog });
+    }
     if (!items.length) return [];
 
     const country = resolveCountryCode(user?.countryCode);
@@ -365,11 +368,18 @@ export function ContentBenefitsSection({
 
     void (async () => {
       try {
-        const next = await buildLines(true);
-        if (!cancelled) setLines(next);
+        const fromCache = await buildLines(false);
+        if (!cancelled) setLines(fromCache);
+        const fromRemote = await buildLines(true);
+        if (!cancelled) {
+          setLines(fromRemote.length > 0 ? fromRemote : fromCache);
+        }
       } catch (err) {
         console.warn('[ContentBenefits]', err instanceof Error ? err.message : err);
-        if (!cancelled) setLines([]);
+        if (!cancelled) {
+          const fallback = await buildLines(false).catch(() => []);
+          setLines(fallback);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -384,8 +394,9 @@ export function ContentBenefitsSection({
         void syncUserRoleBenefitEntitlements(user)
           .then(async () => {
             if (cancelled) return;
+            const cached = await buildLines(false);
             const refreshed = await buildLines(true);
-            if (!cancelled) setLines(refreshed);
+            if (!cancelled) setLines(refreshed.length > 0 ? refreshed : cached);
           })
           .catch(() => undefined);
       }

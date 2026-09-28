@@ -71,9 +71,6 @@ export function EventCard({
                   </Text>
                 </View>
               ) : null}
-              {hasLinkedPrivilege ? (
-                <ContentPrivilegeBadge variant="overlay" accent={theme.colors.accent} />
-              ) : null}
             </View>
             <FavoriteHeartButton
               active={isFavorite}
@@ -82,16 +79,21 @@ export function EventCard({
               variant="overlay"
             />
           </View>
-          <View style={styles.bottomBlock}>
-            <Text style={styles.titleOverlay} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
-              {event.title}
-            </Text>
-            {locationLine ? (
-              <Text style={styles.metaOverlay} numberOfLines={1}>
-                {locationLine.startsWith('En ligne') || locationLine.startsWith('Non fourni')
-                  ? locationLine
-                  : `📍 ${locationLine}`}
+          <View style={styles.bottomRow}>
+            <View style={styles.bottomBlock}>
+              <Text style={styles.titleOverlay} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
+                {event.title}
               </Text>
+              {locationLine ? (
+                <Text style={styles.metaOverlay} numberOfLines={1}>
+                  {locationLine.startsWith('En ligne') || locationLine.startsWith('Non fourni')
+                    ? locationLine
+                    : `📍 ${locationLine}`}
+                </Text>
+              ) : null}
+            </View>
+            {hasLinkedPrivilege ? (
+              <ContentPrivilegeBadge variant="cardGift" accent={theme.colors.accent} />
             ) : null}
           </View>
         </View>
@@ -144,7 +146,16 @@ const styles = StyleSheet.create({
   statusPast: { backgroundColor: 'rgba(55,65,81,0.88)' },
   statusText: { fontSize: 10, fontWeight: '800', color: colors.white },
   statusTextToday: { color: colors.black },
-  bottomBlock: { position: 'absolute', bottom: 10, left: 12, right: 12, gap: 3 },
+  bottomRow: {
+    position: 'absolute',
+    bottom: 10,
+    left: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  bottomBlock: { flex: 1, gap: 3, minWidth: 0 },
   titleOverlay: { fontSize: 15, fontWeight: '800', color: colors.white, lineHeight: 20 },
   metaOverlay: { fontSize: 11, color: 'rgba(255,255,255,0.88)', lineHeight: 15 },
 });
