@@ -5,7 +5,7 @@ echo.
 echo Token : https://supabase.com/dashboard/account/tokens
 echo   Nom libre (ex. the-loop-scripts) ^| Expiration 90 j ou plus ^| Projet THE LOOP
 echo   Permissions : acces COMPLET sur ce projet (pas Read only — les scripts modifient Auth + secrets)
-echo   Copiez sbp_... des l ecran de creation (visible une seule fois)
+echo   Copiez sbp_... a la creation (visible une seule fois)
 echo   PAS les cles anon / service_role (Settings ^> API du projet)
 echo.
 set /p SUPABASE_ACCESS_TOKEN=Token Supabase :
