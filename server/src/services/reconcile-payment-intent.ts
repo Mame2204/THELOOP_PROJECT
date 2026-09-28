@@ -5,6 +5,14 @@ import { PAYMENT_INTENT_COLUMNS } from '../lib/supabase-list.js';
 import { fulfillPaymentIntent, markFulfillmentFailed } from './fulfill-pass-payment.js';
 import { isDjomyAbandonedStatus } from './reconcile-payment-summary.js';
 
+export const ABANDON_AFTER_MS = 30 * 60 * 1000;
+
+function isOlderThan(iso: string | null | undefined, ms: number): boolean {
+  if (!iso) return true;
+  const t = new Date(iso).getTime();
+  return Number.isNaN(t) || Date.now() - t > ms;
+}
+
 function isPaidStatus(status: string | undefined): boolean {
   const normalized = String(status ?? '').toUpperCase();
   return normalized === 'SUCCESS' || normalized === 'CAPTURED';
@@ -132,7 +140,9 @@ export async function reconcilePaymentIntent(intent: PaymentIntentRow): Promise<
     return { ...intent, status: nextStatus, djomy_status: djomyStatus };
   }
 
-  if (isDjomyAbandonedStatus(djomyStatus)) {
+  // CREATED / REDIRECTED = portail encore ouvert : le membre peut payer après
+  // le premier sondage de l'app. On ne clôt la commande qu'après un délai.
+  if (isDjomyAbandonedStatus(djomyStatus) && isOlderThan(intent.created_at, ABANDON_AFTER_MS)) {
     await stampDjomyCheck(intent.id, {
       djomy_status: djomyStatus,
       djomy_provider_reference: providerRef,
@@ -195,26 +205,19 @@ export async function processDjomyWebhookEvent(
 
   await recordWebhookEvent(intent, eventType);
 
-  if (eventType === 'payment.success') {
-    await reconcilePaymentIntent(intent);
-    return;
+  let target = intent;
+  if (!intent.djomy_transaction_id?.trim()) {
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase
+      .from('payment_intents')
+      .update({ djomy_transaction_id: transactionId, updated_at: new Date().toISOString() })
+      .eq('id', intent.id)
+      .is('djomy_transaction_id', null);
+    if (error) console.warn('[webhook] n° transaction', intent.id, error.message);
+    target = { ...intent, djomy_transaction_id: transactionId };
   }
 
-  if (
-    eventType === 'payment.failed' ||
-    eventType === 'payment.cancelled' ||
-    eventType === 'payment.canceled'
-  ) {
-    const nextStatus = eventType.includes('cancel') ? 'cancelled' : 'failed';
-    const supabase = getSupabaseAdmin();
-    await supabase
-      .from('payment_intents')
-      .update({
-        status: nextStatus,
-        djomy_status: eventType.replace('payment.', '').toUpperCase(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', intent.id)
-      .eq('fulfillment_status', 'pending');
-  }
+  // Le statut vient toujours de verify_payment : un événement « failed » peut
+  // précéder un nouvel essai réussi sur la même transaction.
+  await reconcilePaymentIntent(target);
 }
