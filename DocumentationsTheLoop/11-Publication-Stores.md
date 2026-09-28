@@ -72,7 +72,6 @@ Les textes affichés par l'app et par le site viennent désormais tous de la tab
   - `assets/legal-loader.js` : charge le texte depuis la base ;
   - `cgu/`, `privacy/`, `mentions/` : texte de secours identique, affiché si la base est injoignable ;
   - `suppression/` : page statique, chemin exact dans l'app, délai et anonymisation.
-- ⚠️ **À compléter par toi :** « Directeur de la publication » dans les mentions légales (nom du responsable).
 
 ## 5. Notes pour les relecteurs (App Review / Play Console)
 
@@ -94,6 +93,10 @@ Texte à coller dans « Notes pour la vérification » :
 - le message « L'abonnement en ligne arrive bientôt » est retiré, car Apple refuse les annonces de fonctions à venir.
 
 Le statut Prime reste possible via le parrainage ou une attribution admin : aucune vente, donc aucune règle d'achat intégré ne s'applique.
+
+⚠️ **Effet de bord à trancher avant le build 54** : aujourd'hui, l'interrupteur coupé masque aussi toute la section « Privilèges » des fiches Agenda / Spot / Outil, **pour tous les comptes** (membres, Prime, partenaires, admins). Personne ne peut donc demander un privilège depuis l'app. Autres constats :
+- le badge « Privilège » reste affiché sur les cartes, ce qui est incohérent ;
+- l'écran « Mes privilèges » existe, mais aucun bouton n'y mène.
 
 **Plus tard, pour ouvrir la vente :**
 - **Qualification :** le PASS est bien une vente, mais d'un **accès à des services physiques** consommés chez les partenaires. Apple 3.1.3(e) et Google (biens et services physiques) **interdisent** alors l'achat intégré : le paiement mobile money est autorisé.

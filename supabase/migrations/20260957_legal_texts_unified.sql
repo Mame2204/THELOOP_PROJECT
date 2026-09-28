@@ -112,9 +112,6 @@ VALUES (
 THE LOOP — application mobile de découverte et d'expériences à Conakry (Guinée), disponible sur Google Play et l'App Store. Activité actuellement exploitée à titre individuel, en cours de structuration juridique.
 Contact : contact@theloop-app.com · +224 626 68 06 06
 
-Directeur de la publication
-[À compléter dès formalisation de la structure]
-
 Hébergement et prestataires techniques
 Supabase Inc. — base de données, authentification et fichiers.
 Render Services Inc. — serveur de paiement.
