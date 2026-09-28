@@ -32,7 +32,7 @@ export const PASS_SHOP_FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Puis-je être remboursé ?',
-    a: `Une période payée et activée n’est pas remboursable (voir les conditions du PASS Prime). En cas d’erreur de paiement, écrivez à ${SUPPORT_EMAIL}.`,
+    a: `Non. Le PASS est activé dès la confirmation du paiement : une fois payé, il n’est ni rétractable ni remboursable, même si vous n’utilisez pas vos privilèges. Si un paiement débité n’a pas activé votre PASS, écrivez à ${SUPPORT_EMAIL} : nous l’activons sur votre compte.`,
   },
   {
     q: 'Quels moyens de paiement sont acceptés ?',

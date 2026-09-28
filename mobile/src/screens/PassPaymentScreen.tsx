@@ -564,6 +564,10 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         </Text>
       ) : null}
 
+      <Text style={[styles.finalSaleNote, { color: shell.pageKicker }]}>
+        Le PASS est activé dès la confirmation du paiement. Une fois payé, il n’est ni rétractable ni remboursable.
+      </Text>
+
       <Pressable
         style={[styles.btn, { backgroundColor: accent.accent, opacity: loading ? 0.65 : 1 }]}
         onPress={() => void handlePay()}
@@ -624,7 +628,8 @@ const styles = StyleSheet.create({
   providerHint: { marginTop: 8, fontSize: 11, fontStyle: 'italic', lineHeight: 16 },
   phoneHint: { marginTop: 6, fontSize: 11, lineHeight: 16 },
   processing: { marginTop: 16, textAlign: 'center', fontSize: 13, fontWeight: '600' },
-  btn: { marginTop: 24, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  finalSaleNote: { marginTop: 20, fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  btn: { marginTop: 12, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   btnText: { fontWeight: '800', color: '#000', fontSize: 15 },
   btnOutline: { marginTop: 12, borderWidth: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   btnOutlineText: { fontWeight: '600', fontSize: 14 },
