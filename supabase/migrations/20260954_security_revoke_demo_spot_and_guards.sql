@@ -2,7 +2,8 @@
 -- 20260954 — Sécurité, deuxième passe (audit pré-build 53)
 -- =============================================================================
 --   1. SPOT-DEMO-2026 révoqué : ce jeton est publié dans le dépôt et la doc,
---      il ouvrait une session partenaire complète sur contact@lavenue.gn.
+--      il ouvrirait une session partenaire complète sur le compte qui lui
+--      serait rattaché.
 --   2. Création de la ligne public.users depuis le client : le rôle et les
 --      colonnes privilégiées sont imposés côté serveur. La garde de 20260928
 --      ne couvrait que l'UPDATE ; un INSERT direct (upsert du profil quand
