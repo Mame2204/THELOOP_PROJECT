@@ -76,5 +76,7 @@ for (const fn of FUNCTIONS) {
 
 if (!ok) process.exit(1);
 
-console.log('\nEnsuite (optionnel) : .\\configure-auth-invite-email.cmd pour synchroniser les modèles e-mail.');
-console.log('Test : .\\test-auth-invite-urls.cmd');
+console.log('\nEnsuite :');
+console.log('  .\\configure-auth-invite-email.cmd — modèles e-mail (code {{ .Token }} dans recovery)');
+console.log('  .\\configure-invite-require-email-code.cmd — activer INVITE_REQUIRE_EMAIL_CODE (build 54+)');
+console.log('  .\\test-auth-invite-urls.cmd');

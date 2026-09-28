@@ -119,8 +119,20 @@ WHERE g.status IN ('active', 'suspended')
 - Pendant tests intensifs : anticiper le passage à un plan supérieur  
 - Les écrans admin paginent (users 20, paiements 30) pour limiter les lectures
 
+## Invitation par code e-mail (build 54+)
+
+Sans invités en test sur le build 53, vous pouvez activer le secret **avant** le build 54 :
+
+1. Vérifier le modèle e-mail recovery (code à 6 chiffres visible) : `.\configure-auth-invite-email.cmd`
+2. Activer le secret : `.\configure-invite-require-email-code.cmd`  
+   (équivalent : `node scripts/set-invite-require-email-code.mjs true` avec `SUPABASE_ACCESS_TOKEN`)
+3. Installer le **build 54** sur les appareils de test, puis smoke **S4** (invitation avec code).
+
+Pour désactiver temporairement : `node scripts/set-invite-require-email-code.mjs false`
+
 ## Stores
 
-1. Builds internes (TestFlight / Play internal) avec `api.theloop-app.com`  
-2. Décembre : store public + invite-only (`signupEnabled` false)  
-3. Achat PASS public : plus tard, gate ON + Djomy prod
+1. Soumettre le **build 54** (suppression de compte, légal dans Paramètres, privilèges visibles sans achat, code invitation).  
+2. Builds internes (TestFlight / Play internal) avec `api.theloop-app.com`  
+3. Décembre : store public + invite-only (`signupEnabled` false)  
+4. Achat PASS public : plus tard, gate ON + Djomy prod
