@@ -94,9 +94,10 @@ Texte à coller dans « Notes pour la vérification » :
 
 Le statut Prime reste possible via le parrainage ou une attribution admin : aucune vente, donc aucune règle d'achat intégré ne s'applique.
 
-⚠️ **Effet de bord à trancher avant le build 54** : aujourd'hui, l'interrupteur coupé masque aussi toute la section « Privilèges » des fiches Agenda / Spot / Outil, **pour tous les comptes** (membres, Prime, partenaires, admins). Personne ne peut donc demander un privilège depuis l'app. Autres constats :
-- le badge « Privilège » reste affiché sur les cartes, ce qui est incohérent ;
-- l'écran « Mes privilèges » existe, mais aucun bouton n'y mène.
+**Privilèges dissociés de l'achat (build 54+)** : un second interrupteur, « Privilèges » (`privilegesVisible`, **Visible** par défaut), commande seul l'affichage des privilèges. Il se règle dans Super Settings (app) et dans Paramètres (Control Tower).
+- **Privilèges visibles** (quel que soit l'état de l'achat PASS) : la section « Privilèges » des fiches Agenda / Spot / Outil, le badge des cartes et la ligne « Vos N privilèges vous attendent » de l'Accueil s'affichent dès qu'une fiche a des avantages. Un compte non éligible voit la fiche verrouillée ; si l'achat est coupé, elle n'a pas de bouton d'achat (bouton « Fermer »).
+- **Privilèges masqués** : section, badges et ligne d'accueil disparaissent pour tous les comptes.
+- L'écran « Mes privilèges » existe toujours, mais aucun bouton n'y mène (inchangé).
 
 **Plus tard, pour ouvrir la vente :**
 - **Qualification :** le PASS est bien une vente, mais d'un **accès à des services physiques** consommés chez les partenaires. Apple 3.1.3(e) et Google (biens et services physiques) **interdisent** alors l'achat intégré : le paiement mobile money est autorisé.
@@ -133,3 +134,7 @@ Le fichier `mobile/google-services.json` est inclus dans l'app : sa clé API est
 | L2 | Site : /cgu, /privacy, /mentions | Mêmes textes que l'app, date du jour de la migration |
 | L3 | Control Tower → Légal : modifier une phrase de la CGU | Visible sur le site /cgu après rechargement |
 | L4 | Membre gratuit : fiche avec privilège Prime | « Ce privilège est réservé aux membres Loop Prime. », sans bouton d'achat |
+| P1 | Achat PASS **coupé**, Privilèges **Visible** : Prime ouvre une fiche avec privilège | Section « Privilèges » affichée ; le privilège s'utilise normalement |
+| P2 | Même réglage : membre gratuit sur la même fiche | Fiche verrouillée, bouton « Fermer », aucun prix ni bouton d'achat |
+| P3 | Super Settings → Privilèges **Masqué** | Plus de section « Privilèges » sur les fiches, plus de badge sur les cartes, plus de ligne « Vos N privilèges » à l'Accueil |
+| P4 | Control Tower → Paramètres : enregistrer un autre réglage | L'état de l'interrupteur « Privilèges » est conservé |
