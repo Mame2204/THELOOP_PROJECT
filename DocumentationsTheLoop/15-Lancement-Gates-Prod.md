@@ -17,7 +17,52 @@ La vente fonctionne de bout en bout, gate OFF ou ON. Gate OFF : aucun bouton ni 
 
 1. Supabase, dans l'ordre : `20260956`, `20260957` (PR #74), puis `20260958_pass_payment_integrity.sql`.
 2. Redéployer le serveur de paiement (Render) **après** la 958. Tant qu'elle n'est pas appliquée, le serveur repasse sur l'ancien chemin de livraison, donc rien ne casse.
-3. Contrôles SQL après la 958 :
+3. Contrôle rapide après la 958 (éditeur SQL Supabase) : toutes les lignes doivent afficher **OK**.
+
+```sql
+SELECT controle, resultat, attendu, CASE WHEN resultat = attendu THEN 'OK' ELSE 'À REGARDER' END AS verdict
+FROM (
+  SELECT 1 AS n, 'Livraison PASS appelable par un membre' AS controle,
+    has_function_privilege('authenticated', 'public.fulfill_payment_intent(uuid,text,integer)', 'EXECUTE')::text AS resultat,
+    'false' AS attendu
+  UNION ALL
+  SELECT 2, 'Ancienne livraison PASS appelable par un membre',
+    has_function_privilege('authenticated',
+      'public.fulfill_djomy_pass_payment(uuid,text,text,text,text,timestamptz,timestamptz,integer,text,timestamptz,text,timestamptz,boolean,text,text)',
+      'EXECUTE')::text,
+    'false'
+  UNION ALL
+  SELECT 3, 'Garde-fou membre actif sur les créations de PASS',
+    (SELECT count(*) FROM pg_trigger
+     WHERE tgname = 'trg_user_pass_grants_guard_self' AND (tgtype & 4) = 4)::text,
+    '1'
+  UNION ALL
+  SELECT 4, 'PASS sans local_id',
+    (SELECT count(*) FROM public.user_pass_grants WHERE local_id IS NULL)::text,
+    '0'
+  UNION ALL
+  SELECT 5, 'PASS en file sans commande payée',
+    (SELECT count(*) FROM public.user_pass_grants g
+     WHERE g.status = 'pending'
+       AND NOT EXISTS (SELECT 1 FROM public.payment_intents p
+                       WHERE p.local_pass_id = g.local_id AND p.fulfillment_status = 'fulfilled'))::text,
+    '0'
+  UNION ALL
+  SELECT 6, 'PASS sans échéance, ni Heritage ni payé',
+    (SELECT count(*) FROM public.user_pass_grants g
+     WHERE g.status IN ('active', 'suspended')
+       AND g.expires_at IS NULL
+       AND NOT public.pass_grant_never_expires(
+         g.pass_kind, g.label, g.payment_method, g.amount_gnf,
+         g.frozen_pass_snapshot, g.pass_catalog_id, g.granted_by)
+       AND NOT EXISTS (SELECT 1 FROM public.payment_intents p
+                       WHERE p.local_pass_id = g.local_id AND p.fulfillment_status = 'fulfilled'))::text,
+    '0'
+) t
+ORDER BY n;
+```
+
+   Si une ligne affiche « À REGARDER », lancer les requêtes détaillées ci-dessous :
 
 ```sql
 -- Doit renvoyer false / false
