@@ -50,6 +50,11 @@ const res = await fetch(url, {
 const text = await res.text();
 if (!res.ok) {
   console.error('Échec', res.status, text);
+  if (res.status === 401 || res.status === 403) {
+    console.error('');
+    console.error('Token refusé : même Access Token que configure-auth-invite-email.cmd');
+    console.error('(https://supabase.com/dashboard/account/tokens — sbp_…, pas anon/service_role).');
+  }
   process.exit(1);
 }
 

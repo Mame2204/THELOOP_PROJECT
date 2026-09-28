@@ -123,9 +123,9 @@ WHERE g.status IN ('active', 'suspended')
 
 Sans invités en test sur le build 53, vous pouvez activer le secret **avant** le build 54 :
 
-1. Vérifier le modèle e-mail recovery (code à 6 chiffres visible) : `.\configure-auth-invite-email.cmd`
-2. Activer le secret : `.\configure-invite-require-email-code.cmd`  
-   (équivalent : `node scripts/set-invite-require-email-code.mjs true` avec `SUPABASE_ACCESS_TOKEN`)
+1. **Token** (les deux commandes) : [Supabase → Account → Access Tokens](https://supabase.com/dashboard/account/tokens) — token personnel `sbp_…`, **pas** les clés anon / service_role du projet.
+2. Modèle e-mail recovery (code à 6 chiffres) : `.\configure-auth-invite-email.cmd` (coller le token quand demandé).
+3. Secret invitation : `.\configure-invite-require-email-code.cmd` (**même token**).
 3. Installer le **build 54** sur les appareils de test, puis smoke **S4** (invitation avec code).
 
 Pour désactiver temporairement : `node scripts/set-invite-require-email-code.mjs false`
