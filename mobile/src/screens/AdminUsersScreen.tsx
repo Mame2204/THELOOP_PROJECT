@@ -10,6 +10,7 @@ import {
   applyRoleDowngradeSideEffects,
 } from '@/lib/admin-invite-store';
 import {
+  anonymizeUser,
   deleteOrArchiveUser,
   formatUserDeleteImpact,
   inspectUserLinks,
@@ -530,6 +531,20 @@ export function AdminUsersScreen({ navigation }: Props) {
                 setEditingUser(null);
                 await load();
                 Alert.alert('Archivé', 'Le compte est inaccessible.');
+              },
+            },
+            {
+              text: 'Anonymiser',
+              style: 'destructive',
+              onPress: async () => {
+                const res = await anonymizeUser(targetUser.id, targetUser.phone);
+                if (!res.ok) {
+                  Alert.alert('Erreur', res.error ?? 'Anonymisation impossible.');
+                  return;
+                }
+                setEditingUser(null);
+                await load();
+                Alert.alert('Anonymisé', 'Les données personnelles ont été effacées et la connexion est bloquée.');
               },
             },
           ],

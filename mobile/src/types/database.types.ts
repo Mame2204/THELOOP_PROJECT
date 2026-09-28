@@ -3583,6 +3583,10 @@ export type Database = {
         Args: { p_local_id: string }
         Returns: boolean
       }
+      admin_anonymize_user: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       admin_delete_user_if_orphan: {
         Args: { p_user_id: string }
         Returns: boolean
