@@ -143,13 +143,13 @@ Le PASS Prime est un titre d'accès nominatif, à durée limitée, qui donne dro
 Le PASS Prime peut être attribué par THE LOOP (parrainage selon les règles affichées dans l'application, invitation, opérations spéciales) ou, lorsque l'achat est proposé, acheté pour une durée déterminée (par exemple un mois).
 
 3. Paiement
-Lorsque l'achat est proposé, le paiement s'effectue par mobile money via Djomy, agrégateur de paiement opérant en Guinée. Le prix et la durée sont affichés avant la confirmation du paiement.
+Lorsque l'achat est proposé, le paiement s'effectue par mobile money via Djomy, agrégateur de paiement opérant en Guinée. Le prix et la durée sont affichés avant la confirmation du paiement. En confirmant le paiement, le membre demande l'activation immédiate de son PASS Prime.
 
 4. Renouvellement et annulation
 Le PASS Prime n'est pas renouvelé automatiquement. À la fin de la période, l'accès aux privilèges Prime prend fin, sauf nouvel achat ou nouvelle attribution. Aucune démarche d'annulation n'est donc nécessaire.
 
-5. Remboursement
-Une période payée et activée n'est pas remboursable. En cas d'erreur de paiement, contactez contact@theloop-app.com.
+5. Ni rétractation ni remboursement
+Le PASS Prime est activé dès la confirmation du paiement. Une fois payé, il ne peut faire l'objet d'aucune rétractation ni d'aucun remboursement, total ou partiel, y compris si les privilèges ne sont pas utilisés. Si un paiement débité n'a pas activé votre PASS, contactez contact@theloop-app.com : le PASS est alors activé sur votre compte.
 
 6. Disponibilité des privilèges
 Les privilèges affichés dans l'application sont proposés par les établissements partenaires et peuvent être modifiés, suspendus ou retirés à tout moment par THE LOOP ou par le partenaire concerné, sans que cela ouvre droit à un remboursement.
@@ -177,3 +177,14 @@ Pour toute question relative à cette politique : contact@theloop-app.com$txt$,
 )
 ON CONFLICT (key) DO UPDATE
 SET title = EXCLUDED.title, body = EXCLUDED.body, updated_at = EXCLUDED.updated_at;
+
+-- FAQ PASS alignées sur les conditions (durées 1 / 3 / 12 mois, ni rétractation ni remboursement)
+UPDATE public.app_faq
+SET answer = $content$Non. Le PASS Prime n'est jamais renouvelé automatiquement et aucun prélèvement n'est programmé. À la fin de la durée choisie (1, 3 ou 12 mois), l'accès aux privilèges Prime prend fin, sauf nouvel achat ou nouvelle attribution — aucune démarche d'annulation n'est nécessaire.$content$,
+    updated_at = NOW()
+WHERE id = 'faq-006';
+
+UPDATE public.app_faq
+SET answer = $content$Non. Le PASS Prime est activé dès la confirmation du paiement : une fois payé, il ne peut faire l'objet d'aucune rétractation ni d'aucun remboursement, même si les privilèges ne sont pas utilisés. Si un paiement débité n'a pas activé votre PASS, écrivez à contact@theloop-app.com : le PASS est alors activé sur votre compte.$content$,
+    updated_at = NOW()
+WHERE id = 'faq-007';
