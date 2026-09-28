@@ -3,16 +3,25 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 're
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CloseAccountSheet } from '@/components/CloseAccountSheet';
 import { CountrySelectField } from '@/components/CountrySelectField';
+import { LegalPreviewModal } from '@/components/LegalPreviewModal';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContentCountries } from '@/context/ContentCountriesContext';
 import { useViewingCountry } from '@/context/ViewingCountryContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { COMMUNITY_CLOSE_ACCOUNT_CTA } from '@/lib/community-copy';
 import { DEFAULT_COUNTRY_CODE, getCountryLabel, type CountryCode } from '@/lib/countries';
+import { formatLegalBodyForDisplay } from '@/lib/legal-display';
+import { getLegalContent, type LegalContentKey } from '@/lib/legal-content-store';
 import { isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
+
+const LEGAL_LINKS: { key: LegalContentKey; label: string }[] = [
+  { key: 'cgu', label: 'Conditions générales d’utilisation' },
+  { key: 'privacy_policy', label: 'Politique de confidentialité' },
+  { key: 'mentions_legales', label: 'Mentions légales' },
+];
 
 export function SettingsScreen({ navigation }: Props) {
   const { user } = useAuthContext();
@@ -26,6 +35,7 @@ export function SettingsScreen({ navigation }: Props) {
   } = useViewingCountry();
   const [saving, setSaving] = useState(false);
   const [closeAccountOpen, setCloseAccountOpen] = useState(false);
+  const [legalPreview, setLegalPreview] = useState<{ title: string; body: string } | null>(null);
 
   const isLoggedIn = Boolean(user && user.id !== 'anonymous');
   const canRequestDeletion = Boolean(user && isLoggedIn && !isSuperAdminAccount(user));
@@ -60,6 +70,15 @@ export function SettingsScreen({ navigation }: Props) {
       setSaving(false);
     }
   }, [setViewingCountryCode]);
+
+  const openLegalDoc = useCallback(async (key: LegalContentKey) => {
+    try {
+      const content = await getLegalContent(key, { force: true });
+      setLegalPreview({ title: content.title, body: formatLegalBodyForDisplay(content.body) });
+    } catch {
+      Alert.alert('Erreur', 'Impossible de charger ce document. Réessayez.');
+    }
+  }, []);
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
@@ -139,11 +158,37 @@ export function SettingsScreen({ navigation }: Props) {
         </>
       ) : null}
 
+      <Text style={[styles.section, { color: shell.pageKicker, marginTop: 16 }]}>Informations légales</Text>
+      <View style={[styles.card, styles.legalCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
+        {LEGAL_LINKS.map((link, index) => (
+          <Pressable
+            key={link.key}
+            style={[
+              styles.legalRow,
+              index > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: shell.filterInactiveBorder } : null,
+            ]}
+            onPress={() => void openLegalDoc(link.key)}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.legalLabel, { color: shell.pageTitle }]}>{link.label}</Text>
+            <Text style={[styles.legalChevron, { color: shell.pageKicker }]}>›</Text>
+          </Pressable>
+        ))}
+      </View>
+
       <Pressable style={styles.btnGhost} onPress={() => navigation.goBack()}>
         <Text style={[styles.btnGhostText, { color: shell.pageKicker }]}>Retour</Text>
       </Pressable>
 
       <CloseAccountSheet visible={closeAccountOpen} onClose={() => setCloseAccountOpen(false)} />
+      <LegalPreviewModal
+        visible={legalPreview != null}
+        title={legalPreview?.title ?? ''}
+        body={legalPreview?.body ?? ''}
+        onClose={() => setLegalPreview(null)}
+        accentBg={shell.filterActiveBg}
+        accentText={shell.filterActiveText}
+      />
     </ScrollView>
   );
 }
@@ -165,6 +210,10 @@ const styles = StyleSheet.create({
   cardHint: { marginTop: 8, fontSize: 12, lineHeight: 18 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   switchText: { flex: 1 },
+  legalCard: { paddingVertical: 0 },
+  legalRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
+  legalLabel: { flex: 1, fontSize: 14, fontWeight: '600' },
+  legalChevron: { fontSize: 20, fontWeight: '600' },
   deleteText: { fontSize: 15, fontWeight: '700', color: '#D14343' },
   btnGhost: { marginTop: 16, alignItems: 'center', paddingVertical: 12 },
   btnGhostText: { fontWeight: '600' },
