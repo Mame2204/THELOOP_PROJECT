@@ -1,7 +1,5 @@
-/** Code OTP de développement — aucun envoi SMS/email pour l'instant. */
+/** Code OTP du mode démo local (sans Supabase) — aucun envoi SMS/email. */
 export const DEV_OTP_CODE = '1234';
-
-export const DEV_MEMBER_PASSWORD = 'Loop1234!';
 
 import {
   DEFAULT_COUNTRY_CODE,

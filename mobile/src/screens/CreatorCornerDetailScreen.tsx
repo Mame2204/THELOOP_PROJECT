@@ -135,7 +135,9 @@ export function CreatorCornerDetailScreen({ route, navigation }: Props) {
               {feature.usefulLinks.map((link) => (
                 <Pressable
                   key={`${link.label}-${link.url}`}
-                  onPress={() => void Linking.openURL(link.url)}
+                  onPress={() => {
+                    if (/^(https?:|mailto:|tel:)/i.test(link.url.trim())) void Linking.openURL(link.url.trim());
+                  }}
                   style={[styles.linkChip, { borderColor: c.border, backgroundColor: c.surface }]}
                 >
                   <Text style={[styles.linkText, { color: c.textPrimary }]}>{link.label}</Text>

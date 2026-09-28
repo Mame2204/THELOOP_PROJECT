@@ -12,6 +12,8 @@ const corsHeaders = {
 };
 
 type Body = {
+  action?: 'send_code';
+  emailCode?: string | null;
   email?: string;
   password?: string;
   inviteId?: string;
@@ -27,6 +29,35 @@ function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+/**
+ * Preuve de possession de la boîte mail : code à 6 chiffres de l'e-mail
+ * « Nouveau mot de passe » (envoyé par l'action send_code) ou de l'e-mail
+ * d'invitation. verifyOtp consomme le code.
+ */
+async function verifyEmailCode(
+  supabaseUrl: string,
+  anonKey: string,
+  email: string,
+  code: string,
+): Promise<boolean> {
+  if (!/^\d{6,10}$/.test(code)) return false;
+  const client = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  for (const type of ['recovery', 'invite'] as const) {
+    const { data, error } = await client.auth.verifyOtp({ email, token: code, type });
+    if (!error && data?.user && (data.user.email ?? '').toLowerCase() === email) return true;
+  }
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -35,6 +66,9 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    // À activer (secret Edge) quand toutes les apps installées envoient le code.
+    const requireEmailCode = (Deno.env.get('INVITE_REQUIRE_EMAIL_CODE') ?? '').trim().toLowerCase() === 'true';
 
     if (!supabaseUrl || !serviceKey) {
       return new Response(JSON.stringify({ error: 'Configuration serveur incomplète' }), {
@@ -47,6 +81,7 @@ Deno.serve(async (req) => {
     const email = normalizeEmail(body.email ?? '');
     const password = (body.password ?? '').trim();
     const inviteId = (body.inviteId ?? '').trim();
+    const emailCode = (body.emailCode ?? '').replace(/\s/g, '');
 
     if (!email || !email.includes('@')) {
       return new Response(JSON.stringify({ error: 'E-mail invalide' }), {
@@ -54,6 +89,29 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    if (body.action === 'send_code') {
+      const admin = createClient(supabaseUrl, serviceKey);
+      const { data: pending } = await admin.rpc('find_pending_admin_invite_by_email', { p_email: email });
+      // Réponse identique qu'il y ait une invitation ou non.
+      if (pending && typeof pending === 'object') {
+        const { error: sendErr } = await admin.auth.resetPasswordForEmail(email, {
+          redirectTo: 'https://api.theloop-app.com/auth/callback',
+        });
+        if (sendErr) {
+          const lower = (sendErr.message ?? '').toLowerCase();
+          if (sendErr.status === 429 || lower.includes('rate limit') || lower.includes('security purposes')) {
+            return json(
+              { error: 'rate_limited', message: 'Un code vient d\'être envoyé. Patientez une minute avant de redemander.' },
+              429,
+            );
+          }
+          console.warn('[member-activate-invite] send_code:', sendErr.message);
+        }
+      }
+      return json({ ok: true });
+    }
+
     if (password.length < 8) {
       return new Response(JSON.stringify({ error: 'Mot de passe trop court (8 caractères minimum).' }), {
         status: 400,
@@ -85,6 +143,8 @@ Deno.serve(async (req) => {
       user_role?: string;
       first_name?: string | null;
       last_name?: string | null;
+      city?: string | null;
+      country_code?: string | null;
     };
 
     function defaultInviteFirstName(userRole?: string | null): string {
@@ -98,6 +158,30 @@ Deno.serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    const inviteRole = String(invite.user_role ?? '').trim().toLowerCase();
+    let emailProven = false;
+    if (emailCode) {
+      emailProven = anonKey ? await verifyEmailCode(supabaseUrl, anonKey, email, emailCode) : false;
+      if (!emailProven) {
+        return json(
+          { error: 'invalid_email_code', message: 'Code invalide ou expiré. Demandez un nouveau code.' },
+          400,
+        );
+      }
+    }
+
+    // Sans code, connaître l'e-mail suffirait à fixer le mot de passe.
+    if (!emailProven && (requireEmailCode || inviteRole === 'admin' || inviteRole === 'super_admin')) {
+      return json(
+        {
+          error:
+            'Mettez à jour THE LOOP pour activer ce compte avec le code reçu par e-mail, ou utilisez « Mot de passe oublié » avec cette adresse.',
+          code: 'email_code_required',
+        },
+        403,
+      );
     }
 
     const { data: listed, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });

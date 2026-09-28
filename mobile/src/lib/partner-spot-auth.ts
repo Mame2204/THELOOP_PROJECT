@@ -4,7 +4,12 @@ import {
   savePartnerSpotSession,
 } from '@/lib/partner-session-store';
 import { resolveEffectivePartnerUserId } from '@/lib/partner-session-user-id';
-import { loadPartnerUserFromDatabase } from '@/lib/partner-user-resolve';
+import {
+  getLoopBackendApiUrl,
+  isLoopBackendConfigured,
+  markLoopBackendUnreachable,
+  shouldSkipLoopBackendFetch,
+} from '@/lib/loop-backend-api';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { User } from '@/types';
 
@@ -12,111 +17,55 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
-const DEFAULT_PARTNER_DEMO_PASSWORD = 'Loop1234!';
-
-/** Jetons démo → e-mail auth Supabase. */
-const DEMO_SPOT_TOKEN_EMAILS: Record<string, string> = {
-  'SPOT-DEMO-2026': 'contact@lavenue.gn',
-};
-
 export type PartnerSpotAuthBootstrapResult = {
   ok: boolean;
   userId?: string | null;
   reason?: string;
 };
 
-function partnerDemoPassword(): string {
-  return process.env.EXPO_PUBLIC_PARTNER_DEMO_PASSWORD?.trim() || DEFAULT_PARTNER_DEMO_PASSWORD;
-}
-
-async function resolveEmailFromSpotToken(
+/**
+ * Échange un jeton SPOT actif contre une session Supabase via le serveur THE LOOP
+ * (aucun mot de passe embarqué dans l'app).
+ */
+async function signInPartnerWithSpotToken(
   tokenCode: string,
-  emailHint?: string | null,
-  linkedUserIdHint?: string | null,
-): Promise<{ email: string | null; userId: string | null }> {
-  const hinted = emailHint?.trim();
-  if (hinted) {
-    return {
-      email: hinted,
-      userId: linkedUserIdHint && isUuid(linkedUserIdHint) ? linkedUserIdHint : null,
-    };
-  }
-
-  const upper = tokenCode.trim().toUpperCase();
-  if (!upper) {
-    return { email: null, userId: linkedUserIdHint && isUuid(linkedUserIdHint) ? linkedUserIdHint : null };
-  }
-  const demoEmail = DEMO_SPOT_TOKEN_EMAILS[upper];
-  if (demoEmail) {
-    return {
-      email: demoEmail,
-      userId: linkedUserIdHint && isUuid(linkedUserIdHint) ? linkedUserIdHint : null,
-    };
-  }
-
-  if (!isSupabaseConfigured() || !supabase) {
-    return { email: null, userId: null };
-  }
-
-  const { data: tokenRows } = await supabase.rpc('validate_partner_spot_token', {
-    p_code: upper,
-  });
-  const tokenRow = Array.isArray(tokenRows) ? tokenRows[0] : tokenRows;
-
-  const userId = tokenRow?.user_id ? String(tokenRow.user_id) : linkedUserIdHint && isUuid(linkedUserIdHint) ? linkedUserIdHint : null;
-
-  if (userId && isUuid(userId)) {
-    const emailFromRpc = tokenRow?.linked_email ? String(tokenRow.linked_email).trim() : null;
-    if (emailFromRpc) return { email: emailFromRpc, userId };
-    const { data: userRow } = await supabase.from('users').select('email').eq('id', userId).maybeSingle();
-    const email = userRow?.email ? String(userRow.email).trim() : null;
-    if (email) return { email, userId };
-  }
-
-  const partnerName = tokenRow?.partner_name ? String(tokenRow.partner_name) : '';
-  if (partnerName) {
-    const dbPartner = await loadPartnerUserFromDatabase(partnerName);
-    if (dbPartner?.email) {
-      return {
-        email: dbPartner.email,
-        userId: dbPartner.id && isUuid(dbPartner.id) ? dbPartner.id : userId,
-      };
-    }
-  }
-
-  return { email: null, userId };
-}
-
-/** Connexion Supabase directe (HTTPS) — chemin principal jeton SPOT, sans backend LAN. */
-async function signInPartnerWithEmailPassword(
-  tokenCode: string,
-  emailHint?: string | null,
   linkedUserIdHint?: string | null,
 ): Promise<{ ok: boolean; userId?: string }> {
   if (!supabase) return { ok: false };
+  const code = tokenCode.trim().toUpperCase();
+  if (!code || !isLoopBackendConfigured() || shouldSkipLoopBackendFetch()) return { ok: false };
 
-  const resolved = await resolveEmailFromSpotToken(tokenCode, emailHint, linkedUserIdHint);
-  if (!resolved.email) return { ok: false };
+  let body: { access_token?: string; refresh_token?: string } = {};
+  try {
+    const res = await fetch(`${getLoopBackendApiUrl()}/api/partner/spot-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tokenCode: code }),
+    });
+    if (!res.ok) return { ok: false };
+    body = (await res.json()) as typeof body;
+  } catch {
+    markLoopBackendUnreachable();
+    return { ok: false };
+  }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: resolved.email,
-    password: partnerDemoPassword(),
+  if (!body.access_token || !body.refresh_token) return { ok: false };
+  const { data, error } = await supabase.auth.setSession({
+    access_token: body.access_token,
+    refresh_token: body.refresh_token,
   });
-
-  if (error || !data.session?.user?.id) {
+  const authUserId = data.session?.user?.id;
+  if (error || !authUserId) {
     if (__DEV__) {
-      console.warn('[PartnerSpotAuth] signInWithPassword:', error?.message ?? 'no_session');
+      console.warn('[PartnerSpotAuth] setSession:', error?.message ?? 'no_session');
     }
     return { ok: false };
   }
 
-  const authUserId = data.session.user.id;
-  const expectedId = resolved.userId ?? linkedUserIdHint ?? null;
-
-  if (expectedId && isUuid(expectedId) && authUserId !== expectedId && __DEV__) {
+  if (linkedUserIdHint && isUuid(linkedUserIdHint) && authUserId !== linkedUserIdHint && __DEV__) {
     console.warn(
       '[PartnerSpotAuth] auth.uid() ≠ user_id jeton — utilisation auth.uid()',
-      { authUserId, expectedId },
+      { authUserId, expectedId: linkedUserIdHint },
     );
   }
 
@@ -125,7 +74,6 @@ async function signInPartnerWithEmailPassword(
 
 /**
  * Établit la session Supabase pour un partenaire SPOT (notifications, avantages, stats).
- * Uniquement Supabase — pas de backend paiement.
  */
 export async function bootstrapPartnerSupabaseAuth(options: {
   linkedUserId: string | null;
@@ -151,11 +99,7 @@ export async function bootstrapPartnerSupabaseAuth(options: {
     await supabase.auth.signOut();
   }
 
-  const signedIn = await signInPartnerWithEmailPassword(
-    tokenCode,
-    options.email,
-    linkedUserId || null,
-  );
+  const signedIn = await signInPartnerWithSpotToken(tokenCode, linkedUserId || null);
   if (signedIn.ok && signedIn.userId) {
     return { ok: true, userId: signedIn.userId };
   }
@@ -163,7 +107,7 @@ export async function bootstrapPartnerSupabaseAuth(options: {
   return { ok: false, reason: 'session_bootstrap_failed' };
 }
 
-/** Rétablit la session Supabase si une session SPOT est en cache (sans backend). */
+/** Rétablit la session Supabase si une session SPOT est en cache. */
 export async function restorePartnerSupabaseAuthFromSpotSession(): Promise<PartnerSpotAuthBootstrapResult> {
   const partnerSession = await loadPartnerSpotSession();
   if (!partnerSession?.tokenCode) {
@@ -256,25 +200,6 @@ export async function ensurePartnerSupabaseSession(
     }
   }
 
-  const email = partnerSession?.user?.email?.trim();
-  if (email) {
-    const signedIn = await signInPartnerWithEmailPassword(
-      partnerSession?.tokenCode ?? '',
-      email,
-      partnerSession?.user?.id && isUuid(partnerSession.user.id) ? partnerSession.user.id : null,
-    );
-    if (signedIn.ok) return true;
-  }
-
-  if (isSupabaseConfigured() && supabase) {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const sessionEmail = sessionData.session?.user?.email?.trim();
-    if (sessionEmail && sessionEmail !== email) {
-      const signedIn = await signInPartnerWithEmailPassword('', sessionEmail, null);
-      if (signedIn.ok) return true;
-    }
-  }
-
   return false;
 }
 
@@ -352,12 +277,6 @@ export async function ensurePartnerAuthForProfile(user: User): Promise<void> {
   } else if (authUserId && authUserId !== user.id) {
     // Session d'un autre compte : ne pas déconnecter (évite rafales d'erreurs réseau).
     return;
-  }
-
-  const email = user.email?.trim();
-  if (email) {
-    const signedIn = await signInPartnerWithEmailPassword('', email, user.id);
-    if (signedIn.ok) return;
   }
 
   const partnerSession = await loadPartnerSpotSession();

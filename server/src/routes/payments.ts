@@ -20,7 +20,7 @@ import {
   loadPaymentIntentForUser,
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
-import { normalizePayerIdentifierForDjomy } from '../lib/payer-phone.js';
+import { maskPhone, normalizePayerIdentifierForDjomy } from '../lib/payer-phone.js';
 
 export const paymentsRouter = Router();
 
@@ -124,8 +124,7 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       intentId: intentRow.id,
       transactionId: gateway.transactionId,
       amountGnf,
-      payerPhone,
-      paymentUrl,
+      payerPhone: maskPhone(payerPhone),
     });
 
     await supabase

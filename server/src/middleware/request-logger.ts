@@ -3,7 +3,8 @@ import type { NextFunction, Request, Response } from 'express';
 /** Journalisation légère des requêtes API (ops prod). */
 export function requestLogger(req: Request, res: Response, next: NextFunction): void {
   const started = Date.now();
-  const path = req.originalUrl || req.url;
+  // Sans query string : /auth/callback et les liens d'invitation y portent des jetons.
+  const path = (req.originalUrl || req.url).split('?')[0];
   res.on('finish', () => {
     const ms = Date.now() - started;
     const line = `[http] ${req.method} ${path} → ${res.statusCode} ${ms}ms`;

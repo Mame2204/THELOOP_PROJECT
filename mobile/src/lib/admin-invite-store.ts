@@ -2,8 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { canonicalPhone, phonesEqual } from '@/lib/phone-canonical';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { inferCountryCodeFromPhone } from '@/lib/otp-auth';
-import { buildAuthLoginEmailCandidates } from '@/lib/auth-login';
-import { DEV_MEMBER_PASSWORD } from '@/lib/otp-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { asDbUpdate, callRpc } from '@/lib/supabase-types';
 import { upsertRegistryUser } from '@/lib/user-registry-store';
@@ -398,18 +396,53 @@ export async function sendAdminInviteEmail(input: {
   }
 }
 
+/** Envoie le code de vérification (e-mail « Nouveau mot de passe ») pour activer une invitation. */
+export async function requestInviteActivationCode(
+  email: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase requis.' };
+  const emailCheck = validateSignupEmail(email);
+  if (!emailCheck.ok) return { ok: false, error: emailCheck.message };
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
+  if (!supabaseUrl) return { ok: false, error: 'URL Supabase manquante.' };
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/member-activate-invite`, {
+      method: 'POST',
+      headers: {
+        apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'send_code', email: emailCheck.email }),
+    });
+    const body = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+    if (!response.ok) {
+      return { ok: false, error: body.message ?? body.error ?? `Erreur HTTP ${response.status}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Envoi du code impossible.' };
+  }
+}
+
 /** Active un compte invité (Auth déjà créé par l'admin) — définit le MDP côté serveur. */
 export async function activateInvitedMemberAccount(input: {
   email: string;
   password: string;
   inviteId: string;
+  emailCode?: string;
   firstName?: string;
   lastName?: string;
   birthDate?: string | null;
   city?: string | null;
   countryCode?: string;
   phoneNumber?: string | null;
-}): Promise<{ ok: boolean; error?: string; needsSignUp?: boolean; accountAlreadyActive?: boolean }> {
+}): Promise<{
+  ok: boolean;
+  error?: string;
+  needsSignUp?: boolean;
+  accountAlreadyActive?: boolean;
+  emailCodeRequired?: boolean;
+}> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: false, error: 'Supabase requis.' };
   }
@@ -430,6 +463,7 @@ export async function activateInvitedMemberAccount(input: {
         email: emailCheck.email,
         password: input.password,
         inviteId: input.inviteId,
+        emailCode: input.emailCode?.replace(/\s/g, '') || null,
         firstName: input.firstName?.trim() || null,
         lastName: input.lastName?.trim() || null,
         birthDate: input.birthDate?.trim() || null,
@@ -441,8 +475,15 @@ export async function activateInvitedMemberAccount(input: {
     const body = (await response.json().catch(() => ({}))) as {
       error?: string;
       message?: string;
+      code?: string;
       ok?: boolean;
     };
+    if (response.status === 403 && body.code === 'email_code_required') {
+      return { ok: false, emailCodeRequired: true, error: body.error };
+    }
+    if (response.status === 400 && body.error === 'invalid_email_code') {
+      return { ok: false, error: body.message ?? 'Code invalide ou expiré.' };
+    }
     if (response.status === 404 && body.error === 'no_auth_user') {
       return { ok: false, needsSignUp: true };
     }
@@ -800,10 +841,9 @@ export async function requestAdminPasswordReset(
   return { ok: true };
 }
 
-/** Après OTP validé — tente mise à jour Supabase Auth (comptes dev Loop1234!). */
+/** Après OTP validé : renvoie un lien de réinitialisation sur l'e-mail du compte (aucun mot de passe partagé). */
 export async function applyPasswordResetAfterOtp(
   phone: string,
-  newPassword: string,
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isSupabaseConfigured() || !supabase) {
     return { ok: true };
@@ -817,22 +857,6 @@ export async function applyPasswordResetAfterOtp(
   if (error) return { ok: false, error: error.message };
   if (!userRow?.email) return { ok: false, error: 'Compte introuvable' };
 
-  const loginEmails = buildAuthLoginEmailCandidates(userRow.email, phoneNumber);
-  const candidates = [DEV_MEMBER_PASSWORD, 'Loop1234!'];
-  for (const authEmail of loginEmails) {
-    for (const candidate of candidates) {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: authEmail,
-        password: candidate,
-      });
-      if (!signInError && data.session) {
-        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-        await supabase.auth.signOut();
-        if (updateError) return { ok: false, error: updateError.message };
-        return { ok: true };
-      }
-    }
-  }
   const { getAuthMemberFacingRedirectUrl } = await import('@/lib/auth-redirect');
   await supabase.auth.resetPasswordForEmail(userRow.email, {
     redirectTo: getAuthMemberFacingRedirectUrl(),

@@ -40,6 +40,7 @@ import {
   findPendingInviteByEmail,
   activateInvitedMemberAccount,
   applyInvitedActivationProfile,
+  requestInviteActivationCode,
 } from '@/lib/admin-invite-store';
 import { resolveInviteDisplayName } from '@/lib/invite-default-names';
 import { accountExistsForEmail } from '@/lib/email-account';
@@ -176,6 +177,8 @@ export function AuthScreen({ navigation, route }: Props) {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [activationCode, setActivationCode] = useState('');
+  const [sendingActivationCode, setSendingActivationCode] = useState(false);
   const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [acceptedCgu, setAcceptedCgu] = useState(false);
@@ -419,6 +422,28 @@ export function AuthScreen({ navigation, route }: Props) {
     }
   }
 
+  async function handleSendActivationCode(): Promise<void> {
+    const emailCheck = validateSignupEmail(email);
+    if (!emailCheck.ok) {
+      Alert.alert('E-mail requis', emailCheck.message);
+      return;
+    }
+    setSendingActivationCode(true);
+    try {
+      const sent = await requestInviteActivationCode(emailCheck.email);
+      if (!sent.ok) {
+        Alert.alert('Envoi impossible', sent.error ?? 'Réessayez dans une minute.');
+        return;
+      }
+      Alert.alert(
+        'Code envoyé',
+        'Si une invitation est en attente pour cette adresse, vous allez recevoir un e-mail « Nouveau mot de passe » contenant un code à 6 chiffres. Saisissez-le ici (inutile de toucher le bouton de l’e-mail).',
+      );
+    } finally {
+      setSendingActivationCode(false);
+    }
+  }
+
   async function persistIdentityAfterInviteActivation(): Promise<void> {
     const normalizedPhone = phone.trim()
       ? normalizeInternationalPhone(phone, phoneDialCode)
@@ -491,6 +516,7 @@ export function AuthScreen({ navigation, route }: Props) {
             email: emailCheck.email,
             password: signupPassword,
             inviteId: invite.id,
+            emailCode: activationCode,
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             birthDate: birthDate.trim() || null,
@@ -504,6 +530,14 @@ export function AuthScreen({ navigation, route }: Props) {
             await persistIdentityAfterInviteActivation();
             Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
             resetToAccueil(navigation);
+            return;
+          }
+
+          if (activated.emailCodeRequired) {
+            Alert.alert(
+              'Code requis',
+              'Touchez « Recevoir un code par e-mail », puis saisissez le code reçu à cette adresse.',
+            );
             return;
           }
 
@@ -989,6 +1023,27 @@ export function AuthScreen({ navigation, route }: Props) {
             autoCapitalize="none"
             keyboardType="email-address"
           />
+
+          <FieldLabel color={shell.pageKicker}>Code reçu par e-mail</FieldLabel>
+          <TextInput
+            style={inputStyle}
+            placeholder="6 chiffres"
+            placeholderTextColor={shell.pageKicker}
+            value={activationCode}
+            onChangeText={(v) => setActivationCode(v.replace(/\D/g, '').slice(0, 10))}
+            keyboardType="number-pad"
+            autoComplete="one-time-code"
+            textContentType="oneTimeCode"
+          />
+          <Pressable
+            onPress={() => void handleSendActivationCode()}
+            disabled={sendingActivationCode}
+            style={styles.inlineLink}
+          >
+            <Text style={[styles.link, { color: shell.tabIndicator }]}>
+              {sendingActivationCode ? 'Envoi…' : 'Recevoir un code par e-mail'}
+            </Text>
+          </Pressable>
 
           <FieldLabel required color={shell.pageKicker}>Mot de passe</FieldLabel>
           <PasswordInput

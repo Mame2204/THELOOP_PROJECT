@@ -84,6 +84,8 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
     buttonLabel: 'Choisir un mot de passe',
     actionHref: recoveryActionHref,
     showCopyLink: true,
+    alternateHint:
+      'Activation d’un compte invité dans l’application : saisissez ce code — <strong style="font-size:18px;letter-spacing:0.2em;color:#0a0a0a;">{{ .Token }}</strong>',
     footer:
       "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail — votre mot de passe actuel reste inchangé.",
   });
