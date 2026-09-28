@@ -62,17 +62,11 @@ FROM (
 ORDER BY n;
 ```
 
-   Si une ligne affiche « À REGARDER », lancer les requêtes détaillées ci-dessous :
+   Si la ligne 5 ou 6 affiche « À REGARDER », lancer la requête détaillée correspondante et transmettre le résultat :
+
+   Ligne 5 — PASS en file sans commande payée (la tâche pg_cron les activerait) :
 
 ```sql
--- Doit renvoyer false / false
-SELECT
-  has_function_privilege('authenticated', 'public.fulfill_payment_intent(uuid,text,integer)', 'EXECUTE') AS fulfill_ouvert,
-  has_function_privilege('authenticated',
-    'public.fulfill_djomy_pass_payment(uuid,text,text,text,text,timestamptz,timestamptz,integer,text,timestamptz,text,timestamptz,boolean,text,text)',
-    'EXECUTE') AS ancien_fulfill_ouvert;
-
--- PASS en file sans commande payée : à examiner (la tâche pg_cron les activerait)
 SELECT g.id, g.user_id, g.label, g.billing_period, g.created_at
 FROM public.user_pass_grants g
 WHERE g.status = 'pending'
@@ -80,8 +74,11 @@ WHERE g.status = 'pending'
     SELECT 1 FROM public.payment_intents p
     WHERE p.local_pass_id = g.local_id AND p.fulfillment_status = 'fulfilled'
   );
+```
 
--- PASS sans échéance ni Heritage, ni payé : à examiner (octroi console légitime ou auto-attribution)
+   Ligne 6 — PASS sans échéance, ni Heritage ni payé (octroi console légitime, ou PASS obtenu par la faille) :
+
+```sql
 SELECT g.id, g.user_id, g.label, g.pass_kind, g.status, g.granted_by, g.created_at
 FROM public.user_pass_grants g
 WHERE g.status IN ('active', 'suspended')
