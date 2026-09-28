@@ -95,10 +95,12 @@ export function validateSignupEmail(raw: string): SignupEmailValidationResult {
 }
 
 export function validateSignupPassword(password: string, confirm: string): string | null {
-  if (!isStrongEnoughPassword(password)) {
+  const pwd = password.trim();
+  const conf = confirm.trim();
+  if (!isStrongEnoughPassword(pwd)) {
     return 'Mot de passe : minimum 8 caractères, avec au moins une lettre et un chiffre.';
   }
-  if (password !== confirm) {
+  if (pwd !== conf) {
     return 'Les deux mots de passe ne correspondent pas.';
   }
   return null;

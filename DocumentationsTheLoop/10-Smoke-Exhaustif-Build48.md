@@ -531,7 +531,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 ### Parcours à retester sur device *(build 54+)*
 - [ ] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés
-- [ ] **S2 📱🤖** Activation invitation **membre** : « Recevoir un code par e-mail » → e-mail « Nouveau mot de passe » avec code 6 chiffres → saisie du code → compte actif, prénom/nom conservés
+- [ ] **S2 📱🤖** Activation invitation **membre** : formulaire identité + MDP → **Activer mon compte** → 2ᵉ e-mail « Nouveau mot de passe » (code 6 chiffres) → pop-up code → compte actif, prénom/nom conservés *(UX 2 étapes : **build 55+** · PR **#80** · Edge `member-activate-invite` déployée)*
 - [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
 - [ ] **S4 📱🤖** Activation invitation **sans code** : acceptée tant que `INVITE_REQUIRE_EMAIL_CODE` est absent ; **refusée** (« Mettez à jour THE LOOP… ») une fois le secret à `true`
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
