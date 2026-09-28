@@ -49,12 +49,12 @@
       "versionCode": 53,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE"
-      ]
+      ],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "platforms": [
       "ios",
@@ -80,13 +80,16 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "THE LOOP a besoin d'accéder à vos photos pour les événements et spots."
+          "photosPermission": "THE LOOP a besoin d'accéder à vos photos pour les événements et spots.",
+          "microphonePermission": false
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "THE LOOP utilise la caméra pour scanner les QR codes membres."
+          "cameraPermission": "THE LOOP utilise la caméra pour scanner les QR codes membres.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       [
