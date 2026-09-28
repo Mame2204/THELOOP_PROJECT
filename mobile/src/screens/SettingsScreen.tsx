@@ -1,12 +1,15 @@
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { CloseAccountSheet } from '@/components/CloseAccountSheet';
 import { CountrySelectField } from '@/components/CountrySelectField';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContentCountries } from '@/context/ContentCountriesContext';
 import { useViewingCountry } from '@/context/ViewingCountryContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
+import { COMMUNITY_CLOSE_ACCOUNT_CTA } from '@/lib/community-copy';
 import { DEFAULT_COUNTRY_CODE, getCountryLabel, type CountryCode } from '@/lib/countries';
+import { isSuperAdminAccount } from '@/lib/role-benefit-eligibility';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
@@ -22,8 +25,10 @@ export function SettingsScreen({ navigation }: Props) {
     isExploringOtherCountry,
   } = useViewingCountry();
   const [saving, setSaving] = useState(false);
+  const [closeAccountOpen, setCloseAccountOpen] = useState(false);
 
   const isLoggedIn = Boolean(user && user.id !== 'anonymous');
+  const canRequestDeletion = Boolean(user && isLoggedIn && !isSuperAdminAccount(user));
   const accountCountry = (user?.countryCode ?? DEFAULT_COUNTRY_CODE) as CountryCode;
   const exploreEnabled = isExploringOtherCountry;
   const multiCountry = countries.length > 1;
@@ -119,9 +124,26 @@ export function SettingsScreen({ navigation }: Props) {
         </View>
       )}
 
+      {canRequestDeletion ? (
+        <>
+          <Text style={[styles.section, { color: shell.pageKicker, marginTop: 16 }]}>Mon compte</Text>
+          <Pressable
+            style={[styles.card, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
+            onPress={() => setCloseAccountOpen(true)}
+          >
+            <Text style={styles.deleteText}>{COMMUNITY_CLOSE_ACCOUNT_CTA}</Text>
+            <Text style={[styles.cardHint, { color: shell.pageKicker, marginTop: 4 }]}>
+              Demander la suppression de votre compte et de vos données.
+            </Text>
+          </Pressable>
+        </>
+      ) : null}
+
       <Pressable style={styles.btnGhost} onPress={() => navigation.goBack()}>
         <Text style={[styles.btnGhostText, { color: shell.pageKicker }]}>Retour</Text>
       </Pressable>
+
+      <CloseAccountSheet visible={closeAccountOpen} onClose={() => setCloseAccountOpen(false)} />
     </ScrollView>
   );
 }
@@ -143,6 +165,7 @@ const styles = StyleSheet.create({
   cardHint: { marginTop: 8, fontSize: 12, lineHeight: 18 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   switchText: { flex: 1 },
+  deleteText: { fontSize: 15, fontWeight: '700', color: '#D14343' },
   btnGhost: { marginTop: 16, alignItems: 'center', paddingVertical: 12 },
   btnGhostText: { fontWeight: '600' },
 });

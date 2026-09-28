@@ -4093,6 +4093,10 @@ export type Database = {
         Args: { p_local_id: string; p_reason?: string }
         Returns: undefined
       }
+      request_account_deletion: {
+        Args: { p_reason?: string }
+        Returns: Json
+      }
       request_benefit_redemption: {
         Args: {
           p_benefit_description?: string
