@@ -64,7 +64,13 @@ const res = await fetch(`https://api.supabase.com/v1/projects/${projectRef}/conf
 
 const text = await res.text();
 if (!res.ok) {
-  console.error('Echec', res.status, text);
+  console.error('Échec', res.status, text);
+  if (res.status === 401 || res.status === 403) {
+    console.error('');
+    console.error('Token refusé : utilisez un Access Token personnel (Account → Access Tokens, sbp_…).');
+    console.error('Les clés anon / service_role du projet ne fonctionnent pas pour cette commande.');
+    console.error('Recréez un token si l’ancien a expiré ou a été révoqué.');
+  }
   process.exit(1);
 }
 
