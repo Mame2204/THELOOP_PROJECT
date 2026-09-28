@@ -10,7 +10,8 @@
  * 2. Demandes de suppression de compte depuis l'app (exigence App Store / Google Play).
  *    Le membre ne peut pas appeler admin_distribute_notifications (réservé admin) :
  *    request_account_deletion enregistre la demande et notifie les admins.
- *    La demande passe en « processed » quand le super admin supprime ou archive le compte.
+ *    La demande passe en « processed » quand le super admin supprime le compte ;
+ *    un compte archivé est anonymisé (3.).
  *
  * Idempotent — safe à relancer.
  */
@@ -241,28 +242,148 @@ $$;
 REVOKE ALL ON FUNCTION public.request_account_deletion(TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.request_account_deletion(TEXT) TO authenticated, service_role;
 
+-- ---------------------------------------------------------------------------
+-- 3. Anonymisation (compte archivé car rattaché à du contenu partenaire)
+-- ---------------------------------------------------------------------------
+-- Suppression définitive : admin_delete_user_if_orphan efface auth.users → public.users
+-- et les données liées partent en cascade. Quand du contenu est rattaché, le compte ne
+-- peut être qu'archivé : on efface alors toutes les données personnelles et on bloque
+-- la connexion. Le contenu publié et l'historique (privilèges, paiements) restent,
+-- sans identité. Les paiements (payment_intents) sont conservés pour la comptabilité.
+
+CREATE OR REPLACE FUNCTION public._anonymize_user_data(p_user_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+  v_old_email TEXT;
+  v_old_phone TEXT;
+  v_placeholder TEXT := CONCAT('deleted+', p_user_id::TEXT, '@theloop.invalid');
+BEGIN
+  SELECT u.email, u.phone_number INTO v_old_email, v_old_phone
+  FROM public.users u WHERE u.id = p_user_id;
+  IF NOT FOUND THEN
+    RETURN;
+  END IF;
+
+  UPDATE public.users
+  SET first_name = 'Compte',
+      last_name = 'supprimé',
+      email = v_placeholder,
+      phone_number = NULL,
+      birth_date = NULL,
+      city = NULL,
+      job_title = NULL,
+      qr_code_token = replace(gen_random_uuid()::TEXT, '-', ''),
+      is_active = FALSE,
+      account_status = 'archived',
+      updated_at = NOW()
+  WHERE id = p_user_id;
+
+  UPDATE auth.users
+  SET email = v_placeholder,
+      phone = NULL,
+      encrypted_password = '',
+      raw_user_meta_data = '{}'::jsonb,
+      banned_until = 'infinity'::timestamptz,
+      updated_at = NOW()
+  WHERE id = p_user_id;
+  DELETE FROM auth.identities WHERE user_id = p_user_id;
+  DELETE FROM auth.sessions WHERE user_id = p_user_id;
+
+  DELETE FROM public.user_notifications
+  WHERE user_id = p_user_id
+     OR (v_old_phone IS NOT NULL AND recipient_phone IS NOT NULL
+         AND right(regexp_replace(recipient_phone, '\D', '', 'g'), 9)
+           = right(regexp_replace(v_old_phone, '\D', '', 'g'), 9));
+  DELETE FROM public.user_push_tokens WHERE user_id = p_user_id;
+  DELETE FROM public.favorite_events WHERE user_id = p_user_id;
+  DELETE FROM public.favorite_spots WHERE user_id = p_user_id;
+  DELETE FROM public.favorite_tools WHERE user_id = p_user_id;
+  DELETE FROM public.favorite_walks WHERE user_id = p_user_id;
+  UPDATE public.home_poll_votes SET voter_phone = NULL WHERE user_id = p_user_id;
+  UPDATE public.community_suggestions
+  SET contact_name = NULL, contact_email = NULL, contact_phone = NULL
+  WHERE user_id = p_user_id;
+
+  IF v_old_email IS NOT NULL AND v_old_email <> '' THEN
+    DELETE FROM public.waitlist WHERE lower(trim(email)) = lower(trim(v_old_email));
+    UPDATE public.admin_user_invites
+    SET email = CONCAT('deleted+', id::TEXT, '@theloop.invalid'),
+        first_name = 'Compte',
+        last_name = 'supprimé',
+        phone_number = NULL
+    WHERE lower(trim(email)) = lower(trim(v_old_email));
+  END IF;
+
+  UPDATE public.account_deletion_requests
+  SET status = CASE WHEN status = 'pending' THEN 'processed' ELSE status END,
+      processed_at = COALESCE(processed_at, NOW()),
+      processed_by = COALESCE(processed_by, auth.uid()),
+      email = NULL,
+      phone_number = NULL,
+      full_name = NULL
+  WHERE user_id = p_user_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public._anonymize_user_data(UUID) FROM PUBLIC, anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_anonymize_user(p_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.uid() IS NOT NULL AND NOT public.is_super_admin() THEN
+    RAISE EXCEPTION 'Réservé au super admin';
+  END IF;
+  IF p_user_id = auth.uid() THEN
+    RAISE EXCEPTION 'FORBIDDEN_SELF';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = p_user_id) THEN
+    RETURN FALSE;
+  END IF;
+  PERFORM public._anonymize_user_data(p_user_id);
+  RETURN TRUE;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_anonymize_user(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_anonymize_user(UUID) TO authenticated, service_role;
+
+-- Suppression : la demande passe en « traitée » et perd ses coordonnées.
+-- Archivage d'un compte qui a demandé sa suppression : anonymisation automatique.
 CREATE OR REPLACE FUNCTION public.tg_account_deletion_requests_close()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-DECLARE
-  v_target UUID;
 BEGIN
   IF TG_OP = 'DELETE' THEN
-    v_target := OLD.id;
-  ELSIF NEW.account_status IS DISTINCT FROM OLD.account_status AND NEW.account_status = 'archived' THEN
-    v_target := NEW.id;
-  ELSE
+    UPDATE public.account_deletion_requests
+    SET status = CASE WHEN status = 'pending' THEN 'processed' ELSE status END,
+        processed_at = COALESCE(processed_at, NOW()),
+        processed_by = COALESCE(processed_by, auth.uid()),
+        email = NULL,
+        phone_number = NULL,
+        full_name = NULL
+    WHERE user_id = OLD.id;
     RETURN NULL;
   END IF;
 
-  UPDATE public.account_deletion_requests
-  SET status = 'processed',
-      processed_at = NOW(),
-      processed_by = auth.uid()
-  WHERE user_id = v_target AND status = 'pending';
+  IF NEW.account_status IS DISTINCT FROM OLD.account_status
+     AND NEW.account_status = 'archived'
+     AND EXISTS (
+       SELECT 1 FROM public.account_deletion_requests r
+       WHERE r.user_id = NEW.id AND r.status = 'pending'
+     ) THEN
+    PERFORM public._anonymize_user_data(NEW.id);
+  END IF;
 
   RETURN NULL;
 END;
