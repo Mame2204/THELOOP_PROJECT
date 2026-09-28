@@ -5,9 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FormTextInput } from '@/components/FormTextInput';
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { useAuthContext } from '@/context/AuthContext';
-import { useViewingCountry } from '@/context/ViewingCountryContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
-import { DEFAULT_COUNTRY_CODE } from '@/lib/countries';
 import { formatDateFr } from '@/lib/date-utils';
 import { getProfileAccent } from '@/lib/profile-accent';
 import { processPassPayment } from '@/lib/pass-payment-service';
@@ -23,7 +21,12 @@ import {
 } from '@/lib/djomy-payment-api';
 import { syncPassAfterDjomyPayment } from '@/lib/pass-purchase-store';
 import * as WebBrowser from 'expo-web-browser';
-import { getPassPrices, passPriceCurrency, type PassPriceMap } from '@/lib/pass-pricing-store';
+import {
+  getPassPrices,
+  PASS_PURCHASE_COUNTRY_CODE,
+  passPriceCurrency,
+  type PassPriceMap,
+} from '@/lib/pass-pricing-store';
 import { getMaxPendingPasses } from '@/lib/pass-shop-settings-store';
 import {
   computeSubscriptionExpiry,
@@ -51,8 +54,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const { purchasePrimePass, role, user, refreshUserSession } = useAuthContext();
   const { gates } = useAppGates();
   const passPurchaseEnabled = isPassPurchaseUiEnabled(gates);
-  const { viewingCountryCode } = useViewingCountry();
-  const priceCountry = (viewingCountryCode ?? user?.countryCode ?? DEFAULT_COUNTRY_CODE) as typeof viewingCountryCode;
+  const priceCountry = PASS_PURCHASE_COUNTRY_CODE;
   const priceCurrency = passPriceCurrency(priceCountry);
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);
@@ -268,12 +270,14 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     } else if (/Network request failed|connexion.*interrompue/i.test(msg)) {
       Alert.alert(
         'Connexion interrompue',
-        'Le serveur de paiement n’a pas répondu à temps. Si Soutra a confirmé le débit, ouvrez Mon PASS dans 1–2 minutes.',
+        'Le serveur de paiement n’a pas répondu à temps. Si votre opérateur a confirmé le débit, ouvrez Mon PASS dans 1–2 minutes.',
         [
           { text: 'Voir Mon PASS', onPress: () => navigation.replace('Abonnement') },
           { text: 'OK', style: 'cancel' },
         ],
       );
+    } else if (/activation du PASS a échoué/i.test(msg)) {
+      Alert.alert('Paiement reçu', msg);
     } else if (/Mon PASS/i.test(msg)) {
       void (async () => {
         try {
@@ -513,7 +517,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
           </Text>
           <Text style={[styles.sandboxBody, { color: djomyReady ? '#047857' : '#78350f' }]}>
             {djomyReady
-              ? `Montants test ≤ 10 000 GNF. Orange Money est indisponible en test — utilisez PayCard, Soutra ou carte.`
+              ? `Montants test ≤ 10 000 GNF. Orange Money est indisponible en test — utilisez PayCard, Soutra ou carte.`
               : 'Paiement simulé localement. Configurez le serveur de paiement pour un parcours réel.'}
           </Text>
         </View>
@@ -535,7 +539,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       </View>
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
-        Vous choisirez Orange Money, Soutra, PayCard ou carte sur le portail de paiement sécurisé.
+        Vous choisirez Orange Money, MTN MoMo, Soutra Money, PayCard ou carte bancaire sur le portail de paiement sécurisé.
       </Text>
 
       <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Numéro de paiement</Text>
@@ -559,6 +563,10 @@ export function PassPaymentScreen({ navigation, route }: Props) {
             : 'Traitement du paiement test…'}
         </Text>
       ) : null}
+
+      <Text style={[styles.finalSaleNote, { color: shell.pageKicker }]}>
+        Le PASS est activé dès la confirmation du paiement. Une fois payé, il n’est ni rétractable ni remboursable.
+      </Text>
 
       <Pressable
         style={[styles.btn, { backgroundColor: accent.accent, opacity: loading ? 0.65 : 1 }]}
@@ -620,7 +628,8 @@ const styles = StyleSheet.create({
   providerHint: { marginTop: 8, fontSize: 11, fontStyle: 'italic', lineHeight: 16 },
   phoneHint: { marginTop: 6, fontSize: 11, lineHeight: 16 },
   processing: { marginTop: 16, textAlign: 'center', fontSize: 13, fontWeight: '600' },
-  btn: { marginTop: 24, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  finalSaleNote: { marginTop: 20, fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  btn: { marginTop: 12, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   btnText: { fontWeight: '800', color: '#000', fontSize: 15 },
   btnOutline: { marginTop: 12, borderWidth: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   btnOutlineText: { fontWeight: '600', fontSize: 14 },

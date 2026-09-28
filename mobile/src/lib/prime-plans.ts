@@ -33,9 +33,9 @@ export function formatPassPrice(
 }
 
 export const PRIME_PLAN_OPTIONS: PrimePlanOption[] = [
-  { value: 'monthly', label: PASS_LABELS.monthly, description: 'Renouvellement chaque mois' },
-  { value: 'quarterly', label: PASS_LABELS.quarterly, description: 'Renouvellement tous les 3 mois' },
-  { value: 'annual', label: PASS_LABELS.annual, description: 'Renouvellement chaque année' },
+  { value: 'monthly', label: PASS_LABELS.monthly, description: 'Valable 1 mois, sans renouvellement automatique' },
+  { value: 'quarterly', label: PASS_LABELS.quarterly, description: 'Valable 3 mois, sans renouvellement automatique' },
+  { value: 'annual', label: PASS_LABELS.annual, description: 'Valable 12 mois, sans renouvellement automatique' },
   { value: 'lifetime', label: PASS_LABELS.lifetime, description: 'Accès permanent sans échéance' },
 ];
 

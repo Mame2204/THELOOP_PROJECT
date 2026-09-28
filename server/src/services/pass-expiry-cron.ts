@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { isPassPurchaseOpen } from '../lib/pass-commerce-settings.js';
 import { deliverPushToUserIds } from './push-delivery.js';
 
 export interface PassExpiryCronResult {
@@ -19,8 +20,10 @@ interface ExpireRpcPayload {
 }
 
 const PUSH_TITLE = 'Votre PASS Loop Prime a expiré';
-const PUSH_BODY =
+const PUSH_BODY_PURCHASE_OPEN =
   'Votre abonnement est arrivé à échéance. Renouvelez-le depuis l’onglet Abonnement pour retrouver vos avantages.';
+const PUSH_BODY_PURCHASE_CLOSED =
+  'Votre PASS est arrivé à échéance : les contenus et avantages Loop Prime ne sont plus accessibles sur votre compte.';
 
 function toUserIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -57,7 +60,8 @@ export async function runPassExpiry(supabase: SupabaseClient): Promise<PassExpir
   const userIds = toUserIds(payload.notifiedUserIds);
   if (userIds.length) {
     try {
-      const push = await deliverPushToUserIds(supabase, userIds, PUSH_TITLE, PUSH_BODY, {
+      const body = (await isPassPurchaseOpen()) ? PUSH_BODY_PURCHASE_OPEN : PUSH_BODY_PURCHASE_CLOSED;
+      const push = await deliverPushToUserIds(supabase, userIds, PUSH_TITLE, body, {
         source: 'theloop-cron',
         kind: 'pass_expired',
       });

@@ -32,6 +32,11 @@ export async function recoverPassAfterPaymentReturn(
     return { kind: 'pending' };
   }
 
+  if (status.status === 'failed' || status.status === 'cancelled') {
+    await clearPendingPaymentIntent();
+    return { kind: 'none' };
+  }
+
   if (status.fulfillmentStatus !== 'fulfilled' && status.status !== 'paid') {
     return { kind: 'pending' };
   }

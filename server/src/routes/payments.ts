@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { config, type BillingPeriod } from '../config.js';
+import { config, passLabel, type BillingPeriod } from '../config.js';
 import {
   createPaymentGateway,
   mapPaymentMethodToDjomy,
@@ -21,8 +21,12 @@ import {
   reconcilePaymentIntent,
 } from '../services/reconcile-payment-intent.js';
 import { maskPhone, normalizePayerIdentifierForDjomy } from '../lib/payer-phone.js';
+import { isPassPurchaseOpen } from '../lib/pass-commerce-settings.js';
 
 export const paymentsRouter = Router();
+
+/** L'app sonde toutes les 2,5 s ; Djomy n'est interrogé qu'une fois par fenêtre. */
+const STATUS_RECHECK_MS = 8_000;
 
 function parsePeriod(raw: unknown): BillingPeriod | null {
   if (raw === 'monthly' || raw === 'quarterly' || raw === 'annual' || raw === 'lifetime') return raw;
@@ -46,6 +50,11 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       return;
     }
 
+    if (!(await isPassPurchaseOpen())) {
+      res.status(403).json({ error: 'L\'achat de PASS n\'est pas disponible pour le moment.' });
+      return;
+    }
+
     if (!payerPhoneRaw) {
       res.status(400).json({ error: 'Numéro de paiement requis.' });
       return;
@@ -64,6 +73,10 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       const code = planErr instanceof Error ? planErr.message : 'purchase_blocked';
       if (code === 'lifetime_active') {
         res.status(409).json({ error: 'Vous avez déjà un PASS à vie.' });
+        return;
+      }
+      if (code === 'lifetime_queued') {
+        res.status(409).json({ error: 'Un PASS à vie est déjà en attente sur votre compte.' });
         return;
       }
       if (code === 'pending_limit') {
@@ -103,7 +116,7 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       countryCode: 'GN',
       payerNumber: payerPhone,
       ...(allowedPaymentMethods ? { allowedPaymentMethods } : {}),
-      description: `THE LOOP — ${period}`,
+      description: `THE LOOP — ${passLabel(period)}`,
       merchantPaymentReference: merchantReference,
       returnUrl: config.djomyReturnUrl,
       cancelUrl: config.djomyCancelUrl,
@@ -127,7 +140,7 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       payerPhone: maskPhone(payerPhone),
     });
 
-    await supabase
+    const { error: redirectError } = await supabase
       .from('payment_intents')
       .update({
         djomy_transaction_id: gateway.transactionId,
@@ -135,6 +148,13 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
         updated_at: new Date().toISOString(),
       })
       .eq('id', intentRow.id);
+
+    // Sans n° de transaction, ni le polling ni le cron ne pourraient livrer le PASS.
+    if (redirectError) {
+      console.error('[create-payment] n° transaction non enregistré', intentRow.id, redirectError.message);
+      res.status(500).json({ error: 'Impossible d\'enregistrer la commande. Réessayez.' });
+      return;
+    }
 
     res.json({
       paymentUrl,
@@ -200,7 +220,7 @@ paymentsRouter.post('/payments/:id/sandbox-complete', requireSupabaseAuth, async
   } catch (err) {
     console.error('[sandbox-complete]', err);
     const message = err instanceof Error ? err.message : 'Erreur serveur.';
-    if (message === 'lifetime_active' || message === 'pending_limit') {
+    if (/lifetime_active|lifetime_queued|pending_limit/.test(message)) {
       res.status(409).json({ error: message });
       return;
     }
@@ -219,7 +239,10 @@ paymentsRouter.get('/payments/:id/status', requireSupabaseAuth, async (req, res)
       return;
     }
 
-    if (data.fulfillment_status === 'pending' && data.djomy_transaction_id) {
+    const lastCheck = data.last_checked_at ? new Date(data.last_checked_at).getTime() : 0;
+    const recentlyChecked = Date.now() - lastCheck < STATUS_RECHECK_MS;
+
+    if (data.fulfillment_status === 'pending' && data.djomy_transaction_id && !recentlyChecked) {
       try {
         data = await reconcilePaymentIntent(data);
       } catch (reconcileErr) {

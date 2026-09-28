@@ -36,8 +36,10 @@ async function loadUserPassGrants(userId: string): Promise<PassGrantRow[]> {
     .from('user_pass_grants')
     .select('status, expires_at, pass_kind, label, billing_period, scheduled_start_at')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(15);
+    .in('status', ['active', 'pending'])
+    .order('paid_at', { ascending: true, nullsFirst: true })
+    .order('started_at', { ascending: true })
+    .limit(100);
 
   if (error) throw new Error(`Lecture PASS : ${error.message}`);
   return (data ?? []) as PassGrantRow[];
@@ -75,6 +77,10 @@ export async function buildFulfillmentPlan(
     throw new Error('lifetime_active');
   }
 
+  if (pending.some((g) => g.billing_period === 'lifetime')) {
+    throw new Error('lifetime_queued');
+  }
+
   const maxPending = await resolveMaxPendingPasses();
   if (active && pending.length >= maxPending) {
     throw new Error('pending_limit');
@@ -109,7 +115,7 @@ export async function markFulfillmentFailed(
   const supabase = getSupabaseAdmin();
   const now = new Date().toISOString();
   console.error('[fulfillment] Échec intent', intent.id, reason);
-  await supabase
+  const { data } = await supabase
     .from('payment_intents')
     .update({
       fulfillment_status: 'failed',
@@ -119,9 +125,24 @@ export async function markFulfillmentFailed(
       last_webhook_at: now,
     })
     .eq('id', intent.id)
-    .in('fulfillment_status', ['pending', 'failed']);
+    .eq('fulfillment_status', 'pending')
+    .select('id');
 
-  await notifyAdminsPaymentAlert(supabase, { kind: 'fulfillment_failed', intent });
+  // Les nouvelles tentatives (cron, resync) ne renvoient pas la même alerte.
+  if ((data ?? []).length > 0) {
+    await notifyAdminsPaymentAlert(supabase, { kind: 'fulfillment_failed', intent });
+  }
+}
+
+interface FulfillIntentRpcResult {
+  already: boolean;
+  pass_status: 'active' | 'pending';
+  expires_at: string | null;
+  scheduled_start_at: string | null;
+}
+
+function isMissingRpc(error: { code?: string; message?: string }): boolean {
+  return error.code === 'PGRST202' || /could not find the function/i.test(error.message ?? '');
 }
 
 export async function fulfillPaymentIntent(
@@ -133,7 +154,7 @@ export async function fulfillPaymentIntent(
     return { passGrantStatus: (intent.pass_grant_status as 'active' | 'pending') ?? 'active' };
   }
 
-  if (paidAmount < intent.amount_gnf) {
+  if (!Number.isFinite(paidAmount) || paidAmount < intent.amount_gnf) {
     throw new Error(`Montant insuffisant : ${paidAmount} < ${intent.amount_gnf}`);
   }
 
@@ -141,15 +162,55 @@ export async function fulfillPaymentIntent(
     throw new Error('Période de facturation invalide.');
   }
 
-  const plan = await buildFulfillmentPlan(intent.user_id, intent.billing_period);
+  const supabase = getSupabaseAdmin();
+  const { data: rpcData, error: atomicError } = await supabase.rpc('fulfill_payment_intent', {
+    p_intent_id: intent.id,
+    p_transaction_id: transactionId,
+    p_paid_amount: Math.round(paidAmount),
+  });
+
+  if (!atomicError) {
+    const result = rpcData as FulfillIntentRpcResult;
+    if (!result.already) {
+      try {
+        await notifyUserPassPaymentFulfilled(
+          intent.user_id,
+          intent.billing_period,
+          result.pass_status,
+          result.expires_at,
+          result.scheduled_start_at,
+        );
+      } catch (notifyErr) {
+        console.warn('[fulfillment] notification PASS', notifyErr);
+      }
+    }
+    return { passGrantStatus: result.pass_status };
+  }
+
+  if (!isMissingRpc(atomicError)) {
+    await markFulfillmentFailed(intent, `Fulfillment RPC : ${atomicError.message}`);
+    throw new Error(`Fulfillment RPC : ${atomicError.message}`);
+  }
+
+  // Base sans la migration 20260958 : ancien chemin, non atomique.
+  return fulfillPaymentIntentLegacy(intent, transactionId, paidAmount, intent.billing_period);
+}
+
+async function fulfillPaymentIntentLegacy(
+  intent: PaymentIntentRow,
+  transactionId: string,
+  paidAmount: number,
+  period: BillingPeriod,
+): Promise<{ passGrantStatus: 'active' | 'pending' }> {
+  const plan = await buildFulfillmentPlan(intent.user_id, period);
   const supabase = getSupabaseAdmin();
   const now = new Date().toISOString();
-  const label = passLabel(intent.billing_period);
+  const label = passLabel(period);
 
   const { error: rpcError } = await supabase.rpc('fulfill_djomy_pass_payment', {
     p_user_id: intent.user_id,
     p_local_pass_id: intent.local_pass_id,
-    p_pass_catalog_id: `prime-${intent.billing_period}`,
+    p_pass_catalog_id: `prime-${period}`,
     p_label: label,
     p_status: plan.passStatus,
     p_started_at: plan.startedAt,
@@ -157,7 +218,7 @@ export async function fulfillPaymentIntent(
     p_amount_gnf: intent.amount_gnf,
     p_payment_method: intent.payment_method,
     p_paid_at: now,
-    p_billing_period: intent.billing_period,
+    p_billing_period: period,
     p_scheduled_start_at: plan.scheduledStartAt,
     p_promote_prime: plan.promotePrime,
     p_djomy_transaction_id: transactionId,
@@ -190,7 +251,7 @@ export async function fulfillPaymentIntent(
   try {
     await notifyUserPassPaymentFulfilled(
       intent.user_id,
-      intent.billing_period,
+      period,
       plan.passStatus,
       plan.expiresAt,
       plan.scheduledStartAt,

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import type { PrimeBillingPeriod } from '@/lib/prime-plans';
 import type { PassPaymentMethod } from '@/lib/subscription-history';
+import { SUPPORT_EMAIL } from '@/lib/support-contact';
 
 const PAYMENT_API_URL = process.env.EXPO_PUBLIC_PAYMENT_API_URL?.replace(/\/$/, '') ?? '';
 
@@ -261,6 +262,11 @@ export async function waitForDjomyFulfillment(
       lastStatus = status;
       sawNetworkError = false;
       if (status.fulfillmentStatus === 'fulfilled') return status;
+      if (status.fulfillmentStatus === 'failed') {
+        throw new Error(
+          `Paiement reçu, mais l’activation du PASS a échoué. L’équipe est prévenue et régularise votre compte ; en cas de besoin, écrivez à ${SUPPORT_EMAIL}.`,
+        );
+      }
       if (status.status === 'failed' || status.status === 'cancelled') {
         throw new Error(
           status.status === 'cancelled'
@@ -269,7 +275,7 @@ export async function waitForDjomyFulfillment(
         );
       }
     } catch (err) {
-      if (err instanceof Error && /annulé|refusé/i.test(err.message)) {
+      if (err instanceof Error && /annulé|refusé|a échoué/i.test(err.message)) {
         throw err;
       }
       if (isTransientPaymentNetworkError(err)) {

@@ -15,6 +15,13 @@ const LEGACY_KEY = 'loop_pass_prices_v1';
 
 export type PassPriceMap = Record<PrimeBillingPeriod, number>;
 
+/**
+ * Pays de facturation du PASS : le serveur de paiement (Djomy) encaisse uniquement
+ * en Guinée avec `pass_prices_v1_GN`. La boutique doit afficher ce tarif, même si
+ * le membre explore un autre pays.
+ */
+export const PASS_PURCHASE_COUNTRY_CODE: CountryCode = 'GN';
+
 /** Tarifs PASS par défaut selon le pays (devise locale). */
 export function defaultPassPricesForCountry(countryCode: CountryCode = DEFAULT_COUNTRY_CODE): PassPriceMap {
   switch (countryCode) {

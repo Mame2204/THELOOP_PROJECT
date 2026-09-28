@@ -201,7 +201,38 @@ export async function probeDjomyAuth(): Promise<DjomyAuthProbe> {
   }
 }
 
+/** Durée de vie du jeton Djomy non documentée : on reste prudent. */
+const ACCESS_TOKEN_TTL_MS = 4 * 60 * 1000;
+let cachedAccessToken: { value: string; expiresAt: number } | null = null;
+
 async function getAccessToken(): Promise<string> {
+  if (cachedAccessToken && cachedAccessToken.expiresAt > Date.now()) {
+    return cachedAccessToken.value;
+  }
+  const value = await requestAccessToken();
+  cachedAccessToken = { value, expiresAt: Date.now() + ACCESS_TOKEN_TTL_MS };
+  return value;
+}
+
+/** Appel Djomy authentifié ; un 401 invalide le jeton en cache et relance une fois. */
+async function fetchWithAccessToken(
+  url: string,
+  init: { method: string; headers?: Record<string, string>; body?: string },
+): Promise<Response> {
+  const send = async () => {
+    const accessToken = await getAccessToken();
+    return fetch(url, {
+      ...init,
+      headers: djomySignedHeaders({ ...init.headers, Authorization: `Bearer ${accessToken}` }),
+    });
+  };
+  const response = await send();
+  if (response.status !== 401) return response;
+  cachedAccessToken = null;
+  return send();
+}
+
+async function requestAccessToken(): Promise<string> {
   const response = await fetch(`${config.djomyBaseUrl}/v1/auth`, {
     method: 'POST',
     headers: djomyAuthHeaders({ 'Content-Type': 'application/json' }),
@@ -222,13 +253,9 @@ async function getAccessToken(): Promise<string> {
 export async function createPaymentGateway(
   input: CreatePaymentGatewayInput,
 ): Promise<CreatedPaymentGatewayData> {
-  const accessToken = await getAccessToken();
-  const response = await fetch(`${config.djomyBaseUrl}/v1/payments/gateway`, {
+  const response = await fetchWithAccessToken(`${config.djomyBaseUrl}/v1/payments/gateway`, {
     method: 'POST',
-    headers: djomySignedHeaders({
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       amount: input.amount,
       countryCode: input.countryCode,
@@ -252,11 +279,10 @@ export async function createPaymentGateway(
 }
 
 export async function verifyPayment(transactionId: string): Promise<VerifiedPaymentData> {
-  const accessToken = await getAccessToken();
-  const response = await fetch(`${config.djomyBaseUrl}/v1/payments/${transactionId}/status`, {
-    method: 'GET',
-    headers: djomySignedHeaders({ Authorization: `Bearer ${accessToken}` }),
-  });
+  const response = await fetchWithAccessToken(
+    `${config.djomyBaseUrl}/v1/payments/${encodeURIComponent(transactionId)}/status`,
+    { method: 'GET' },
+  );
 
   const result = (await response.json()) as DjomyResponse<VerifiedPaymentData>;
   if (!result.success) {
