@@ -266,6 +266,14 @@ export function ParametresPage() {
             />
             Achat PASS activé
           </label>
+          <label className="check-inline" style={{ display: 'flex', marginBottom: 10 }}>
+            <input
+              type="checkbox"
+              checked={gates.privilegesVisible}
+              onChange={(e) => setGates((g) => ({ ...g, privilegesVisible: e.target.checked }))}
+            />
+            Privilèges visibles sur les fiches (indépendant de l’achat PASS)
+          </label>
 
           <h4>Avant-lancement</h4>
           <label className="check-inline" style={{ display: 'flex', marginBottom: 10 }}>
