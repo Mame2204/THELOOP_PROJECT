@@ -280,19 +280,6 @@ export function ProfilScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      {user && user.id !== 'anonymous' ? (
-        <Pressable
-          style={[styles.legalEntry, { borderColor: shell.filterInactiveBorder }]}
-          onPress={() => navigation.navigate('Settings')}
-          accessibilityRole="button"
-          accessibilityLabel="Informations légales et suppression de compte"
-        >
-          <Text style={[styles.legalEntryText, { color: shell.tabIndicator }]}>
-            CGU, confidentialité et suppression de compte
-          </Text>
-        </Pressable>
-      ) : null}
-
       {showPrimeUpgrade && (
         <>
           <View style={[styles.divider, { backgroundColor: shell.filterInactiveBorder }]} />
@@ -363,15 +350,6 @@ const styles = StyleSheet.create({
   btnOutline: { marginTop: 12, borderWidth: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   btnOutlineText: { fontWeight: '600' },
   profileActions: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  legalEntry: {
-    marginTop: 12,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-  },
-  legalEntryText: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
   btnHalf: { flex: 1, marginTop: 0 },
   divider: { height: StyleSheet.hairlineWidth, marginTop: 20, marginBottom: 4 },
   referralCard: { marginTop: 16, borderWidth: 1, borderRadius: 14, padding: 14 },

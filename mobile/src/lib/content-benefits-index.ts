@@ -110,10 +110,7 @@ export async function listCatalogBenefitsForContent(
   if (!contentId.trim()) return [];
   const catalog = await loadCatalogForContentLookup(options?.refreshCatalog === true);
   const lookupIds = new Set(resolveContentBenefitLookupIds(contentId, contentType));
-  const strict = catalog.filter((item) => catalogItemMatchesContentBenefit(item, lookupIds, contentType));
-  if (strict.length > 0 || !contentType) return strict;
-  // Type catalogue parfois absent ou incohérent côté offering_partners — ne pas masquer la fiche.
-  return catalog.filter((item) => catalogItemMatchesContentBenefit(item, lookupIds, undefined));
+  return catalog.filter((item) => catalogItemMatchesContentBenefit(item, lookupIds, contentType));
 }
 
 /** Rôles associés (config locale) — 1 catalogId → N rôles. */

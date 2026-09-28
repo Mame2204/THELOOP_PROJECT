@@ -1,15 +1,12 @@
 import { useCallback, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import Constants from 'expo-constants';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CloseAccountSheet } from '@/components/CloseAccountSheet';
 import { CountrySelectField } from '@/components/CountrySelectField';
 import { LegalPreviewModal } from '@/components/LegalPreviewModal';
-import { SettingsLegalLinks } from '@/components/SettingsLegalLinks';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContentCountries } from '@/context/ContentCountriesContext';
 import { useViewingCountry } from '@/context/ViewingCountryContext';
-import { useScrollContentContainerStyle } from '@/hooks/useScrollContentContainerStyle';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { COMMUNITY_CLOSE_ACCOUNT_CTA } from '@/lib/community-copy';
 import { DEFAULT_COUNTRY_CODE, getCountryLabel, type CountryCode } from '@/lib/countries';
@@ -20,16 +17,11 @@ import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
-function appBuildLabel(): string {
-  const version = Constants.expoConfig?.version ?? '?';
-  const androidCode = Constants.expoConfig?.android?.versionCode;
-  const iosBuild = Constants.expoConfig?.ios?.buildNumber;
-  const build =
-    Platform.OS === 'android'
-      ? (androidCode != null ? String(androidCode) : '?')
-      : (iosBuild ?? '?');
-  return `Version ${version} · build ${build}`;
-}
+const LEGAL_LINKS: { key: LegalContentKey; label: string }[] = [
+  { key: 'cgu', label: 'Conditions générales d’utilisation' },
+  { key: 'privacy_policy', label: 'Politique de confidentialité' },
+  { key: 'mentions_legales', label: 'Mentions légales' },
+];
 
 export function SettingsScreen({ navigation }: Props) {
   const { user } = useAuthContext();
@@ -41,10 +33,6 @@ export function SettingsScreen({ navigation }: Props) {
     countries,
     isExploringOtherCountry,
   } = useViewingCountry();
-  const scrollContentStyle = useScrollContentContainerStyle(styles.container, {
-    stickyHeaderEstimate: 56,
-    paddingBottom: 48,
-  });
   const [saving, setSaving] = useState(false);
   const [closeAccountOpen, setCloseAccountOpen] = useState(false);
   const [legalPreview, setLegalPreview] = useState<{ title: string; body: string } | null>(null);
@@ -93,34 +81,11 @@ export function SettingsScreen({ navigation }: Props) {
   }, []);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: shell.pageBg }}
-      contentContainerStyle={scrollContentStyle}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator
-    >
+    <ScrollView style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
       <Text style={[styles.kicker, { color: shell.pageKicker }]}>Compte</Text>
       <Text style={[styles.title, { color: shell.pageTitle }]}>Paramètres</Text>
 
-      <Text style={[styles.section, { color: shell.pageKicker }]}>Informations légales</Text>
-      <SettingsLegalLinks shell={shell} onOpen={(key) => void openLegalDoc(key)} />
-
-      {canRequestDeletion ? (
-        <>
-          <Text style={[styles.section, { color: shell.pageKicker }]}>Mon compte</Text>
-          <Pressable
-            style={[styles.card, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
-            onPress={() => setCloseAccountOpen(true)}
-          >
-            <Text style={styles.deleteText}>{COMMUNITY_CLOSE_ACCOUNT_CTA}</Text>
-            <Text style={[styles.cardHint, { color: shell.pageKicker, marginTop: 4 }]}>
-              Demander la suppression de votre compte et de vos données.
-            </Text>
-          </Pressable>
-        </>
-      ) : null}
-
-      <Text style={[styles.section, { color: shell.pageKicker, marginTop: 8 }]}>Pays & contenu</Text>
+      <Text style={[styles.section, { color: shell.pageKicker }]}>Pays & contenu</Text>
 
       <CountrySelectField
         value={accountCountry}
@@ -178,7 +143,38 @@ export function SettingsScreen({ navigation }: Props) {
         </View>
       )}
 
-      <Text style={[styles.buildLabel, { color: shell.pageKicker }]}>{appBuildLabel()}</Text>
+      {canRequestDeletion ? (
+        <>
+          <Text style={[styles.section, { color: shell.pageKicker, marginTop: 16 }]}>Mon compte</Text>
+          <Pressable
+            style={[styles.card, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
+            onPress={() => setCloseAccountOpen(true)}
+          >
+            <Text style={styles.deleteText}>{COMMUNITY_CLOSE_ACCOUNT_CTA}</Text>
+            <Text style={[styles.cardHint, { color: shell.pageKicker, marginTop: 4 }]}>
+              Demander la suppression de votre compte et de vos données.
+            </Text>
+          </Pressable>
+        </>
+      ) : null}
+
+      <Text style={[styles.section, { color: shell.pageKicker, marginTop: 16 }]}>Informations légales</Text>
+      <View style={[styles.card, styles.legalCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
+        {LEGAL_LINKS.map((link, index) => (
+          <Pressable
+            key={link.key}
+            style={[
+              styles.legalRow,
+              index > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: shell.filterInactiveBorder } : null,
+            ]}
+            onPress={() => void openLegalDoc(link.key)}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.legalLabel, { color: shell.pageTitle }]}>{link.label}</Text>
+            <Text style={[styles.legalChevron, { color: shell.pageKicker }]}>›</Text>
+          </Pressable>
+        ))}
+      </View>
 
       <Pressable style={styles.btnGhost} onPress={() => navigation.goBack()}>
         <Text style={[styles.btnGhostText, { color: shell.pageKicker }]}>Retour</Text>
@@ -214,8 +210,11 @@ const styles = StyleSheet.create({
   cardHint: { marginTop: 8, fontSize: 12, lineHeight: 18 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   switchText: { flex: 1 },
+  legalCard: { paddingVertical: 0 },
+  legalRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
+  legalLabel: { flex: 1, fontSize: 14, fontWeight: '600' },
+  legalChevron: { fontSize: 20, fontWeight: '600' },
   deleteText: { fontSize: 15, fontWeight: '700', color: '#D14343' },
-  buildLabel: { marginTop: 8, fontSize: 11, textAlign: 'center', opacity: 0.75 },
   btnGhost: { marginTop: 16, alignItems: 'center', paddingVertical: 12 },
   btnGhostText: { fontWeight: '600' },
 });

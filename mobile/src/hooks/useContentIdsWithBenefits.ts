@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAppGates } from '@/context/AppGatesContext';
 import { useFocusLoad } from '@/hooks/useFocusLoad';
 import {
   contentHasLinkedActiveBenefit,
@@ -7,13 +6,10 @@ import {
   type ContentBenefitContentType,
 } from '@/lib/content-benefits-index';
 import { subscribeHomeRefresh } from '@/lib/home-refresh';
-import { isPrivilegesUiEnabled } from '@/lib/pass-purchase-ui';
 
 /** IDs de contenus liés à au moins un privilège catalogue actif (cache + refresh au focus). */
 export function useContentIdsWithBenefits(options?: { enabled?: boolean }) {
   const enabled = options?.enabled !== false;
-  const { gates } = useAppGates();
-  const privilegesVisible = isPrivilegesUiEnabled(gates);
   const [ids, setIds] = useState<Set<string>>(() => new Set());
 
   const loader = useCallback(async () => {
@@ -29,14 +25,6 @@ export function useContentIdsWithBenefits(options?: { enabled?: boolean }) {
   );
 
   useEffect(() => {
-    if (!enabled || !privilegesVisible) {
-      setIds(new Set());
-      return;
-    }
-    void run(true);
-  }, [enabled, privilegesVisible, run]);
-
-  useEffect(() => {
     if (!enabled) return;
     return subscribeHomeRefresh((reason) => {
       if (reason === 'benefit-catalog' || reason === 'benefit-grants' || reason.startsWith('admin-')) {
@@ -46,11 +34,9 @@ export function useContentIdsWithBenefits(options?: { enabled?: boolean }) {
   }, [enabled, run]);
 
   const hasBenefit = useCallback(
-    (contentId: string, contentType?: ContentBenefitContentType) => {
-      if (!privilegesVisible) return false;
-      return contentHasLinkedActiveBenefit(ids, contentId, contentType);
-    },
-    [ids, privilegesVisible],
+    (contentId: string, contentType?: ContentBenefitContentType) =>
+      contentHasLinkedActiveBenefit(ids, contentId, contentType),
+    [ids],
   );
 
   return { benefitContentIds: ids, hasBenefit, refreshBenefitIds: run };
