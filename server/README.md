@@ -14,7 +14,7 @@ Serveur THE LOOP (secrets Djomy + service role)
 Portail Djomy (Orange Money / carte)
     │  webhook payment.success
     ▼
-Serveur → verify_payment → fulfill_djomy_pass_payment (Supabase)
+Serveur → verify_payment → fulfill_payment_intent (Supabase, atomique)
     │
 App mobile ← poll GET /api/payments/:id/status ← sync PASS cloud
 ```
