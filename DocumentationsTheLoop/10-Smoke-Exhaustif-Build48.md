@@ -509,7 +509,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 |---|----------|----|----|-----|
 | 1 | Soumission partenaire → super admin **push OS + cloche inbox** | [x] | [x] | — |
 | 2 | Partenaire **annule** demande retrait pending → contenu reste Mon contenu | [x] | [x] | — |
-| 3 | Admin **approuve** retrait → contenu disparaît catalogue public | [ ] | [ ] | [x] |
+| 3 | Admin **approuve** retrait → contenu disparaît catalogue public | [x] | [x] | [x] |
 | 4 | Tirage → gagnant push **« Nouveau privilège »** + fiche déverrouillée | [x] | [x] | [x] |
 | 5 | Tirage membre non-Prime → accès fiche sans « réservé Prime » | [x] | [x] | — |
 | 6 | Privilège contenu lié → Prime sans octroi = cadenas | [x] | [x] | — |
@@ -1395,7 +1395,9 @@ Mobile / 💻 (27 sept. · **bloc sans build 53** · testeur) :
   - **PASS SANS53-C3** : Profil · Nous contacter · coordonnées THE LOOP
 Doc / prod (27 sept. soir · agent · resync checklist) :
   - **SQL 20260952** OK testeur · **PR #69** merge `main` (approve retrait mobile)
-  - **Phase 1 #3** 📱🤖 **décoché** — retest **build 54+** (FAIL approve mobile build 51)
+  - **Phase 1 #3** 📱🤖 **PASS** **28 sept.** build **54** 🤖 (approve retrait mobile admin · testeur)
+  - **Build 54 bloc 0** **28 sept.** 🤖 : connexion membre · gate achat PASS OFF · **L5 Paramètres** CGU / confidentialité / mentions / fermer compte / pays **PASS** *(réinstall APK)*
+  - **Gates Privilèges / Achat PASS** **28 sept.** 🤖 **PASS** (interrupteurs cohérents liste + fiche après bon binaire)
   - **Métriques** : **388/400 ≈ 97 %** · **506/530 ≈ 95 %** · pilotage **4 quarts** (§ métriques)
   - **Pack SANS53** = archive · ne pas relancer
 
