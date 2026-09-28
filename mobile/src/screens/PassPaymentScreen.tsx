@@ -270,12 +270,14 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     } else if (/Network request failed|connexion.*interrompue/i.test(msg)) {
       Alert.alert(
         'Connexion interrompue',
-        'Le serveur de paiement n’a pas répondu à temps. Si Soutra a confirmé le débit, ouvrez Mon PASS dans 1–2 minutes.',
+        'Le serveur de paiement n’a pas répondu à temps. Si votre opérateur a confirmé le débit, ouvrez Mon PASS dans 1–2 minutes.',
         [
           { text: 'Voir Mon PASS', onPress: () => navigation.replace('Abonnement') },
           { text: 'OK', style: 'cancel' },
         ],
       );
+    } else if (/activation du PASS a échoué/i.test(msg)) {
+      Alert.alert('Paiement reçu', msg);
     } else if (/Mon PASS/i.test(msg)) {
       void (async () => {
         try {
