@@ -2,9 +2,8 @@
 setlocal
 echo === Activer le code e-mail pour les invitations (Edge secret) ===
 echo.
-echo Meme token que configure-auth-invite-email.cmd :
+echo Meme token que configure-auth-invite-email.cmd (sbp_..., acces COMPLET projet THE LOOP)
 echo   https://supabase.com/dashboard/account/tokens
-echo   (Access Token personnel, souvent sbp_... — PAS la cle anon/service du projet)
 echo.
 echo Pour DESACTIVER le secret : meme token + scripts\set-invite-require-email-code.mjs false
 echo.
