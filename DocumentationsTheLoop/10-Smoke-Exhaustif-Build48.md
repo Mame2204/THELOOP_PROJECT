@@ -31,9 +31,9 @@ Cocher `- [ ]` → `- [x]`. Noter PASS/FAIL dans le **Journal** (fin de doc).
 | Admin délégué | *(compte avec overrides)* | Permissions partielles |
 | Membre | `membre@theloop.gn` | `member` |
 | Prime | `prime@theloop.gn` | PASS actif |
-| Partenaire | `contact@lavenue.gn` | Espace Pro |
+| Partenaire | *(compte partenaire test réel — `contact@lavenue.gn` n'existe pas en base)* | Espace Pro |
 
-Jetons démo : partenaire `SPOT-DEMO-2026` · VIP `INVIT-DEMO-2026` · OTP BL `1234`
+Jetons démo : ~~partenaire `SPOT-DEMO-2026`~~ **révoqué** (migration 20260954) · VIP `INVIT-DEMO-2026` · OTP BL `1234` *(démo locale uniquement)*
 
 ---
 
@@ -485,9 +485,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260949_admin_orphan_delete_auth_user.sql` — suppression orphelin inclut **auth.users** *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260950_invite_activation_preserve_names.sql` — identité activation > Membre/THE LOOP *(27 sept. · **OK Supabase** · testeur)*
 - [x] `20260952_admin_approve_partner_withdrawal.sql` — RPC approve retrait partenaire *(27 sept. · **OK Supabase** · testeur)*
-- [ ] `20260953_security_hardening_roles_invites_submissions.sql` — audit sécurité : rôle jamais repris du client, garde soumissions partenaires, invitations, suppression orphelin *(+ redeploy Edge **`member-activate-invite`** et **`send-push`**)*
-- [ ] `20260954_security_revoke_demo_spot_and_guards.sql` — SPOT-DEMO-2026 révoqué, rôle imposé à la création du profil, octrois de privilèges non modifiables par le membre (révocation admin réparée), RPC internes fermées
-- [ ] `20260955_security_anon_sweep_notifications_pass.sql` — droits « sans compte » remis à plat (et coupés par défaut pour les futures fonctions), inbox par téléphone limitée à son numéro, notify_user partenaire limité à ses clients, PASS non prolongeable par le membre, limite d'essais « Code établissement » *(+ redeploy Edge **`member-activate-invite`** : activation par code e-mail, interrupteur `INVITE_REQUIRE_EMAIL_CODE` à passer à `true` quand toutes les apps installées ont l'écran code)*
+- [x] `20260953_security_hardening_roles_invites_submissions.sql` — audit sécurité : rôle jamais repris du client, garde soumissions partenaires, invitations, suppression orphelin *(28 sept. · **OK Supabase prod** · testeur)* *(+ redeploy Edge **`member-activate-invite`** et **`send-push`**)*
+- [x] `20260954_security_revoke_demo_spot_and_guards.sql` — SPOT-DEMO-2026 révoqué, rôle imposé à la création du profil, octrois de privilèges non modifiables par le membre (révocation admin réparée), RPC internes fermées *(28 sept. · **OK Supabase prod** · testeur)*
+- [x] `20260955_security_anon_sweep_notifications_pass.sql` — droits « sans compte » remis à plat (et coupés par défaut pour les futures fonctions), inbox par téléphone limitée à son numéro, notify_user partenaire limité à ses clients, PASS non prolongeable par le membre, limite d'essais « Code établissement » *(28 sept. · **OK Supabase prod** · testeur)* *(+ redeploy Edge **`member-activate-invite`** : activation par code e-mail, interrupteur `INVITE_REQUIRE_EMAIL_CODE` à passer à `true` quand toutes les apps installées ont l'écran code)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -513,6 +513,52 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | 7 | Modération événement + intervenant **sans titre** → validation OK | [x] | [x] | [x] |
 
 > **Phase 1 #3 📱🤖 :** approve retrait **super admin mobile** = **FAIL** build 51 (succès UI local · pas persisté) — **retest build 54+** *(PR **#69** · SQL **20260952** OK)* · **💻** reste **PASS**.
+
+## Phase 1b — Sécurité (audit 27–28 sept. · migrations 20260953 → 20260955)
+
+> **Prérequis :** Edge **`send-push`** + **`member-activate-invite`** redéployées · build **54+** (lancé depuis `main` après PR **#72**).  
+> Bloquer la publication stores si FAIL sur une ligne **S1–S10**.
+
+### Contrôles serveur *(sans app · agent · clé publique de l'app)*
+- [x] **🤖✓** Sans compte : empreinte catalogue, sondage accueil, disponibilité e-mail, écran « Code établissement » (QR, validations en attente) → **OK** *(28 sept. · prod)*
+- [x] **🤖✓** Sans compte : RPC admin, inbox par téléphone, `notify_user`, `admin_inbox_broadcast`, code d'un établissement, logos accueil, activation d'invitation → **refusés (401)** *(28 sept. · prod)*
+- [x] **🤖✓** `SPOT-DEMO-2026` → aucun résultat (révoqué) *(28 sept. · prod)*
+- [x] **🤖✓** `/health` Render : Djomy production · `sandboxMode: false` *(28 sept.)*
+- [ ] **💻** Edge déployées : `supabase functions deploy send-push member-activate-invite` *(testeur, PC)*
+
+### Parcours à retester sur device *(build 54+)*
+- [ ] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés
+- [ ] **S2 📱🤖** Activation invitation **membre** : « Recevoir un code par e-mail » → e-mail « Nouveau mot de passe » avec code 6 chiffres → saisie du code → compte actif, prénom/nom conservés
+- [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
+- [ ] **S4 📱🤖** Activation invitation **sans code** : acceptée tant que `INVITE_REQUIRE_EMAIL_CODE` est absent ; **refusée** (« Mettez à jour THE LOOP… ») une fois le secret à `true`
+- [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
+- [ ] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK
+- [ ] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre
+- [ ] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal
+- [ ] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance**
+- [ ] **S10 📱🤖** Partenaire : soumission événement/lieu → modération admin → publication (le partenaire ne peut pas s'auto-publier)
+- [ ] **S11 💻** Insights → Privilèges : bouton **« Révoquer »** sur un octroi → statut expiré (ne marchait pas avant 20260954)
+- [ ] **S12 💻** Campagne push admin > 50 destinataires → envoi OK (limite réservée aux non-admins)
+- [ ] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK
+
+### Après installation du build 54+ chez tous les testeurs
+- [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté
+
+---
+
+## Prérequis publication stores (hors smoke fonctionnel)
+
+| # | Point | Statut | Action |
+|---|-------|--------|--------|
+| P1 | **Suppression de compte depuis l'app** (obligatoire Apple 5.1.1(v) + Google Play) | ❌ `CloseAccountSheet` existe mais n'est ouvert nulle part | Brancher dans Profil / Paramètres + page web de demande de suppression (URL exigée par Google) |
+| P2 | **Paiement PASS hors In-App Purchase** (Apple 3.1.1 · Google Play Billing) | ⚠️ Risque de refus | Argumenter « services physiques chez partenaires » ou prévoir IAP pour la partie contenu exclusif |
+| P3 | Permission **micro** Android non utilisée | ✅ Retirée (build 54+) | — |
+| P4 | Formulaires **App Privacy** (Apple) et **Sécurité des données** (Google) | ⏳ | Déclarer : e-mail, téléphone, localisation (ville), photos, caméra (QR), push, paiement via Djomy |
+| P5 | Politique de confidentialité + CGU accessibles (URL publique) | ✅ dans l'app | Vérifier l'URL publique pour les fiches stores |
+| P6 | Clé Firebase restreinte (console Google) | ⏳ | Restreindre au package `gn.theloop.app` |
+| P7 | Version publique | ⏳ | `version` = `0.1.0` dans `app.json` → passer à `1.0.0` pour la sortie |
+| P8 | Comptes de test pour les reviewers Apple / Google | ⏳ | Fournir un compte membre + Prime dans les notes de review (hors doc) |
+| P9 | Smoke fonctionnel restant (activation build 53, retrait admin mobile 54+, B1 éditeurs web) | ⏳ | Voir « Reste ouvert » |
 
 ---
 
