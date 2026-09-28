@@ -30,5 +30,6 @@ describe('email-auth', () => {
   it('exige lettre et chiffre dans le mot de passe', () => {
     expect(validateSignupPassword('abcdefgh', 'abcdefgh')).toMatch(/lettre/i);
     expect(validateSignupPassword('abc12345', 'abc12345')).toBeNull();
+    expect(validateSignupPassword(' abcd1234! ', ' abcd1234! ')).toBeNull();
   });
 });
