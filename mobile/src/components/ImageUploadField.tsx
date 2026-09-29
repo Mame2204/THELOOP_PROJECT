@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -32,9 +32,8 @@ interface Props {
 }
 
 /**
- * Champ image admin.
- * Aperçu = expo-image (même moteur que l’Accueil) + taille en px (évite hauteur 0 Android).
- * Après sélection : on garde le fichier local file:// pour l’aperçu, l’URL https part dans `value`.
+ * Champ image admin / partenaire.
+ * Aperçu local file:// pendant le téléversement ; bascule vers l’URL https une fois en cache (expo-image prefetch).
  */
 export function ImageUploadField({
   label,
@@ -48,16 +47,38 @@ export function ImageUploadField({
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [remoteReady, setRemoteReady] = useState(false);
 
   const { width: windowWidth } = useWindowDimensions();
   const previewAspect = cropAspect[0] / cropAspect[1];
   const boxWidth = Math.round(Math.min(windowWidth - 48, windowWidth * 0.92));
   const boxHeight = Math.round(boxWidth / previewAspect);
 
-  const shown = previewUri || value;
+  const remoteUrl = value.trim();
+  const displayUri =
+    remoteUrl && previewUri && !remoteReady ? previewUri : previewUri || remoteUrl || '';
+
+  useEffect(() => {
+    if (!remoteUrl.startsWith('http')) {
+      setRemoteReady(false);
+      return;
+    }
+    let cancelled = false;
+    setRemoteReady(false);
+    void Image.prefetch(remoteUrl, 'memory-disk').then((ok) => {
+      if (!cancelled && ok) {
+        setRemoteReady(true);
+        setPreviewUri(null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [remoteUrl]);
 
   async function handlePick() {
     setUploading(true);
+    setRemoteReady(false);
     try {
       const rawUri = await pickImageFromLibrary({
         aspect: cropAspect,
@@ -71,8 +92,6 @@ export function ImageUploadField({
 
       const url = await uploadContentImage(preparedUri, folder, { aspect: cropAspect });
       onChange(url);
-      // Aperçu local (file/content) peut rester noir sur Android alors que l’URL https est OK.
-      setPreviewUri(null);
 
       if (!isSupabaseConfigured()) {
         Alert.alert(
@@ -92,22 +111,23 @@ export function ImageUploadField({
     <View style={styles.wrap}>
       <Text style={[styles.label, { color: shell.pageKicker }]}>{label}</Text>
 
-      {shown ? (
+      {displayUri ? (
         <View style={[styles.previewWrap, { width: boxWidth, height: boxHeight }]}>
           <Image
-            key={shown}
-            source={{ uri: shown }}
+            key={displayUri}
+            source={{ uri: displayUri }}
             style={{ width: boxWidth, height: boxHeight }}
             contentFit="cover"
             contentPosition="top"
             cachePolicy="memory-disk"
-            transition={0}
-            recyclingKey={shown}
+            transition={120}
+            recyclingKey={displayUri}
           />
           <Pressable
             style={styles.removeBtn}
             onPress={() => {
               setPreviewUri(null);
+              setRemoteReady(false);
               onChange('');
             }}
           >
@@ -168,6 +188,7 @@ export function ImageUploadField({
           value={value}
           onChangeText={(t) => {
             setPreviewUri(null);
+            setRemoteReady(false);
             onChange(t);
           }}
           placeholder="https://..."
@@ -192,7 +213,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 8,
-    backgroundColor: '#111827',
+    backgroundColor: '#E5E7EB',
     position: 'relative',
   },
   placeholder: {

@@ -1041,7 +1041,7 @@ Liens Param. → pages satellites :
 
 - [x] **💻** Filtrer events / spots / outils / archivés *(26 sept. 2026 · testeur **PASS**)*
 - [x] **💻** Créer event · spot · outil (ContentEditor) *(26–29 sept. · **PASS** · brouillon · publier · retirer)*
-- [ ] **💻📱** Aperçu **vignette image** après upload (event / spot) — **OPEN 29 sept.** *(image **noire** à la création · testeur · fix `ImageUploadField` prévu)*
+- [ ] **💻📱** Aperçu **vignette image** après upload (event / spot) — **à retester build 55** *(fix `ImageUploadField` : aperçu local jusqu’au prefetch https · 29 sept.)*
 - [x] **💻** Archiver · republier · cycle de vie catalogue *(26 sept. · **PASS** · désactiver / archiver)*
 - [x] **💻** Transfert propriétaire THE LOOP ↔ partenaire *(26 sept. · **N/A web** · **PASS 📱** admin mobile)*
 - [x] **💻** Accueil — hero · sondage · parcours · singulier · logos *(26 sept. · **PASS** · W-8 · cf. 24 sept.)*
