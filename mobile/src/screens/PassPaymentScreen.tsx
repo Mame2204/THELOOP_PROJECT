@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FormTextInput } from '@/components/FormTextInput';
@@ -18,6 +18,7 @@ import {
   isTransientPaymentNetworkError,
   sandboxPayerHint,
   warmPaymentApi,
+  waitForPaymentApiReady,
 } from '@/lib/djomy-payment-api';
 import { syncPassAfterDjomyPayment } from '@/lib/pass-purchase-store';
 import * as WebBrowser from 'expo-web-browser';
@@ -68,6 +69,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const [queueStartAt, setQueueStartAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'review' | 'processing' | 'done'>('review');
+  const [processingLabel, setProcessingLabel] = useState<string | null>(null);
   const [lastSandboxIntentId, setLastSandboxIntentId] = useState<string | null>(null);
   /** null = health pas encore reçu — pas d’UX sandbox tant qu’on ne sait pas. */
   const [serverSandboxMode, setServerSandboxMode] = useState<boolean | null>(null);
@@ -305,7 +307,24 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     setLoading(true);
     setStep('processing');
     fulfillmentHandledRef.current = false;
+    setProcessingLabel(
+      isDjomyPaymentConfigured()
+        ? 'Réveil du serveur de paiement…'
+        : 'Traitement du paiement test…',
+    );
     try {
+      if (isDjomyPaymentConfigured()) {
+        const ready = await waitForPaymentApiReady({ timeoutMs: 45_000, intervalMs: 2_000 });
+        if (!ready) {
+          setStep('review');
+          Alert.alert(
+            'Serveur indisponible',
+            'Le service de paiement met du temps à démarrer. Attendez une minute puis réessayez.',
+          );
+          return;
+        }
+      }
+      setProcessingLabel('Préparation de la commande…');
       const payment = await processPassPayment({
         userId: user.id,
         period,
@@ -316,7 +335,12 @@ export function PassPaymentScreen({ navigation, route }: Props) {
 
       if (payment.status === 'failed') {
         setStep('review');
-        Alert.alert('Paiement refusé', payment.message ?? 'Réessayez ou changez de mode de paiement.');
+        const base = payment.message ?? 'Réessayez ou changez de mode de paiement.';
+        const sandboxTip =
+          isSandboxMode || payment.sandboxMode
+            ? '\n\nEn test : évitez Orange Money (échec garanti). Préférez PayCard, Soutra ou carte test.'
+            : '';
+        Alert.alert('Paiement refusé', base + sandboxTip);
         return;
       }
 
@@ -327,20 +351,31 @@ export function PassPaymentScreen({ navigation, route }: Props) {
         setLastSandboxIntentId(payment.paymentIntentId);
         pendingIntentIdRef.current = payment.paymentIntentId;
         await savePendingPaymentIntent(payment.paymentIntentId, user.id);
+        setProcessingLabel('Ouverture du portail sécurisé…');
 
         const paymentReturnUrl =
           Linking.createURL('payment/complete') || 'theloop://payment/complete';
 
         // Polling dès l’ouverture du portail (webhook / reconcile pendant paiement).
+        setProcessingLabel('En attente de confirmation du paiement…');
         const waitPromise = waitForDjomyFulfillment(payment.paymentIntentId);
         void waitPromise
           .then(() => WebBrowser.dismissBrowser())
           .catch(() => undefined);
 
-        const browserResult = await WebBrowser.openAuthSessionAsync(
-          payment.paymentUrl,
-          paymentReturnUrl,
-        );
+        let browserResult: WebBrowser.WebBrowserAuthSessionResult;
+        try {
+          browserResult = await WebBrowser.openAuthSessionAsync(
+            payment.paymentUrl,
+            paymentReturnUrl,
+          );
+        } catch (browserErr) {
+          if (!(await tryLateFulfillmentCheck(payment.paymentIntentId))) {
+            throw browserErr;
+          }
+          await finishAfterFulfillment();
+          return;
+        }
         void WebBrowser.dismissBrowser().catch(() => undefined);
 
         if (browserResult.type === 'cancel') {
@@ -430,6 +465,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       alertPurchaseError(err instanceof Error ? err.message : 'Paiement impossible');
     } finally {
       setLoading(false);
+      setProcessingLabel(null);
     }
   }
 
@@ -539,7 +575,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       </View>
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
-        Vous choisirez Orange Money, MTN MoMo, Soutra Money, PayCard ou carte bancaire sur le portail de paiement sécurisé.
+        Le moyen de paiement (Mobile Money, PayCard, carte…) se choisit sur le portail sécurisé à l’étape suivante.
       </Text>
 
       <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Numéro de paiement</Text>
@@ -557,11 +593,15 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       </Text>
 
       {step === 'processing' ? (
-        <Text style={[styles.processing, { color: shell.pageKicker }]}>
-          {isDjomyPaymentConfigured()
-            ? 'Ouverture du portail de paiement…'
-            : 'Traitement du paiement test…'}
-        </Text>
+        <View style={styles.processingWrap}>
+          <ActivityIndicator size="small" color={accent.accent} />
+          <Text style={[styles.processing, { color: shell.pageKicker }]}>
+            {processingLabel ??
+              (isDjomyPaymentConfigured()
+                ? 'Ouverture du portail de paiement…'
+                : 'Traitement du paiement test…')}
+          </Text>
+        </View>
       ) : null}
 
       <Text style={[styles.finalSaleNote, { color: shell.pageKicker }]}>
@@ -627,7 +667,8 @@ const styles = StyleSheet.create({
   payRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   providerHint: { marginTop: 8, fontSize: 11, fontStyle: 'italic', lineHeight: 16 },
   phoneHint: { marginTop: 6, fontSize: 11, lineHeight: 16 },
-  processing: { marginTop: 16, textAlign: 'center', fontSize: 13, fontWeight: '600' },
+  processingWrap: { marginTop: 20, alignItems: 'center', gap: 10 },
+  processing: { textAlign: 'center', fontSize: 13, fontWeight: '600', lineHeight: 18 },
   finalSaleNote: { marginTop: 20, fontSize: 12, lineHeight: 18, textAlign: 'center' },
   btn: { marginTop: 12, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   btnText: { fontWeight: '800', color: '#000', fontSize: 15 },

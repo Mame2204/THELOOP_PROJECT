@@ -1,6 +1,10 @@
 import type { PrimeBillingPeriod } from '@/lib/prime-plans';
 import type { PassPaymentMethod } from '@/lib/subscription-history';
-import { createDjomyPayment, isDjomyPaymentConfigured } from '@/lib/djomy-payment-api';
+import {
+  createDjomyPayment,
+  isDjomyPaymentConfigured,
+  waitForPaymentApiReady,
+} from '@/lib/djomy-payment-api';
 
 export type PassPaymentStatus = 'pending' | 'success' | 'failed' | 'cancelled';
 
@@ -40,6 +44,14 @@ export async function processPassPayment(request: PassPaymentRequest): Promise<P
 
   if (isDjomyPaymentConfigured()) {
     try {
+      const ready = await waitForPaymentApiReady({ timeoutMs: 45_000, intervalMs: 2_000 });
+      if (!ready) {
+        return {
+          status: 'failed',
+          message:
+            'Le serveur de paiement met du temps à démarrer. Réessayez dans une minute ou vérifiez votre connexion.',
+        };
+      }
       const created = await createDjomyPayment({
         period: request.period,
         payerPhone: request.payerPhone.trim(),

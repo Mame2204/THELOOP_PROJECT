@@ -74,6 +74,38 @@ async function getDjomyProbeCached(): Promise<DjomyAuthProbe> {
   return value;
 }
 
+/** Page légère pendant le réveil Render (évite l’écran noir « Welcome to Render » une fois Node démarré). */
+app.get('/', (_req, res) => {
+  res
+    .status(200)
+    .type('html')
+    .send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f4fcfd" />
+  <title>THE LOOP — Connexion…</title>
+  <style>
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      font-family:system-ui,sans-serif; background:#f4fcfd; color:#0a0a0a; }
+    .box { text-align:center; padding:32px 24px; max-width:360px; }
+    .spin { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#12a8bc;
+      border-radius:50%; animation:spin 0.9s linear infinite; margin:0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    p { margin:8px 0 0; font-size:14px; color:#636e72; line-height:1.5; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="spin" aria-hidden="true"></div>
+    <strong>THE LOOP</strong>
+    <p>Le service se réveille… Réessayez dans quelques secondes ou rouvrez le lien.</p>
+  </div>
+</body>
+</html>`);
+});
+
 app.get('/health', async (_req, res) => {
   const djomyAuth = await getDjomyProbeCached();
   res.json({

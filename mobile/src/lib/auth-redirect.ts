@@ -6,7 +6,8 @@ export const THELOOP_AUTH_CALLBACK = 'theloop://auth/callback';
 export const THELOOP_AUTH_LOGIN = 'theloop://auth/login';
 
 /** Évite Storage Supabase (text/plain → balises visibles). Même hôte que paiement /payment/success. */
-const DEFAULT_MEMBER_AUTH_CALLBACK_URL = 'https://api.theloop-app.com/auth/callback';
+/** Vercel (toujours chaud) → réveille Render puis délègue à l’API. */
+const DEFAULT_MEMBER_AUTH_CALLBACK_URL = 'https://www.theloop-app.com/auth/callback';
 
 const SUPABASE_EDGE_AUTH_CALLBACK_URL =
   'https://eeyhtulpixvftvhppinz.supabase.co/functions/v1/auth-callback';
