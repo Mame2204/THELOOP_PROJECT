@@ -782,16 +782,40 @@ export async function listRecentGrants(
 }
 
 export async function revokeGrant(localId: string): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase
+  const id = localId.trim();
+  if (!id) return { ok: false, error: 'Identifiant d’octroi manquant.' };
+
+  const { data: rpcOk, error: rpcError } = await supabase.rpc('admin_revoke_benefit_grant', {
+    p_local_id: id,
+  });
+
+  if (!rpcError && rpcOk === true) {
+    return { ok: true };
+  }
+
+  if (rpcError && !/function.*does not exist|Could not find/i.test(rpcError.message)) {
+    return { ok: false, error: rpcError.message };
+  }
+
+  const { data, error } = await supabase
     .from('prime_benefit_grants')
     .update({
       status: 'expired_unused',
       expires_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq('local_id', localId)
-    .neq('status', 'used');
+    .eq('local_id', id)
+    .in('status', ['active', 'pending_validation'])
+    .select('local_id');
+
   if (error) return { ok: false, error: error.message };
+  if (!data?.length) {
+    return {
+      ok: false,
+      error:
+        'Aucun octroi modifié (déjà utilisé, révoqué, ou droits insuffisants). Appliquez la migration 20260961 si besoin.',
+    };
+  }
   return { ok: true };
 }
 

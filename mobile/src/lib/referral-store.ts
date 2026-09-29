@@ -11,6 +11,7 @@ import {
   updateRegistrySubscription,
   upsertRegistryUser,
   userToRegistryEntry,
+  type RegistryUser,
 } from '@/lib/user-registry-store';
 import { upsertActiveSubscription } from '@/lib/subscription-history';
 import {
@@ -218,7 +219,7 @@ export async function registerNewMemberReferral(
   let rewardGranted = 0;
 
   if (normalizedSponsor && normalizedSponsor !== ownCode) {
-    const referrer = await findRegistryUserByReferralCode(normalizedSponsor);
+    const referrer = await resolveSponsorReferrerByCode(normalizedSponsor);
     if (referrer && referrer.id !== user.id) {
       referredByCode = referrer.referralCode;
       const referrals = await loadReferrals();
@@ -468,9 +469,67 @@ export async function applyPendingPrimeRewards(user: User): Promise<User | null>
   };
 }
 
-export async function isValidReferralCode(code: string): Promise<boolean> {
+type SponsorReferrer = Pick<RegistryUser, 'id' | 'referralCode' | 'role' | 'userRole'>;
+
+function mapDbRoleToUserRole(dbRole: string | null | undefined): User['role'] {
+  switch (dbRole) {
+    case 'super_admin':
+    case 'admin':
+      return 'ADMIN';
+    case 'prime':
+      return 'USER_PRIME';
+    case 'partner':
+    case 'tool_partner':
+      return 'PARTNER';
+    default:
+      return 'USER_FREE';
+  }
+}
+
+function sponsorFromRegistry(user: RegistryUser): SponsorReferrer {
+  return {
+    id: user.id,
+    referralCode: user.referralCode,
+    role: user.role,
+    userRole: user.userRole,
+  };
+}
+
+/** Parrain éligible : registre local (admin) puis Supabase RPC (inscription sans cache). */
+export async function resolveSponsorReferrerByCode(code: string): Promise<SponsorReferrer | null> {
   const normalized = code.trim().toUpperCase();
-  if (!normalized) return false;
-  const referrer = await findRegistryUserByReferralCode(normalized);
+  if (!normalized) return null;
+
+  const local = await findRegistryUserByReferralCode(normalized);
+  if (local) return sponsorFromRegistry(local);
+
+  if (!isSupabaseConfigured() || !supabase) return null;
+
+  const { data, error } = await supabase.rpc('lookup_sponsor_referral', { p_code: normalized });
+  if (error) {
+    console.warn('[Referral] lookup_sponsor_referral:', error.message);
+    return null;
+  }
+  if (!data || typeof data !== 'object') return null;
+
+  const row = data as unknown as Record<string, unknown>;
+  const id = typeof row.id === 'string' ? row.id : null;
+  if (!id) return null;
+  const userRole = typeof row.user_role === 'string' ? row.user_role : 'member';
+  const referralCode =
+    typeof row.referral_code === 'string' && row.referral_code.trim()
+      ? row.referral_code.trim().toUpperCase()
+      : normalized;
+
+  return {
+    id,
+    referralCode,
+    userRole,
+    role: mapDbRoleToUserRole(userRole),
+  };
+}
+
+export async function isValidReferralCode(code: string): Promise<boolean> {
+  const referrer = await resolveSponsorReferrerByCode(code);
   return referrer !== null;
 }
