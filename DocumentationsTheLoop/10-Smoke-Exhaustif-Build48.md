@@ -239,7 +239,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **1 · Build 53** | *A1 activate* — prénom/nom · CGU · DOB (PR **#64**) | **1** | **1** | **EAS 53** |
 | **2 · Build 54+** | Approve retrait **super admin mobile** · notifs partenaire retrait · Phase 1 #3 📱🤖 | **2** | **4** *(2 lignes notif + 2 cellules Phase 1)* | **EAS 54+** *(#69)* |
 | **3 · Sans build EAS** | B1 éditeurs 💻 · recovery **HTML navigateur** · retest 💻 approve retrait *(SQL **52**)* · opt. SQL **39** | **3–4** | **6** *(3 cellules B1 + 2 HTML + 1 SQL **39**)* | **💻 / Render / Supabase** |
-| **4 · N/A / optionnel** | A4 parité 🤖 sans contenu publié · stress **10 filleuls/an** | **0–1** | **6** | Données ou sandbox long |
+| **4 · N/A / optionnel** | A4 parité 🤖 sans contenu publié · stress **10 filleuls/an** | **0** | **5** | **Parrainage palier** OK **1–2 filleuls** · **10/an** = N/A scale |
 
 **Total cases ouvertes (grep honnête) : 17** *(12 lignes markdown + 3 B1 + 2 Phase 1)* · **Cas go-live prioritaires : 7** *(quarts 1–3, hors N/A)*.
 
@@ -303,7 +303,7 @@ Erreurs ou fixes remontés **💻** : le mobile **RN** partage le **même Supaba
 | A2 membre (nav · fiches · compte · interactions) | ✅ **📱🤖** *(détails Accueil · Singulier · Fragment · parcours · Partner public · idée · **26 sept. 🤖**)* |
 | A2 PassPayment / MyBenefits | ✅ **A2-U1** PASS 26 sept. · **A2-U2** N/A (liste Mes privilèges) |
 | A3 Prime (thème · Mon PASS · privilèges · nav) | ✅ |
-| A3 LoopX / spots prime / contenu prime | 🔒 BLOCKED prochain build |
+| A3 LoopX / spots prime / contenu prime | ✅ **PASS 29 sept.** build **54** *(testeur)* |
 
 ---
 
@@ -546,7 +546,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **S12 💻** Campagne push admin *(29 sept. **PASS** phase test · envoi **2–3** destinataires OK · quota 50 = prod scale · pas bloquant go-live)*
 - [x] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK *(29 sept. **PASS** testeur)*
 
-> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **Phase 1 retraits** mobile + notifs · **S1** (sans parrain) · **S6–S13** sauf invite · **S8 MTN** · **Insights/Privilèges 💻 KPI OK** · **B1 éditeurs** + **recovery HTML** · migrations **956→962** · **S1b** · **S2–S5** · **S8c** → **build 55+** · **INVITE_REQUIRE_EMAIL_CODE** après **S4** sur **55+**.
+> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **LoopX + contenu prime PASS** · **Fermer mon compte PASS** · **Phase 1 retraits** · **S6–S13** sauf invite · **S8 MTN** · **Insights 💻** · **956→962** · **C4** palier 1–2 filleuls (pré-sécu) · **OPEN** : aperçu **image noire** création event (web/partenaire) · **S1b + S2–S5 + S8c** → **build 55+**.
 
 ### Après installation du build 54+ chez tous les testeurs
 - [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté
@@ -557,10 +557,10 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | # | Point | Statut | Action |
 |---|-------|--------|--------|
-| P1 | **Suppression de compte depuis l'app** (obligatoire Apple 5.1.1(v) + Google Play) | ❌ `CloseAccountSheet` existe mais n'est ouvert nulle part | Brancher dans Profil / Paramètres + page web de demande de suppression (URL exigée par Google) |
+| P1 | **Suppression de compte depuis l'app** (obligatoire Apple 5.1.1(v) + Google Play) | ✅ **PASS 29 sept.** *(Paramètres → Fermer mon compte · build 54)* | Vérifier **URL web** demande suppression (fiche Google Play) si pas déjà publiée |
 | P2 | **Paiement PASS hors In-App Purchase** (Apple 3.1.1 · Google Play Billing) | ⚠️ Risque de refus | Argumenter « services physiques chez partenaires » ou prévoir IAP pour la partie contenu exclusif |
 | P3 | Permission **micro** Android non utilisée | ✅ Retirée (build 54+) | — |
-| P4 | Formulaires **App Privacy** (Apple) et **Sécurité des données** (Google) | ⏳ | Déclarer : e-mail, téléphone, localisation (ville), photos, caméra (QR), push, paiement via Djomy |
+| P4 | Formulaires **App Privacy** (Apple) et **Sécurité des données** (Google) | ⏳ | **Hors smoke app** : questionnaires **App Store Connect** / **Play Console** (pas un écran dans THE LOOP) · déclarer e-mail, tel, ville, photos, caméra, push, Djomy |
 | P5 | Politique de confidentialité + CGU accessibles (URL publique) | ✅ dans l'app | Vérifier l'URL publique pour les fiches stores |
 | P6 | Clé Firebase restreinte (console Google) | ⏳ | Restreindre au package `gn.theloop.app` |
 | P7 | Version publique | ⏳ | `version` = `0.1.0` dans `app.json` → passer à `1.0.0` pour la sortie |
@@ -668,6 +668,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** `EditProfilScreen` — modifier nom / photo *(20 sept. 2026 · build 48 · compte membre perso)*
 - [x] **🤖** Idem *(23 sept. 2026 · **changement mot de passe** profil OK)*
 - [x] **📱** `SettingsScreen` — paramètres app *(20 sept. 2026 · build 48 · compte membre perso)*
+- [x] **📱🤖** Paramètres → **Fermer mon compte** *(29 sept. **PASS** · build **54** · testeur)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · membre + Prime)*
 - [x] **📱** `NotificationsScreen` — cloche header · inbox *(20 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · réception notifs OK · membre + Prime)*
@@ -701,21 +702,21 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Spécificités rôle
 - [x] **📱** Thème sombre & or *(build 48 · compte carte membre Prime · **thème violet/indigo** en app — attendu mobile actuel)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · **violet/indigo** — pas or · OK mobile actuel)*
-- [x] **📱** Filtre **LoopX** (Agenda) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu PR #4 / prochain build)*
-- [x] **🤖** Idem *(parité RN 26 sept. · **BLOCKED** build 49+ · cf. 📱)*
-- [x] **📱** Filtre **Loop Prime** (Spots) visible *(20 sept. 2026 · build 48 · compte carte membre Prime · **BLOCKED** — absent sur ce build ; attendu prochain build)*
-- [x] **🤖** Idem *(parité RN 26 sept. · **BLOCKED** build 49+ · cf. 📱)*
-- [x] **📱** Contenu `visibility: prime` accessible *(20 sept. 2026 · build 48 · compte carte membre Prime · **FAIL / BLOCKED** — Agenda n’inclut pas `primeEvents` · Spots exclut `visibility: prime` ; attendu PR #4 / prochain build)*
-- [x] **🤖** Idem *(parité RN 26 sept. · **BLOCKED** build 49+ · cf. 📱)*
+- [x] **📱** Filtre **LoopX** (Agenda) visible *(29 sept. **PASS** · build **54** · testeur)*
+- [x] **🤖** Idem *(29 sept. · **PASS** · parité)*
+- [x] **📱** Filtre **Loop Prime** (Spots) visible *(29 sept. **PASS** · build **54**)*
+- [x] **🤖** Idem *(29 sept. · **PASS** · parité)*
+- [x] **📱** Contenu `visibility: prime` accessible *(29 sept. **PASS** · LoopX agenda + spots Loop Prime · build **54**)*
+- [x] **🤖** Idem *(29 sept. · **PASS** · parité)*
 - [x] **📱** Favoris via menu profil (pas seulement bottom nav) *(20 sept. 2026 · build 48 · compte carte membre Prime · **écart mobile** — aucune entrée Favoris dans Profil · accès via **bottom nav** comme membre · spec PWA = menu profil Prime)*
 - [x] **🤖** **PASS écart** *(22 sept. 2026 · build 48 · **pas de favoris via Profil** · favoris via nav — conforme mobile)*
 
 ### Écrans Prime (reprendre A2 +)
 - [x] **📱** `AccueilScreen` — contenu Prime / hero *(20 sept. 2026 · build 48 · compte carte membre Prime · navigation OK · thème violet)*
 - [x] **🤖** Accueil · blocs hero/sections *(22 sept. 2026 · build 48 · Prime Android)*
-- [x] **📱** `AgendaScreen` — événements LoopX *(20 sept. 2026 · build 48 · navigation OK · LoopX contenu **BLOCKED** cf. A3.2)*
+- [x] **📱** `AgendaScreen` — événements LoopX *(29 sept. **PASS** contenu LoopX · build **54**)*
 - [x] **🤖** Agenda / événements *(22 sept. 2026 · build 48 · nav OK)*
-- [x] **📱** `SpotsScreen` — spots exclusifs *(20 sept. 2026 · build 48 · navigation OK · spots prime **BLOCKED** cf. A3.3)*
+- [x] **📱** `SpotsScreen` — spots exclusifs *(29 sept. **PASS** contenu prime · build **54**)*
 - [x] **🤖** Spots *(22 sept. 2026 · build 48)*
 - [x] **🤖** `OutilsScreen` *(22 sept. 2026 · build 48 · Prime Android)*
 - [x] **🤖** `FavorisScreen` · `ProfilScreen` *(22 sept. 2026 · build 48)*
@@ -1039,7 +1040,8 @@ Liens Param. → pages satellites :
 ## B6 — Contenu & éditorial
 
 - [x] **💻** Filtrer events / spots / outils / archivés *(26 sept. 2026 · testeur **PASS**)*
-- [x] **💻** Créer event · spot · outil (ContentEditor) *(26 sept. · **PASS** · brouillon · publier · retirer · cf. 23 sept.)*
+- [x] **💻** Créer event · spot · outil (ContentEditor) *(26–29 sept. · **PASS** · brouillon · publier · retirer)*
+- [ ] **💻📱** Aperçu **vignette image** après upload (event / spot) — **OPEN 29 sept.** *(image **noire** à la création · testeur · fix `ImageUploadField` prévu)*
 - [x] **💻** Archiver · republier · cycle de vie catalogue *(26 sept. · **PASS** · désactiver / archiver)*
 - [x] **💻** Transfert propriétaire THE LOOP ↔ partenaire *(26 sept. · **N/A web** · **PASS 📱** admin mobile)*
 - [x] **💻** Accueil — hero · sondage · parcours · singulier · logos *(26 sept. · **PASS** · W-8 · cf. 24 sept.)*
@@ -1140,7 +1142,7 @@ Liens Param. → pages satellites :
 - [x] **🤖** Idem *(23 sept. 2026 · membre + Prime)*
 - [x] **📱** Nouveau filleul → compteur +1 *(27 sept. · **SANS53-C4 PASS** · attestation testeur · incrémentation OK)*
 - [x] **🤖** Idem *(parité)*
-- [ ] **📱** 10 filleuls / an → mois Prime *(test long sandbox)*
+- [x] **📱** Palier parrainage / mois Prime *(**PASS** pré-sécurité · **1–2 filleuls** · compteur + récompense OK · **N/A** stress **10/an** — même logique que push **50+** destinataires · **retest inscription code parrain** = **S1b** **build 55+** + **960**)*
 
 ---
 
