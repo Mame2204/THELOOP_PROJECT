@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAdminCountry } from '../context/AdminCountryContext';
@@ -71,6 +71,7 @@ export function PassPage() {
   const [grants, setGrants] = useState<ActiveGrantRow[]>([]);
   const [ledgerKindFilter, setLedgerKindFilter] = useState<PassLedgerKindFilter>('all');
   const [ledgerStatusFilter, setLedgerStatusFilter] = useState<PassLedgerStatusFilter>('all');
+  const [ledgerSearch, setLedgerSearch] = useState('');
   const [draft, setDraft] = useState(newCatalogDraft());
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -121,6 +122,18 @@ export function PassPage() {
       return first?.id ?? '';
     });
   }, [countryCode, ledgerKindFilter, ledgerStatusFilter]);
+
+  const visibleGrants = useMemo(() => {
+    const q = ledgerSearch.trim().toLowerCase();
+    if (!q) return grants;
+    return grants.filter(
+      (g) =>
+        g.userName.toLowerCase().includes(q) ||
+        (g.userEmail?.toLowerCase().includes(q) ?? false) ||
+        g.userId.toLowerCase().includes(q) ||
+        g.label.toLowerCase().includes(q),
+    );
+  }, [grants, ledgerSearch]);
 
   const reloadPrices = useCallback(async () => {
     const [p, s] = await Promise.all([loadPassPrices(countryCode), loadShopSettings(countryCode)]);
@@ -580,8 +593,10 @@ export function PassPage() {
 
           <h3 style={{ marginTop: 28 }}>Suivi des PASS (achats et octrois)</h3>
           <p className="muted" style={{ marginTop: 8, maxWidth: 720 }}>
-            Tous les PASS enregistrés côté serveur : actifs, en file d’attente après un achat, expirés ou retirés.
-            Les achats boutique ne se retirent pas ici (historique Djomy / paiements).
+            Pays affiché : <strong>{countryLabel}</strong> (sélecteur en haut de la console). Les achats
+            MTN/MoMo apparaissent ici dès que le serveur a livré le PASS ; si vous aviez déjà un PASS actif,
+            le nouvel achat est en <strong>En attente</strong> (filtre Statut). Les achats boutique ne se
+            retirent pas ici — voir aussi Paiements / Djomy.
           </p>
           <div className="filter-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
             <div className="field" style={{ margin: 0, minWidth: 180 }}>
@@ -609,6 +624,14 @@ export function PassPage() {
                 <option value="history">Expirés / retirés</option>
               </select>
             </div>
+            <div className="field" style={{ margin: 0, minWidth: 220, flex: 1 }}>
+              <label>Rechercher un membre</label>
+              <input
+                value={ledgerSearch}
+                onChange={(e) => setLedgerSearch(e.target.value)}
+                placeholder="E-mail, nom ou libellé PASS…"
+              />
+            </div>
           </div>
           <div className="table-wrap">
             <table className="data-table">
@@ -625,7 +648,7 @@ export function PassPage() {
                 </tr>
               </thead>
               <tbody>
-                {grants.map((g) => (
+                {visibleGrants.map((g) => (
                   <tr key={`${g.userId}-${g.localId}`}>
                     <td>
                       <strong>{g.userName}</strong>
@@ -670,9 +693,10 @@ export function PassPage() {
                 ))}
               </tbody>
             </table>
-            {grants.length === 0 ? (
+            {visibleGrants.length === 0 ? (
               <p className="muted" style={{ padding: 16 }}>
-                Aucun PASS pour ces filtres.
+                Aucun PASS pour ces filtres
+                {ledgerSearch.trim() ? ' (essayez une autre recherche ou « Tous » en type/statut).' : '.'}
               </p>
             ) : null}
           </div>
