@@ -343,7 +343,7 @@ export function AuthScreen({ navigation, route }: Props) {
       setSignupStep('invite_code');
       Alert.alert(
         'Code envoyé',
-        'Consultez l’e-mail « Nouveau mot de passe » (pas l’e-mail d’invitation). Saisissez les 6 chiffres dans la fenêtre qui s’affiche.',
+        'Consultez l’e-mail « Code de vérification — THE LOOP » et saisissez le code à 6 chiffres.',
       );
     } finally {
       setSendingActivationCode(false);
@@ -503,7 +503,7 @@ export function AuthScreen({ navigation, route }: Props) {
       }
       Alert.alert(
         'Code envoyé',
-        'Si une invitation est en attente pour cette adresse, vous allez recevoir un e-mail « Nouveau mot de passe » contenant un code à 6 chiffres. Saisissez-le ici (inutile de toucher le bouton de l’e-mail).',
+        'Un e-mail « Code de vérification — THE LOOP » vient d’être envoyé. Saisissez le code à 6 chiffres dans l’étape suivante.',
       );
     } finally {
       setSendingActivationCode(false);
@@ -542,7 +542,7 @@ export function AuthScreen({ navigation, route }: Props) {
       if (!/^\d{6,10}$/.test(normalizedCode)) {
         Alert.alert(
           'Code requis',
-          'Saisissez le code à 6 chiffres reçu par e-mail (objet « Nouveau mot de passe »). Si vous ne l’avez pas reçu, touchez « Renvoyer le code ».',
+          'Saisissez le code à 6 chiffres reçu par e-mail. Touchez « Renvoyer le code » si besoin.',
         );
         return;
       }
@@ -626,7 +626,7 @@ export function AuthScreen({ navigation, route }: Props) {
             setSignupStep('invite_code');
             Alert.alert(
               'Code requis',
-              'Un code de vérification est nécessaire. Consultez l’e-mail « Nouveau mot de passe », saisissez les 6 chiffres, puis réessayez.',
+              'Saisissez le code à 6 chiffres reçu par e-mail, puis réessayez.',
             );
             return;
           }
@@ -1059,7 +1059,7 @@ export function AuthScreen({ navigation, route }: Props) {
           <Text style={[styles.cardSubtitle, { color: shell.pageKicker }]}>
             Vous avez reçu une invitation THE LOOP. Complétez votre profil et votre mot de passe ici. L’e-mail
             d’invitation ne contient pas de code : après « Activer mon compte », nous vous enverrons un second
-            message avec un code à 6 chiffres à saisir pour finaliser.
+            un code à 6 chiffres vous sera demandé par e-mail.
           </Text>
 
           <View style={styles.nameRow}>
@@ -1370,8 +1370,7 @@ export function AuthScreen({ navigation, route }: Props) {
             <Text style={[styles.cardSubtitle, { color: shell.pageKicker, marginBottom: 12 }]}>
               Consultez la boîte mail{' '}
               <Text style={{ fontWeight: '700' }}>{normalizeEmail(email) || 'indiquée'}</Text>
-              {' '}— message « Nouveau mot de passe » (pas l’e-mail d’invitation). Saisissez les 6 chiffres du
-              code, sans ouvrir le bouton du mail.
+              {' '}— e-mail « Code de vérification — THE LOOP ». Saisissez les 6 chiffres du message (pas le mot de passe).
             </Text>
             <FieldLabel required color={shell.pageKicker}>Code à 6 chiffres</FieldLabel>
             <TextInput

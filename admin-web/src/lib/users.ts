@@ -536,22 +536,6 @@ export async function createUserInvite(input: {
     };
   }
 
-  const { data: existingUser } = await supabase
-    .from('users')
-    .select('id')
-    .eq('email', email)
-    .maybeSingle();
-  if (existingUser?.id) {
-    await supabase.from('user_notifications').insert({
-      user_id: existingUser.id,
-      title: 'Invitation THE LOOP',
-      message:
-        'Vous avez été invité(e) sur THE LOOP. Ouvrez l’application → Connexion → « Activer un compte invité par THE LOOP ».',
-      audience: 'individual',
-      sent_at: new Date().toISOString(),
-    });
-  }
-
   return { ok: true, inviteId, email, mailMode: mail.mode, activationLink: mail.activationLink ?? null };
 }
 

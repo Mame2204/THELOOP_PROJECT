@@ -56,16 +56,12 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
     title: 'Invitation THE LOOP',
     showActionButton: false,
     body:
-      'Vous avez été invité(e) à rejoindre <strong>THE LOOP</strong> (application mobile).<br /><br />' +
-      '<strong>1.</strong> Installez THE LOOP (<a href="' +
+      'Vous avez été invité(e) sur <strong>THE LOOP</strong>.<br /><br />' +
+      'Installez l’app (<a href="' +
       STORE_URL +
-      '" style="color:#0a0a0a;">theloop-app.com</a> · Google Play / App Store).<br />' +
-      '<strong>2.</strong> Ouvrez l’application → <strong>Connexion</strong>.<br />' +
-      '<strong>3.</strong> Touchez <strong>« Activer un compte invité par THE LOOP »</strong>.<br />' +
-      '<strong>4.</strong> Saisissez <strong>cette adresse e-mail</strong>, prénom, nom et mot de passe.<br /><br />' +
-      'Pas de lien d’activation : tout se fait dans l’application.',
-    footer:
-      'Compte déjà actif ? Utilisez « Mot de passe oublié » dans l’app. THE LOOP ne propose pas d’espace web grand public.',
+      '" style="color:#0a0a0a;">theloop-app.com</a>), ouvrez <strong>Connexion</strong>, puis ' +
+      '<strong>« Activer un compte invité par THE LOOP »</strong> avec <strong>cette adresse e-mail</strong>.',
+    footer: 'Compte déjà actif ? Connectez-vous ou utilisez « Mot de passe oublié » dans l’app.',
   });
 
   const confirmationHtml = loopEmailHtml({
@@ -78,16 +74,16 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
   });
 
   const recoveryHtml = loopEmailHtml({
-    title: 'Nouveau mot de passe',
+    title: 'Code de vérification',
     body:
-      "Vous avez demandé à réinitialiser votre mot de passe THE LOOP. Touchez le bouton : l'app s'ouvrira si elle est installée, sinon vous pourrez choisir un nouveau mot de passe sur le web.",
+      'Saisissez ce code à <strong>6 chiffres</strong> dans l’application THE LOOP (activation invité ou étape « code »). ' +
+      'Ce n’est pas votre mot de passe.<br /><br />' +
+      '<strong style="font-size:22px;letter-spacing:0.2em;color:#0a0a0a;">{{ .Token }}</strong><br /><br />' +
+      'Compte déjà actif et mot de passe oublié ? Utilisez le bouton ci-dessous.',
     buttonLabel: 'Choisir un mot de passe',
     actionHref: recoveryActionHref,
-    showCopyLink: true,
-    alternateHint:
-      'Activation d’un compte invité (dans l’app, pas sur le web) : saisissez ce <strong>code de vérification</strong> (chiffres uniquement, pas votre mot de passe) — <strong style="font-size:18px;letter-spacing:0.15em;color:#0a0a0a;">{{ .Token }}</strong>',
-    footer:
-      "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail — votre mot de passe actuel reste inchangé.",
+    showCopyLink: false,
+    footer: "Vous n'êtes pas à l'origine de cette demande ? Ignorez cet e-mail.",
   });
 
   return {
@@ -96,7 +92,7 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
     mailer_templates_invite_content: inviteHtml,
     mailer_subjects_confirmation: 'Confirmez votre e-mail — THE LOOP',
     mailer_templates_confirmation_content: confirmationHtml,
-    mailer_subjects_recovery: 'Réinitialisation mot de passe — THE LOOP',
+    mailer_subjects_recovery: 'Code de vérification — THE LOOP',
     mailer_templates_recovery_content: recoveryHtml,
   };
 }
