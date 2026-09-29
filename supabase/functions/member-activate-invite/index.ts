@@ -67,8 +67,9 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    // À activer (secret Edge) quand toutes les apps installées envoient le code.
-    const requireEmailCode = (Deno.env.get('INVITE_REQUIRE_EMAIL_CODE') ?? '').trim().toLowerCase() === 'true';
+    // Code e-mail obligatoire par défaut (secret `false` uniquement pour rollback temporaire).
+    const requireEmailCode =
+      (Deno.env.get('INVITE_REQUIRE_EMAIL_CODE') ?? 'true').trim().toLowerCase() !== 'false';
 
     if (!supabaseUrl || !serviceKey) {
       return new Response(JSON.stringify({ error: 'Configuration serveur incomplète' }), {
@@ -177,12 +178,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Sans code, connaître l'e-mail suffirait à fixer le mot de passe.
-    if (!emailProven && (requireEmailCode || inviteRole === 'admin' || inviteRole === 'super_admin')) {
+    // Sans code valide, activer = n’importe qui pourrait fixer le MDP d’un invité.
+    if (!emailProven && requireEmailCode) {
       return json(
         {
           error:
-            'Mettez à jour THE LOOP pour activer ce compte avec le code reçu par e-mail, ou utilisez « Mot de passe oublié » avec cette adresse.',
+            'Code requis : touchez « Recevoir un code par e-mail », saisissez les 6 chiffres du message « Nouveau mot de passe », puis réessayez.',
           code: 'email_code_required',
         },
         403,
