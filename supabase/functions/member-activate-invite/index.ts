@@ -177,11 +177,13 @@ Deno.serve(async (req) => {
       if (role === 'admin') return 'Administrateur';
       return 'Membre';
     }
+    // L’app peut envoyer un ancien inviteId (cache local) après suppression / ré-invite admin.
+    // La source de vérité est l’invitation en attente retournée par le RPC pour cet e-mail.
     if (inviteId && invite.id && invite.id !== inviteId) {
-      return new Response(JSON.stringify({ error: 'Invitation invalide pour cet e-mail.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.warn(
+        '[member-activate-invite] inviteId obsolète ignoré',
+        JSON.stringify({ clientInviteId: inviteId, serverInviteId: invite.id, email }),
+      );
     }
 
     const inviteRole = String(invite.user_role ?? '').trim().toLowerCase();

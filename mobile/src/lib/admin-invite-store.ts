@@ -207,14 +207,29 @@ export async function checkAdminInviteActivationEligibility(
 export async function findPendingInviteByEmail(email: string): Promise<AdminUserInvite | null> {
   const normalized = normalizeEmail(email);
   if (!normalized) return null;
+
+  const fromSupabase = await fetchPendingInviteByEmailFromSupabase(normalized);
+  if (fromSupabase) {
+    await upsertLocalInvite(fromSupabase);
+    const local = await loadLocalInvites();
+    const pruned = local.filter(
+      (i) =>
+        !(
+          i.email &&
+          normalizeEmail(i.email) === normalized &&
+          i.id !== fromSupabase.id &&
+          !i.activatedAt
+        ),
+    );
+    if (pruned.length !== local.length) await saveLocalInvites(pruned);
+    return fromSupabase;
+  }
+
   const local = await loadLocalInvites();
   const fromLocal = local.find(
     (i) => !i.activatedAt && i.email && normalizeEmail(i.email) === normalized,
   );
   if (fromLocal) return fromLocal;
-
-  const fromSupabase = await fetchPendingInviteByEmailFromSupabase(normalized);
-  if (fromSupabase) return fromSupabase;
 
   return null;
 }
