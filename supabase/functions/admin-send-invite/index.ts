@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const role = String(profile.user_role ?? '');
-    if (role !== 'admin' && role !== 'super_admin') {
+    const adminRole = String(profile.user_role ?? '');
+    if (adminRole !== 'admin' && adminRole !== 'super_admin') {
       return new Response(JSON.stringify({ error: 'Admin requis' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -209,14 +209,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const role = body.userRole ?? 'member';
+    const inviteUserRole = body.userRole ?? 'member';
     const metadata: Record<string, unknown> = {
       pending_welcome: true,
       invited_by_admin: true,
       admin_invite_id: body.inviteId ?? null,
-      first_name: body.firstName?.trim() || defaultInviteFirstName(role),
+      first_name: body.firstName?.trim() || defaultInviteFirstName(inviteUserRole),
       last_name: body.lastName?.trim() || 'THE LOOP',
-      user_role: role,
+      user_role: inviteUserRole,
       country_code: body.countryCode ?? 'GN',
       phone_number: body.phoneNumber ?? null,
       city: body.city ?? null,

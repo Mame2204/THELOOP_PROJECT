@@ -4,6 +4,7 @@
  * Env : SUPABASE_ACCESS_TOKEN (https://supabase.com/dashboard/account/tokens)
  */
 import { readFileSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,6 +37,16 @@ async function deployOne(token, { slug, verify_jwt }) {
     return false;
   }
   const source = readFileSync(fnPath);
+  const bundleCheck = spawnSync(
+    'npx',
+    ['esbuild', fnPath, '--bundle', '--platform=neutral', '--log-level=error'],
+    { encoding: 'utf8' },
+  );
+  if (bundleCheck.status !== 0) {
+    console.error('Syntaxe / bundle invalide pour', slug);
+    console.error(bundleCheck.stderr || bundleCheck.stdout);
+    return false;
+  }
   const metadata = JSON.stringify({
     name: slug,
     entrypoint_path: 'index.ts',
