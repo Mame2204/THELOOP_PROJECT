@@ -85,7 +85,7 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
     actionHref: recoveryActionHref,
     showCopyLink: true,
     alternateHint:
-      'Activation d’un compte invité dans l’application : saisissez ce code — <strong style="font-size:18px;letter-spacing:0.2em;color:#0a0a0a;">{{ .Token }}</strong>',
+      'Activation d’un compte invité (dans l’app, pas sur le web) : saisissez ce <strong>code de vérification</strong> (chiffres uniquement, pas votre mot de passe) — <strong style="font-size:18px;letter-spacing:0.15em;color:#0a0a0a;">{{ .Token }}</strong>',
     footer:
       "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail — votre mot de passe actuel reste inchangé.",
   });

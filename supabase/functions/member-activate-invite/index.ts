@@ -36,26 +36,44 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+/** Chiffres uniquement (Supabase peut émettre 6 ou 8 selon mailer_otp_length). */
+function normalizeOtpDigits(raw: string): string {
+  return raw.replace(/\D/g, '');
+}
+
 /**
- * Preuve de possession de la boîte mail : code à 6 chiffres de l'e-mail
- * « Nouveau mot de passe » (envoyé par l'action send_code) ou de l'e-mail
- * d'invitation. verifyOtp consomme le code.
+ * Preuve de possession de la boîte mail : code numérique {{ .Token }} de l'e-mail
+ * « Nouveau mot de passe » (send_code → resetPasswordForEmail). Ce n'est pas le mot de passe.
  */
 async function verifyEmailCode(
   supabaseUrl: string,
-  anonKey: string,
+  keys: string[],
   email: string,
-  code: string,
-): Promise<boolean> {
-  if (!/^\d{6,10}$/.test(code)) return false;
-  const client = createClient(supabaseUrl, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  for (const type of ['recovery', 'invite'] as const) {
-    const { data, error } = await client.auth.verifyOtp({ email, token: code, type });
-    if (!error && data?.user && (data.user.email ?? '').toLowerCase() === email) return true;
+  rawCode: string,
+): Promise<{ ok: boolean; lastError?: string }> {
+  const code = normalizeOtpDigits(rawCode);
+  if (!/^\d{4,10}$/.test(code)) {
+    return { ok: false, lastError: 'format' };
   }
-  return false;
+
+  const types = ['recovery', 'invite', 'email'] as const;
+  let lastError: string | undefined;
+
+  for (const apiKey of keys) {
+    if (!apiKey.trim()) continue;
+    const client = createClient(supabaseUrl, apiKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    for (const type of types) {
+      const { data, error } = await client.auth.verifyOtp({ email, token: code, type });
+      if (!error && data?.user && (data.user.email ?? '').toLowerCase() === email) {
+        return { ok: true };
+      }
+      if (error?.message) lastError = error.message;
+    }
+  }
+
+  return { ok: false, lastError };
 }
 
 Deno.serve(async (req) => {
@@ -167,12 +185,19 @@ Deno.serve(async (req) => {
     }
 
     const inviteRole = String(invite.user_role ?? '').trim().toLowerCase();
+    const authKeys = [anonKey, serviceKey].filter((k, i, arr) => k.trim() && arr.indexOf(k) === i);
+
     let emailProven = false;
     if (emailCode) {
-      emailProven = anonKey ? await verifyEmailCode(supabaseUrl, anonKey, email, emailCode) : false;
+      const verified = await verifyEmailCode(supabaseUrl, authKeys, email, emailCode);
+      emailProven = verified.ok;
       if (!emailProven) {
         return json(
-          { error: 'invalid_email_code', message: 'Code invalide ou expiré. Demandez un nouveau code.' },
+          {
+            error: 'invalid_email_code',
+            message:
+              'Code invalide ou expiré. Utilisez le dernier e-mail « Nouveau mot de passe » (pas l’e-mail d’invitation) : saisissez tous les chiffres du code (6 ou 8), sans espaces. Touchez « Renvoyer le code » puis réessayez avec le nouveau message.',
+          },
           400,
         );
       }
@@ -183,7 +208,7 @@ Deno.serve(async (req) => {
       return json(
         {
           error:
-            'Code requis : touchez « Recevoir un code par e-mail », saisissez les 6 chiffres du message « Nouveau mot de passe », puis réessayez.',
+            'Code requis : touchez « Recevoir un code par e-mail », saisissez le code numérique du message « Nouveau mot de passe » (6 ou 8 chiffres), puis réessayez.',
           code: 'email_code_required',
         },
         403,

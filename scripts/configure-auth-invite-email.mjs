@@ -36,8 +36,12 @@ if (!token) {
   process.exit(1);
 }
 
+/** Aligné avec l’app (6 chiffres affichés) ; Supabase peut être à 8 par défaut sur certains projets. */
+const MAILER_OTP_LENGTH = 6;
+
 const body = {
   ...buildAuthEmailTemplatePatch(callbackUrl),
+  mailer_otp_length: MAILER_OTP_LENGTH,
   uri_allow_list: [
     callbackUrl,
     edgeCallbackUrl,
@@ -74,5 +78,6 @@ if (!res.ok) {
   process.exit(1);
 }
 
-console.log('OK — templates invite / confirmation / recovery (liens token_hash)');
+console.log(`OK — templates invite / confirmation / recovery · mailer_otp_length=${MAILER_OTP_LENGTH}`);
+console.log('Demandez un nouvel e-mail « Nouveau mot de passe » après ce changement (l’ancien code ne s’applique plus).');
 console.log('Site URL :', callbackUrl);
