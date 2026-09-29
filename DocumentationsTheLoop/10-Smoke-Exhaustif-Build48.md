@@ -538,13 +538,13 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
 - [x] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre *(29 sept. **PASS** testeur)*
 - [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · OM incident Djomy côté opérateur · retest OM après retour Djomy)*
-- [x] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance** *(29 sept. **PASS** testeur · Prime → membre → membre → Prime)*
+- [x] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance** *(29 sept. **PASS** · Prime → membre → membre → Prime · **💻** sync PASS Suivi admin-web **#89**)*
 - [x] **S10 📱🤖** Partenaire : soumission · modération · publication *(29 sept. **PASS** attestation testeur · recoupe modération/refus **27–29 sept.** · 💻 modération **PASS 27 sept.** · refus privilège partenaire **PASS** — ne pas confondre avec scan S6)*
-- [ ] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut `expired_unused` *(29 sept. **FAIL** · 961 appliquée mais RPC cassée `updated_at` · **20260962** + redeploy admin-web · retest)*
+- [x] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut `expired_unused` *(29 sept. **PASS** · migrations **961+962** · admin-web)*
 - [x] **S12 💻** Campagne push admin *(29 sept. **PASS** phase test · envoi **2–3** destinataires OK · quota 50 = prod scale · pas bloquant go-live)*
 - [x] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK *(29 sept. **PASS** testeur)*
 
-> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **S1** · **S6/S7/S9/S13** validation établissement · **S8/S8b** MTN · **S10/S12** · **S11 FAIL** révoquer · **S1b** parrain FAIL *(migration **20260960**)* · **S2–S5** / **S8c** → build **55+** · **Insights → onglet Privilèges** = stats catalogue **sans** bouton Révoquer *(révoquer = module **Privilèges → Octroyer**)*.
+> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **S1** (sans parrain) · **S6/S7/S9/S11/S13** · **S8/S8b** MTN · **S10/S12** · **S1b** parrain → build **55+** + **960** · **S2–S5** / **S8c** → build **55+** · **Insights → Privilèges** = KPI catalogue *(Révoquer = **Privilèges → Octroyer**)* · **PASS Suivi** achats + gel rôle OK.
 
 ### Après installation du build 54+ chez tous les testeurs
 - [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté
