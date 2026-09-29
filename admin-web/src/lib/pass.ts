@@ -313,11 +313,25 @@ function resolvePassOrigin(row: Record<string, unknown>): PassLedgerOrigin {
   const kind = String(row.pass_kind ?? '').toLowerCase();
   const catalogId = row.pass_catalog_id ? String(row.pass_catalog_id) : '';
   if (kind === 'referral' || catalogId === REFERRAL_CATALOG_ID) return 'referral';
+  const grantNote = String(row.grant_note ?? '');
+  if (grantNote.startsWith('djomy:')) return 'purchase';
   const paidAt = row.paid_at ? String(row.paid_at) : '';
   const paymentMethod = row.payment_method ? String(row.payment_method) : '';
   if (paidAt || paymentMethod) return 'purchase';
+  if (catalogId.startsWith('prime-')) return 'purchase';
   if (row.granted_by) return 'admin_grant';
   return 'other';
+}
+
+/** Filtre pays admin : les membres sans pays restent visibles (comptes legacy / inscription incomplète). */
+export function grantMatchesAdminCountry(
+  grantCountry: string | null | undefined,
+  adminCountry: string | undefined,
+): boolean {
+  if (!adminCountry?.trim()) return true;
+  const admin = adminCountry.toUpperCase().slice(0, 2);
+  if (!grantCountry?.trim()) return true;
+  return grantCountry.toUpperCase().slice(0, 2) === admin;
 }
 
 function passTypeLabel(row: Record<string, unknown>): { passKind: string | null; billingPeriod: BillingPeriod | null } {
@@ -346,6 +360,8 @@ export function passGrantStatusLabel(status: PassGrantStatus): string {
       return 'Expiré';
     case 'revoked':
       return 'Retiré';
+    case 'suspended':
+      return 'Suspendu';
     default:
       return status;
   }
@@ -370,7 +386,14 @@ function applyLedgerFilters(rows: ActiveGrantRow[], filters: PassLedgerFilters):
   return rows.filter((g) => {
     if (filters.status === 'active' && g.status !== 'active') return false;
     if (filters.status === 'pending' && g.status !== 'pending') return false;
-    if (filters.status === 'history' && g.status !== 'expired' && g.status !== 'revoked') return false;
+    if (
+      filters.status === 'history' &&
+      g.status !== 'expired' &&
+      g.status !== 'revoked' &&
+      g.status !== 'suspended'
+    ) {
+      return false;
+    }
 
     if (filters.kind === 'heritage') {
       return (
@@ -437,14 +460,14 @@ export async function listActiveGrants(
             adminGrant && !purchased && (r.status === 'active' || r.status === 'pending'),
         };
       })
-      .filter((g) => !countryCode || g.countryCode === countryCode);
+      .filter((g) => grantMatchesAdminCountry(g.countryCode, countryCode));
 
   const { data, error } = await supabase
     .from('user_pass_grants')
     .select(
       `${selectFields}, users!user_pass_grants_user_id_fkey(email, first_name, last_name, country_code)`,
     )
-    .in('status', ['active', 'pending', 'expired', 'revoked'])
+    .in('status', ['active', 'pending', 'expired', 'revoked', 'suspended'])
     .order('started_at', { ascending: false })
     .limit(800);
 
@@ -452,7 +475,7 @@ export async function listActiveGrants(
     const plain = await supabase
       .from('user_pass_grants')
       .select(selectFields)
-      .in('status', ['active', 'pending', 'expired', 'revoked'])
+      .in('status', ['active', 'pending', 'expired', 'revoked', 'suspended'])
       .order('started_at', { ascending: false })
       .limit(800);
     if (plain.error || !plain.data) return [];
