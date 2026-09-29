@@ -7,19 +7,20 @@ export function formatInviteAdminFeedback(email: string, mailMode?: string | nul
   if (mailMode === 'invite_in_app') {
     return (
       `Invitation enregistrée pour ${e}. ` +
-      `Aucun nouvel e-mail envoyé (adresse déjà connue). ` +
-      `Indiquez à l'invité : application THE LOOP → Connexion → « ${INVITE_ACTIVATE_LINK_LABEL} ».`
+      `Aucun nouvel e-mail (adresse déjà connue). ` +
+      `Demandez à la personne d’ouvrir THE LOOP → Connexion → « ${INVITE_ACTIVATE_LINK_LABEL} » avec cette adresse.`
     );
   }
   if (mailMode === 'recovery_resent') {
     return (
       `Invitation enregistrée pour ${e}. ` +
-      `Un e-mail « mot de passe oublié » a pu partir par erreur (ancien comportement) — ` +
-      `l'invité doit utiliser l'app → Connexion → « ${INVITE_ACTIVATE_LINK_LABEL} », pas le lien de reset.`
+      `Un e-mail avec un code à 6 chiffres peut arriver (objet « Code de vérification — THE LOOP »). ` +
+      `Si un autre message propose de réinitialiser le mot de passe sans demande, ignorez-le. ` +
+      `Activation : THE LOOP → Connexion → « ${INVITE_ACTIVATE_LINK_LABEL} ».`
     );
   }
   return (
-    `E-mail d'invitation THE LOOP envoyé à ${e}. ` +
-    `L'invité ouvre l'app → Connexion → « ${INVITE_ACTIVATE_LINK_LABEL} ». Vérifiez les spams.`
+    `E-mail d’invitation THE LOOP envoyé à ${e}. ` +
+    `La personne ouvre THE LOOP → Connexion → « ${INVITE_ACTIVATE_LINK_LABEL} » avec cette adresse. Pensez aux courriers indésirables.`
   );
 }

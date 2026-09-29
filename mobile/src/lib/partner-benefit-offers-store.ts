@@ -1412,7 +1412,7 @@ export async function deletePartnerBenefitOffer(offerId: string): Promise<boolea
 
   if (offer.status === 'pending') {
     void appendUserNotification(offer.partnerUserId, {
-      title: 'Demande d\'privilège annulée',
+      title: 'Proposition de privilège annulée',
       message: `La proposition « ${offer.catalogTitle} » a été supprimée par THE LOOP.`,
       audience: 'partner',
     }).catch(() => {});

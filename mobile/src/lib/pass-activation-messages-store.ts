@@ -88,8 +88,8 @@ function defaultMessages(): PassActivationMessage[] {
       name: 'Activation PASS Heritage',
       titleTemplate: 'Bonjour {firstName} !',
       messageTemplate:
-        'Félicitations — ton {passLabel} vient d\'être activé. {validity}. ' +
-        'Tu fais désormais partie de Loop Prime : avantages exclusifs, offres partenaires et expériences premium t\'attendent.',
+        'Félicitations : votre {passLabel} vient d’être activé. {validity}. ' +
+        'Vous faites désormais partie de Loop Prime : avantages exclusifs, offres partenaires et expériences premium.',
       status: 'active',
       createdAt,
       updatedAt: createdAt,
@@ -100,7 +100,7 @@ function defaultMessages(): PassActivationMessage[] {
       name: 'Activation PASS Mensuel',
       titleTemplate: 'Bienvenue dans Loop Prime, {firstName} !',
       messageTemplate:
-        'Ton {passLabel} est actif. {validity}. Profite dès maintenant de tous les avantages Prime.',
+        'Votre {passLabel} est actif. {validity}. Profitez dès maintenant de tous les avantages Loop Prime.',
       status: 'active',
       createdAt,
       updatedAt: createdAt,
@@ -111,7 +111,7 @@ function defaultMessages(): PassActivationMessage[] {
       name: 'Activation PASS (générique)',
       titleTemplate: 'Bonjour {firstName} !',
       messageTemplate:
-        'Excellente nouvelle : ton {passLabel} vient d\'être activé. {validity}. Bienvenue dans l\'expérience Loop Prime !',
+        'Excellente nouvelle : votre {passLabel} vient d’être activé. {validity}. Bienvenue dans l’expérience Loop Prime !',
       status: 'active',
       createdAt,
       updatedAt: createdAt,

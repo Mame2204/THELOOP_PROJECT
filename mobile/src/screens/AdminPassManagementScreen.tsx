@@ -134,7 +134,7 @@ function emptyMessageForm(): MessageFormState {
     name: '',
     titleTemplate: 'Bonjour {firstName} !',
     messageTemplate:
-      'Félicitations — ton {passLabel} vient d\'être activé. Bienvenue dans Loop Prime !',
+      'Félicitations : votre {passLabel} vient d’être activé. Bienvenue dans Loop Prime !',
   };
 }
 

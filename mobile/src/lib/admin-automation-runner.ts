@@ -299,7 +299,7 @@ async function runMemberOfMonthJob(job: AutomationJob): Promise<number> {
 
   const congratsMessage =
     job.payload.noBenefitMessage?.trim() ||
-    `Félicitations ${winnerName} ! Tu es le membre du mois${job.city ? ` à ${job.city}` : ''}.`;
+    `Félicitations ${winnerName} ! Vous êtes le membre du mois${job.city ? ` à ${job.city}` : ''}.`;
 
   await appendUserNotification(winner.id, {
     title: 'Membre du mois THE LOOP',
@@ -308,7 +308,7 @@ async function runMemberOfMonthJob(job: AutomationJob): Promise<number> {
   });
 
   if (job.payload.notifyAllMembers) {
-    const cityLabel = job.city ?? winner.city ?? 'ta ville';
+    const cityLabel = job.city ?? winner.city ?? 'votre ville';
     await distributeNotification({
       title: 'Membre du mois',
       message: `${winnerName} est le membre du mois THE LOOP${job.city ? ` à ${cityLabel}` : ''}. Bravo !`,
@@ -329,7 +329,7 @@ async function runBirthdayGreetingJob(job: AutomationJob, date = new Date()): Pr
   const defaultBody =
     job.payload.notificationMessage?.trim() ||
     job.payload.welcomeMessage?.trim() ||
-    'Toute l\'équipe THE LOOP te souhaite une excellente journée !';
+    'Toute l’équipe THE LOOP vous souhaite une excellente journée !';
   let processed = 0;
 
   for (const user of users) {

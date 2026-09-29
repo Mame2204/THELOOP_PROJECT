@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
           {
             error: 'invalid_email_code',
             message:
-              'Code invalide ou expiré. Utilisez le dernier e-mail « Code de vérification — THE LOOP », saisissez les 6 chiffres, puis « Renvoyer le code » si besoin.',
+              'Code invalide ou expiré. Ouvrez le dernier e-mail « Code de vérification — THE LOOP », saisissez les 6 chiffres dans l’app, ou touchez « Renvoyer le code ».',
           },
           400,
         );
@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
       return json(
         {
           error:
-            'Code requis : demandez le code par e-mail, puis saisissez les 6 chiffres du message « Code de vérification — THE LOOP ».',
+            'Code requis : touchez « Envoyer le code » dans l’app, puis saisissez les 6 chiffres reçus par e-mail (objet « Code de vérification — THE LOOP »).',
           code: 'email_code_required',
         },
         403,

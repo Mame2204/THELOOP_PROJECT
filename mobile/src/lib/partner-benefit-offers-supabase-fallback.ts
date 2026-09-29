@@ -186,7 +186,7 @@ export function buildPartnerBenefitOfferNotificationMessage(offer: PartnerBenefi
     } satisfies OfferPayload),
   );
   return (
-    `THE LOOP vous propose « ${offer.catalogTitle} ». Consultez le détail puis acceptez ou refusez (avec motif).` +
+    `THE LOOP vous propose le privilège « ${offer.catalogTitle} ». Ouvrez cette notification pour voir le détail, puis acceptez ou refusez.` +
     `\n[[loop-pbo:${payload}]]`
   );
 }
