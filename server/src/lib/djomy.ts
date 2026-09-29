@@ -284,9 +284,20 @@ export async function verifyPayment(transactionId: string): Promise<VerifiedPaym
     { method: 'GET' },
   );
 
+  if (!response.ok) {
+    const detail = await readDjomyErrorBody(response);
+    throw new Error(`Djomy verify_payment HTTP ${response.status}${detail ? ` — ${detail}` : ''}`);
+  }
+
   const result = (await response.json()) as DjomyResponse<VerifiedPaymentData>;
   if (!result.success) {
-    throw new Error(`Djomy verify_payment : ${result.error?.message ?? result.message}`);
+    const detail = result.error?.message ?? result.message ?? 'erreur inconnue';
+    const code = result.error?.code;
+    const lower = detail.toLowerCase();
+    if (code === 500 || lower.includes('internal error')) {
+      throw new Error(`Djomy verify_payment temporaire : ${detail}`);
+    }
+    throw new Error(`Djomy verify_payment : ${detail}`);
   }
   return result.data;
 }

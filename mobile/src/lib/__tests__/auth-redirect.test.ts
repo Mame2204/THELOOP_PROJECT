@@ -71,7 +71,7 @@ describe('auth-redirect', () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://eeyhtulpixvftvhppinz.supabase.co';
     jest.resetModules();
     const mod = require('@/lib/auth-redirect') as typeof import('@/lib/auth-redirect');
-    expect(mod.getAuthMemberFacingRedirectUrl()).toBe('https://api.theloop-app.com/auth/callback');
+    expect(mod.getAuthMemberFacingRedirectUrl()).toBe('https://www.theloop-app.com/auth/callback');
   });
 
   it('fallback LAN via EXPO_PUBLIC_DEV_AUTH_REDIRECT_URL en Expo Go', () => {

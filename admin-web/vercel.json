@@ -1,11 +1,5 @@
 {
-  "redirects": [
-    {
-      "source": "/auth/callback",
-      "destination": "https://api.theloop-app.com/auth/callback",
-      "permanent": false
-    }
-  ],
+  "redirects": [],
   "headers": [
     {
       "source": "/(.*)",
@@ -26,5 +20,8 @@
       ]
     }
   ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/auth/callback", "destination": "/auth-callback.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

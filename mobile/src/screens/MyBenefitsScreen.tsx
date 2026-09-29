@@ -33,6 +33,8 @@ export function MyBenefitsScreen({ navigation }: Props) {
       <Text style={[styles.hint, { color: shell.pageKicker }]}>
         {hint}
         {isSuperAdmin ? ' · octroi TEAMS dans Control Tower' : ''}
+        {' '}
+        Chaque carte détaille le contenu lié, le quota et la validité.
       </Text>
       <PrimeBenefitsSection
         key={viewingCountryCode}
@@ -42,6 +44,7 @@ export function MyBenefitsScreen({ navigation }: Props) {
         user={user}
         shell={shell}
         showEmpty
+        showSectionHeading={false}
         activeAccent={accent.accent}
         filterCountryCode={viewingCountryCode}
         emptyMessage={

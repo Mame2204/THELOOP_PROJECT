@@ -58,8 +58,9 @@ export function PaymentReturnHandler() {
   }, [user?.id]);
 
   useEffect(() => {
+    // Pas d’Alert ici : PassPaymentScreen gère le succès. Évite double modal + fermeture app (MIUI).
     return subscribePaymentReturn(() => {
-      scheduleRecovery(true);
+      scheduleRecovery(false);
     });
   }, [scheduleRecovery]);
 
