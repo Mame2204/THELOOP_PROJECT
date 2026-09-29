@@ -25,6 +25,10 @@ interface RemoteImageProps {
   accessibilityLabel?: string;
   renderWidth?: number;
   contentPosition?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+  /** Appelé quand une variante d’URL a fini de s’afficher (ex. basculer aperçu local → distante). */
+  onDisplayLoad?: () => void;
+  /** Toutes les variantes d’URL ont échoué. */
+  onDisplayError?: () => void;
 }
 
 function toContentFit(mode: ImageResizeMode): 'cover' | 'contain' | 'fill' | 'none' | 'scale-down' {
@@ -62,6 +66,8 @@ export function RemoteImage({
   accessibilityLabel,
   renderWidth,
   contentPosition = 'center',
+  onDisplayLoad,
+  onDisplayError,
 }: RemoteImageProps) {
   const cappedWidth = clampRenderWidth(renderWidth);
   const [candidateIndex, setCandidateIndex] = useState(0);
@@ -107,12 +113,16 @@ export function RemoteImage({
       cachePolicy="memory-disk"
       recyclingKey={displayUri}
       accessibilityLabel={accessibilityLabel}
+      onLoad={() => {
+        onDisplayLoad?.();
+      }}
       onError={() => {
         if (candidateIndex + 1 < candidates.length) {
           setCandidateIndex((index) => index + 1);
           return;
         }
         setFailed(true);
+        onDisplayError?.();
       }}
     />
   );
