@@ -540,7 +540,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · OM incident Djomy côté opérateur · retest OM après retour Djomy)*
 - [x] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance** *(29 sept. **PASS** testeur · Prime → membre → membre → Prime)*
 - [x] **S10 📱🤖** Partenaire : soumission · modération · publication *(29 sept. **PASS** attestation testeur · recoupe modération/refus **27–29 sept.** · 💻 modération **PASS 27 sept.** · refus privilège partenaire **PASS** — ne pas confondre avec scan S6)*
-- [ ] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut expiré *(29 sept. **FAIL** build 54 · clic sans effet · fix RPC **20260961** + deploy Supabase · retest après migration)*
+- [ ] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut `expired_unused` *(29 sept. **FAIL** · 961 appliquée mais RPC cassée `updated_at` · **20260962** + redeploy admin-web · retest)*
 - [x] **S12 💻** Campagne push admin *(29 sept. **PASS** phase test · envoi **2–3** destinataires OK · quota 50 = prod scale · pas bloquant go-live)*
 - [x] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK *(29 sept. **PASS** testeur)*
 

@@ -1545,6 +1545,10 @@ export async function revokeBenefit(benefitId: string): Promise<boolean> {
       await saveAll(all);
       return true;
     }
+    if (!rpcError && rpcOk === false) {
+      console.warn('[PrimeBenefits] revoke rpc: aucune ligne modifiée (migration 20260962 ?)');
+      return false;
+    }
     if (rpcError && !/function.*does not exist|Could not find/i.test(rpcError.message)) {
       console.warn('[PrimeBenefits] revoke rpc:', rpcError.message);
       return false;
