@@ -13,11 +13,7 @@ import { formatDateFr } from '@/lib/date-utils';
 import { formatLegalBodyForDisplay } from '@/lib/legal-display';
 import { getLegalContent } from '@/lib/legal-content-store';
 import { getMaxPendingPasses } from '@/lib/pass-shop-settings-store';
-import {
-  PASS_CHECKOUT_PAYMENT_METHODS,
-  PASS_INCLUDED_BENEFITS,
-  PASS_SHOP_FAQ,
-} from '@/lib/pass-shop-copy';
+import { PASS_INCLUDED_BENEFITS, PASS_SHOP_FAQ } from '@/lib/pass-shop-copy';
 import {
   getPassPrices,
   PASS_PURCHASE_COUNTRY_CODE,
@@ -389,16 +385,8 @@ export function PrimeScreen({ navigation }: Props) {
                 })}
           </View>
 
-          <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Moyens de paiement</Text>
-          <View style={[styles.paymentRow, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
-            {PASS_CHECKOUT_PAYMENT_METHODS.map((method) => (
-              <View key={method} style={[styles.paymentChip, { borderColor: shell.filterInactiveBorder }]}>
-                <Text style={[styles.paymentChipText, { color: shell.pageTitle }]}>{method}</Text>
-              </View>
-            ))}
-          </View>
           <Text style={[styles.noteInline, { color: shell.pageKicker }]}>
-            Paiement sécurisé sur le portail — choisissez votre moyen à l'étape suivante.
+            Paiement sécurisé sur le portail (Mobile Money, PayCard, carte…) — le moyen se choisit à l’étape suivante.
           </Text>
 
           {referralStats ? (

@@ -12,7 +12,7 @@ import { buildAuthEmailTemplatePatch } from './auth-email-template-bodies.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const projectRef = 'eeyhtulpixvftvhppinz';
-const callbackUrl = 'https://api.theloop-app.com/auth/callback';
+const callbackUrl = 'https://www.theloop-app.com/auth/callback';
 const edgeCallbackUrl = `https://${projectRef}.supabase.co/functions/v1/auth-callback`;
 const legacyCallbackUrl = 'https://admin.theloop-app.com/auth-callback.html';
 const storageCallbackUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/app-public/auth/auth-callback.html`;

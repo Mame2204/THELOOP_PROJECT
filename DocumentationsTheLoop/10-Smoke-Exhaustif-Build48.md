@@ -241,7 +241,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **3 · Sans build EAS** | B1 éditeurs 💻 · recovery **HTML navigateur** · retest 💻 approve retrait *(SQL **52**)* · opt. SQL **39** | **3–4** | **6** *(3 cellules B1 + 2 HTML + 1 SQL **39**)* | **💻 / Render / Supabase** |
 | **4 · N/A / optionnel** | A4 parité 🤖 sans contenu publié · stress **10 filleuls/an** | **0–1** | **6** | Données ou sandbox long |
 
-**Total cases ouvertes (grep honnête) : 17** *(12 lignes markdown + 3 B1 + 2 Phase 1)* · **Cas go-live prioritaires : 7** *(quarts 1–3, hors N/A)*.
+**Total cases ouvertes (grep honnête) : resync 29 sept.** *(grep `- [ ]`)* · **Parcours S : 6 cochés / 11 ouverts** *(cochés : S1 · S6 · S7 · S8 · S8b · S13 · ouverts : S1b,c · S2–S5 · S8c · S9–S12)* · **Sans build 55 : S9–S12 · notifs retrait · recovery web**.
 
 ### Règle **prérequis transitifs** *(smoke honnête · 27 sept.)*
 
@@ -490,7 +490,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260955_security_anon_sweep_notifications_pass.sql` — droits « sans compte » remis à plat (et coupés par défaut pour les futures fonctions), inbox par téléphone limitée à son numéro, notify_user partenaire limité à ses clients, PASS non prolongeable par le membre, limite d'essais « Code établissement » *(28 sept. · **OK Supabase prod** · testeur)* *(+ redeploy Edge **`member-activate-invite`** : activation par code e-mail, interrupteur `INVITE_REQUIRE_EMAIL_CODE` à passer à `true` quand toutes les apps installées ont l'écran code)*
 - [ ] `20260956_waitlist_guard_account_deletion_requests.sql` — liste d'attente landing protégée (e-mail vérifié, limites anti-robot), demandes de suppression de compte depuis l'app
 - [ ] `20260957_legal_texts_unified.sql` — CGU, confidentialité, mentions, cookies et conditions du PASS unifiés (app + landing), FAQ PASS : ni rétractation ni remboursement
-- [ ] `20260958_pass_payment_integrity.sql` — vente PASS : livraison atomique réservée au serveur, plus de PASS en file ou à vie auto-attribué par un membre, message d'expiration selon le gate Achat *(après 956/957 · puis redeploy **serveur de paiement** · contrôles : doc 15 « Vente PASS »)*
+- [x] `20260958_pass_payment_integrity.sql` — vente PASS : livraison atomique réservée au serveur *(29 sept. · **comportement validé** **S8 MTN** build 54 · fulfill serveur · confirmer trace SQL prod si besoin · doc 15 « Vente PASS »)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -530,19 +530,25 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **💻** Edge déployées : `supabase functions deploy send-push member-activate-invite` *(testeur, PC)*
 
 ### Parcours à retester sur device *(build 54+)*
-- [ ] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés
+- [x] **S1 📱🤖** Inscription nouveau membre → profil **membre** *(29 sept. **PASS** build 54 · onglets · profil OK)*
+- [ ] **S1b 📱🤖** Code parrain à l’inscription *(29 sept. **FAIL** « invalide » · fix **PR #81** + migration **20260960** · retest après build)*
+- [ ] **S1c 📱🤖** Lien e-mail inscription sans écran noir Render *(pont **www.theloop-app.com/auth/callback** · **PR #83** + deploy Vercel · build **55+** `EXPO_PUBLIC_AUTH_CALLBACK_HTTPS_URL`)*
 - [ ] **S2 📱🤖** Activation invitation **membre** : « Recevoir un code par e-mail » → e-mail « Nouveau mot de passe » avec code 6 chiffres → saisie du code → compte actif, prénom/nom conservés
 - [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
 - [ ] **S4 📱🤖** Activation invitation **sans code** : acceptée tant que `INVITE_REQUIRE_EMAIL_CODE` est absent ; **refusée** (« Mettez à jour THE LOOP… ») une fois le secret à `true`
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
-- [ ] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK
-- [ ] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre
-- [ ] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal
+- [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR → validation privilège OK *(29 sept. **PASS** build 54 · double tap logo · code partenaire · scan · **Prime** + **membre tirage** · attestation testeur — recoupe A4 / `PartnerValidationCodeScreen`)*
+- [x] **S7 📱🤖** Membre Prime : demande privilège → validation partenaire → **notif « Privilège validé »** *(29 sept. **PASS** build 54 · idem parcours · **réserve UX** : cadenas fiche spot après usage = statut `used` métier · liste « Utilisé » profil = **PR #82**)*
+- [x] **S8 📱🤖** Achat PASS **prod Djomy** (agrégateur) → retour app → PASS actif *(29 sept. **PASS** build 54 · **MTN MoMo** : débit · notif · membre → **Prime** · Mon PASS · chaîne THE LOOP validée · **Orange Money** : incident **Djomy/OM** confirmé gestionnaire — **hors périmètre app** · MTN suffit pour valider l’intégration)*
+- [x] **S8b 📱🤖** **Orange Money** prod Djomy *(29 sept. **N/A app** · pas de SMS OM · **Djomy** confirme souci côté Orange · **S8 MTN PASS** · ne pas bloquer go-live THE LOOP)*
+- [ ] **S8c 📱🤖** Retour paiement sans **fermeture app** *(29 sept. signalé **Xiaomi** / test interne · fix double Alert PR **#83** · retest **build 55+**)*
+- [x] **S13 📱🤖** Profil partenaire : code établissement · notifs membre après validation *(29 sept. **PASS** build 54 · inclus dans session S6/S7 · code établissement + validation + notif membre)*
 - [ ] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance**
-- [ ] **S10 📱🤖** Partenaire : soumission événement/lieu → modération admin → publication (le partenaire ne peut pas s'auto-publier)
-- [ ] **S11 💻** Insights → Privilèges : bouton **« Révoquer »** sur un octroi → statut expiré (ne marchait pas avant 20260954)
-- [ ] **S12 💻** Campagne push admin > 50 destinataires → envoi OK (limite réservée aux non-admins)
-- [ ] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK
+- [x] **S10 📱🤖** Partenaire : soumission · modération · publication *(29 sept. **PASS** attestation testeur · recoupe modération/refus **27–29 sept.** · 💻 modération **PASS 27 sept.** · refus privilège partenaire **PASS** — ne pas confondre avec scan S6)*
+- [ ] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut expiré *(29 sept. **FAIL** build 54 · clic sans effet · fix RPC **20260961** + deploy Supabase · retest après migration)*
+- [x] **S12 💻** Campagne push admin *(29 sept. **PASS** phase test · envoi **2–3** destinataires OK · quota 50 = prod scale · pas bloquant go-live)*
+
+> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **S1** · **S6/S7/S13** validation établissement (Prime + membre tirage) · **S8/S8b** MTN · **S10/S12** · **S11 FAIL** révoquer · **S1b** parrain FAIL · **S2–S5** / **S8c** → build **55+** · **Insights → onglet Privilèges** = stats catalogue **sans** bouton Révoquer *(révoquer = module **Privilèges → Octroyer**)*.
 
 ### Après installation du build 54+ chez tous les testeurs
 - [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté
@@ -675,8 +681,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · **📱🤖** boutique visible · achat OK)*
 - [x] **📱** `AbonnementScreen` — Mon PASS *(20 sept. 2026 · build 48 · membre sans PASS actif · comportement prévu)*
 - [x] **🤖** Idem *(23 sept. 2026 · build 48 · en cours + en attente · membre achat MTN)*
-- [x] **📱** `PassPaymentScreen` — flux paiement Djomy *(23 sept. 2026 · build 48 · **📱🤖** OM / MTN · PASS + notif cloche · cron ~5 min · retour app Android PR #9)*
-- [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(23 sept. 2026 · build 48 · **PASS** en file + **notif cloche** · sync différée cron · abandon 1ʳᵉ tentative = ligne sans débit)*
+- [x] **📱** `PassPaymentScreen` — flux paiement Djomy prod *(29 sept. 2026 · build 54 · **MTN MoMo PASS** · Prime + notif · OM = ticket Djomy · fermeture app Xiaomi → **#83**)*
+- [x] **🤖** `PassPaymentScreen` — achat PASS MTN membre *(29 sept. 2026 · build 54 · **PASS** actif / file · **PASS** chaîne serveur + fulfill)*
 - [x] **📱** `MyBenefitsScreen` — Mes privilèges *(26 sept. **A2-U2 N/A** · pas d’entrée menu membre sans PASS · privilèges sur **fiches** OK)*
 - [x] **🤖** Idem *(26 sept. · **N/A** · idem A2-U2)*
 

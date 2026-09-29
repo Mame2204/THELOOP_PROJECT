@@ -218,6 +218,30 @@ export async function warmPaymentApi(): Promise<void> {
   }
 }
 
+/** Attend que /health réponde (réveil Render) avant create-payment ou polling. */
+export async function waitForPaymentApiReady(options?: {
+  timeoutMs?: number;
+  intervalMs?: number;
+}): Promise<boolean> {
+  if (!isDjomyPaymentConfigured()) return false;
+  const timeoutMs = options?.timeoutMs ?? 45_000;
+  const intervalMs = options?.intervalMs ?? 2_000;
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const response = await fetch(`${PAYMENT_API_URL}/health`);
+      if (response.ok) {
+        const payload = (await response.json()) as { ok?: boolean };
+        if (payload.ok !== false) return true;
+      }
+    } catch {
+      /* retry */
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return false;
+}
+
 export async function fetchDjomyPaymentStatus(paymentIntentId: string): Promise<DjomyPaymentStatus> {
   if (!isDjomyPaymentConfigured()) {
     throw new Error('Serveur de paiement non configuré.');
@@ -238,7 +262,16 @@ export async function fetchDjomyPaymentStatus(paymentIntentId: string): Promise<
 
   const payload = (await response.json()) as DjomyPaymentStatus & { error?: string };
   if (!response.ok) {
-    throw new Error(payload.error ?? 'Statut paiement indisponible.');
+    const msg = payload.error ?? 'Statut paiement indisponible.';
+    if (response.status >= 500 || /verify_payment|internal error/i.test(msg)) {
+      return {
+        status: 'redirected',
+        fulfillmentStatus: 'pending',
+        passGrantStatus: null,
+        paidAt: null,
+      };
+    }
+    throw new Error(msg);
   }
 
   return payload;

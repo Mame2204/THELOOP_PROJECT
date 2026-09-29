@@ -8,6 +8,7 @@ import {
   getBenefitCardKey,
   getBenefitExpiryLabel,
   getRoleEntitlementBadge,
+  getBenefitKindLabel,
   getBenefitUsageLabel,
   isBenefitFullyUsed,
   listUserPrimeBenefits,
@@ -30,6 +31,8 @@ interface Props {
   activeAccent?: string;
   filterCountryCode?: CountryCode;
   emptyMessage?: string;
+  /** Masquer le sous-titre « Mes avantages » (ex. écran déjà intitulé Mes privilèges). */
+  showSectionHeading?: boolean;
 }
 
 export function PrimeBenefitsSection({
@@ -42,6 +45,7 @@ export function PrimeBenefitsSection({
   activeAccent,
   emptyMessage,
   filterCountryCode,
+  showSectionHeading = true,
 }: Props) {
   const [benefits, setBenefits] = useState<{
     active: PrimeBenefit[];
@@ -89,7 +93,9 @@ export function PrimeBenefitsSection({
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: shell.pageKicker }]}>Mes avantages</Text>
+      {showSectionHeading ? (
+        <Text style={[styles.sectionTitle, { color: shell.pageKicker }]}>Mes avantages</Text>
+      ) : null}
       {loading && total === 0 ? (
         <Text style={[styles.empty, { color: shell.pageKicker }]}>Chargement des avantages…</Text>
       ) : null}
@@ -153,11 +159,10 @@ function BenefitGroup({
               <Text style={{ color: accent, fontSize: 10, fontWeight: '800' }}>{roleBadge}</Text>
             </View>
           ) : null}
-          <BenefitContextMeta benefit={b} shell={shell} />
-          <Text style={[styles.cardBody, { color: shell.pageTitle }]}>{b.description}</Text>
-          <Text style={[styles.cardMeta, { color: shell.pageKicker }]}>
-            {BENEFIT_STATUS_LABELS[b.status]} · {getBenefitUsageLabel(b)} · {getBenefitExpiryLabel(b)}
-          </Text>
+          {b.description?.trim() ? (
+            <Text style={[styles.cardBody, { color: shell.pageTitle }]}>{b.description}</Text>
+          ) : null}
+          <BenefitDetailBlock benefit={b} shell={shell} />
           {b.status === 'pending_validation' && userId && onChanged ? (
             <Pressable
               style={[styles.useBtn, { borderColor: '#94a3b8' }]}
@@ -257,21 +262,70 @@ function BenefitGroup({
   );
 }
 
-function BenefitContextMeta({ benefit, shell }: { benefit: PrimeBenefit; shell: ShellTheme }) {
-  const [label, setLabel] = useState<string | null>(null);
+function DetailRow({
+  label,
+  value,
+  shell,
+  emphasize,
+}: {
+  label: string;
+  value: string;
+  shell: ShellTheme;
+  emphasize?: boolean;
+}) {
+  if (!value.trim()) return null;
+  return (
+    <View style={styles.detailRow}>
+      <Text style={[styles.detailLabel, { color: shell.pageKicker }]}>{label}</Text>
+      <Text
+        style={[
+          styles.detailValue,
+          { color: emphasize ? shell.pageTitle : shell.pageKicker, fontWeight: emphasize ? '700' : '600' },
+        ]}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+function BenefitDetailBlock({ benefit, shell }: { benefit: PrimeBenefit; shell: ShellTheme }) {
+  const [placeLabel, setPlaceLabel] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void resolveBenefitDisplayContext(benefit).then((resolved) => {
-      if (!cancelled) setLabel(resolved);
+      if (!cancelled) setPlaceLabel(resolved);
     });
     return () => {
       cancelled = true;
     };
   }, [benefit.id, benefit.contentId, benefit.contentType, benefit.contentTitle, benefit.partnerName]);
 
-  if (!label) return null;
-  return <Text style={[styles.cardMeta, { color: shell.pageKicker }]}>{label}</Text>;
+  const usedAtLabel =
+    benefit.usedAt && !Number.isNaN(new Date(benefit.usedAt).getTime())
+      ? new Date(benefit.usedAt).toLocaleString('fr-FR', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : null;
+
+  return (
+    <View style={[styles.detailBlock, { borderColor: shell.filterInactiveBorder }]}>
+      <DetailRow label="Statut" value={BENEFIT_STATUS_LABELS[benefit.status]} shell={shell} emphasize />
+      <DetailRow label="Contenu / lieu" value={placeLabel ?? benefit.contentTitle?.trim() ?? '—'} shell={shell} />
+      <DetailRow label="Type" value={getBenefitKindLabel(benefit.benefitKind)} shell={shell} />
+      <DetailRow label="Quota" value={getBenefitUsageLabel(benefit)} shell={shell} emphasize />
+      <DetailRow label="Validité" value={getBenefitExpiryLabel(benefit)} shell={shell} />
+      {usedAtLabel ? <DetailRow label="Utilisé le" value={usedAtLabel} shell={shell} /> : null}
+      {benefit.partnerName?.trim() && !placeLabel?.includes(benefit.partnerName.trim()) ? (
+        <DetailRow label="Partenaire" value={benefit.partnerName.trim()} shell={shell} />
+      ) : null}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -285,6 +339,10 @@ const styles = StyleSheet.create({
   sourceBadge: { alignSelf: 'flex-start', marginTop: 6, borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
   cardBody: { marginTop: 6, fontSize: 13, lineHeight: 18 },
   cardMeta: { marginTop: 4, fontSize: 11 },
+  detailBlock: { marginTop: 10, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, gap: 8 },
+  detailRow: { gap: 2 },
+  detailLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
+  detailValue: { fontSize: 13, lineHeight: 18 },
   useBtn: { marginTop: 10, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
   pendingBtn: { marginTop: 10, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
 });

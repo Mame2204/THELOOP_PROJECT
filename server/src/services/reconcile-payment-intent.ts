@@ -99,7 +99,18 @@ export async function reconcilePaymentIntent(intent: PaymentIntentRow): Promise<
     return intent;
   }
 
-  const verified = await verifyPayment(transactionId);
+  let verified: Awaited<ReturnType<typeof verifyPayment>>;
+  try {
+    verified = await verifyPayment(transactionId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn('[reconcile] verify_payment indisponible', intent.id, message);
+    await stampDjomyCheck(intent.id, {
+      djomy_status: intent.djomy_status ?? undefined,
+    });
+    return intent;
+  }
+
   const djomyStatus = String(verified.status ?? '');
   const providerRef = verified.providerReference?.trim() || null;
 
