@@ -534,7 +534,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 ### Parcours à retester sur device *(build 57+ · invite 2 étapes)*
 - [x] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés *(29 sept. · **PASS** sans code parrain · **KO** code parrain « invalide » — fix RPC **20260960** + app · retest parrainage)*
 - [x] **S2 📱🤖** Activation invitation **membre** : formulaire → **Activer mon compte** → e-mail code → pop-up **6 chiffres** → compte actif *(29 sept. · build **57** · **PASS** testeur · redeploy Edge `member-activate-invite` + fix inviteId stale)*
-- [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
+- [x] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible *(29 sept. · build **57** · **PASS** testeur · même flux que S2 · rôle partenaire)*
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
 - [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
 - [x] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre *(29 sept. **PASS** testeur)*

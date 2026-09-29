@@ -1,5 +1,14 @@
 import { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { Alert, Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  InteractionManager,
+  Linking,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GuineaLocationPicker } from '@/components/GuineaLocationPicker';
@@ -179,6 +188,8 @@ export function AuthScreen({ navigation, route }: Props) {
   const [birthDate, setBirthDate] = useState('');
   const [activationCode, setActivationCode] = useState('');
   const [sendingActivationCode, setSendingActivationCode] = useState(false);
+  /** Indication inline dans la modale code (évite Alert qui se superpose à la modale). */
+  const [inviteCodeEmailSent, setInviteCodeEmailSent] = useState(false);
   const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [acceptedCgu, setAcceptedCgu] = useState(false);
@@ -340,11 +351,8 @@ export function AuthScreen({ navigation, route }: Props) {
         Alert.alert('Envoi impossible', sent.error ?? 'Réessayez dans une minute.');
         return;
       }
+      setInviteCodeEmailSent(true);
       setSignupStep('invite_code');
-      Alert.alert(
-        'Code envoyé',
-        'Consultez l’e-mail « Code de vérification — THE LOOP » et saisissez le code à 6 chiffres.',
-      );
     } finally {
       setSendingActivationCode(false);
     }
@@ -501,13 +509,19 @@ export function AuthScreen({ navigation, route }: Props) {
         Alert.alert('Envoi impossible', sent.error ?? 'Réessayez dans une minute.');
         return;
       }
-      Alert.alert(
-        'Code envoyé',
-        'Un e-mail « Code de vérification — THE LOOP » vient d’être envoyé. Saisissez le code à 6 chiffres dans l’étape suivante.',
-      );
+      setInviteCodeEmailSent(true);
     } finally {
       setSendingActivationCode(false);
     }
+  }
+
+  function showInviteActivatedAlert(onContinue: () => void, message = 'Bienvenue sur THE LOOP.'): void {
+    setSignupStep('form');
+    setActivationCode('');
+    setInviteCodeEmailSent(false);
+    InteractionManager.runAfterInteractions(() => {
+      Alert.alert('Compte activé', message, [{ text: 'Continuer', onPress: onContinue }]);
+    });
   }
 
   async function persistIdentityAfterInviteActivation(): Promise<void> {
@@ -591,8 +605,6 @@ export function AuthScreen({ navigation, route }: Props) {
           });
 
           if (activated.ok) {
-            setSignupStep('form');
-            setActivationCode('');
             try {
               await signIn(emailCheck.email, passwordForAuth);
               try {
@@ -600,23 +612,17 @@ export function AuthScreen({ navigation, route }: Props) {
               } catch {
                 /* Connexion OK — profil sera complété au prochain refresh. */
               }
-              Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.', [
-                {
-                  text: 'Continuer',
-                  onPress: () => {
-                    try {
-                      resetToAccueil(navigation);
-                    } catch {
-                      switchMode('login');
-                    }
-                  },
-                },
-              ]);
+              showInviteActivatedAlert(() => {
+                try {
+                  resetToAccueil(navigation);
+                } catch {
+                  switchMode('login');
+                }
+              });
             } catch {
-              Alert.alert(
-                'Compte activé',
-                'Votre compte est prêt côté serveur. Connectez-vous avec le même e-mail et mot de passe.',
-                [{ text: 'Connexion', onPress: () => switchMode('login') }],
+              showInviteActivatedAlert(
+                () => switchMode('login'),
+                'Votre compte est prêt. Connectez-vous avec le même e-mail et mot de passe.',
               );
             }
             return;
@@ -1357,7 +1363,10 @@ export function AuthScreen({ navigation, route }: Props) {
         visible={mode === 'activate' && signupStep === 'invite_code'}
         animationType="fade"
         transparent
-        onRequestClose={() => setSignupStep('form')}
+        onRequestClose={() => {
+          setSignupStep('form');
+          setInviteCodeEmailSent(false);
+        }}
       >
         <View style={styles.modalBackdrop}>
           <View
@@ -1367,6 +1376,11 @@ export function AuthScreen({ navigation, route }: Props) {
             ]}
           >
             <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>Code de vérification</Text>
+            {inviteCodeEmailSent ? (
+              <Text style={[styles.fieldHint, { color: shell.tabIndicator, marginBottom: 8 }]}>
+                Un code vient d’être envoyé à votre e-mail.
+              </Text>
+            ) : null}
             <Text style={[styles.cardSubtitle, { color: shell.pageKicker, marginBottom: 12 }]}>
               Consultez la boîte mail{' '}
               <Text style={{ fontWeight: '700' }}>{normalizeEmail(email) || 'indiquée'}</Text>
