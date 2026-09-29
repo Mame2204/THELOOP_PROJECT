@@ -537,7 +537,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
 - [ ] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK
 - [ ] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre
-- [ ] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal
+- [ ] **S8 📱🤖** Achat PASS → retour app → PASS actif *(29 sept. **FAIL** build 54 : verify Djomy « internal error », intent admin **en cours**, app parfois plantée · **sandbox** : éviter Orange Money, montants ≤ 10k GNF, PayCard/Soutra/carte test · redeploy **serveur paiement** + build **55+** avec réveil API / UX)*
 - [ ] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance**
 - [ ] **S10 📱🤖** Partenaire : soumission événement/lieu → modération admin → publication (le partenaire ne peut pas s'auto-publier)
 - [ ] **S11 💻** Insights → Privilèges : bouton **« Révoquer »** sur un octroi → statut expiré (ne marchait pas avant 20260954)
