@@ -27,6 +27,7 @@ import {
   type WaitlistEntry,
   type WaitlistStatus,
 } from '../lib/users';
+import { applyPassRoleChangeEffects } from '../lib/pass-role-sync';
 
 type Tab = 'list' | 'waitlist' | 'invite';
 const PAGE = 20;
@@ -209,12 +210,25 @@ export function UsersPage() {
     }
     setBusy(true);
     setFormMsg(null);
+    const previousRole = selected.userRole;
     const res = await updateAdminUser(selected.id, form, { syncEmail: true });
-    setBusy(false);
     if (!res.ok) {
+      setBusy(false);
       setFormMsg(res.error ?? 'Enregistrement impossible.');
       return;
     }
+    if (form.userRole !== previousRole) {
+      const passSync = await applyPassRoleChangeEffects(selected.id, previousRole, form.userRole);
+      if (!passSync.ok) {
+        setBusy(false);
+        setFormMsg(
+          `Profil sauvé, mais sync PASS échouée : ${passSync.error ?? 'erreur inconnue'}. Vérifiez l’onglet PASS.`,
+        );
+        void loadUsers();
+        return;
+      }
+    }
+    setBusy(false);
     setFormMsg(res.emailWarning ? `Sauvé. Attention : ${res.emailWarning}` : 'Enregistré.');
     void loadUsers();
   }
