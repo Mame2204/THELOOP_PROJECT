@@ -365,7 +365,16 @@ export function PrivilegesPage() {
           ))}
       </nav>
 
-      {msg ? <p className="muted">{msg}</p> : null}
+      {msg ? (
+        <p
+          className={
+            /révoqué|enregistré|envoyé|associé|OK/i.test(msg) ? 'muted' : 'error-text'
+          }
+          role="status"
+        >
+          {msg}
+        </p>
+      ) : null}
 
       {tab === 'creation' && (canCreation || canValidations) ? (
         <>

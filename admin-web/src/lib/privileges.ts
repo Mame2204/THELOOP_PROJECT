@@ -738,7 +738,7 @@ export async function listRecentGrants(
   let q = supabase
     .from('prime_benefit_grants')
     .select(
-      'local_id, user_id, catalog_local_id, title, status, grant_country_code, created_at, expires_at',
+      'id, local_id, user_id, catalog_local_id, title, status, grant_country_code, created_at, expires_at',
     )
     .order('created_at', { ascending: false })
     .limit(150);
@@ -749,13 +749,13 @@ export async function listRecentGrants(
     // colonnes alternatives
     const plain = await supabase
       .from('prime_benefit_grants')
-      .select('local_id, user_id, catalog_local_id, title, status, created_at, expires_at')
+      .select('id, local_id, user_id, catalog_local_id, title, status, created_at, expires_at')
       .order('created_at', { ascending: false })
       .limit(150);
     if (plain.error) return { items: [], error: error.message };
     return {
       items: (plain.data ?? []).map((r) => ({
-        localId: String(r.local_id),
+        localId: r.local_id ? String(r.local_id) : String(r.id),
         userId: String(r.user_id),
         catalogLocalId: String(r.catalog_local_id ?? ''),
         title: String(r.title ?? 'Privilège'),
@@ -769,7 +769,7 @@ export async function listRecentGrants(
 
   return {
     items: (data ?? []).map((r) => ({
-      localId: String(r.local_id),
+      localId: r.local_id ? String(r.local_id) : String(r.id),
       userId: String(r.user_id),
       catalogLocalId: String(r.catalog_local_id ?? ''),
       title: String(r.title ?? 'Privilège'),
@@ -789,34 +789,47 @@ export async function revokeGrant(localId: string): Promise<{ ok: boolean; error
     p_local_id: id,
   });
 
-  if (!rpcError && rpcOk === true) {
-    return { ok: true };
-  }
-
-  if (rpcError && !/function.*does not exist|Could not find/i.test(rpcError.message)) {
-    return { ok: false, error: rpcError.message };
-  }
-
-  const { data, error } = await supabase
-    .from('prime_benefit_grants')
-    .update({
-      status: 'expired_unused',
-      expires_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('local_id', id)
-    .in('status', ['active', 'pending_validation'])
-    .select('local_id');
-
-  if (error) return { ok: false, error: error.message };
-  if (!data?.length) {
+  if (!rpcError) {
+    if (rpcOk === true) return { ok: true };
     return {
       ok: false,
       error:
-        'Aucun octroi modifié (déjà utilisé, révoqué, ou droits insuffisants). Appliquez la migration 20260961 si besoin.',
+        'Révocation refusée (octroi déjà utilisé, expiré, ou identifiant inconnu). Appliquez la migration 20260962 sur Supabase si le bouton échoue encore.',
     };
   }
-  return { ok: true };
+
+  if (!/function.*does not exist|Could not find/i.test(rpcError.message)) {
+    return { ok: false, error: rpcError.message };
+  }
+
+  const patch = {
+    status: 'expired_unused',
+    expires_at: new Date().toISOString(),
+  };
+  const statuses = ['active', 'pending_validation'] as const;
+
+  const byLocal = await supabase
+    .from('prime_benefit_grants')
+    .update(patch)
+    .eq('local_id', id)
+    .in('status', [...statuses])
+    .select('local_id');
+  if (byLocal.error) return { ok: false, error: byLocal.error.message };
+  if (byLocal.data?.length) return { ok: true };
+
+  const byId = await supabase
+    .from('prime_benefit_grants')
+    .update(patch)
+    .eq('id', id)
+    .in('status', [...statuses])
+    .select('local_id');
+  if (byId.error) return { ok: false, error: byId.error.message };
+  if (byId.data?.length) return { ok: true };
+
+  return {
+    ok: false,
+    error: 'Aucun octroi modifié. Appliquez les migrations 20260961 puis 20260962 sur Supabase prod.',
+  };
 }
 
 export async function getBenefitKpis(countryCode?: string): Promise<BenefitKpis> {
