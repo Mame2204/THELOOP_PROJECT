@@ -1543,13 +1543,34 @@ export async function revokeBenefit(benefitId: string): Promise<boolean> {
   if (idx < 0) return false;
   const target = refreshStatuses([all[idx]])[0];
   if (!canRevokeBenefit(target)) return false;
+
+  if (isSupabaseConfigured() && supabase) {
+    const { data: rpcOk, error: rpcError } = await supabase.rpc('admin_revoke_benefit_grant', {
+      p_local_id: benefitId,
+    });
+    if (!rpcError && rpcOk === true) {
+      const revoked: PrimeBenefit = {
+        ...target,
+        status: 'expired_unused',
+        expiresAt: new Date().toISOString(),
+      };
+      all[idx] = revoked;
+      await saveAll(all);
+      return true;
+    }
+    if (rpcError && !/function.*does not exist|Could not find/i.test(rpcError.message)) {
+      console.warn('[PrimeBenefits] revoke rpc:', rpcError.message);
+      return false;
+    }
+  }
+
   const revoked: PrimeBenefit = {
     ...target,
     status: 'expired_unused',
     expiresAt: new Date().toISOString(),
   };
   all[idx] = revoked;
-  await persistAndSync(all, [revoked]);
+  await persistAndSync(all, [revoked], { awaitRemote: true });
   return true;
 }
 
