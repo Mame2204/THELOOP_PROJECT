@@ -46,6 +46,10 @@ export interface PassActivationMessage {
   updatedAt: string;
 }
 
+export type PassGrantStatus = 'active' | 'pending' | 'expired' | 'revoked' | string;
+
+export type PassLedgerOrigin = 'purchase' | 'admin_grant' | 'referral' | 'other';
+
 export interface ActiveGrantRow {
   localId: string;
   userId: string;
@@ -54,9 +58,25 @@ export interface ActiveGrantRow {
   countryCode: string | null;
   catalogId: string | null;
   label: string;
+  passKind: string | null;
+  billingPeriod: BillingPeriod | null;
+  status: PassGrantStatus;
+  origin: PassLedgerOrigin;
   startedAt: string;
   expiresAt: string | null;
+  scheduledStartAt: string | null;
+  paidAt: string | null;
   grantNote: string | null;
+  /** Octroi manuel super-admin : bouton Retirer autorisé. */
+  revocableByAdmin: boolean;
+}
+
+export type PassLedgerKindFilter = 'all' | 'heritage' | 'shop' | 'referral' | 'admin_grant';
+export type PassLedgerStatusFilter = 'all' | 'active' | 'pending' | 'history';
+
+export interface PassLedgerFilters {
+  kind: PassLedgerKindFilter;
+  status: PassLedgerStatusFilter;
 }
 
 export const HERITAGE_CATALOG_ID = 'pass-heritage-builtin';
@@ -284,7 +304,101 @@ export async function saveActivationMessages(
   return upsertSetting(remoteKey('pass_activation_messages_v1', countryCode), messages);
 }
 
-export async function listActiveGrants(countryCode?: string): Promise<ActiveGrantRow[]> {
+function parseBillingPeriod(raw: unknown): BillingPeriod | null {
+  if (raw === 'monthly' || raw === 'quarterly' || raw === 'annual' || raw === 'lifetime') return raw;
+  return null;
+}
+
+function resolvePassOrigin(row: Record<string, unknown>): PassLedgerOrigin {
+  const kind = String(row.pass_kind ?? '').toLowerCase();
+  const catalogId = row.pass_catalog_id ? String(row.pass_catalog_id) : '';
+  if (kind === 'referral' || catalogId === REFERRAL_CATALOG_ID) return 'referral';
+  const paidAt = row.paid_at ? String(row.paid_at) : '';
+  const paymentMethod = row.payment_method ? String(row.payment_method) : '';
+  if (paidAt || paymentMethod) return 'purchase';
+  if (row.granted_by) return 'admin_grant';
+  return 'other';
+}
+
+function passTypeLabel(row: Record<string, unknown>): { passKind: string | null; billingPeriod: BillingPeriod | null } {
+  const billingPeriod = parseBillingPeriod(row.billing_period);
+  const passKind = row.pass_kind ? String(row.pass_kind) : null;
+  return { passKind, billingPeriod };
+}
+
+function formatPassTypeDisplay(g: ActiveGrantRow): string {
+  if (g.billingPeriod && PERIOD_LABELS[g.billingPeriod]) {
+    return PERIOD_LABELS[g.billingPeriod];
+  }
+  if (g.catalogId === HERITAGE_CATALOG_ID || g.passKind === 'heritage') return 'Heritage';
+  if (g.catalogId === REFERRAL_CATALOG_ID || g.passKind === 'referral') return 'Parrainage';
+  if (g.passKind) return g.passKind;
+  return g.label;
+}
+
+export function passGrantStatusLabel(status: PassGrantStatus): string {
+  switch (status) {
+    case 'active':
+      return 'Actif';
+    case 'pending':
+      return 'En attente';
+    case 'expired':
+      return 'Expiré';
+    case 'revoked':
+      return 'Retiré';
+    default:
+      return status;
+  }
+}
+
+export function passGrantOriginLabel(origin: PassLedgerOrigin): string {
+  switch (origin) {
+    case 'purchase':
+      return 'Achat boutique';
+    case 'admin_grant':
+      return 'Octroi admin';
+    case 'referral':
+      return 'Parrainage';
+    default:
+      return 'Autre';
+  }
+}
+
+export { formatPassTypeDisplay };
+
+function applyLedgerFilters(rows: ActiveGrantRow[], filters: PassLedgerFilters): ActiveGrantRow[] {
+  return rows.filter((g) => {
+    if (filters.status === 'active' && g.status !== 'active') return false;
+    if (filters.status === 'pending' && g.status !== 'pending') return false;
+    if (filters.status === 'history' && g.status !== 'expired' && g.status !== 'revoked') return false;
+
+    if (filters.kind === 'heritage') {
+      return (
+        g.catalogId === HERITAGE_CATALOG_ID ||
+        g.passKind === 'heritage' ||
+        g.label.toLowerCase().includes('heritage')
+      );
+    }
+    if (filters.kind === 'referral') {
+      return g.origin === 'referral' || g.catalogId === REFERRAL_CATALOG_ID;
+    }
+    if (filters.kind === 'admin_grant') {
+      return g.origin === 'admin_grant';
+    }
+    if (filters.kind === 'shop') {
+      return g.origin === 'purchase';
+    }
+    return true;
+  });
+}
+
+export async function listActiveGrants(
+  countryCode?: string,
+  filters: PassLedgerFilters = { kind: 'all', status: 'all' },
+): Promise<ActiveGrantRow[]> {
+  const selectFields =
+    'local_id, user_id, pass_catalog_id, label, pass_kind, billing_period, status, started_at, expires_at, scheduled_start_at, grant_note, granted_by, paid_at, payment_method';
+
   const mapRows = (
     rows: Array<Record<string, unknown>>,
     usersById: Map<
@@ -295,6 +409,10 @@ export async function listActiveGrants(countryCode?: string): Promise<ActiveGran
     rows
       .map((r) => {
         const u = usersById.get(String(r.user_id));
+        const origin = resolvePassOrigin(r);
+        const { passKind, billingPeriod } = passTypeLabel(r);
+        const purchased = origin === 'purchase';
+        const adminGrant = origin === 'admin_grant';
         return {
           localId: String(r.local_id ?? r.user_id),
           userId: String(r.user_id),
@@ -306,9 +424,17 @@ export async function listActiveGrants(countryCode?: string): Promise<ActiveGran
           countryCode: u?.country_code ?? null,
           catalogId: r.pass_catalog_id ? String(r.pass_catalog_id) : null,
           label: String(r.label ?? 'PASS'),
+          passKind,
+          billingPeriod,
+          status: String(r.status ?? 'active'),
+          origin,
           startedAt: String(r.started_at),
           expiresAt: r.expires_at ? String(r.expires_at) : null,
+          scheduledStartAt: r.scheduled_start_at ? String(r.scheduled_start_at) : null,
+          paidAt: r.paid_at ? String(r.paid_at) : null,
           grantNote: r.grant_note ? String(r.grant_note) : null,
+          revocableByAdmin:
+            adminGrant && !purchased && (r.status === 'active' || r.status === 'pending'),
         };
       })
       .filter((g) => !countryCode || g.countryCode === countryCode);
@@ -316,19 +442,19 @@ export async function listActiveGrants(countryCode?: string): Promise<ActiveGran
   const { data, error } = await supabase
     .from('user_pass_grants')
     .select(
-      'local_id, user_id, pass_catalog_id, label, started_at, expires_at, grant_note, users!user_pass_grants_user_id_fkey(email, first_name, last_name, country_code)',
+      `${selectFields}, users!user_pass_grants_user_id_fkey(email, first_name, last_name, country_code)`,
     )
-    .eq('status', 'active')
+    .in('status', ['active', 'pending', 'expired', 'revoked'])
     .order('started_at', { ascending: false })
-    .limit(400);
+    .limit(800);
 
   if (error) {
     const plain = await supabase
       .from('user_pass_grants')
-      .select('local_id, user_id, pass_catalog_id, label, started_at, expires_at, grant_note')
-      .eq('status', 'active')
+      .select(selectFields)
+      .in('status', ['active', 'pending', 'expired', 'revoked'])
       .order('started_at', { ascending: false })
-      .limit(400);
+      .limit(800);
     if (plain.error || !plain.data) return [];
     const userIds = [...new Set(plain.data.map((r) => String(r.user_id)))];
     const { data: users } = await supabase
@@ -336,7 +462,7 @@ export async function listActiveGrants(countryCode?: string): Promise<ActiveGran
       .select('id, email, first_name, last_name, country_code')
       .in('id', userIds);
     const byId = new Map((users ?? []).map((u) => [String(u.id), u]));
-    return mapRows(plain.data as Array<Record<string, unknown>>, byId);
+    return applyLedgerFilters(mapRows(plain.data as Array<Record<string, unknown>>, byId), filters);
   }
 
   const byId = new Map<
@@ -349,7 +475,7 @@ export async function listActiveGrants(countryCode?: string): Promise<ActiveGran
       | null;
     if (u) byId.set(String(r.user_id), u);
   }
-  return mapRows((data ?? []) as Array<Record<string, unknown>>, byId);
+  return applyLedgerFilters(mapRows((data ?? []) as Array<Record<string, unknown>>, byId), filters);
 }
 
 export async function countActiveGrantsForCatalog(catalogId: string): Promise<number> {

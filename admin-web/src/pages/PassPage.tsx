@@ -14,8 +14,13 @@ import {
   computeExpiry,
   countActiveGrantsForCatalog,
   grantPass,
+  formatPassTypeDisplay,
   listActiveGrants,
   loadActivationMessages,
+  passGrantOriginLabel,
+  passGrantStatusLabel,
+  type PassLedgerKindFilter,
+  type PassLedgerStatusFilter,
   loadPassCatalog,
   loadPassPrices,
   loadShopSettings,
@@ -64,6 +69,8 @@ export function PassPage() {
 
   const [catalog, setCatalog] = useState<PassCatalogEntry[]>([]);
   const [grants, setGrants] = useState<ActiveGrantRow[]>([]);
+  const [ledgerKindFilter, setLedgerKindFilter] = useState<PassLedgerKindFilter>('all');
+  const [ledgerStatusFilter, setLedgerStatusFilter] = useState<PassLedgerStatusFilter>('all');
   const [draft, setDraft] = useState(newCatalogDraft());
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -102,7 +109,10 @@ export function PassPage() {
   }
 
   const reloadOps = useCallback(async () => {
-    const [c, g] = await Promise.all([loadPassCatalog(countryCode), listActiveGrants(countryCode)]);
+    const [c, g] = await Promise.all([
+      loadPassCatalog(countryCode),
+      listActiveGrants(countryCode, { kind: ledgerKindFilter, status: ledgerStatusFilter }),
+    ]);
     setCatalog(c);
     setGrants(g);
     setGrantCatalogId((current) => {
@@ -110,7 +120,7 @@ export function PassPage() {
       const first = c.find((x) => x.status === 'active' && x.id !== INTERMEDIATE_CATALOG_ID);
       return first?.id ?? '';
     });
-  }, [countryCode]);
+  }, [countryCode, ledgerKindFilter, ledgerStatusFilter]);
 
   const reloadPrices = useCallback(async () => {
     const [p, s] = await Promise.all([loadPassPrices(countryCode), loadShopSettings(countryCode)]);
@@ -568,13 +578,47 @@ export function PassPage() {
             </button>
           </form>
 
-          <h3 style={{ marginTop: 28 }}>PASS actifs octroyés</h3>
+          <h3 style={{ marginTop: 28 }}>Suivi des PASS (achats et octrois)</h3>
+          <p className="muted" style={{ marginTop: 8, maxWidth: 720 }}>
+            Tous les PASS enregistrés côté serveur : actifs, en file d’attente après un achat, expirés ou retirés.
+            Les achats boutique ne se retirent pas ici (historique Djomy / paiements).
+          </p>
+          <div className="filter-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
+            <div className="field" style={{ margin: 0, minWidth: 180 }}>
+              <label>Type</label>
+              <select
+                value={ledgerKindFilter}
+                onChange={(e) => setLedgerKindFilter(e.target.value as PassLedgerKindFilter)}
+              >
+                <option value="all">Tous les types</option>
+                <option value="shop">Achats boutique</option>
+                <option value="heritage">Heritage</option>
+                <option value="admin_grant">Octrois admin</option>
+                <option value="referral">Parrainage</option>
+              </select>
+            </div>
+            <div className="field" style={{ margin: 0, minWidth: 180 }}>
+              <label>Statut</label>
+              <select
+                value={ledgerStatusFilter}
+                onChange={(e) => setLedgerStatusFilter(e.target.value as PassLedgerStatusFilter)}
+              >
+                <option value="all">Tous</option>
+                <option value="active">Actifs</option>
+                <option value="pending">En attente</option>
+                <option value="history">Expirés / retirés</option>
+              </select>
+            </div>
+          </div>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
                   <th>Membre</th>
-                  <th>PASS</th>
+                  <th>Libellé</th>
+                  <th>Type</th>
+                  <th>Origine</th>
+                  <th>Statut</th>
                   <th>Début</th>
                   <th>Fin</th>
                   <th></th>
@@ -590,27 +634,37 @@ export function PassPage() {
                     <td>
                       {g.label}
                       {g.grantNote ? <div className="meta">{g.grantNote}</div> : null}
+                      {g.status === 'pending' && g.scheduledStartAt ? (
+                        <div className="meta">Activation prévue : {formatWhen(g.scheduledStartAt)}</div>
+                      ) : null}
                     </td>
+                    <td>{formatPassTypeDisplay(g)}</td>
+                    <td>{passGrantOriginLabel(g.origin)}</td>
+                    <td>{passGrantStatusLabel(g.status)}</td>
                     <td>{formatWhen(g.startedAt)}</td>
-                    <td>{g.expiresAt ? formatWhen(g.expiresAt) : 'Illimité'}</td>
+                    <td>{g.expiresAt ? formatWhen(g.expiresAt) : g.status === 'pending' ? '—' : 'Illimité'}</td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn small ghost"
-                        disabled={busy}
-                        onClick={() => {
-                          if (!window.confirm('Retirer ce PASS ?')) return;
-                          void revokePass(g.userId, g.localId).then((r) => {
-                            if (!r.ok) setMsg(r.error ?? 'Erreur');
-                            else {
-                              setMsg('PASS retiré.');
-                              void reloadOps();
-                            }
-                          });
-                        }}
-                      >
-                        Retirer
-                      </button>
+                      {g.revocableByAdmin ? (
+                        <button
+                          type="button"
+                          className="btn small ghost"
+                          disabled={busy}
+                          onClick={() => {
+                            if (!window.confirm('Retirer ce PASS octroyé par l’admin ?')) return;
+                            void revokePass(g.userId, g.localId).then((r) => {
+                              if (!r.ok) setMsg(r.error ?? 'Erreur');
+                              else {
+                                setMsg('PASS retiré.');
+                                void reloadOps();
+                              }
+                            });
+                          }}
+                        >
+                          Retirer
+                        </button>
+                      ) : (
+                        <span className="meta">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -618,7 +672,7 @@ export function PassPage() {
             </table>
             {grants.length === 0 ? (
               <p className="muted" style={{ padding: 16 }}>
-                Aucun PASS actif.
+                Aucun PASS pour ces filtres.
               </p>
             ) : null}
           </div>
