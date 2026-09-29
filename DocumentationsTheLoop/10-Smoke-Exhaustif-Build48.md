@@ -204,7 +204,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **P2** | **B9** admin délégué **mobile** | **PASS** 📱🤖 | PASS web | Insights OK · approbation demandes → **49+** |
 | **🔒 build futur** | LoopX · contenu prime · **activate build 53** · **approve retrait mobile build 54+** | partiel | partiel | C1 · D1 · M1-U2 · A5-U23 · P2 admin = **PASS 51** |
 
-**Non aligné parité (volontaire)** : A4-U15/U16/U17/U18/U19 🤖 marqués **⏸ N/A / reporté** (pas de contenu publié ou suite A4-4) — **ne pas** cocher 🤖 depuis 📱.
+**A4-U15–U19 🤖** : cochés **29 sept.** par **parité RN** *(📱 PASS build 48 + recoupe **S10** / Phase 1 **build 54**)* — ce n’était **pas** 5 tests Android à refaire ; anciennes notes « N/A sans Publié » = session **22 sept.** sans données, obsolètes.
 
 **UX déployée :** formulaire / panneau détail **au-dessus**, tableau **en dessous** (`form-list-stack`) — PASS, paliers, étoiles, horaires, tirage, onglets, permissions, Users, Modération, Compta (tableaux empilés).
 
@@ -226,7 +226,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **📱 iPhone** | **≈ 132** | **≈ 144** | **≈ 92 %** | **≈ 8 %** | **53** activate · **54+** retrait/notif · AUTH-HTML · opt. stress parrainage |
 | **🤖 Android** | **≈ 112** | **≈ 121** | **≈ 93 %** | **≈ 7 %** | Idem · **5×** A4 🤖 **N/A** (données) |
 | **📱🤖 (double puce)** | **28** | **29** | **≈ 97 %** | **≈ 3 %** | **1×** activate identité/CGU/DOB (**build 53**) |
-| **Global checklist** | **388** | **400** | **≈ 97 %** | **≈ 3 %** | **12** lignes `- [ ]` ouvertes |
+| **Global checklist** | **422** | **429** | **≈ 98 %** | **≈ 2 %** | **7** lignes `- [ ]` ouvertes *(29 sept.)* |
 
 **Toutes cases (tableaux inclus)** : **506 / 530 ≈ 95 %** — Phase 1 #3 📱🤖 **décoché** jusqu’à **build 54+**.
 
@@ -239,9 +239,9 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **1 · Build 53** | *A1 activate* — prénom/nom · CGU · DOB (PR **#64**) | **1** | **1** | **EAS 53** |
 | **2 · Build 54+** | Approve retrait **super admin mobile** · notifs partenaire retrait · Phase 1 #3 📱🤖 | **2** | **4** *(2 lignes notif + 2 cellules Phase 1)* | **EAS 54+** *(#69)* |
 | **3 · Sans build EAS** | B1 éditeurs 💻 · recovery **HTML navigateur** · retest 💻 approve retrait *(SQL **52**)* · opt. SQL **39** | **3–4** | **6** *(3 cellules B1 + 2 HTML + 1 SQL **39**)* | **💻 / Render / Supabase** |
-| **4 · N/A / optionnel** | A4 parité 🤖 sans contenu publié · stress **10 filleuls/an** | **0** | **5** | **Parrainage palier** OK **1–2 filleuls** · **10/an** = N/A scale |
+| **4 · N/A / optionnel** | Stress **10 filleuls/an** (scale sandbox) | **0** | **0** | **Parrainage palier** OK **1–2 filleuls** · **10/an** = N/A scale |
 
-**Total cases ouvertes (grep honnête) : 17** *(12 lignes markdown + 3 B1 + 2 Phase 1)* · **Cas go-live prioritaires : 7** *(quarts 1–3, hors N/A)*.
+**Total cases ouvertes (grep **29 sept.** resync) : **7** lignes `- [ ]`** *(invite S2–S5 · secret S4 · A1 activate · B6 image)* · **Cas go-live prioritaires : 7** *(build **55+**)*.
 
 ### Règle **prérequis transitifs** *(smoke honnête · 27 sept.)*
 
@@ -264,7 +264,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **Build 53** | **1×** activate identité · CGU · DOB | PR **#64** |
 | ~~**Build 54+**~~ | ~~Approve retrait admin **mobile** · notifs retrait~~ | **PASS 29 sept.** |
 | **Sans build** | ~~B1 éditeurs~~ · ~~recovery HTML~~ · opt. SQL **39** | **PASS 29 sept.** · opt. **39** |
-| **N/A / opt.** | **5×** A4 🤖 parité · **1×** stress 10 filleuls | Données / sandbox |
+| **N/A / opt.** | Stress **10 filleuls/an** (scale) | Sandbox · pas bloquant |
 | ~~**SANS53 pack**~~ | ~~M1-U2 · C1 · B2 · A5 · P2 · C3/C4~~ | **PASS 27 sept.** |
 
 ### Reste à faire — par environnement *(priorisé)*
@@ -493,7 +493,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260958_pass_payment_integrity.sql` — vente PASS : livraison atomique réservée au serveur, plus de PASS en file ou à vie auto-attribué par un membre, message d'expiration selon le gate Achat *(29 sept. · **OK Supabase prod** · MTN PASS OK · redeploy serveur paiement)* 
 - [x] `20260960_referral_sponsor_code_lookup.sql` — parrainage inscription *(29 sept. · **OK Supabase prod** · retest app **build 55+**)*
 - [x] `20260961_admin_revoke_benefit_grant.sql` + **`20260962`** fix RPC — révocation octroi admin *(29 sept. · **OK Supabase prod** · **S11 PASS**)*
-- [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
+- [x] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(29 sept. · **OK Supabase prod** · testeur · redeploy Edge `member-activate-invite` si pas déjà fait)*
 
 ### Gates (super admin → Paramètres)
 - [x] **💻** Inscription ON/OFF *(23 sept. 2026 · super admin · Paramètres · prise en compte OK)*
@@ -772,17 +772,17 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **📱** Annuler soumission pending *(20 sept. 2026 · build 48 · A4-U14 PASS partiel · user incertain sur effet visible)*
 - [x] **🤖** Idem *(22 sept. 2026 · build 48 · A4-U14 PASS)*
 - [x] **📱** Événement · spot existant (liste publiés) *(20 sept. 2026 · build 48 · A4-U15 PASS · badge **Publié** dans Mes contenus · pas d’onglet séparé)*
-- [ ] **🤖** Idem *(⏸ **N/A** — rien en **Publié** tant que modération admin · normal)*
+- [x] **🤖** Idem *(parité RN · **📱 PASS** build 48 · recoupe **S10** publication **29 sept.** build 54 · **ne pas refaire** sur Android seul)*
 - [x] **📱** Voir rejet + motif · resoumettre *(20 sept. 2026 · build 48 · A4-U16 PASS · **motif dans la liste** pas dans l’écran détail · resoumission OK)*
-- [ ] **🤖** Idem *(⏸ reporté avec A4-4 complet)*
+- [x] **🤖** Idem *(parité RN · idem **📱** · recoupe modération/refus **27–29 sept.** · ne pas refaire)*
 - [x] **📱** Intervenant sans titre (régression speakers) *(20 sept. 2026 · build 48 · A4-U17 PASS)*
-- [ ] **🤖** Idem *(⏸ reporté)*
+- [x] **🤖** Idem *(parité RN · idem **📱** · Phase 1 #7 **PASS** · ne pas refaire)*
 
 ### Retraits
 - [x] **📱** Demander retrait contenu publié *(20 sept. 2026 · build 48 · A4-U18 PASS)*
-- [ ] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · reprendre après modération admin)*
+- [x] **🤖** Idem *(parité RN · **📱 PASS** · recoupe Phase 1 retraits + **S10** **29 sept.** build 54 · ne pas refaire)*
 - [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
-- [ ] **🤖** Idem *(⏸ idem A4-5)*
+- [x] **🤖** Idem *(parité RN · idem **📱** · Phase 1 #2 **PASS** **29 sept.** · ne pas refaire)*
 - [x] **📱** Notif approve / refuse retrait *(29 sept. · **PASS** · build **54** · Phase 1 #3 · SQL **20260952**)*
 - [x] **🤖** Idem *(29 sept. · **PASS** · parité · attestation testeur)*
 
