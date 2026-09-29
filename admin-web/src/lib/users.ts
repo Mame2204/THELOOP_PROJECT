@@ -622,7 +622,15 @@ export async function sendInviteEmail(input: {
     }
     return { ok: true, mode: body.mode ?? 'invite', activationLink: body.activationLink ?? null };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Envoi impossible.' };
+    const raw = err instanceof Error ? err.message : 'Envoi impossible.';
+    const isNetwork =
+      /failed to fetch|networkerror|load failed|network request failed/i.test(raw);
+    return {
+      ok: false,
+      error: isNetwork
+        ? 'Connexion à Supabase impossible (Failed to fetch). Vérifiez le réseau, le statut Supabase (Dashboard → status), puis réessayez. Si besoin : supabase functions deploy admin-send-invite'
+        : raw,
+    };
   }
 }
 
