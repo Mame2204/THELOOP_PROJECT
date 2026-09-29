@@ -33,6 +33,23 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function extractGuineaLocal9(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('00224') && digits.length >= 14) return digits.slice(5, 14);
+  if (digits.startsWith('224') && digits.length >= 12) return digits.slice(3, 12);
+  if (digits.startsWith('0') && digits.length >= 10) return digits.slice(1, 10);
+  if (digits.length === 9) return digits;
+  if (digits.length > 9) return digits.slice(-9);
+  return digits;
+}
+
+/** Numéro mobile Guinée (Orange / MTN) — 9 chiffres commençant par 6. */
+function isValidGuineaMobileLocal(raw: string): boolean {
+  const local = extractGuineaLocal9(raw);
+  return /^6\d{8}$/.test(local);
+}
+
 export async function processPassPayment(request: PassPaymentRequest): Promise<PassPaymentResult> {
   if (request.amountGnf <= 0) {
     return { status: 'failed', message: 'Montant invalide.' };
@@ -40,6 +57,18 @@ export async function processPassPayment(request: PassPaymentRequest): Promise<P
 
   if (!request.payerPhone?.trim()) {
     return { status: 'failed', message: 'Indiquez le numéro ou compte utilisé pour le paiement mobile.' };
+  }
+
+  if (
+    isDjomyPaymentConfigured()
+    && (request.method === 'all' || request.method === 'orange_money' || request.method === 'mtn_momo')
+    && !isValidGuineaMobileLocal(request.payerPhone)
+  ) {
+    return {
+      status: 'failed',
+      message:
+        'Indiquez un numéro mobile Guinée valide (9 chiffres, ex. 620 00 00 00) — le même que sur Orange Money ou MTN MoMo.',
+    };
   }
 
   if (isDjomyPaymentConfigured()) {

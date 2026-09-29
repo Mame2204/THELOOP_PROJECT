@@ -534,7 +534,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const payerPlaceholder = isSandboxMode ? `Ex. ${sandboxHint.display}` : 'Ex. 620 00 00 01';
   const payerHint = isSandboxMode
     ? `${sandboxHint.tip} Orange Money est indisponible en test — choisissez un autre moyen sur l’écran suivant.`
-    : 'Utilisez le même numéro ou compte que sur l’écran de paiement (Mobile Money, PayCard, carte…).';
+    : 'Même numéro que sur le portail Djomy. Pour Orange Money : choisissez Orange sur le portail, confirmez — le SMS de validation Orange part à ce moment-là (pas avant dans THE LOOP).';
 
   return (
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>

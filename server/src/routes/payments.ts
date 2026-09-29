@@ -133,11 +133,14 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       return;
     }
 
+    const initialDjomyStatus = String(gateway.status ?? '').trim() || null;
+
     console.log('[create-payment]', {
       intentId: intentRow.id,
       transactionId: gateway.transactionId,
       amountGnf,
       payerPhone: maskPhone(payerPhone),
+      djomyStatus: initialDjomyStatus,
     });
 
     const { error: redirectError } = await supabase
@@ -145,6 +148,7 @@ paymentsRouter.post('/create-payment', requireSupabaseAuth, async (req, res) => 
       .update({
         djomy_transaction_id: gateway.transactionId,
         status: 'redirected',
+        djomy_status: initialDjomyStatus,
         updated_at: new Date().toISOString(),
       })
       .eq('id', intentRow.id);
