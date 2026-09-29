@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GuineaLocationPicker } from '@/components/GuineaLocationPicker';
@@ -58,7 +58,7 @@ import type { RootStackParamList } from '@/navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Auth'>;
 
 type AuthMode = 'login' | 'signup' | 'activate' | 'reset' | 'set_password';
-type SignupStep = 'form' | 'verify_email';
+type SignupStep = 'form' | 'verify_email' | 'invite_code';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -282,6 +282,72 @@ export function AuthScreen({ navigation, route }: Props) {
     setPassword('');
     setSignupPassword('');
     setConfirmPassword('');
+    setActivationCode('');
+  }
+
+  function validateInviteActivationProfile(): boolean {
+    if (!firstName.trim() || !lastName.trim()) {
+      Alert.alert('Identité', 'Indiquez votre prénom et votre nom.');
+      return false;
+    }
+    const emailCheck = validateSignupEmail(email);
+    if (!emailCheck.ok) {
+      Alert.alert('E-mail requis', emailCheck.message);
+      return false;
+    }
+    const pwdError = validateSignupPassword(signupPassword, confirmPassword);
+    if (pwdError) {
+      Alert.alert('Mot de passe', pwdError);
+      return false;
+    }
+    if (!acceptedCgu) {
+      Alert.alert(
+        'Acceptation requise',
+        'Veuillez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.',
+      );
+      return false;
+    }
+    return true;
+  }
+
+  /** Étape 1 invitation : envoie le code puis ouvre la saisie (sans appeler l’activation serveur). */
+  async function handleInviteSendCodeAndContinue(): Promise<void> {
+    if (!validateInviteActivationProfile()) return;
+    const emailCheck = validateSignupEmail(email);
+    if (!emailCheck.ok) return;
+
+    const eligibility = await checkAdminInviteActivationEligibility(emailCheck.email);
+    if (eligibility === 'account_already_active') {
+      Alert.alert(
+        'Compte déjà actif',
+        'Ce compte est déjà activé. Connectez-vous avec votre mot de passe ou utilisez « Mot de passe oublié ».',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Connexion', onPress: () => switchMode('login') },
+        ],
+      );
+      return;
+    }
+    if (eligibility === 'no_pending_invite') {
+      Alert.alert('Invitation introuvable', 'Aucune invitation admin en attente pour cet e-mail.');
+      return;
+    }
+
+    setSendingActivationCode(true);
+    try {
+      const sent = await requestInviteActivationCode(emailCheck.email);
+      if (!sent.ok) {
+        Alert.alert('Envoi impossible', sent.error ?? 'Réessayez dans une minute.');
+        return;
+      }
+      setSignupStep('invite_code');
+      Alert.alert(
+        'Code envoyé',
+        'Consultez l’e-mail « Nouveau mot de passe » (pas l’e-mail d’invitation). Saisissez les 6 chiffres dans la fenêtre qui s’affiche.',
+      );
+    } finally {
+      setSendingActivationCode(false);
+    }
   }
 
   async function assertEmailAvailableForSignup(emailValue: string): Promise<boolean> {
@@ -461,27 +527,26 @@ export function AuthScreen({ navigation, route }: Props) {
 
   async function handleCompleteSignup() {
     if (mode === 'activate') {
+      if (signupStep === 'form') {
+        await handleInviteSendCodeAndContinue();
+        return;
+      }
+      if (!validateInviteActivationProfile()) return;
+
       const emailCheck = validateSignupEmail(email);
       if (!emailCheck.ok) {
         Alert.alert('E-mail requis', emailCheck.message);
         return;
       }
-      if (!firstName.trim() || !lastName.trim()) {
-        Alert.alert('Identité', 'Indiquez votre prénom et votre nom.');
-        return;
-      }
-      const pwdError = validateSignupPassword(signupPassword, confirmPassword);
-      if (pwdError) {
-        Alert.alert('Mot de passe', pwdError);
-        return;
-      }
-      if (!acceptedCgu) {
+      const normalizedCode = activationCode.replace(/\s/g, '').trim();
+      if (!/^\d{6,10}$/.test(normalizedCode)) {
         Alert.alert(
-          'Acceptation requise',
-          'Veuillez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.',
+          'Code requis',
+          'Saisissez le code à 6 chiffres reçu par e-mail (objet « Nouveau mot de passe »). Si vous ne l’avez pas reçu, touchez « Renvoyer le code ».',
         );
         return;
       }
+      const passwordForAuth = signupPassword.trim();
       const eligibility = await checkAdminInviteActivationEligibility(emailCheck.email);
       if (eligibility === 'account_already_active') {
         Alert.alert(
@@ -514,9 +579,9 @@ export function AuthScreen({ navigation, route }: Props) {
             : null;
           const activated = await activateInvitedMemberAccount({
             email: emailCheck.email,
-            password: signupPassword,
+            password: passwordForAuth,
             inviteId: invite.id,
-            emailCode: activationCode,
+            emailCode: normalizedCode,
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             birthDate: birthDate.trim() || null,
@@ -526,17 +591,20 @@ export function AuthScreen({ navigation, route }: Props) {
           });
 
           if (activated.ok) {
-            await signIn(emailCheck.email, signupPassword);
+            await signIn(emailCheck.email, passwordForAuth);
             await persistIdentityAfterInviteActivation();
+            setSignupStep('form');
+            setActivationCode('');
             Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
             resetToAccueil(navigation);
             return;
           }
 
           if (activated.emailCodeRequired) {
+            setSignupStep('invite_code');
             Alert.alert(
               'Code requis',
-              'Touchez « Recevoir un code par e-mail », puis saisissez le code reçu à cette adresse.',
+              'Un code de vérification est nécessaire. Consultez l’e-mail « Nouveau mot de passe », saisissez les 6 chiffres, puis réessayez.',
             );
             return;
           }
@@ -554,25 +622,15 @@ export function AuthScreen({ navigation, route }: Props) {
             return;
           }
 
-          if (!activated.needsSignUp) {
-            // Peut-être MDP déjà défini → tenter connexion directe
-            try {
-              await signIn(emailCheck.email, signupPassword);
-              await persistIdentityAfterInviteActivation();
-              const { markInviteActivated } = await import('@/lib/admin-invite-store');
-              await markInviteActivated(invite.id, emailCheck.email);
-              Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
-              resetToAccueil(navigation);
-              return;
-            } catch {
-              Alert.alert(
-                'Activation impossible',
-                activated.error ??
-                  'Demandez à THE LOOP de renvoyer l\'invitation, puis réessayez ici.',
-                [{ text: 'OK', style: 'cancel' }],
-              );
-              return;
-            }
+          if (activated.needsSignUp) {
+            // Compte Auth absent : inscription classique ci-dessous.
+          } else {
+            Alert.alert(
+              'Activation impossible',
+              activated.error ??
+                'Vérifiez le code reçu par e-mail et votre mot de passe, ou demandez un nouveau code.',
+            );
+            return;
           }
         }
 
@@ -587,7 +645,7 @@ export function AuthScreen({ navigation, route }: Props) {
         });
         await signUpMember({
           email: invite.email ?? emailCheck.email,
-          password: signupPassword,
+          password: passwordForAuth,
           firstName: displayName.firstName,
           lastName: displayName.lastName,
           birthDate: birthDate.trim() || null,
@@ -977,8 +1035,9 @@ export function AuthScreen({ navigation, route }: Props) {
         <View style={formCardStyle}>
           <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>Activer mon compte</Text>
           <Text style={[styles.cardSubtitle, { color: shell.pageKicker }]}>
-            Vous avez reçu une invitation THE LOOP. Saisissez le même e-mail que dans le message, complétez
-            votre profil et choisissez votre mot de passe — le tout dans l’application, sans lien magique.
+            Vous avez reçu une invitation THE LOOP. Complétez votre profil et votre mot de passe ici. L’e-mail
+            d’invitation ne contient pas de code : après « Activer mon compte », nous vous enverrons un second
+            message avec un code à 6 chiffres à saisir pour finaliser.
           </Text>
 
           <View style={styles.nameRow}>
@@ -1023,27 +1082,6 @@ export function AuthScreen({ navigation, route }: Props) {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-
-          <FieldLabel color={shell.pageKicker}>Code reçu par e-mail</FieldLabel>
-          <TextInput
-            style={inputStyle}
-            placeholder="6 chiffres"
-            placeholderTextColor={shell.pageKicker}
-            value={activationCode}
-            onChangeText={(v) => setActivationCode(v.replace(/\D/g, '').slice(0, 10))}
-            keyboardType="number-pad"
-            autoComplete="one-time-code"
-            textContentType="oneTimeCode"
-          />
-          <Pressable
-            onPress={() => void handleSendActivationCode()}
-            disabled={sendingActivationCode}
-            style={styles.inlineLink}
-          >
-            <Text style={[styles.link, { color: shell.tabIndicator }]}>
-              {sendingActivationCode ? 'Envoi…' : 'Recevoir un code par e-mail'}
-            </Text>
-          </Pressable>
 
           <FieldLabel required color={shell.pageKicker}>Mot de passe</FieldLabel>
           <PasswordInput
@@ -1118,10 +1156,10 @@ export function AuthScreen({ navigation, route }: Props) {
           <Pressable
             style={[styles.btn, { backgroundColor: shell.filterActiveBg }]}
             onPress={() => void handleCompleteSignup()}
-            disabled={loading}
+            disabled={loading || sendingActivationCode}
           >
             <Text style={[styles.btnText, { color: shell.filterActiveText }]}>
-              {loading ? 'Activation…' : 'Activer mon compte'}
+              {sendingActivationCode ? 'Envoi du code…' : 'Activer mon compte'}
             </Text>
           </Pressable>
 
@@ -1293,6 +1331,63 @@ export function AuthScreen({ navigation, route }: Props) {
         </Pressable>
       ) : null}
 
+      <Modal
+        visible={mode === 'activate' && signupStep === 'invite_code'}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setSignupStep('form')}
+      >
+        <View style={styles.modalBackdrop}>
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder },
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: shell.pageTitle }]}>Code de vérification</Text>
+            <Text style={[styles.cardSubtitle, { color: shell.pageKicker, marginBottom: 12 }]}>
+              Consultez la boîte mail{' '}
+              <Text style={{ fontWeight: '700' }}>{normalizeEmail(email) || 'indiquée'}</Text>
+              {' '}— message « Nouveau mot de passe » (pas l’e-mail d’invitation). Saisissez les 6 chiffres du
+              code, sans ouvrir le bouton du mail.
+            </Text>
+            <FieldLabel required color={shell.pageKicker}>Code à 6 chiffres</FieldLabel>
+            <TextInput
+              style={inputStyle}
+              placeholder="000000"
+              placeholderTextColor={shell.pageKicker}
+              value={activationCode}
+              onChangeText={(v) => setActivationCode(v.replace(/\D/g, '').slice(0, 10))}
+              keyboardType="number-pad"
+              autoComplete="one-time-code"
+              textContentType="oneTimeCode"
+              autoFocus
+            />
+            <Pressable
+              style={[styles.btn, { backgroundColor: shell.filterActiveBg, marginTop: 4 }]}
+              onPress={() => void handleCompleteSignup()}
+              disabled={loading}
+            >
+              <Text style={[styles.btnText, { color: shell.filterActiveText }]}>
+                {loading ? 'Activation…' : 'Valider et activer mon compte'}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => void handleSendActivationCode()}
+              disabled={sendingActivationCode}
+              style={styles.inlineLink}
+            >
+              <Text style={[styles.link, { color: shell.tabIndicator }]}>
+                {sendingActivationCode ? 'Envoi…' : 'Renvoyer le code par e-mail'}
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => setSignupStep('form')} style={styles.inlineLink}>
+              <Text style={[styles.link, { color: shell.pageKicker }]}>← Modifier mes informations</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
       <LegalPreviewModal
         visible={legalPreviewKey != null}
         title={legalPreviewTitle}
@@ -1327,6 +1422,20 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 13, fontWeight: '700' },
   partnerRow: { marginBottom: 14, paddingHorizontal: 4 },
   partnerText: { fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 18,
+    maxWidth: 480,
+    width: '100%',
+    alignSelf: 'center',
+  },
   formCard: {
     borderWidth: 1,
     borderRadius: 18,

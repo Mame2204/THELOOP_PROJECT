@@ -531,9 +531,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖✓** `/health` Render : Djomy production · `sandboxMode: false` *(28 sept.)*
 - [x] **💻** Edge déployées : `supabase functions deploy send-push member-activate-invite` *(28 sept. · avec migrations **953/955** · testeur)* — *≠ parcours **S2–S5** invite (codes e-mail) → **build 55+***
 
-### Parcours à retester sur device *(build 54+)*
+### Parcours à retester sur device *(build 57+ · invite 2 étapes)*
 - [x] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés *(29 sept. · **PASS** sans code parrain · **KO** code parrain « invalide » — fix RPC **20260960** + app · retest parrainage)*
-- [ ] **S2 📱🤖** Activation invitation **membre** : « Recevoir un code par e-mail » → e-mail « Nouveau mot de passe » avec code 6 chiffres → saisie du code → compte actif, prénom/nom conservés
+- [ ] **S2 📱🤖** Activation invitation **membre** : formulaire → **Activer mon compte** → e-mail « **Nouveau mot de passe** » → pop-up **code 6 chiffres** → compte actif *(build **57+** · redeploy Edge `member-activate-invite`)*
 - [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
 - [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
