@@ -226,7 +226,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **📱 iPhone** | **≈ 132** | **≈ 144** | **≈ 92 %** | **≈ 8 %** | **53** activate · **54+** retrait/notif · AUTH-HTML · opt. stress parrainage |
 | **🤖 Android** | **≈ 112** | **≈ 121** | **≈ 93 %** | **≈ 7 %** | Idem · **5×** A4 🤖 **N/A** (données) |
 | **📱🤖 (double puce)** | **28** | **29** | **≈ 97 %** | **≈ 3 %** | **1×** activate identité/CGU/DOB (**build 53**) |
-| **Global checklist** | **422** | **429** | **≈ 98 %** | **≈ 2 %** | **7** lignes `- [ ]` ouvertes *(29 sept.)* |
+| **Global checklist** | **428** | **429** | **≈ 99,8 %** | **≈ 0,2 %** | **1** ligne `- [ ]` ouverte *(29 sept. soir · B6 couverture)* |
 
 **Toutes cases (tableaux inclus)** : **506 / 530 ≈ 95 %** — Phase 1 #3 📱🤖 **décoché** jusqu’à **build 54+**.
 
@@ -535,7 +535,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés *(29 sept. · **PASS** sans code parrain · **KO** code parrain « invalide » — fix RPC **20260960** + app · retest parrainage)*
 - [x] **S2 📱🤖** Activation invitation **membre** : formulaire → **Activer mon compte** → e-mail code → pop-up **6 chiffres** → compte actif *(29 sept. · build **57** · **PASS** testeur · redeploy Edge `member-activate-invite` + fix inviteId stale)*
 - [x] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible *(29 sept. · build **57** · **PASS** testeur · même flux que S2 · rôle partenaire)*
-- [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
+- [x] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré » *(29 sept. · build **57** · **PASS** testeur · retests debug invite)*
 - [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
 - [x] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre *(29 sept. **PASS** testeur)*
 - [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · **OM** = incident **Djomy** / opérateur — **pas** case smoke bloquante tant que MTN OK)*
@@ -553,7 +553,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 > - **S4 n’est pas un 2ᵉ parcours utilisateur en parallèle** : c’est le **interrupteur admin** `INVITE_REQUIRE_EMAIL_CODE` sur Supabase. Tant que le secret est **absent ou `false`**, un vieux client pourrait activer sans code ; une fois **`true`**, le serveur **refuse** sans code (« Mettez à jour THE LOOP… »). Vous testez S4 **seulement** si vous voulez valider ce verrou **avant prod** — sinon, laissez le secret à **`true`** et ne faites que **S2 → S3 → S5** avec code.
 
 ### Après installation du build 55+ chez tous les testeurs
-- [ ] **S4 💻** *(optionnel · une fois)* Secret `INVITE_REQUIRE_EMAIL_CODE=true` → retest refus sans code sur app à jour · **sinon** considérer **code obligatoire** = S2/S3/S5 uniquement
+- [x] **S4 💻** *(optionnel)* Secret `INVITE_REQUIRE_EMAIL_CODE=true` *(29 sept. · **OK** testeur · Dashboard Supabase + script · S2/S3/S5 validés avec code)*
 
 ---
 
@@ -569,7 +569,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | P6 | Clé Firebase restreinte (console Google) | ⏳ | Restreindre au package `gn.theloop.app` |
 | P7 | Version publique | ⏳ | `version` = `0.1.0` dans `app.json` → passer à `1.0.0` pour la sortie |
 | P8 | Comptes de test pour les reviewers Apple / Google | ⏳ | Fournir un compte membre + Prime dans les notes de review (hors doc) |
-| P9 | Smoke fonctionnel restant (invite **S2–S5** · parrain **S1b** · activate CGU **53/55+**) | ⏳ | **Build 55+** |
+| P9 | Smoke fonctionnel restant | ⏳ | **B6** aperçu couverture → **build 58** · invite **S2–S5** **PASS** *(29 sept.)* |
 
 ---
 
@@ -599,7 +599,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖** Idem *(21 sept. 2026 · build 48 · A1 PASS)*
 - [x] **📱** Mode **activate** — activation compte invité *(23 sept. 2026 · build 48 · sans lien mail · e-mail invite + MDP · connecté)*
 - [x] **🤖** Idem *(26 sept. 2026 · testeur **PASS** · mode activate / invité)*
-- [ ] **📱🤖** Mode **activate** — prénom/nom saisis enregistrés (pas Membre/THE LOOP) · **CGU** · **DOB** *(retest **build 53** · PR **#64** + **20260950**)*
+- [x] **📱🤖** Mode **activate** — prénom/nom saisis enregistrés (pas Membre/THE LOOP) · **CGU** · **DOB** *(29 sept. · build **57** · **PASS** testeur · invite membre/partenaire)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
 - [x] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(29 sept. · **PASS** · auth-callback HTML · parité avec in-app **M1-U2**)*
