@@ -196,7 +196,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | **P1** | **C1** push (réception OS + inbox) | **≈PASS** 📱🤖 | **PASS** envoi 💻 | Reste **ciblage** · **Prime planifiée device** · ⏳ doublon |
 | **P1** | **D1** régression rapide | **PASS** 📱🤖 *(27 sept. build 51)* | — | Cold start icône 🤖 OK |
 | **P1** | **D2** parité meta (5 lignes 📱🤖) | [x] | — | **PASS 27 sept.** |
-| **P2** | **A4** retraits · notifs · approve mobile | partiel | Phase 1 | **💻 PASS** · **📱🤖 approve admin** → **build 54+** *(#69)* · notifs retrait → retest même build |
+| **P2** | **A4** retraits · notifs · approve mobile | **PASS** *(29 sept. build 54)* | Phase 1 | **💻 PASS** · **📱🤖** **PASS** *(#69 · 20260952)* |
 | **P2** | **Admin** Suggestions · CreateUser · Waitlist · Featured · Submission hub | [x] | — | **27 sept.** prérequis transitifs · cf. règle ci-dessous |
 | **P2** | **A5** octroi manuel mobile · tirage · push admin | [x] | partiel web | **PASS 27 sept.** *(SANS53-A5-U23 · build 51)* |
 | **P2** | **C2** partenaire invité → Espace Pro | [x] | — | **27 sept.** parité invite |
@@ -222,7 +222,7 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 
 | Environnement | Coché | Total lignes | % réalisé | % restant | Commentaire |
 |---------------|------:|-------------:|----------:|----------:|-------------|
-| **💻 Admin-web** | **82** | **85** | **≈ 96 %** | **≈ 4 %** | **3×** B1 éditeurs contenu `[ ]` · opt. SQL **39** |
+| **💻 Admin-web** | **85** | **85** | **≈ 100 %** | **≈ 0 %** | opt. SQL **39** |
 | **📱 iPhone** | **≈ 132** | **≈ 144** | **≈ 92 %** | **≈ 8 %** | **53** activate · **54+** retrait/notif · AUTH-HTML · opt. stress parrainage |
 | **🤖 Android** | **≈ 112** | **≈ 121** | **≈ 93 %** | **≈ 7 %** | Idem · **5×** A4 🤖 **N/A** (données) |
 | **📱🤖 (double puce)** | **28** | **29** | **≈ 97 %** | **≈ 3 %** | **1×** activate identité/CGU/DOB (**build 53**) |
@@ -262,8 +262,8 @@ Compte **`admin@theloop.gn`** → onglet **Administration** → **Paramètres** 
 | Zone | Encore `[ ]` | Bloc / build |
 |------|----------------|--------------|
 | **Build 53** | **1×** activate identité · CGU · DOB | PR **#64** |
-| **Build 54+** | Approve retrait admin **mobile** · **2×** notif retrait partenaire | PR **#69** · SQL **20260952** ✅ |
-| **Sans build** | **3×** B1 éditeurs 💻 · **2×** recovery HTML navigateur · **1×** SQL **39** opt. | 💻 / Render |
+| ~~**Build 54+**~~ | ~~Approve retrait admin **mobile** · notifs retrait~~ | **PASS 29 sept.** |
+| **Sans build** | ~~B1 éditeurs~~ · ~~recovery HTML~~ · opt. SQL **39** | **PASS 29 sept.** · opt. **39** |
 | **N/A / opt.** | **5×** A4 🤖 parité · **1×** stress 10 filleuls | Données / sandbox |
 | ~~**SANS53 pack**~~ | ~~M1-U2 · C1 · B2 · A5 · P2 · C3/C4~~ | **PASS 27 sept.** |
 
@@ -488,9 +488,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] `20260953_security_hardening_roles_invites_submissions.sql` — audit sécurité : rôle jamais repris du client, garde soumissions partenaires, invitations, suppression orphelin *(28 sept. · **OK Supabase prod** · testeur)* *(+ redeploy Edge **`member-activate-invite`** et **`send-push`**)*
 - [x] `20260954_security_revoke_demo_spot_and_guards.sql` — SPOT-DEMO-2026 révoqué, rôle imposé à la création du profil, octrois de privilèges non modifiables par le membre (révocation admin réparée), RPC internes fermées *(28 sept. · **OK Supabase prod** · testeur)*
 - [x] `20260955_security_anon_sweep_notifications_pass.sql` — droits « sans compte » remis à plat (et coupés par défaut pour les futures fonctions), inbox par téléphone limitée à son numéro, notify_user partenaire limité à ses clients, PASS non prolongeable par le membre, limite d'essais « Code établissement » *(28 sept. · **OK Supabase prod** · testeur)* *(+ redeploy Edge **`member-activate-invite`** : activation par code e-mail, interrupteur `INVITE_REQUIRE_EMAIL_CODE` à passer à `true` quand toutes les apps installées ont l'écran code)*
-- [ ] `20260956_waitlist_guard_account_deletion_requests.sql` — liste d'attente landing protégée (e-mail vérifié, limites anti-robot), demandes de suppression de compte depuis l'app
-- [ ] `20260957_legal_texts_unified.sql` — CGU, confidentialité, mentions, cookies et conditions du PASS unifiés (app + landing), FAQ PASS : ni rétractation ni remboursement
-- [ ] `20260958_pass_payment_integrity.sql` — vente PASS : livraison atomique réservée au serveur, plus de PASS en file ou à vie auto-attribué par un membre, message d'expiration selon le gate Achat *(après 956/957 · puis redeploy **serveur de paiement** · contrôles : doc 15 « Vente PASS »)*
+- [x] `20260956_waitlist_guard_account_deletion_requests.sql` — liste d'attente landing protégée (e-mail vérifié, limites anti-robot), demandes de suppression de compte depuis l'app *(29 sept. · **OK Supabase prod** · testeur · prod **962**)*
+- [x] `20260957_legal_texts_unified.sql` — CGU, confidentialité, mentions, cookies et conditions du PASS unifiés (app + landing), FAQ PASS : ni rétractation ni remboursement *(29 sept. · **OK Supabase prod** · testeur)*
+- [x] `20260958_pass_payment_integrity.sql` — vente PASS : livraison atomique réservée au serveur, plus de PASS en file ou à vie auto-attribué par un membre, message d'expiration selon le gate Achat *(29 sept. · **OK Supabase prod** · MTN PASS OK · redeploy serveur paiement)* 
+- [x] `20260960_referral_sponsor_code_lookup.sql` — parrainage inscription *(29 sept. · **OK Supabase prod** · retest app **build 55+**)*
+- [x] `20260961_admin_revoke_benefit_grant.sql` + **`20260962`** fix RPC — révocation octroi admin *(29 sept. · **OK Supabase prod** · **S11 PASS**)*
 - [ ] `20260939_invite_default_names_by_role.sql` — prénom défaut Partenaire / Membre selon rôle invite *(opt. · Supabase + redeploy Edge `member-activate-invite`)*
 
 ### Gates (super admin → Paramètres)
@@ -515,7 +517,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | 6 | Privilège contenu lié → Prime sans octroi = cadenas | [x] | [x] | — |
 | 7 | Modération événement + intervenant **sans titre** → validation OK | [x] | [x] | [x] |
 
-> **Phase 1 #3 📱🤖 :** approve retrait **super admin mobile** = **FAIL** build 51 (succès UI local · pas persisté) — **retest build 54+** *(PR **#69** · SQL **20260952** OK)* · **💻** reste **PASS**.
+> **Phase 1 #3 📱🤖 :** approve retrait **super admin mobile** + notifs retrait — **PASS** *(29 sept. · build **54** · attestation testeur · SQL **20260952** · PR **#69**)* · **💻** **PASS** *(27 sept.)*.
 
 ## Phase 1b — Sécurité (audit 27–28 sept. · migrations 20260953 → 20260955)
 
@@ -527,7 +529,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **🤖✓** Sans compte : RPC admin, inbox par téléphone, `notify_user`, `admin_inbox_broadcast`, code d'un établissement, logos accueil, activation d'invitation → **refusés (401)** *(28 sept. · prod)*
 - [x] **🤖✓** `SPOT-DEMO-2026` → aucun résultat (révoqué) *(28 sept. · prod)*
 - [x] **🤖✓** `/health` Render : Djomy production · `sandboxMode: false` *(28 sept.)*
-- [ ] **💻** Edge déployées : `supabase functions deploy send-push member-activate-invite` *(testeur, PC)*
+- [x] **💻** Edge déployées : `supabase functions deploy send-push member-activate-invite` *(28 sept. · avec migrations **953/955** · testeur)* — *≠ parcours **S2–S5** invite (codes e-mail) → **build 55+***
 
 ### Parcours à retester sur device *(build 54+)*
 - [x] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés *(29 sept. · **PASS** sans code parrain · **KO** code parrain « invalide » — fix RPC **20260960** + app · retest parrainage)*
@@ -537,14 +539,14 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
 - [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
 - [x] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre *(29 sept. **PASS** testeur)*
-- [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · OM incident Djomy côté opérateur · retest OM après retour Djomy)*
+- [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · **OM** = incident **Djomy** / opérateur — **pas** case smoke bloquante tant que MTN OK)*
 - [x] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance** *(29 sept. **PASS** · Prime → membre → membre → Prime · **💻** sync PASS Suivi admin-web **#89**)*
 - [x] **S10 📱🤖** Partenaire : soumission · modération · publication *(29 sept. **PASS** attestation testeur · recoupe modération/refus **27–29 sept.** · 💻 modération **PASS 27 sept.** · refus privilège partenaire **PASS** — ne pas confondre avec scan S6)*
 - [x] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut `expired_unused` *(29 sept. **PASS** · migrations **961+962** · admin-web)*
 - [x] **S12 💻** Campagne push admin *(29 sept. **PASS** phase test · envoi **2–3** destinataires OK · quota 50 = prod scale · pas bloquant go-live)*
 - [x] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK *(29 sept. **PASS** testeur)*
 
-> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **S1** (sans parrain) · **S6/S7/S9/S11/S13** · **S8/S8b** MTN · **S10/S12** · **S1b** parrain → build **55+** + **960** · **S2–S5** / **S8c** → build **55+** · **Insights → Privilèges** = KPI catalogue *(Révoquer = **Privilèges → Octroyer**)* · **PASS Suivi** achats + gel rôle OK.
+> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **Phase 1 retraits** mobile + notifs · **S1** (sans parrain) · **S6–S13** sauf invite · **S8 MTN** · **Insights/Privilèges 💻 KPI OK** · **B1 éditeurs** + **recovery HTML** · migrations **956→962** · **S1b** · **S2–S5** · **S8c** → **build 55+** · **INVITE_REQUIRE_EMAIL_CODE** après **S4** sur **55+**.
 
 ### Après installation du build 54+ chez tous les testeurs
 - [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté
@@ -563,7 +565,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | P6 | Clé Firebase restreinte (console Google) | ⏳ | Restreindre au package `gn.theloop.app` |
 | P7 | Version publique | ⏳ | `version` = `0.1.0` dans `app.json` → passer à `1.0.0` pour la sortie |
 | P8 | Comptes de test pour les reviewers Apple / Google | ⏳ | Fournir un compte membre + Prime dans les notes de review (hors doc) |
-| P9 | Smoke fonctionnel restant (activation build 53, retrait admin mobile 54+, B1 éditeurs web) | ⏳ | Voir « Reste ouvert » |
+| P9 | Smoke fonctionnel restant (invite **S2–S5** · parrain **S1b** · activate CGU **53/55+**) | ⏳ | **Build 55+** |
 
 ---
 
@@ -596,8 +598,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **📱🤖** Mode **activate** — prénom/nom saisis enregistrés (pas Membre/THE LOOP) · **CGU** · **DOB** *(retest **build 53** · PR **#64** + **20260950**)*
 - [x] **📱** Mode **reset** — mot de passe oublié · e-mail reçu *(23 sept. 2026 · build 48)*
 - [x] **🤖** Idem *(23 sept. 2026 · e-mail OK)*
-- [ ] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(deploy Render : sync Storage text/html + site_url api · **nouvel e-mail** reset après deploy)*
-- [ ] **🤖** Idem *(cause confirmée : URL Storage `app-public/auth/auth-callback.html` servie en **text/plain** — pas la page API)*
+- [x] **📱** Mode **set_password** — page recovery **rendue** (boutons visibles · pas de balises HTML brutes) *(29 sept. · **PASS** · auth-callback HTML · parité avec in-app **M1-U2**)*
+- [x] **🤖** Idem *(29 sept. · **PASS** · attestation testeur)*
 - [x] **🤖** Recovery → **set_password in-app** via « Ouvrir l’application » *(27 sept. 2026 · **PASS** · build 51 · latence Render au réveil · OK)*
 - [x] **📱** Idem *(27 sept. · **SANS53-M1-U2 PASS** · attestation testeur · parité 🤖 build 51)*
 - [x] **📱** Lien **Pro ? Rejoindre THE LOOP →** · demande partenariat *(23 sept. 2026 · build 48 · super admin reçoit la demande)*
@@ -780,8 +782,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **🤖** Idem *(⏸ **N/A** — pas de contenu publié · reprendre après modération admin)*
 - [x] **📱** **Annuler** retrait pending (Phase 1) *(20 sept. 2026 · build 48 · A4-U19 PASS · contenu reste publié)*
 - [ ] **🤖** Idem *(⏸ idem A4-5)*
-- [ ] **📱** Notif approve / refuse retrait *(retest **build 54+** · après approve/refuse mobile admin OK · SQL **20260952**)*
-- [ ] **🤖** Idem *(parité RN · même build)*
+- [x] **📱** Notif approve / refuse retrait *(29 sept. · **PASS** · build **54** · Phase 1 #3 · SQL **20260952**)*
+- [x] **🤖** Idem *(29 sept. · **PASS** · parité · attestation testeur)*
 
 ### Validation privilèges
 - [x] **📱** `PartnerValidationCodeScreen` — code `CODE-XXXXX` *(20 sept. 2026 · build 48 · A4-U21 **N/A compte connecté** — pas de saisie code sur session partenaire · flux prévu **sans connexion** serveurs / Auth · double-tap logo Auth)*
@@ -815,7 +817,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 | Module | Écran | 📱 | 🤖 |
 |--------|-------|----|----|
-| Insights | `AdminInsightsScreen` | [x] FAIL partiel | [x] *(parité RN 26 sept. · cf. 📱)* |
+| Insights | `AdminInsightsScreen` | [x] PASS *(KPI · 29 sept. 💻 Privilèges OK)* | [x] *(parité RN 26 sept.)* |
 | Accueil | `AdminAccueilScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
 | Onglets & Espace Pro | `AdminRubriqueScreen` | [x] PASS | [x] *(parité RN 26 sept.)* |
 | Hub THE LOOP | `AdminLoopScreen` | [x] PASS *(sauf création hub · retest perf 📱49+)* | [x] *(parité RN 26 sept.)* |
@@ -924,9 +926,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | `/onglets` | Onglets | [x] | **PASS 24 sept.** (testeur) | [x] |
 | `/loop` | THE LOOP | [x] | Hub éditorial *(contenu · privilèges · à la une · perf — PASS 23 sept.)* · onglets **Contenu / Privilèges / À la une / Performances** — retest si besoin post-deploy Insights | [x] |
 | `/contenu` | Contenu | [x] | Filtres · création · à la une *(web PASS · 23 sept.)* | [x] |
-| `/contenu/editer/event` | ContentEditor | [ ] | Créer / modifier event | [x] |
-| `/contenu/editer/spot` | ContentEditor | [ ] | Créer / modifier spot | [x] |
-| `/contenu/editer/tool` | ContentEditor | [ ] | Créer / modifier outil | [x] |
+| `/contenu/editer/event` | ContentEditor | [x] | Créer / modifier event *(23–29 sept. · **PASS** testeur · B6)* | [x] |
+| `/contenu/editer/spot` | ContentEditor | [x] | Créer / modifier spot *(idem)* | [x] |
+| `/contenu/editer/tool` | ContentEditor | [x] | Créer / modifier outil *(idem)* | [x] |
 | `/users` | Users | [x] | **PASS 24 sept. soir** (testeur · navigation + usage courant) | [x] |
 | `/demandes` | Demandes | [x] | **Partenariats + Idées PASS** · Modération/retraits → **build 49+** | [x] |
 | `/privileges` | Privilèges | [x] | **PASS 24 sept.** (testeur · module Privilèges web) | [x] |
