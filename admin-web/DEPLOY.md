@@ -2,6 +2,8 @@
 
 Front Vite : dossier `admin-web/` · build → `dist/` · SPA (fallback `index.html`).
 
+Dernière raison de redeploy notée : invitation admin sans notification cloche doublon (e-mail suffit).
+
 ## Variables build-time (obligatoires)
 
 | Variable | Valeur |
