@@ -3573,6 +3573,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      admin_revoke_benefit_grant: {
+        Args: { p_local_id: string }
+        Returns: boolean
+      }
       admin_create_establishment_direct: {
         Args: { p_payload: Json }
         Returns: string
@@ -3871,6 +3875,10 @@ export type Database = {
       is_partner_user: { Args: never; Returns: boolean }
       is_prime_member: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      lookup_sponsor_referral: {
+        Args: { p_code: string }
+        Returns: Json
+      }
       list_admin_benefit_grants_analytics: {
         Args: { p_country_code?: string | null }
         Returns: {

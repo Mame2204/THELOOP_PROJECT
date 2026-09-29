@@ -512,7 +512,7 @@ export async function resolveSponsorReferrerByCode(code: string): Promise<Sponso
   }
   if (!data || typeof data !== 'object') return null;
 
-  const row = data as Record<string, unknown>;
+  const row = data as unknown as Record<string, unknown>;
   const id = typeof row.id === 'string' ? row.id : null;
   if (!id) return null;
   const userRole = typeof row.user_role === 'string' ? row.user_role : 'member';
