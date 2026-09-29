@@ -319,6 +319,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Anciennes notifs cloche (admin-web les créait à l’envoi d’invite — inutiles une fois le compte actif).
+    await admin
+      .from('user_notifications')
+      .delete()
+      .eq('user_id', authUser.id)
+      .or(
+        'title.eq.Invitation THE LOOP,message.ilike.%Activer un compte invité par THE LOOP%',
+      );
+
     return new Response(JSON.stringify({ ok: true, userId: authUser.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
