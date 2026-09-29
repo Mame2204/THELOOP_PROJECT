@@ -591,12 +591,34 @@ export function AuthScreen({ navigation, route }: Props) {
           });
 
           if (activated.ok) {
-            await signIn(emailCheck.email, passwordForAuth);
-            await persistIdentityAfterInviteActivation();
             setSignupStep('form');
             setActivationCode('');
-            Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.');
-            resetToAccueil(navigation);
+            try {
+              await signIn(emailCheck.email, passwordForAuth);
+              try {
+                await persistIdentityAfterInviteActivation();
+              } catch {
+                /* Connexion OK — profil sera complété au prochain refresh. */
+              }
+              Alert.alert('Compte activé', 'Bienvenue sur THE LOOP.', [
+                {
+                  text: 'Continuer',
+                  onPress: () => {
+                    try {
+                      resetToAccueil(navigation);
+                    } catch {
+                      switchMode('login');
+                    }
+                  },
+                },
+              ]);
+            } catch {
+              Alert.alert(
+                'Compte activé',
+                'Votre compte est prêt côté serveur. Connectez-vous avec le même e-mail et mot de passe.',
+                [{ text: 'Connexion', onPress: () => switchMode('login') }],
+              );
+            }
             return;
           }
 
