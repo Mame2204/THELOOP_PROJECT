@@ -112,11 +112,16 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
-    if (password.length < 8) {
-      return new Response(JSON.stringify({ error: 'Mot de passe trop court (8 caractères minimum).' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return new Response(
+        JSON.stringify({
+          error: 'Mot de passe : minimum 8 caractères, avec au moins une lettre et un chiffre.',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
