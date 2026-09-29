@@ -151,31 +151,35 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     }
     setStep('done');
 
-    if (outcome.activated) {
-      const validity = outcome.activated.expiresAt
-        ? `Valable jusqu'au ${formatDateFr(outcome.activated.expiresAt)}.`
-        : 'Sans expiration.';
-      Alert.alert(
-        'Paiement confirmé',
-        `Votre ${planName} est actif.\n${validity}`,
-        [{ text: 'Voir Mon PASS', onPress: () => navigation.replace('Abonnement') }],
-      );
-    } else if (outcome.queued) {
-      const start = outcome.queued.scheduledStartAt;
-      Alert.alert(
-        'Paiement confirmé',
-        start
-          ? `Votre ${planName} est en file d'attente.\nIl démarrera le ${formatDateFr(start)}.`
-          : `Votre ${planName} est en file d'attente.\nIl démarrera à la fin de votre PASS actuel.`,
-        [{ text: 'Voir Mon PASS', onPress: () => navigation.replace('Abonnement') }],
-      );
-    } else {
-      Alert.alert(
-        'Paiement reçu',
-        'Votre PASS sera visible dans Mon PASS dans quelques instants.',
-        [{ text: 'OK', onPress: () => navigation.replace('Abonnement') }],
-      );
-    }
+    const showSuccessAlert = () => {
+      if (outcome.activated) {
+        const validity = outcome.activated.expiresAt
+          ? `Valable jusqu'au ${formatDateFr(outcome.activated.expiresAt)}.`
+          : 'Sans expiration.';
+        Alert.alert(
+          'Paiement confirmé',
+          `Votre ${planName} est actif.\n${validity}`,
+          [{ text: 'Voir Mon PASS', onPress: () => navigation.replace('Abonnement') }],
+        );
+      } else if (outcome.queued) {
+        const start = outcome.queued.scheduledStartAt;
+        Alert.alert(
+          'Paiement confirmé',
+          start
+            ? `Votre ${planName} est en file d'attente.\nIl démarrera le ${formatDateFr(start)}.`
+            : `Votre ${planName} est en file d'attente.\nIl démarrera à la fin de votre PASS actuel.`,
+          [{ text: 'Voir Mon PASS', onPress: () => navigation.replace('Abonnement') }],
+        );
+      } else {
+        Alert.alert(
+          'Paiement reçu',
+          'Votre PASS sera visible dans Mon PASS dans quelques instants.',
+          [{ text: 'OK', onPress: () => navigation.replace('Abonnement') }],
+        );
+      }
+    };
+    // Laisser Chrome Custom Tab / MIUI se fermer avant la modal (évite fermeture brutale de l’app).
+    setTimeout(showSuccessAlert, 400);
   }, [navigation, period, planName, refreshUserSession, user?.firstName, user?.id]);
 
   useEffect(() => {

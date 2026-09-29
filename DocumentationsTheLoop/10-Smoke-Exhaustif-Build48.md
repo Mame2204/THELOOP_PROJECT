@@ -537,7 +537,9 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
 - [ ] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK
 - [ ] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre
-- [ ] **S8 📱🤖** Achat PASS **prod Djomy** (OM/MoMo réel, tarifs catalogue) → retour app → PASS actif *(29 sept. **FAIL** build 54 : verify Djomy « internal error », intent admin **en cours**, app parfois plantée · `/health` = `djomyProduction: true`, `sandboxMode: false` · redeploy **serveur paiement** PR #83 + build **55+** UX réveil API)*
+- [x] **S8 📱🤖** Achat PASS **prod Djomy** → retour app → PASS actif *(29 sept. **PASS** build 54 · **MTN MoMo** : débit OK · notif · bascule membre → **Prime** · Mon PASS · `/health` prod · chaîne THE LOOP validée)*
+- [ ] **S8b 📱🤖** **Orange Money** prod Djomy *(29 sept. **FAIL côté Djomy/OM** · pas de SMS validation · même portail · MTN OK → pas régression app · ticket gestionnaire Djomy)*
+- [ ] **S8c 📱🤖** Retour paiement sans **fermeture app** *(29 sept. signalé **Xiaomi** / test interne · fix double Alert PR **#83** · retest **build 55+**)*
 - [ ] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance**
 - [ ] **S10 📱🤖** Partenaire : soumission événement/lieu → modération admin → publication (le partenaire ne peut pas s'auto-publier)
 - [ ] **S11 💻** Insights → Privilèges : bouton **« Révoquer »** sur un octroi → statut expiré (ne marchait pas avant 20260954)
