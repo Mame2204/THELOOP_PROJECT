@@ -535,11 +535,11 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [x] **S1 📱🤖** Inscription nouveau membre → profil **membre** (jamais un autre rôle), ville/pays enregistrés *(29 sept. · **PASS** sans code parrain · **KO** code parrain « invalide » — fix RPC **20260960** + app · retest parrainage)*
 - [ ] **S2 📱🤖** Activation invitation **membre** : « Recevoir un code par e-mail » → e-mail « Nouveau mot de passe » avec code 6 chiffres → saisie du code → compte actif, prénom/nom conservés
 - [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
-- [ ] **S4 📱🤖** Activation invitation **sans code** : acceptée tant que `INVITE_REQUIRE_EMAIL_CODE` est absent ; **refusée** (« Mettez à jour THE LOOP… ») une fois le secret à `true`
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
 - [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
 - [x] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre *(29 sept. **PASS** testeur)*
 - [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · **OM** = incident **Djomy** / opérateur — **pas** case smoke bloquante tant que MTN OK)*
+- [x] **S8c 📱🤖** *(opt.)* Retest MoMo / device secondaire (ex. Xiaomi) — **PASS** testeur *(ne pas redemander)*
 - [x] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance** *(29 sept. **PASS** · Prime → membre → membre → Prime · **💻** sync PASS Suivi admin-web **#89**)*
 - [x] **S10 📱🤖** Partenaire : soumission · modération · publication *(29 sept. **PASS** attestation testeur · recoupe modération/refus **27–29 sept.** · 💻 modération **PASS 27 sept.** · refus privilège partenaire **PASS** — ne pas confondre avec scan S6)*
 - [x] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut `expired_unused` *(29 sept. **PASS** · migrations **961+962** · admin-web)*
@@ -548,8 +548,12 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 
 > **Journal testeur 29 sept. (build 54 · post-sécurité)** — **LoopX + contenu prime PASS** · **Fermer mon compte PASS** · **Phase 1 retraits** · **S6–S13** sauf invite · **S8 MTN** · **Insights 💻** · **956→962** · **C4** palier 1–2 filleuls (pré-sécu) · **OPEN** : aperçu **image noire** création event (web/partenaire) · **S1b + S2–S5 + S8c** → **build 55+**.
 
-### Après installation du build 54+ chez tous les testeurs
-- [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté
+> **Invitation — comment lire S2 / S3 / S5 / S4 (une fois)**  
+> - **Au quotidien (votre cible)** : l’invité reçoit un **code à 6 chiffres par e-mail** et doit le saisir dans l’app → c’est **S2** (membre) et **S3** (partenaire). **S5** = code volontairement faux.  
+> - **S4 n’est pas un 2ᵉ parcours utilisateur en parallèle** : c’est le **interrupteur admin** `INVITE_REQUIRE_EMAIL_CODE` sur Supabase. Tant que le secret est **absent ou `false`**, un vieux client pourrait activer sans code ; une fois **`true`**, le serveur **refuse** sans code (« Mettez à jour THE LOOP… »). Vous testez S4 **seulement** si vous voulez valider ce verrou **avant prod** — sinon, laissez le secret à **`true`** et ne faites que **S2 → S3 → S5** avec code.
+
+### Après installation du build 55+ chez tous les testeurs
+- [ ] **S4 💻** *(optionnel · une fois)* Secret `INVITE_REQUIRE_EMAIL_CODE=true` → retest refus sans code sur app à jour · **sinon** considérer **code obligatoire** = S2/S3/S5 uniquement
 
 ---
 
@@ -1041,7 +1045,7 @@ Liens Param. → pages satellites :
 
 - [x] **💻** Filtrer events / spots / outils / archivés *(26 sept. 2026 · testeur **PASS**)*
 - [x] **💻** Créer event · spot · outil (ContentEditor) *(26–29 sept. · **PASS** · brouillon · publier · retirer)*
-- [ ] **💻📱** Aperçu **vignette image** après upload (event / spot) — **à retester build 55** *(fix `ImageUploadField` : aperçu local jusqu’au prefetch https · 29 sept.)*
+- [ ] **💻📱** Aperçu **vignette image** **couverture** 16:9 après upload (event / spot) — **retest build 56** *(fix : même `RemoteImage` que galerie · PR couverture)*
 - [x] **💻** Archiver · republier · cycle de vie catalogue *(26 sept. · **PASS** · désactiver / archiver)*
 - [x] **💻** Transfert propriétaire THE LOOP ↔ partenaire *(26 sept. · **N/A web** · **PASS 📱** admin mobile)*
 - [x] **💻** Accueil — hero · sondage · parcours · singulier · logos *(26 sept. · **PASS** · W-8 · cf. 24 sept.)*

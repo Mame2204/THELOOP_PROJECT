@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { RemoteImage } from '@/components/RemoteImage';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import {
   cropToAspect,
@@ -33,7 +33,8 @@ interface Props {
 
 /**
  * Champ image admin / partenaire.
- * Aperçu local file:// pendant le téléversement ; bascule vers l’URL https une fois en cache (expo-image prefetch).
+ * Même moteur d’aperçu que la galerie (`RemoteImage`) — l’URL Storage s’affiche dès la fin de l’upload.
+ * Aperçu local file:// conservé tant que l’URL distante n’a pas chargé.
  */
 export function ImageUploadField({
   label,
@@ -46,8 +47,9 @@ export function ImageUploadField({
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
-  const [previewUri, setPreviewUri] = useState<string | null>(null);
-  const [remoteReady, setRemoteReady] = useState(false);
+  /** Fichier local après recadrage — secours si l’URL https met une seconde à peindre. */
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [remoteLoadFailed, setRemoteLoadFailed] = useState(false);
 
   const { width: windowWidth } = useWindowDimensions();
   const previewAspect = cropAspect[0] / cropAspect[1];
@@ -55,30 +57,12 @@ export function ImageUploadField({
   const boxHeight = Math.round(boxWidth / previewAspect);
 
   const remoteUrl = value.trim();
-  const displayUri =
-    remoteUrl && previewUri && !remoteReady ? previewUri : previewUri || remoteUrl || '';
-
-  useEffect(() => {
-    if (!remoteUrl.startsWith('http')) {
-      setRemoteReady(false);
-      return;
-    }
-    let cancelled = false;
-    setRemoteReady(false);
-    void Image.prefetch(remoteUrl, 'memory-disk').then((ok) => {
-      if (!cancelled && ok) {
-        setRemoteReady(true);
-        setPreviewUri(null);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [remoteUrl]);
+  const previewUri =
+    remoteUrl && !remoteLoadFailed ? remoteUrl : localPreview || remoteUrl || '';
+  const displayUri = previewUri || (uploading ? '…' : '');
 
   async function handlePick() {
     setUploading(true);
-    setRemoteReady(false);
     try {
       const rawUri = await pickImageFromLibrary({
         aspect: cropAspect,
@@ -88,7 +72,8 @@ export function ImageUploadField({
 
       const preparedUri = normalizeLocalFileUri(await cropToAspect(rawUri, cropAspect, 'top'));
       const previewReady = normalizeLocalFileUri(await ensureReadableFileUri(preparedUri));
-      setPreviewUri(previewReady);
+      setLocalPreview(previewReady);
+      setRemoteLoadFailed(false);
 
       const url = await uploadContentImage(preparedUri, folder, { aspect: cropAspect });
       onChange(url);
@@ -102,6 +87,7 @@ export function ImageUploadField({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Échec du téléversement.';
       Alert.alert('Image', message);
+      if (!remoteUrl) setLocalPreview(null);
     } finally {
       setUploading(false);
     }
@@ -111,23 +97,41 @@ export function ImageUploadField({
     <View style={styles.wrap}>
       <Text style={[styles.label, { color: shell.pageKicker }]}>{label}</Text>
 
-      {displayUri ? (
+      {displayUri || uploading ? (
         <View style={[styles.previewWrap, { width: boxWidth, height: boxHeight }]}>
-          <Image
-            key={displayUri}
-            source={{ uri: displayUri }}
-            style={{ width: boxWidth, height: boxHeight }}
-            contentFit="cover"
-            contentPosition="top"
-            cachePolicy="memory-disk"
-            transition={120}
-            recyclingKey={displayUri}
-          />
+          {displayUri ? (
+            <RemoteImage
+              uri={previewUri}
+              style={{ width: boxWidth, height: boxHeight }}
+              resizeMode="cover"
+              contentPosition="top"
+              renderWidth={Math.min(boxWidth, 800)}
+              fallbackColor={shell.filterInactiveBg}
+              onDisplayLoad={() => {
+                if (remoteUrl) {
+                  setRemoteLoadFailed(false);
+                  setLocalPreview(null);
+                }
+              }}
+              onDisplayError={() => {
+                if (remoteUrl && localPreview) setRemoteLoadFailed(true);
+              }}
+            />
+          ) : (
+            <View style={[styles.uploadingFill, { backgroundColor: shell.filterInactiveBg }]}>
+              <ActivityIndicator color={shell.pageTitle} />
+            </View>
+          )}
+          {uploading ? (
+            <View style={styles.uploadOverlay}>
+              <ActivityIndicator color="#fff" />
+            </View>
+          ) : null}
           <Pressable
             style={styles.removeBtn}
             onPress={() => {
-              setPreviewUri(null);
-              setRemoteReady(false);
+              setLocalPreview(null);
+              setRemoteLoadFailed(false);
               onChange('');
             }}
           >
@@ -187,8 +191,8 @@ export function ImageUploadField({
           ]}
           value={value}
           onChangeText={(t) => {
-            setPreviewUri(null);
-            setRemoteReady(false);
+            setLocalPreview(null);
+            setRemoteLoadFailed(false);
             onChange(t);
           }}
           placeholder="https://..."
@@ -213,8 +217,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 8,
-    backgroundColor: '#E5E7EB',
     position: 'relative',
+  },
+  uploadingFill: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  uploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   placeholder: {
     borderWidth: 1,
