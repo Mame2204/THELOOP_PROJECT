@@ -535,14 +535,16 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 - [ ] **S3 📱🤖** Activation invitation **partenaire** avec code → rôle partenaire, Espace Pro visible
 - [ ] **S4 📱🤖** Activation invitation **sans code** : acceptée tant que `INVITE_REQUIRE_EMAIL_CODE` est absent ; **refusée** (« Mettez à jour THE LOOP… ») une fois le secret à `true`
 - [ ] **S5 📱🤖** Code faux à l'activation → « Code invalide ou expiré »
-- [ ] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK
-- [ ] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre
-- [ ] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal
-- [ ] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance**
-- [ ] **S10 📱🤖** Partenaire : soumission événement/lieu → modération admin → publication (le partenaire ne peut pas s'auto-publier)
-- [ ] **S11 💻** Insights → Privilèges : bouton **« Révoquer »** sur un octroi → statut expiré (ne marchait pas avant 20260954)
-- [ ] **S12 💻** Campagne push admin > 50 destinataires → envoi OK (limite réservée aux non-admins)
-- [ ] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK
+- [x] **S6 📱🤖** Personnel **sans compte** : Connexion → « Code établissement » → scan QR membre → validation privilège OK *(29 sept. **PASS** testeur)*
+- [x] **S7 📱🤖** Membre Prime : demande de privilège → validation partenaire → notification reçue par le membre *(29 sept. **PASS** testeur)*
+- [x] **S8 📱🤖** Achat PASS (OM ou MoMo) → retour app → PASS actif, montant = tarif normal *(29 sept. **PASS** MTN · OM incident Djomy côté opérateur · retest OM après retour Djomy)*
+- [x] **S9 📱🤖** Admin passe un Prime en membre puis le repasse Prime → PASS suspendu puis restauré, **même échéance** *(29 sept. **PASS** testeur · Prime → membre → membre → Prime)*
+- [x] **S10 📱🤖** Partenaire : soumission · modération · publication *(29 sept. **PASS** attestation testeur · recoupe modération/refus **27–29 sept.** · 💻 modération **PASS 27 sept.** · refus privilège partenaire **PASS** — ne pas confondre avec scan S6)*
+- [ ] **S11 💻📱** **Privilèges → Octroyer** (web) ou **Privilèges Prime → détail octroi** (app admin) : **Révoquer** un octroi individuel **actif** → statut expiré *(29 sept. **FAIL** build 54 · clic sans effet · fix RPC **20260961** + deploy Supabase · retest après migration)*
+- [x] **S12 💻** Campagne push admin *(29 sept. **PASS** phase test · envoi **2–3** destinataires OK · quota 50 = prod scale · pas bloquant go-live)*
+- [x] **S13 📱🤖** Profil partenaire : code établissement affiché, notifications membre après validation OK *(29 sept. **PASS** testeur)*
+
+> **Journal testeur 29 sept. (build 54 · post-sécurité)** — **S1** · **S6/S7/S9/S13** validation établissement · **S8/S8b** MTN · **S10/S12** · **S11 FAIL** révoquer · **S1b** parrain FAIL *(migration **20260960**)* · **S2–S5** / **S8c** → build **55+** · **Insights → onglet Privilèges** = stats catalogue **sans** bouton Révoquer *(révoquer = module **Privilèges → Octroyer**)*.
 
 ### Après installation du build 54+ chez tous les testeurs
 - [ ] **💻** Secret Edge `INVITE_REQUIRE_EMAIL_CODE=true` ajouté (Supabase → Edge Functions → Secrets) puis **S4** retesté

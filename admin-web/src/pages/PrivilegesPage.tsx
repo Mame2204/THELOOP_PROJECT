@@ -919,7 +919,10 @@ export function PrivilegesPage() {
                             void revokeGrant(g.localId).then((r) => {
                               setBusy(false);
                               if (!r.ok) setMsg(r.error ?? 'Erreur');
-                              else void loadAll();
+                              else {
+                                setMsg('Octroi révoqué.');
+                                void loadAll();
+                              }
                             });
                           }}
                         >
