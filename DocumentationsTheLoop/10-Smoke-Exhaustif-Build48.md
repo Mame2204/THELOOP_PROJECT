@@ -568,8 +568,8 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | P5 | Politique de confidentialité + CGU accessibles (URL publique) | ✅ dans l'app | Vérifier l'URL publique pour les fiches stores |
 | P6 | Clé Firebase restreinte (console Google) | ⏳ | Restreindre au package `gn.theloop.app` |
 | P7 | Version publique | ⏳ | `version` = `0.1.0` dans `app.json` → passer à `1.0.0` pour la sortie |
-| P8 | Comptes de test pour les reviewers Apple / Google | ⏳ | Fournir un compte membre + Prime dans les notes de review (hors doc) |
-| P9 | Smoke fonctionnel restant | ⏳ | **B6** aperçu couverture → **build 58** · invite **S2–S5** **PASS** *(29 sept.)* |
+| P8 | Comptes de test pour les reviewers Apple / Google | ⏳ | 2 comptes (membre + Prime) · modèles notes FR/EN : **`11-Publication-Stores.md` §5** · parcours **`12-Checklist-Validation-Store.md`** |
+| P9 | Smoke fonctionnel restant | ⏳ | **B6** aperçu couverture → **build 58** · invite **S2–S5** **PASS** *(29 sept.)* · validation stores : PASS **ON** à la review |
 
 ---
 
