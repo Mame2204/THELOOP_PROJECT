@@ -119,14 +119,22 @@ WHERE g.status IN ('active', 'suspended')
 - Pendant tests intensifs : anticiper le passage à un plan supérieur  
 - Les écrans admin paginent (users 20, paiements 30) pour limiter les lectures
 
-## Invitation par code e-mail (build 54+)
+## Invitation par code e-mail (build 57+)
 
-Sans invités en test sur le build 53, vous pouvez activer le secret **avant** le build 54 :
+### Dashboard Supabase (Custom Secrets)
 
-1. **Token** (les deux commandes) : [Supabase → Account → Access Tokens](https://supabase.com/dashboard/account/tokens) — token personnel `sbp_…`, **pas** les clés anon / service_role du projet.
-2. Modèle e-mail recovery (code à 6 chiffres) : `.\configure-auth-invite-email.cmd` (coller le token quand demandé).
-3. Secret invitation : `.\configure-invite-require-email-code.cmd` (**même token**).
-4. Installer le **build 54** sur les appareils de test, puis smoke **S4** (invitation avec code).
+- **Edge Functions → Secrets** (ou **Project Settings → Edge Functions → Secrets**).
+- Le nom **`INVITE_REQUIRE_EMAIL_CODE`** peut apparaître ; **la valeur ne s’affiche jamais** après enregistrement — comportement normal Supabase.
+- Pour être sûr que c’est **`true`** : **ré-enregistrer** la même clé avec la valeur `true` (remplace l’ancienne).
+
+### Ligne de commande (recommandé)
+
+1. **Token** : [Supabase → Account → Access Tokens](https://supabase.com/dashboard/account/tokens) — `sbp_…` (pas anon / service_role).
+2. Activer / confirmer le secret : `.\configure-invite-require-email-code.cmd` ou `node scripts/set-invite-require-email-code.mjs true`
+3. **Vérifier** (nom + date, pas la valeur) : `node scripts/verify-invite-edge-config.mjs`
+4. Modèle e-mail recovery (6 chiffres) : `.\configure-auth-invite-email.cmd`
+5. Redeploy Edge : `node scripts/deploy-edge-invite-functions.mjs` (code **#98** : secret absent = `true` par défaut).
+6. Smoke **S2** sur **build 57** (S4 optionnel si secret déjà `true`).
 
 Pour désactiver temporairement : `node scripts/set-invite-require-email-code.mjs false`
 
