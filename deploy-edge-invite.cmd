@@ -19,6 +19,7 @@ if errorlevel 1 (
   exit /b 1
 )
 echo.
+echo Si member-activate-invite a echoue (HTTP 500) : .\deploy-member-activate-invite.cmd
 echo Optionnel : .\configure-auth-invite-email.cmd pour les modeles e-mail Auth.
 pause
 endlocal

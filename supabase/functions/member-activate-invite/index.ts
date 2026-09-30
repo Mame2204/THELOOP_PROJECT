@@ -41,6 +41,13 @@ function normalizeOtpDigits(raw: string): string {
   return raw.replace(/\D/g, '');
 }
 
+function defaultInviteFirstName(userRole?: string | null): string {
+  const role = (userRole ?? 'member').toLowerCase();
+  if (role === 'partner') return 'Partenaire';
+  if (role === 'admin') return 'Administrateur';
+  return 'Membre';
+}
+
 /**
  * Preuve de possession de la boîte mail : code numérique {{ .Token }} de l'e-mail
  * « Nouveau mot de passe » (send_code → resetPasswordForEmail). Ce n'est pas le mot de passe.
@@ -171,12 +178,6 @@ Deno.serve(async (req) => {
       country_code?: string | null;
     };
 
-    function defaultInviteFirstName(userRole?: string | null): string {
-      const role = (userRole ?? 'member').toLowerCase();
-      if (role === 'partner') return 'Partenaire';
-      if (role === 'admin') return 'Administrateur';
-      return 'Membre';
-    }
     // L’app peut envoyer un ancien inviteId (cache local) après suppression / ré-invite admin.
     // La source de vérité est l’invitation en attente retournée par le RPC pour cet e-mail.
     if (inviteId && invite.id && invite.id !== inviteId) {
@@ -186,7 +187,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const inviteRole = String(invite.user_role ?? '').trim().toLowerCase();
     const authKeys = [anonKey, serviceKey].filter((k, i, arr) => k.trim() && arr.indexOf(k) === i);
 
     let emailProven = false;
@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
           {
             error: 'invalid_email_code',
             message:
-              'Code invalide ou expiré. Ouvrez le dernier e-mail « Code de vérification — THE LOOP », saisissez les 6 chiffres dans l’app, ou touchez « Renvoyer le code ».',
+              "Code invalide ou expiré. Ouvrez le dernier e-mail « Code de vérification — THE LOOP », saisissez les 6 chiffres dans l'app, ou touchez « Renvoyer le code ».",
           },
           400,
         );
@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
       return json(
         {
           error:
-            'Code requis : touchez « Envoyer le code » dans l’app, puis saisissez les 6 chiffres reçus par e-mail (objet « Code de vérification — THE LOOP »).',
+            "Code requis : touchez « Envoyer le code » dans l'app, puis saisissez les 6 chiffres reçus par e-mail (objet « Code de vérification — THE LOOP »).",
           code: 'email_code_required',
         },
         403,
@@ -320,13 +320,12 @@ Deno.serve(async (req) => {
     }
 
     // Anciennes notifs cloche (admin-web les créait à l’envoi d’invite — inutiles une fois le compte actif).
+    await admin.from('user_notifications').delete().eq('user_id', authUser.id).eq('title', 'Invitation THE LOOP');
     await admin
       .from('user_notifications')
       .delete()
       .eq('user_id', authUser.id)
-      .or(
-        'title.eq.Invitation THE LOOP,message.ilike.%Activer un compte invité par THE LOOP%',
-      );
+      .ilike('message', '%Activer un compte invité par THE LOOP%');
 
     return new Response(JSON.stringify({ ok: true, userId: authUser.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
