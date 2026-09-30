@@ -34,7 +34,7 @@ Installer le **58** (ou vérifier date EAS vs commits ci-dessous).
 
 | # | Correctif (commit) | Test minimal | Attendu |
 |---|-------------------|--------------|---------|
-| **R1** | `4b352e6` — aperçu couverture **Image RN** (build 58) | **📱🤖** Partenaire ou admin mobile : créer/modifier event ou spot → upload **couverture 16:9** | Vignette **visible** (pas noir / pas vide) |
+| **R1** | Aperçu couverture **expo-image** (fix Android post-58) | **📱🤖** Partenaire ou admin mobile : upload **couverture 16:9** | Cadre gris **+ image** visible (local puis URL Storage) |
 | **R2** | `b139264` — modale code invite **sans Alert superposé** | **📱🤖** Activation invite → saisie **6 chiffres** (membre ou partenaire) | Une seule UI lisible, pas d’Alert par-dessus la modale |
 | **R3** | `6688d84` — icône **🎁** cartes avec privilège | **📱** Agenda / Guide : fiche **avec** avantage lié | **🎁 en bas à droite** sur la carte (gate Privilèges **Visible**) |
 | **R4** | *(optionnel)* Plafond parrainage / filleuls par an | Admin + compte test (astuce SQL / param admin) | Comportement attendu documenté en smoke **C4** |
