@@ -25,74 +25,23 @@
 
 ---
 
-# Partie A — Tests QA sur build 58 (avant build 59)
+# Partie A — Retests **correctifs** sur build 58 (avant build 59)
 
-Installer **58** sur **iOS + Android**. Cocher au fur et à mesure.
+> **Smoke S1–S13, invite, Djomy, privilèges, auth, parrainage** : déjà PASS chez le testeur (build 57–58) — **ne pas refaire** sauf doute.  
+> Ici : uniquement ce qui a été **corrigé dans le code** et pas encore validé sur le binaire installé.
 
-### A1 — Invite & Edge (post-deploy `member-activate-invite`)
+Installer le **58** (ou vérifier date EAS vs commits ci-dessous).
 
-| # | Test | Attendu |
-|---|------|---------|
-| A1a | **S2** Membre invité : Activer → e-mail code **6 chiffres** → compte actif | Vouvoiement messages code |
-| A1b | **S3** Partenaire invité : même flux → Espace Pro | Rôle partenaire |
-| A1c | **S5** Code **faux** | « Code invalide ou expiré » (texte prod PR #101) |
-| A1d | **💻** Admin Inviter → feedback à l’envoi | Pas de jargon technique |
+| # | Correctif (commit) | Test minimal | Attendu |
+|---|-------------------|--------------|---------|
+| **R1** | `4b352e6` — aperçu couverture **Image RN** (build 58) | **📱🤖** Partenaire ou admin mobile : créer/modifier event ou spot → upload **couverture 16:9** | Vignette **visible** (pas noir / pas vide) |
+| **R2** | `b139264` — modale code invite **sans Alert superposé** | **📱🤖** Activation invite → saisie **6 chiffres** (membre ou partenaire) | Une seule UI lisible, pas d’Alert par-dessus la modale |
+| **R3** | `6688d84` — icône **🎁** cartes avec privilège | **📱** Agenda / Guide : fiche **avec** avantage lié | **🎁 en bas à droite** sur la carte (gate Privilèges **Visible**) |
+| **R4** | *(optionnel)* Plafond parrainage / filleuls par an | Admin + compte test (astuce SQL / param admin) | Comportement attendu documenté en smoke **C4** |
 
-*Déjà PASS en 57 : refaire si tu veux valider **58 + Edge** ensemble.*
+**EAS build 58 lancé avant le 29 sept. 21:42 UTC ?** → le **R2** peut manquer dans l’APK : inclure **`main` à jour** dans le **build 59**.
 
-### A2 — Textes notifs / privilèges (harmonisation prod PR #101)
-
-| # | Test | Attendu |
-|---|------|---------|
-| A2a | Octroi privilège → **cloche** membre | Formulation **vous**, menu clair |
-| A2b | Partenaire : proposition / refus privilège → notif membre | « Proposition de privilège… », pas de typo |
-| A2c | Automatisation / anniversaire (si déclenchable) | Vouvoiement cohérent |
-
-*Au minimum : **A2a** sur un parcours réel.*
-
-### A3 — Auth & compte
-
-| # | Test | Attendu |
-|---|------|---------|
-| A3a | **Mot de passe oublié** → mail → code / reset | Parcours OK |
-| A3b | Connexion membre + Prime (comptes habituels) | Accueil, nav |
-| A3c | Compte **jetable** : Fermer mon compte | Demande enregistrée |
-
-### A4 — PASS & Djomy (prod)
-
-| # | Test | Attendu |
-|---|------|---------|
-| A4a | Gate PASS **ON** : écran achat visible | Prix GNF, pas de crash |
-| A4b | Lancer paiement → portail Djomy → **annuler** | Retour app, pas de PASS fantôme |
-| A4c | *(Optionnel)* **S8** MTN paiement réel petit montant | PASS actif *(déjà PASS 29 sept.)* |
-
-### A5 — Sécurité / parcours déjà validés (spot check 58)
-
-| # | Test | Attendu | Ref. smoke |
-|---|------|---------|------------|
-| A5a | Scan QR privilège partenaire | Validation OK | S6 |
-| A5b | Prime : demande privilège → validation partenaire → notif | 1 notif, pas de boucle | S7 |
-| A5c | Inscription **gate OFF** | Pas d’inscription publique | Gates |
-| A5d | **S1b** Code parrain à l’inscription *(si gate ON test)* | Code accepté | RPC 960 |
-
-*Si déjà PASS récemment sur 57 : **A5a** ou **A5b** suffit en spot check.*
-
-### A6 — Contenu & admin (dernière ligne smoke ouverte)
-
-| # | Test | Attendu |
-|---|------|---------|
-| A6a | **💻📱** Créer / modifier event ou spot : upload **couverture 16:9** | **Aperçu vignette** visible (pas image noire) — *B6 · PR #96 RemoteImage* |
-| A6b | **💻** Accueil / Loop : bloc éditorial visible | OK contenu propre |
-
-### A7 — PASS admin (messages activation)
-
-| # | Test | Attendu |
-|---|------|---------|
-| A7a | **💻** Octroi / activation PASS → message membre (notif ou inbox) | Vouvoiement **vous** (templates prod) |
-
----
-
-**Sortie Partie A :** A1a–A1c + A2a + A3a–A3b + A4a–A4b + **A6a** OK → lancer **build 59**.
+**Sortie Partie A :** **R1 + R2 + R3** OK → **build 59**. Si **R1** encore FAIL → corriger sur `main` puis 59.
 
 Si **A6a FAIL** (image noire) : corriger sur `main` → **59** inclut le fix.
 
@@ -102,14 +51,15 @@ Si **A6a FAIL** (image noire) : corriger sur `main` → **59** inclut le fix.
 
 1. **`mobile/app.json`** : `versionCode` / `buildNumber` → **59**.
 2. **`eas build`** iOS + Android (production).
-3. **Recheck court** sur **59** (30–45 min) :
+3. **Recheck court** sur **59** (~20 min) — **parcours reviewer**, pas tout le smoke :
 
 | # | Test |
 |---|------|
-| B1 | Réinstaller 59 · connexion membre review |
-| B2 | A4b Djomy annuler (1 fois) |
-| B3 | Compte Prime review |
-| B4 | **Famille validation** V1–V4 ci-dessous |
+| B1 | Réinstaller 59 · **R1** couverture (1 upload) si pas validé sur 58 |
+| B2 | Compte **membre review** · connexion · Agenda/Guide |
+| B3 | Membre : achat PASS → Djomy → **annuler** |
+| B4 | Compte **Prime review** (Prime déjà en admin) |
+| B5 | **V4** pré-lancement bypass *(optionnel)* |
 
 ---
 
@@ -170,8 +120,8 @@ Rejet technique → **60+** et resoumission.
 
 ## Ordre global (résumé)
 
-1. **Partie A** complète sur **58**.  
-2. **Build 59** + **Partie B** + **C** + **D**.  
+1. **Partie A** : retests **R1–R3** sur **58** (correctifs seulement).  
+2. **Build 59** + **Partie B** (parcours reviewer) + **C** + **D**.  
 3. **Partie E** (envoi **59**).  
 4. **Gel** → ping-pong review.  
 5. **Partie F** après approbation.
