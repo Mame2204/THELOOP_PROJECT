@@ -120,8 +120,8 @@ export async function processBirthdayAutomationForDate(
       await distributeNotification({
         title: 'Joyeux anniversaire ! 🎂',
         message:
-          'On n\'est pas encore très présents dans ta ville, mais on arrive bientôt. ' +
-          'En attendant, découvre notre section Outils !',
+          'Nous ne sommes pas encore très présents dans votre ville, mais cela arrive bientôt. ' +
+          'En attendant, découvrez la section Outils dans l’application.',
         audience: 'individual',
         targetPhone: user.phoneNumber,
       });

@@ -890,8 +890,8 @@ export async function sendWelcomeNotification(user: {
   await appendUserNotification(user.id, {
     title: `Bienvenue ${name} !`,
     message:
-      'Ton compte THE LOOP est actif. Découvre les événements, spots et outils près de toi. ' +
-      'Tu peux à tout moment mettre à jour ton profil en cliquant sur le petit bonhomme en bas à droite.',
+      'Votre compte THE LOOP est actif. Découvrez les événements, spots et outils près de chez vous. ' +
+      'Pour mettre à jour votre profil, ouvrez le menu Compte (icône en bas à droite).',
     audience: 'individual',
   });
 }
@@ -977,8 +977,8 @@ export function formatBenefitGrantMessage(input: {
 }): string {
   const title = input.benefitTitle?.trim() || 'Privilège';
   const place = formatBenefitGrantPlaceLabel(input);
-  if (place) return `« ${title} » — ${place}.`;
-  return `Vous avez reçu le privilège « ${title} ».`;
+  if (place) return `Vous avez reçu « ${title} » — ${place}. Consultez Mes privilèges dans l’application.`;
+  return `Vous avez reçu le privilège « ${title} ». Consultez Mes privilèges dans l’application.`;
 }
 
 /** Octroi de privilège catalogue. */
@@ -1080,7 +1080,7 @@ export async function sendBenefitValidationPendingNotification(input: {
 }): Promise<void> {
   const { copyBenefitPendingMessage } = await import('@/lib/benefit-notification-copy');
   await appendUserNotification(input.memberUserId, {
-    title: 'En attente chez le partenaire',
+    title: 'Validation en cours',
     message: copyBenefitPendingMessage(
       {
         privilegeTitle: input.benefitTitle,

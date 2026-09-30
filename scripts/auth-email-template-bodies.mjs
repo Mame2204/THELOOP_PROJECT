@@ -57,11 +57,13 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
     showActionButton: false,
     body:
       'Vous avez été invité(e) sur <strong>THE LOOP</strong>.<br /><br />' +
-      'Installez l’app (<a href="' +
+      '1. Installez l’application : <a href="' +
       STORE_URL +
-      '" style="color:#0a0a0a;">theloop-app.com</a>), ouvrez <strong>Connexion</strong>, puis ' +
-      '<strong>« Activer un compte invité par THE LOOP »</strong> avec <strong>cette adresse e-mail</strong>.',
-    footer: 'Compte déjà actif ? Connectez-vous ou utilisez « Mot de passe oublié » dans l’app.',
+      '" style="color:#0a0a0a;">theloop-app.com</a><br />' +
+      '2. Ouvrez <strong>Connexion</strong> → <strong>« Activer un compte invité par THE LOOP »</strong><br />' +
+      '3. Saisissez <strong>cette adresse e-mail</strong> et suivez les étapes (code à 6 chiffres, puis mot de passe).',
+    footer:
+      'Compte déjà actif ? Connectez-vous dans l’app. Mot de passe oublié ? Utilisez « Mot de passe oublié » sur l’écran Connexion.',
   });
 
   const confirmationHtml = loopEmailHtml({
@@ -76,10 +78,10 @@ export function buildAuthEmailTemplatePatch(callbackUrl) {
   const recoveryHtml = loopEmailHtml({
     title: 'Code de vérification',
     body:
-      'Saisissez ce code à <strong>6 chiffres</strong> dans l’application THE LOOP (activation invité ou étape « code »). ' +
-      'Ce n’est pas votre mot de passe.<br /><br />' +
+      'Voici votre code à <strong>6 chiffres</strong> pour THE LOOP. Saisissez-le dans l’application lors de l’activation de compte invité ou à l’étape « Code reçu par e-mail ». ' +
+      'Ce code n’est pas votre mot de passe.<br /><br />' +
       '<strong style="font-size:22px;letter-spacing:0.2em;color:#0a0a0a;">{{ .Token }}</strong><br /><br />' +
-      'Compte déjà actif et mot de passe oublié ? Utilisez le bouton ci-dessous.',
+      'Votre compte est déjà actif et vous souhaitez un nouveau mot de passe ? Utilisez le bouton ci-dessous (ignorez le code dans ce cas).',
     buttonLabel: 'Choisir un mot de passe',
     actionHref: recoveryActionHref,
     showCopyLink: false,

@@ -328,15 +328,15 @@ export async function deactivateJobForInvalidCatalog(
 export function defaultNoBenefitMessage(job: AutomationJob): string {
   if (job.jobType === 'birthday_benefit') {
     return (
-      "Joyeux anniversaire ! On n'est pas encore très présents dans ta ville, mais on arrive bientôt. " +
-      'En attendant, découvre notre section Outils !'
+      "Joyeux anniversaire ! Nous ne sommes pas encore très présents dans votre ville, mais cela arrive bientôt. " +
+      'En attendant, découvrez la section Outils dans l’application.'
     );
   }
   if (job.jobType === 'welcome_benefit') {
-    return 'Bienvenue dans THE LOOP ! Découvre nos outils en attendant les partenaires de ta ville.';
+    return 'Bienvenue sur THE LOOP ! Découvrez nos outils en attendant les partenaires de votre ville.';
   }
   if (job.jobType === 'member_of_month') {
-    return 'Félicitations pour ton engagement ce mois-ci !';
+    return 'Félicitations pour votre engagement ce mois-ci !';
   }
   return 'Information THE LOOP — merci de faire partie de la communauté.';
 }
