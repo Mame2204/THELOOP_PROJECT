@@ -1,6 +1,6 @@
 # Publication App Store / Google Play — dossier prêt à remplir
 
-> Mis à jour : 28 sept. 2026 · complète `10-Smoke-Exhaustif-Build48.md` (tableau « Prérequis publication stores »).
+> Mis à jour : 30 sept. 2026 · complète `10-Smoke-Exhaustif-Build48.md` et `12-Checklist-Validation-Store.md`.
 > Aucun mot de passe dans ce fichier : les identifiants des comptes relecteurs se saisissent directement dans les consoles.
 
 ## 1. Suppression de compte (Apple 5.1.1(v) · Google « Account deletion »)
@@ -75,37 +75,88 @@ Les textes affichés par l'app et par le site viennent désormais tous de la tab
 
 ## 5. Notes pour les relecteurs (App Review / Play Console)
 
-Texte à coller dans « Notes pour la vérification » :
+**Stratégie validation (build 58+, oct. 2026) :** pendant la review, gate **achat PASS = ON** (parcours visible). Deux comptes dédiés. Paiement **Djomy prod** : les relecteurs **n’ont pas** de mobile money guinéen → demander **annulation sur le portail**, puis tester l’expérience **Prime** avec le second compte (Prime **déjà actif**, octroi admin, pas via Djomy).
 
-> THE LOOP est un guide de sorties à Conakry (Guinée). Les privilèges (réductions, accueil privilégié) sont consommés physiquement chez des établissements partenaires : le membre présente sa carte QR au comptoir et le partenaire valide sur place. Cette version ne vend rien dans l'application : le statut Prime est attribué par THE LOOP (parrainage, invitations).
-> Compte membre de test : [e-mail] / [mot de passe]. Compte Prime de test : [e-mail] / [mot de passe].
-> Suppression de compte : Profil → Paramètres → Fermer mon compte.
+**Description publique (fiche store) :** peut rester orientée guide / privilèges sans détailler la vente en ligne ; **ne pas** affirmer « aucun achat dans l’app » pendant une review où l’achat est visible. Les **notes ci-dessous** (champ privé) portent le détail achat + Djomy. La description marketing peut être **mise à jour plus tard en prod** sans nouveau binaire.
 
-À préparer :
-- [ ] Un compte **membre** et un compte **Prime** dédiés à la relecture, avec un contenu visible au Guinée. Ne pas utiliser un compte admin.
-- [ ] Vérifier que ces comptes voient bien l'Accueil (l'app sans compte n'affiche que l'écran de connexion).
+### Gates pendant la review (figées à l’envoi)
+
+| Gate | Valeur review |
+|------|----------------|
+| Inscription (`signupEnabled`) | **OFF** |
+| Achat PASS (`passPurchaseEnabled`) | **ON** |
+| Privilèges (`privilegesVisible`) | **Visible** (recommandé) |
+| Pré-lancement | **OFF** |
+
+Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu’à décembre) **sans nouveau build** si le **même binaire** a été approuvé avec l’achat montré — cf. §6.
+
+### Texte FR — « Notes pour la vérification »
+
+> THE LOOP est un guide de sorties et d'expériences à Conakry (Guinée). Les privilèges Loop Prime se consomment **sur place** chez les établissements partenaires (carte QR, validation au comptoir).
+>
+> **Compte membre (test achat PASS)**  
+> E-mail : [MEMBRE_REVIEW] · Mot de passe : [MDP]  
+> Pour vérifier l'achat : ouvrir l'écran Loop Prime / abonnement, choisir une formule, lancer le paiement. Une page **Djomy** (mobile money Guinée) s'ouvre dans le navigateur. **Merci de ne pas finaliser le paiement** : annuler ou fermer la page, puis revenir à l'application. Un paiement complet nécessite un numéro mobile money guinéen, indisponible pour la relecture.
+>
+> **Compte Loop Prime (expérience complète)**  
+> E-mail : [PRIME_REVIEW] · Mot de passe : [MDP]  
+> Ce compte est **déjà** Loop Prime (attribution interne). Utilisez-le pour parcourir privilèges et contenu réservé **sans passer par l'achat**.
+>
+> Suppression de compte : Profil → Paramètres → Fermer mon compte.  
+> URL : https://www.theloop-app.com/suppression
+
+### Texte EN — App Store (recommandé)
+
+> THE LOOP is a city guide for Conakry, Guinea. Loop Prime benefits are redeemed **in person** at partner venues (member QR card, validated by staff).
+>
+> **Member account (PASS purchase flow)**  
+> Email: [MEMBER_REVIEW] · Password: [PWD]  
+> To review purchase UI: open Loop Prime / subscription, pick a plan, start checkout. A **Djomy** page (Guinea mobile money) opens in the browser. **Please do not complete payment** — cancel or close the page and return to the app. Full payment requires a Guinean mobile-money wallet, which reviewers typically do not have.
+>
+> **Loop Prime account (full experience)**  
+> Email: [PRIME_REVIEW] · Password: [PWD]  
+> This account is **already** Loop Prime (internal grant). Use it to explore Prime features **without purchasing**.
+>
+> Account deletion: Profile → Settings → Close my account.  
+> https://www.theloop-app.com/suppression
+
+### À préparer avant envoi
+
+- [ ] Compte **membre** review : jamais Prime, sert au parcours achat + annulation Djomy.
+- [ ] Compte **Prime** review : statut Prime **actif en base** (admin), pas via paiement test.
+- [ ] Contenu visible (Guinée) ; **pas** de compte admin pour la review.
+- [ ] L'app sans compte n'affiche que la **connexion** — les reviewers doivent se connecter.
+- [ ] Parcours complet : `12-Checklist-Validation-Store.md`.
 
 ## 6. PASS Prime et achats intégrés (Apple 3.1.1 / 3.1.3(e) · Google Paiements)
 
-**V1 (build 54+) : achat coupé** (`passPurchaseEnabled` = false, valeur par défaut). Vérifié dans le code :
-- l'écran Prime, l'écran de paiement et le bouton « Passer en Loop Prime » sont masqués ;
-- les prix et la carte « Passez à l'expérience premium » du profil sont masqués ;
-- le message « L'abonnement en ligne arrive bientôt » est retiré, car Apple refuse les annonces de fonctions à venir.
+### Comportement technique (build 54+)
 
-Le statut Prime reste possible via le parrainage ou une attribution admin : aucune vente, donc aucune règle d'achat intégré ne s'applique.
+Interrupteur **`passPurchaseEnabled`** (Super admin → Paramètres · Control Tower) :
+- **OFF** : écrans / prix / boutons d'achat PASS masqués ; serveur refuse `POST /api/create-payment` (403) ; notification d'expiration PASS sans CTA renouvellement agressif.
+- **ON** : parcours achat + redirection **Djomy** (Render `api.theloop-app.com`, prod ou sandbox selon config serveur).
 
-**Privilèges dissociés de l'achat (build 54+)** : un second interrupteur, « Privilèges » (`privilegesVisible`, **Visible** par défaut), commande seul l'affichage des privilèges. Il se règle dans Super Settings (app) et dans Paramètres (Control Tower).
-- **Privilèges visibles** (quel que soit l'état de l'achat PASS) : la section « Privilèges » des fiches Agenda / Spot / Outil, le badge des cartes et la ligne « Vos N privilèges vous attendent » de l'Accueil s'affichent dès qu'une fiche a des avantages. Un compte non éligible voit la fiche verrouillée ; si l'achat est coupé, elle n'a pas de bouton d'achat (bouton « Fermer »).
-- **Privilèges masqués** : section, badges et ligne d'accueil disparaissent pour tous les comptes.
-- L'écran « Mes privilèges » existe toujours, mais aucun bouton n'y mène (inchangé).
+Interrupteur **`privilegesVisible`** (défaut **Visible**) : affichage sections / badges privilèges sur les fiches, indépendamment de l'achat PASS.
 
-**Plus tard, pour ouvrir la vente :**
-- **Qualification :** le PASS est bien une vente, mais d'un **accès à des services physiques** consommés chez les partenaires. Apple 3.1.3(e) et Google (biens et services physiques) **interdisent** alors l'achat intégré : le paiement mobile money est autorisé.
-- **Condition :** ce que l'app met en avant comme contrepartie du PASS doit rester physique (privilèges chez les partenaires). Avant d'activer :
-  - retirer de l'argumentaire Prime les avantages purement numériques, comme le « thème exclusif doré » ;
-  - présenter les événements LoopX comme des événements réels réservés aux membres, pas comme du contenu à débloquer.
-- **Ne jamais activer la vente seulement après la relecture :** c'est une fonction cachée (Apple 2.3.1). Annoncer l'ouverture dans une mise à jour relue par Apple et Google, avec une note qui explique le PASS.
-- **Repli si Apple refuse :** laisser l'achat coupé sur iOS seulement et vendre le PASS ailleurs (site, partenaires), sans lien ni prix dans l'app iOS (Apple 3.1.3(b)). Cela demande de séparer l'interrupteur par plateforme.
+### Stratégie retenue pour la validation stores (2026)
+
+1. **Soumission (oct.)** : build **58** avec **PASS ON** à la review + notes §5 (membre + Prime, annulation Djomy).
+2. **Ping-pong** review jusqu'à approbation (nov.–déc.) : **gel** gates / prod sauf réponses aux stores ou build correctif si rejet.
+3. **Après approbation** : publication manuelle (Apple) / rollout (Google) quand prêt ; **décembre** invite-only + pré-lancement selon `15-Lancement-Gates-Prod.md`.
+4. **Vente PASS au public** : activer le gate **ON** sur le **binaire déjà approuvé** — pas de « fonction cachée » (Apple 2.3.1) **si** l'achat a été visible à la review. Sinon : nouveau build + review.
+5. **Fiche store (description, captures)** : modifiable **en prod sans nouveau build** ; ajouter le wording vente PASS le jour de l'ouverture commerciale.
+
+### Argumentaire paiement (si Apple / Google posent la question)
+
+- PASS = accès à des **services physiques** chez partenaires (privilèges sur place), pas du contenu digital seul.
+- Paiement = **mobile money** via prestataire **Djomy** (hors IAP), cohérent avec biens / services physiques (Apple 3.1.3(e), politique Google associée).
+- Ne pas mettre en avant un « thème doré » ou du contenu purement in-app comme **seule** contrepartie du PASS dans l'argumentaire review.
+
+### Ancienne variante (référence uniquement)
+
+Soumettre avec **PASS OFF** et notes « pas de vente in-app » : plus simple à la review, mais **ouverture vente ultérieure** = **nouveau build + review** (achat non montré la première fois).
+
+**Repli si refus Apple sur paiement externe :** achat coupé sur iOS, vente hors app (site / partenaires), sans prix dans l'app iOS (3.1.3(b)) — nécessite interrupteur par plateforme si un jour implémenté.
 
 ## 7. Clé Firebase (Android)
 
