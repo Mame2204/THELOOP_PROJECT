@@ -50,10 +50,18 @@ async function deployOne(token, { slug, verify_jwt }) {
     console.error('Fichier introuvable:', fnPath);
     return false;
   }
+  const nodeBin = join(root, '.tools', 'node');
+  const npxCmd = process.platform === 'win32' ? join(nodeBin, 'npx.cmd') : join(nodeBin, 'npx');
+  const npx = existsSync(npxCmd) ? npxCmd : 'npx';
   const bundleCheck = spawnSync(
-    'npx',
+    npx,
     ['esbuild', fnPath, '--bundle', '--platform=neutral', '--log-level=error'],
-    { encoding: 'utf8' },
+    {
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+      cwd: join(root, 'mobile'),
+      env: { ...process.env, PATH: `${nodeBin}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH ?? ''}` },
+    },
   );
   if (bundleCheck.status !== 0) {
     console.error('Syntaxe / bundle invalide pour', slug);
