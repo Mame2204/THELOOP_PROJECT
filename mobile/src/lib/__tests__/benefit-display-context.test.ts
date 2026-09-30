@@ -54,7 +54,9 @@ describe('benefit grant notifications', () => {
       benefitTitle: 'Boisson offerte',
       displayContext: "Spot · L'Avenue · Kaloum · Groupe L'Avenue",
     });
-    expect(message).toBe(`« Boisson offerte » — Spot · L'Avenue · Kaloum · Groupe L'Avenue.`);
+    expect(message).toBe(
+      `Vous avez reçu « Boisson offerte » — Spot · L'Avenue · Kaloum · Groupe L'Avenue. Consultez Mes privilèges dans l’application.`,
+    );
   });
 
   it('place label priorise displayContext', () => {
