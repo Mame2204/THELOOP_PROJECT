@@ -134,7 +134,7 @@ Pour désactiver temporairement : `node scripts/set-invite-require-email-code.mj
 
 > Détail notes relecteurs, 2 comptes, Djomy : **`11-Publication-Stores.md` §5–6** · checklist **`12-Checklist-Validation-Store.md`**.
 
-1. **Validation (oct. 2026+)** : soumettre **build 58** (ou suivant) avec gate **achat PASS ON** pendant la review ; notes : compte **membre** (achat → annuler sur Djomy) + compte **Prime** (déjà actif en admin).  
+1. **Validation (oct. 2026+)** : QA complète **build 58** puis soumettre **build 59** (voir **`12-Checklist-Validation-Store.md`**) avec gate **achat PASS ON** pendant la review ; notes : compte **membre** (achat → annuler sur Djomy) + compte **Prime** (déjà actif en admin).  
 2. **Pendant review** : ne pas toggler gates / prod (gel) ; ping-pong jusqu’à approbation (nov.–déc.).  
 3. **Après approbation** : publication quand prêt ; **décembre** : store public + invite-only (`signupEnabled` false) + pré-lancement si besoin.  
 4. **Achat PASS public** : gate ON sur le **même binaire approuvé** (si achat montré à la review) ; description store mise à jour possible **sans rebuild**.

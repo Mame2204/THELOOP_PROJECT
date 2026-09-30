@@ -569,7 +569,7 @@ A4-1 → A4-2 → A4-3 → A4-4 → A4-5 → A4-6 → A4-7
 | P6 | Clé Firebase restreinte (console Google) | ⏳ | Restreindre au package `gn.theloop.app` |
 | P7 | Version publique | ⏳ | `version` = `0.1.0` dans `app.json` → passer à `1.0.0` pour la sortie |
 | P8 | Comptes de test pour les reviewers Apple / Google | ⏳ | 2 comptes (membre + Prime) · modèles notes FR/EN : **`11-Publication-Stores.md` §5** · parcours **`12-Checklist-Validation-Store.md`** |
-| P9 | Smoke fonctionnel restant | ⏳ | **B6** aperçu couverture → **build 58** · invite **S2–S5** **PASS** *(29 sept.)* · validation stores : PASS **ON** à la review |
+| P9 | Smoke fonctionnel restant | ⏳ | **B6** aperçu couverture · retest **QA build 58** (invite, copy #101, Djomy) → **build 59** stores · voir **`12-Checklist-Validation-Store.md`** |
 
 ---
 
@@ -1429,6 +1429,8 @@ Notes :
 |-----|-------|
 | `07-Smoke-Push.md` | Push détaillé |
 | `08-Smoke-Global.md` | Historique (legacy) |
+| `11-Publication-Stores.md` | Notes review, PASS/IAP, confidentialité stores |
+| `12-Checklist-Validation-Store.md` | Build 58 → validation (tests, gel, après approbation) |
 | `15-Lancement-Gates-Prod.md` | Gates prod |
 | `06-Roles-Permissions-Navigation.md` | Matrice rôles |
 
