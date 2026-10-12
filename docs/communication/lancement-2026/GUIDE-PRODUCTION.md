@@ -26,7 +26,7 @@ Canva : **inutile** si tu suis ce flux (sauf si tu préfères déjà Canva pour 
 
 ## Contenu démo dans les captures (fictif)
 
-Les écrans fournis utilisent des **noms, lieux, textes et visuels inventés** (contenu de validation stores, photos IA). **Aucun établissement réel** n’est représenté.
+Les écrans sont de **vraies captures de l’application** (UI réelle) ; seules les **données saisies** (événements, lieux, textes, médias) sont **inventées** pour éviter d’afficher du contenu réel sans accord. **Aucun établissement ou événement réel** n’est représenté.
 
 - **Com nov.–déc. :** tu peux utiliser ces captures **sans flou “legal partenaire”** — ce n’est pas du naming réel.
 - **Flou partiel** reste utile seulement pour le **teasing** (montrer la forme, pas tout le produit avant le 17/12) ou par esthétique ; ce n’est plus une obligation juridique sur ces libellés fictifs.
