@@ -21,9 +21,16 @@ Canva : **inutile** si tu suis ce flux (sauf si tu préfères déjà Canva pour 
 
 ## Pinterest
 
-- **Com publique / lancement :** éviter (droits incertains, lieu non identifié = diaspora moins ancrée).
-- **OK :** moodboard perso avant tournage ; remplacer par **tes captures** (fournies) et **tes plans** dès le 7/12.
-- Tes screenshots app sont **meilleurs** que Pinterest : charte réelle — toujours **flouter** titres d’événements et noms de lieux tant qu’accord écrit absent.
+- **Com publique / lancement :** éviter (droits incertains).
+- **Priorité visuelle :** tes **captures app** (charte réelle) + tes plans terrain dès le 7/12.
+
+## Contenu démo dans les captures (fictif)
+
+Les écrans fournis utilisent des **noms, lieux, textes et visuels inventés** (contenu de validation stores, photos IA). **Aucun établissement réel** n’est représenté.
+
+- **Com nov.–déc. :** tu peux utiliser ces captures **sans flou “legal partenaire”** — ce n’est pas du naming réel.
+- **Flou partiel** reste utile seulement pour le **teasing** (montrer la forme, pas tout le produit avant le 17/12) ou par esthétique ; ce n’est plus une obligation juridique sur ces libellés fictifs.
+- **Quand de vrais partenaires seront publiés :** remplacer les fiches démo par du contenu signé charte ; adapter les visuels com en conséquence (accord écrit pour tout nom réel).
 
 ## Fichiers fournis
 
