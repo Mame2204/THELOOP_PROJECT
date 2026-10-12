@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — Pack Feed v2 (conversion)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0a3a44;
+      --teal: #0f7a8e;
+      --gold: #e6b93a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Manrope, system-ui, sans-serif;
+      background: #0d0d0d;
+      padding: 20px;
+    }
+    .note {
+      color: #888;
+      font-size: 13px;
+      max-width: 420px;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+    .frame-label {
+      color: #666;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-align: center;
+      margin: 28px 0 10px;
+    }
+    /* Feed 4:5 */
+    .canvas {
+      width: 1080px;
+      height: 1350px;
+      margin: 0 auto 12px;
+      position: relative;
+      overflow: hidden;
+      background: #111;
+    }
+    /* Reels 9:16 */
+    .canvas.reel {
+      height: 1920px;
+    }
+    .bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+    .bg.app-shot {
+      background-size: 118%;
+      background-position: center 12%;
+    }
+    .overlay-bottom {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg,
+        rgba(0,0,0,0.05) 0%,
+        rgba(0,0,0,0.15) 35%,
+        rgba(10,58,68,0.92) 62%,
+        rgba(10,58,68,0.98) 100%);
+    }
+    .overlay-full {
+      background: linear-gradient(135deg,
+        rgba(10,58,68,0.75) 0%,
+        rgba(0,0,0,0.55) 50%,
+        rgba(15,122,142,0.85) 100%);
+    }
+    .overlay-vignette {
+      box-shadow: inset 0 0 180px rgba(0,0,0,0.75);
+    }
+    .content {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 72px 64px 88px;
+      z-index: 2;
+      color: #fff;
+    }
+    .content.top {
+      top: 0;
+      bottom: auto;
+      padding-top: 120px;
+    }
+    .content.center {
+      top: 50%;
+      transform: translateY(-50%);
+      bottom: auto;
+      text-align: center;
+    }
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+    .hook {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.05;
+      margin: 0 0 20px;
+      text-shadow: 0 4px 40px rgba(0,0,0,0.5);
+    }
+    .hook.md { font-size: 58px; }
+    .hook.sm { font-size: 48px; }
+    .body {
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1.35;
+      opacity: 0.95;
+      margin: 0;
+      max-width: 920px;
+    }
+    .pill {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 18px 32px;
+      border-radius: 999px;
+      background: var(--gold);
+      color: var(--deep);
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .brand-row span {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .phone {
+      position: absolute;
+      top: 140px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 520px;
+      border-radius: 40px;
+      border: 10px solid rgba(255,255,255,0.12);
+      box-shadow: 0 40px 80px rgba(0,0,0,0.55);
+      overflow: hidden;
+      z-index: 3;
+    }
+    .phone img { width: 100%; display: block; }
+    .sticker {
+      position: absolute;
+      top: 100px;
+      right: 64px;
+      z-index: 4;
+      background: var(--gold);
+      color: var(--deep);
+      font-weight: 800;
+      font-size: 42px;
+      padding: 24px 36px;
+      border-radius: 20px;
+      transform: rotate(4deg);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    .row-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 32px;
+    }
+    .row-pills span {
+      border: 2px solid rgba(255,255,255,0.45);
+      padding: 14px 22px;
+      border-radius: 999px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .cta-bar {
+      margin-top: 36px;
+      padding: 28px 0 0;
+      border-top: 2px solid rgba(230,185,58,0.5);
+    }
+    .cta-bar .url {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+    }
+    .split .half {
+      position: relative;
+      padding: 80px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .split .noise {
+      background: #1a1a1a;
+      color: #888;
+    }
+    .split .noise .hook {
+      font-size: 44px;
+      color: #666;
+      text-decoration: line-through;
+      text-decoration-color: #c44;
+    }
+    .split .calm {
+      background: url('assets/capture-parcours.jpg') center/cover;
+    }
+    .split .calm .overlay-full {
+      position: absolute;
+      inset: 0;
+    }
+    .split .calm .hook { position: relative; z-index: 1; font-size: 52px; }
+  </style>
+</head>
+<body>
+  <p class="note"><strong>Pack Feed v2</strong> — photo & app en plein cadre, texte en bas (safe zone). Export 1080×1350 ou Reels 9:16. Contenu app fictif · captures réelles.</p>
+
+  <!-- 3/11 REEL cover + feed -->
+  <div class="frame-label">3/11 · Feed — hook dilemma</div>
+  <div class="canvas">
+    <div class="bg" style="background-image:url('assets/capture-accueil-2.jpg')"></div>
+    <div class="overlay-bottom overlay-vignette"></div>
+    <div class="content">
+      <p class="eyebrow">Conakry</p>
+      <h1 class="hook md">Vendredi soir.<br />Tu sais déjà où ?</h1>
+      <p class="body">Spots, agenda, parcours — un repère arrive. <strong style="color:var(--gold)">17 nov.</strong></p>
+    </div>
+  </div>
+
+  <div class="frame-label">3/11 · Reels 9:16 (même hook)</div>
+  <div class="canvas reel">
+    <div class="bg app-shot" style="background-image:url('assets/capture-accueil-2.jpg')"></div>
+    <div class="overlay-bottom"></div>
+    <div class="content">
+      <div class="brand-row">
+        <svg width="44" height="44" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#E6B93A" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#E6B93A" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#E6B93A"/></svg>
+        <span>The Loop</span>
+      </div>
+      <h1 class="hook">On va où<br />ce week-end ?</h1>
+      <p class="body">Bientôt, une réponse claire — pas le bruit.</p>
+    </div>
+  </div>
+
+  <!-- 5/11 -->
+  <div class="frame-label">5/11 · Citation sur photo</div>
+  <div class="canvas">
+    <div class="bg" style="background-image:url('assets/capture-parcours.jpg')"></div>
+    <div class="overlay-full"></div>
+    <div class="content center">
+      <p class="hook sm" style="font-weight:700;font-size:44px;line-height:1.35">« Les bonnes adresses ne s'annoncent pas. »</p>
+      <p class="hook sm" style="color:var(--gold);margin-top:16px">Elles se transmettent.</p>
+    </div>
+  </div>
+
+  <!-- 12/11 J-5 -->
+  <div class="frame-label">12/11 · J-5 urgence</div>
+  <div class="canvas">
+    <div class="bg app-shot" style="background-image:url('assets/capture-accueil-1.jpg')"></div>
+    <div class="overlay-bottom"></div>
+    <div class="sticker">J-5</div>
+    <div class="phone" style="top:200px;width:480px">
+      <img src="assets/capture-accueil-1.jpg" alt="" />
+    </div>
+    <div class="content">
+      <h1 class="hook md">100 places.</h1>
+      <p class="body">Mardi, la liste s'ouvre. Accès anticipé avant Noël.</p>
+    </div>
+  </div>
+
+  <!-- 16/11 -->
+  <div class="frame-label">16/11 · J-1</div>
+  <div class="canvas reel">
+    <div class="bg" style="background-image:url('assets/capture-event-flou-source.jpg'); filter: brightness(0.85);"></div>
+    <div class="overlay-bottom"></div>
+    <div class="content center">
+      <p class="eyebrow">Demain</p>
+      <h1 class="hook">Tu peux réserver<br />ta place.</h1>
+      <span class="pill">17 novembre</span>
+    </div>
+  </div>
+
+  <!-- 17/11 Carrousel conversion -->
+  <div class="frame-label">17/11 · Carrousel 1 — scroll-stop</div>
+  <div class="canvas">
+    <div class="bg" style="background-image:url('assets/capture-accueil-2.jpg'); background-position:center 30%;"></div>
+    <div class="overlay-bottom"></div>
+    <div class="content">
+      <p class="eyebrow">Liste ouverte</p>
+      <h1 class="hook md">100 premières places.</h1>
+      <p class="body">Accès avant tout le monde. Conakry, enfin lisible.</p>
+    </div>
+  </div>
+
+  <div class="frame-label">17/11 · Carrousel 2 — problème</div>
+  <div class="canvas">
+    <div class="split">
+      <div class="half noise">
+        <p class="eyebrow" style="color:#666">Avant</p>
+        <p class="hook">Cinq fils.<br />Zéro repère.</p>
+      </div>
+      <div class="half calm">
+        <div class="overlay-full"></div>
+        <p class="eyebrow">Après</p>
+        <p class="hook" style="color:#fff">Un seul geste.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-label">17/11 · Carrousel 3 — produit</div>
+  <div class="canvas">
+    <div class="bg" style="background: var(--deep);"></div>
+    <div class="phone" style="top:160px">
+      <img src="assets/capture-accueil-2.jpg" alt="" />
+    </div>
+    <div class="content" style="padding-top:0">
+      <div class="row-pills">
+        <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+      </div>
+      <p class="body" style="margin-top:24px">Descriptions claires. En français.</p>
+    </div>
+  </div>
+
+  <div class="frame-label">17/11 · Carrousel 4 — sélectif</div>
+  <div class="canvas">
+    <div class="bg" style="background-image:url('assets/capture-parcours.jpg')"></div>
+    <div class="overlay-bottom"></div>
+    <div class="content">
+      <h1 class="hook md">Sélectif.<br />Pas exhaustif.</h1>
+      <p class="body">Ce qui vaut le détour — pas la bousculade.</p>
+    </div>
+  </div>
+
+  <div class="frame-label">17/11 · Carrousel 5 — CTA</div>
+  <div class="canvas">
+    <div class="bg" style="background: linear-gradient(160deg, var(--teal), var(--deep));"></div>
+    <div class="content center">
+      <h1 class="hook" style="color:var(--gold)">Réserve ta place</h1>
+      <p class="body">theloop-app.com</p>
+      <p class="body" style="font-size:28px;margin-top:32px;opacity:0.85">Accès anticipé · 17 déc.<br />Ouverture · 24 déc.</p>
+      <span class="pill" style="margin-top:40px">Réserve ta place</span>
+    </div>
+  </div>
+
+  <!-- Video overlays 17/11 -->
+  <div class="frame-label">17/11 · Reels — cover « La fréquence »</div>
+  <div class="canvas reel">
+    <div class="bg" style="background-image:url('assets/capture-accueil-1.jpg')"></div>
+    <div class="overlay-bottom"></div>
+    <div class="content top">
+      <p class="hook sm" style="font-size:56px;color:#fff">Tout crie.</p>
+    </div>
+    <div class="content">
+      <p class="body">Puis The Loop.</p>
+      <span class="pill">Réserve ta place</span>
+    </div>
+  </div>
+
+  <div class="frame-label">17/11 · Reels — fin CTA</div>
+  <div class="canvas reel">
+    <div class="bg app-shot" style="background-image:url('assets/capture-accueil-2.jpg')"></div>
+    <div class="overlay-bottom"></div>
+    <div class="content center">
+      <h1 class="hook md">Conakry<br />mérite un repère.</h1>
+      <div class="cta-bar">
+        <div class="url">theloop-app.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6/11 video frames -->
+  <div class="frame-label">6/11 · Frame WhatsApp (CapCut)</div>
+  <div class="canvas reel">
+    <div class="bg" style="background:#0a1628"></div>
+    <div class="content center" style="padding:120px 56px">
+      <p class="body" style="background:rgba(255,255,255,0.08);padding:32px;border-radius:24px;text-align:left;font-size:32px">
+        <span style="opacity:0.6;font-size:24px">19:04</span><br /><br />
+        On fait quoi ce week-end ?
+      </p>
+      <p class="body" style="margin-top:24px;text-align:left;opacity:0.5;font-size:28px">…</p>
+      <p class="hook sm" style="margin-top:80px">Même question.<br />Chaque vendredi.</p>
+    </div>
+  </div>
+</body>
+</html>
