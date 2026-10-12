@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Loop — Storyboard 17/11 · La fréquence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --loop-deep: #0a3a44;
+      --loop-teal: #0f7a8e;
+      --loop-gold: #e6b93a;
+      --loop-bg: #eef4f6;
+      --loop-card: #ffffff;
+      --loop-muted: #5a7278;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      background: var(--loop-bg);
+      color: var(--loop-deep);
+      line-height: 1.45;
+    }
+    header {
+      background: linear-gradient(135deg, var(--loop-deep), var(--loop-teal));
+      color: #fff;
+      padding: 2rem 1.5rem 2.5rem;
+    }
+    header h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+    header .meta {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+    header p { margin: 1rem 0 0; max-width: 42rem; opacity: 0.92; }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+    @media (min-width: 720px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .frame {
+      background: var(--loop-card);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(10, 58, 68, 0.08);
+      border: 1px solid rgba(10, 58, 68, 0.06);
+    }
+    .frame-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.65rem 1rem;
+      background: var(--loop-deep);
+      color: #fff;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .frame-head span:last-child { color: var(--loop-gold); font-weight: 600; }
+    .preview {
+      aspect-ratio: 9 / 16;
+      max-height: 320px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 1.25rem;
+      position: relative;
+    }
+    .preview.noise {
+      background: #1a1a1a;
+      background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 4px,
+        rgba(255,255,255,0.03) 4px,
+        rgba(255,255,255,0.03) 8px
+      );
+    }
+    .preview.calm {
+      background: linear-gradient(180deg, #87a8b8 0%, #eef4f6 70%);
+    }
+    .preview.card-deep {
+      background: var(--loop-deep);
+      color: #fff;
+    }
+    .preview.card-teal {
+      background: var(--loop-teal);
+      color: #fff;
+    }
+    .preview.app {
+      background: var(--loop-bg);
+    }
+    .preview.logo {
+      background: #f8fbfc;
+    }
+    .preview h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .preview .gold { color: var(--loop-gold); }
+    .preview .sub {
+      margin-top: 0.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+    .blur-strip {
+      width: 88%;
+      height: 48px;
+      margin: 0.35rem 0;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #c5d5db, #9fb8c0);
+      filter: blur(6px);
+      opacity: 0.85;
+    }
+    .arc {
+      width: 72px;
+      height: 72px;
+      border: 4px solid var(--loop-gold);
+      border-radius: 50%;
+      border-right-color: transparent;
+      transform: rotate(-35deg);
+      position: relative;
+    }
+    .arc::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      background: var(--loop-gold);
+      border-radius: 50%;
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .ring-closed {
+      width: 56px;
+      height: 56px;
+      border: 3px solid var(--loop-teal);
+      border-radius: 50%;
+      opacity: 0.5;
+      margin-bottom: 0.75rem;
+    }
+    .frame-body { padding: 1rem 1.1rem 1.25rem; font-size: 0.9rem; }
+    .frame-body dt {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--loop-muted);
+      margin-top: 0.65rem;
+    }
+    .frame-body dt:first-child { margin-top: 0; }
+    .frame-body dd { margin: 0.2rem 0 0; }
+    footer {
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+      font-size: 0.85rem;
+      color: var(--loop-muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="meta">Storyboard · Facebook 9:16 · 38 s</div>
+    <h1>La fréquence — Ouverture liste 17/11</h1>
+    <p>Angle A · Voix The Loop · CTA « Réserve ta place » · Captures app floutées · Son : chaos → silence → pad.</p>
+  </header>
+  <main>
+    <div class="grid">
+      <article class="frame">
+        <div class="frame-head"><span>Plan 01</span><span>0:00 – 0:03</span></div>
+        <div class="preview noise">
+          <p class="sub" style="color:#aaa">Montage rapide</p>
+          <p style="color:#888;font-size:0.85rem;margin:0.5rem 0 0">Foule floue · scroll · vitrine</p>
+        </div>
+        <dl class="frame-body">
+          <dt>Texte écran</dt><dd>—</dd>
+          <dt>Voix</dt><dd>—</dd>
+          <dt>Son</dt><dd>Rumeur + notifications, fort</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 02</span><span>0:03 – 0:08</span></div>
+        <div class="preview calm">
+          <h2>Tout crie.</h2>
+        </div>
+        <dl class="frame-body">
+          <dt>Texte écran</dt><dd><strong>Tout crie.</strong></dd>
+          <dt>Voix</dt><dd>« Tout crie. »</dd>
+          <dt>Son</dt><dd>Coupure → silence → note grave</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 03</span><span>0:08 – 0:12</span></div>
+        <div class="preview calm" style="background:linear-gradient(180deg,#6b8a94,#dde8ec)">
+          <h2>Peu de choses<br />guident.</h2>
+        </div>
+        <dl class="frame-body">
+          <dt>Texte écran</dt><dd><strong>Peu de choses guident.</strong></dd>
+          <dt>Voix</dt><dd>« Peu de choses guident. »</dd>
+          <dt>Image</dt><dd>3 cuts photos neutres (table, terrasse)</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 04</span><span>0:12 – 0:16</span></div>
+        <div class="preview card-deep">
+          <h2>Conakry mérite<br /><span class="gold">un repère.</span></h2>
+        </div>
+        <dl class="frame-body">
+          <dt>Voix</dt><dd>« Conakry mérite un repère. »</dd>
+          <dt>Son</dt><dd>Pad + swell léger</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 05</span><span>0:16 – 0:22</span></div>
+        <div class="preview app">
+          <p class="sub" style="color:var(--loop-teal)">Spots · Agenda · Parcours · Outils</p>
+          <div class="blur-strip"></div>
+          <div class="blur-strip" style="width:70%"></div>
+          <div class="blur-strip" style="width:82%"></div>
+        </div>
+        <dl class="frame-body">
+          <dt>Voix</dt><dd>« Un seul endroit pour décider. »</dd>
+          <dt>Image</dt><dd>Captures floutées, swipe</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 06</span><span>0:22 – 0:28</span></div>
+        <div class="preview logo">
+          <div class="ring-closed"></div>
+          <div class="arc"></div>
+          <p class="sub" style="color:var(--loop-deep);margin-top:0.75rem">The Loop</p>
+        </div>
+        <dl class="frame-body">
+          <dt>Animation</dt><dd>Anneau fermé → arc ouvert (cut ou 0,5 s)</dd>
+          <dt>Son</dt><dd>Hit soft sur ouverture</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 07</span><span>0:28 – 0:34</span></div>
+        <div class="preview card-teal">
+          <p class="sub">Accès anticipé</p>
+          <h2>100 premières<br />places</h2>
+        </div>
+        <dl class="frame-body">
+          <dt>Voix</dt><dd>Cent premières places. Accès anticipé.</dd>
+        </dl>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head"><span>Plan 08</span><span>0:34 – 0:38</span></div>
+        <div class="preview card-deep">
+          <h2 class="gold">Réserve ta place</h2>
+          <p class="sub">theloop-app.com</p>
+        </div>
+        <dl class="frame-body">
+          <dt>Voix</dt><dd>« Réserve ta place. »</dd>
+          <dt>Son</dt><dd>Fade out 1 s</dd>
+        </dl>
+      </article>
+    </div>
+  </main>
+  <footer>
+    Ouvrir ce fichier dans un navigateur pour prévisualiser les cartes. Couleurs marque : #0A3A44 · #0F7A8E · #E6B93A · Manrope.
+  </footer>
+</body>
+</html>
