@@ -14,6 +14,15 @@ Dossier unique : **`exports-png-v4-light/`** (12 fichiers, pas de doublons).
 | 6/11 | `FRAME_0611_01_vendredi-19h.png` … `06_signature-fin.png` | Vidéo CapCut |
 
 Regénérer #1–#2 : `node scripts/export-slides-png-v4.mjs`  
-Regénérer #3 : `node scripts/export-video-0611-frames.mjs`
+Regénérer #3 : `node scripts/export-video-0611-frames.mjs`  
+Regénérer story 8/11 : `node scripts/export-story-0811.mjs`
 
-**Pas encore validé par toi :** export **.mp4** après montage CapCut (#2 et #6).
+### Story 8/11 (à valider)
+
+| Fichier |
+|---------|
+| `STORY_8-11_01_marque.png` |
+| `STORY_8-11_02_piliers.png` |
+| `STORY_8-11_03_17nov.png` |
+
+**Pas encore validé par toi :** export **.mp4** après montage CapCut (#2 et #6) · frames **8/11**.
