@@ -5,9 +5,10 @@
 - **Posts texte** après 17/11 : J-x, citations, critères, CTA courts — **sans** capture app lisible.
 - **Pas pour** : révélation app (≥ 17/12 pré-launch, 24/12 lancement) → captures nettes.
 
-## Fichier source
-- HTML : `export-visuels-pack-acte-a-v4-light.html`
-- PNG exportés : `exports-png-v4-light/`
+## Fichier source (version validée · dégradé clair + carte)
+- HTML : `export-visuels-pack-acte-a-v4-light.html` *(baseline v4 — dégradé, atmo floue, squelettes)*
+- PNG exportés : `exports-png-v4-light/` — fichiers `01_`, `02_`, `03_`
+- **Ne pas utiliser** les PNG `COMPARAISON_NIVEAU_*` (tests écartés).
 - Regénérer : `node scripts/export-slides-png-v4.mjs`
 
 ## Recette visuelle
