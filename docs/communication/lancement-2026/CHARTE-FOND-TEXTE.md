@@ -7,7 +7,12 @@
 
 ## Fichier source (version validée)
 - HTML : `export-visuels-pack-acte-a-v4-light.html`
-- **Style :** dégradé **niveau 2** (`#a8dce8 → #5eb3c4 → #3a9aad → #0f7a8e`) + atmo floue + carte blanche + squelettes.
+- **Style :** dégradé **niveau 1** (`#eef6f8 → #dceef2 → #c5e4ec`) + atmo légère + carte blanche + squelettes.
+
+## Pourquoi tous les visuels changent en même temps ?
+Un seul fichier **`export-visuels-pack-acte-a-v4-light.html`** contient **3 slides** (3/11 feed, Reels, 5/11). Quand on modifie le **fond** (CSS) et qu’on lance `export-slides-png-v4.mjs`, les PNG **`01_`, `02_`, `03_`** sont **regénérés** — même fond sur tout le pack.  
+Les images vues **plus haut dans le chat** = anciennes captures à un instant T ; seuls comptent les fichiers **téléchargés** depuis `exports-png-v4-light/` après le dernier export.  
+**Astuce :** enregistre sur ton tel avec un nom (`loop-3nov-v1.png`) quand tu valides une version.
 - PNG : `exports-png-v4-light/` — `01_`, `02_`, `03_`
 - Ignorer `COMPARAISON_NIVEAU_*` (tests).
 - Regénérer : `node scripts/export-slides-png-v4.mjs`

@@ -24,8 +24,8 @@
       margin: 0 auto 16px;
       position: relative;
       overflow: hidden;
-      /* Niveau 2+ · même logique, plus de teal visible (mobile / carte blanche) */
-      background: linear-gradient(150deg, #6eb8c9 0%, #2d96a8 32%, #0f7a8e 58%, #0a3a44 100%);
+      /* Niveau 1 · dégradé clair (appliqué sur tout le pack 01/02/03) */
+      background: linear-gradient(180deg, #eef6f8 0%, #dceef2 55%, #c5e4ec 100%);
       color: var(--deep);
     }
     .c.reel { height: 1920px; }
@@ -34,15 +34,15 @@
       position: absolute;
       inset: -20%;
       background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat;
-      filter: blur(56px) saturate(1.05) brightness(0.82) hue-rotate(-6deg);
-      opacity: 0.32;
+      filter: blur(48px) saturate(0.9) brightness(1.1) hue-rotate(-4deg);
+      opacity: 0.38;
     }
     .atmo-teal {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 100% 85% at 70% 20%, rgba(15,122,142,0.42), transparent 50%),
-        radial-gradient(ellipse 90% 70% at 10% 85%, rgba(10,58,68,0.35), transparent 45%),
-        linear-gradient(180deg, rgba(15,122,142,0.12) 0%, rgba(10,58,68,0.45) 100%);
+      background: radial-gradient(ellipse 90% 70% at 75% 18%, rgba(15,122,142,0.16), transparent 55%),
+        radial-gradient(ellipse 80% 60% at 10% 88%, rgba(21,150,173,0.12), transparent 50%),
+        linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(15,122,142,0.1) 100%);
       pointer-events: none;
       z-index: 1;
     }
@@ -65,9 +65,9 @@
       border-radius: 50%;
       filter: blur(2px);
     }
-    .blob.a { width: 540px; height: 540px; background: rgba(10,58,68,0.2); top: -110px; right: -130px; }
-    .blob.b { width: 380px; height: 380px; background: rgba(15,122,142,0.32); bottom: 150px; left: -95px; }
-    .blob.c { width: 260px; height: 260px; background: rgba(15,122,142,0.28); top: 40%; left: 50%; }
+    .blob.a { width: 480px; height: 480px; background: rgba(15,122,142,0.14); top: -100px; right: -120px; }
+    .blob.b { width: 320px; height: 320px; background: rgba(21,150,173,0.12); bottom: 180px; left: -80px; }
+    .blob.c { width: 220px; height: 220px; background: rgba(15,122,142,0.1); top: 42%; left: 52%; }
     .inner {
       position: relative;
       z-index: 2;
