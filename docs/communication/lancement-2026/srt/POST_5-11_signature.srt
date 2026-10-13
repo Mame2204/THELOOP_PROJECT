@@ -1,0 +1,19 @@
+1
+00:00:00,200 --> 00:00:05,800
+Les bonnes adresses ne s'annoncent pas.
+
+2
+00:00:06,000 --> 00:00:11,500
+Elles se transmettent.
+
+3
+00:00:12,000 --> 00:00:17,500
+The Loop se prépare à Conakry.
+
+4
+00:00:17,600 --> 00:00:21,000
+Liste d'attente le 17 novembre.
+
+5
+00:00:21,100 --> 00:00:24,000
+Cent premières places pour l'accès anticipé.

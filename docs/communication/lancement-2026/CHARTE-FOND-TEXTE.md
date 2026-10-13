@@ -12,7 +12,7 @@
 - **Ne pas confondre :** `POST_3-11_feed-v2.png` = **uniquement** le fond teal (+3 %) — **aucun** bandeau / tampon / piliers. Comparaison visuelle : `GUIDE_DIFF_feed-v2-vs-PUBLIER-3nov.png`.
 
 ## Pourquoi tous les visuels changent en même temps ?
-Un seul fichier **`export-visuels-pack-acte-a-v4-light.html`** contient **3 slides** (3/11 feed, Reels, 5/11). Quand on modifie le **fond** (CSS) et qu’on lance `export-slides-png-v4.mjs`, les PNG **`01_`, `02_`, `03_`** sont **regénérés** — même fond sur tout le pack.  
+Un seul fichier **`export-visuels-pack-acte-a-v4-light.html`** contient **7 slides** (#1 feed + Reels, #2 feed + Reels/story + 3 story). Quand on modifie le **fond** (CSS) et qu’on lance `export-slides-png-v4.mjs`, **tous** les PNG du pack sont **regénérés** — même fond partout.  
 Les images vues **plus haut dans le chat** = anciennes captures à un instant T ; seuls comptent les fichiers **téléchargés** depuis `exports-png-v4-light/` après le dernier export.  
 **Astuce :** enregistre sur ton tel avec un nom (`loop-3nov-v1.png`) quand tu valides une version.
 - PNG : `exports-png-v4-light/` — `01_`, `02_`, `03_`
