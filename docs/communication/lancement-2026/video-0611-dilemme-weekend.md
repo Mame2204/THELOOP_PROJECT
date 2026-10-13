@@ -14,7 +14,7 @@
 |------|---------|
 | 1 | `FRAME_0611_01_vendredi-19h.png` |
 | 2 | `FRAME_0611_02_question-weekend.png` |
-| 3 | `FRAME_0611_03_quatre-reponses.png` |
+| 3 | `FRAME_0611_03_quatre-reponses.png` *(fil de réponses lisible — pas la grille)* |
 | 4 | `FRAME_0611_04_moins-de-temps.png` *(remplaçable par ton B-roll)* |
 | 5 | `FRAME_0611_05_the-loop-bientot.png` |
 | 6 | `FRAME_0611_06_signature-fin.png` |
