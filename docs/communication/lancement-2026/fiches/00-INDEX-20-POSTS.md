@@ -7,7 +7,7 @@
 | 3 | 6/11 | Vidéo | `03-2026-11-06.md` | `FRAME_0611_01`…`06` + montage |
 | 4 | 8/11 | Story | `04-2026-11-08.md` | `STORY_8-11_01`…`03` |
 | 5 | 11/11 | Carrousel | `05-2026-11-11.md` | `CARROUSEL_11-11_01`…`04` |
-| 6 | 12/11 | Image | à venir | J-5 |
+| 6 | 12/11 | Image | `06-2026-11-12.md` | `POST_12-11_J-5-PUBLIER.png` |
 | 7 | 13/11 | Vidéo | à venir | script |
 | 8 | 16/11 | Image | à venir | J-1 |
 | 9 | 17/11 | Vidéo + carrousel | à venir | Acte B |
