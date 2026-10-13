@@ -23,7 +23,7 @@ const slides = await page.$$('.slide');
 const aliases = [
   ['POST_3-11_feed-PUBLIER-3nov.png', 'POST_3-11_feed-final.png'],
   ['POST_3-11_reels-PUBLIER-3nov.png', 'POST_3-11_reels-v2.png'],
-  ['POST_5-11_citation-v2.png'],
+  ['POST_5-11_citation-PUBLIER-5nov.png', 'POST_5-11_citation-v2.png'],
 ];
 
 for (let i = 0; i < slides.length; i++) {
