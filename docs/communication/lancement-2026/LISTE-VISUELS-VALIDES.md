@@ -1,6 +1,6 @@
 # Visuels validés — Acte A (#1 → #3)
 
-Dossier unique : **`exports-png-v4-light/`** (13 fichiers, pas de doublons).
+Dossier unique : **`exports-png-v4-light/`** (12 fichiers, pas de doublons).
 
 | Date | Fichier | Usage |
 |------|---------|--------|
