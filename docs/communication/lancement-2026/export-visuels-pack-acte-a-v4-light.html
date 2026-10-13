@@ -25,7 +25,7 @@
       position: relative;
       overflow: hidden;
       /* N1 adouci + léger renfort teal (micro-assombrissement) */
-      background: linear-gradient(180deg, #f4f9fa 0%, #ecf3f6 48%, #dceef2 100%);
+      background: linear-gradient(180deg, #f2f8fa 0%, #e8f2f6 46%, #d2e6ef 100%);
       color: var(--deep);
     }
     .c.reel { height: 1920px; }
@@ -34,15 +34,15 @@
       position: absolute;
       inset: -20%;
       background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat;
-      filter: blur(48px) saturate(0.78) brightness(1.08) hue-rotate(-2deg);
-      opacity: 0.32;
+      filter: blur(48px) saturate(0.84) brightness(1.05) hue-rotate(-3deg);
+      opacity: 0.35;
     }
     .atmo-teal {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 90% 70% at 75% 18%, rgba(15,122,142,0.11), transparent 56%),
-        radial-gradient(ellipse 80% 60% at 10% 88%, rgba(21,150,173,0.09), transparent 50%),
-        linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(15,122,142,0.08) 100%);
+      background: radial-gradient(ellipse 90% 70% at 75% 18%, rgba(15,122,142,0.14), transparent 55%),
+        radial-gradient(ellipse 80% 60% at 10% 88%, rgba(21,150,173,0.11), transparent 50%),
+        linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(15,122,142,0.11) 100%);
       pointer-events: none;
       z-index: 1;
     }
@@ -65,9 +65,9 @@
       border-radius: 50%;
       filter: blur(2px);
     }
-    .blob.a { width: 480px; height: 480px; background: rgba(15,122,142,0.1); top: -100px; right: -120px; }
-    .blob.b { width: 320px; height: 320px; background: rgba(21,150,173,0.08); bottom: 180px; left: -80px; }
-    .blob.c { width: 220px; height: 220px; background: rgba(15,122,142,0.07); top: 42%; left: 52%; }
+    .blob.a { width: 480px; height: 480px; background: rgba(15,122,142,0.12); top: -100px; right: -120px; }
+    .blob.b { width: 320px; height: 320px; background: rgba(21,150,173,0.1); bottom: 180px; left: -80px; }
+    .blob.c { width: 220px; height: 220px; background: rgba(15,122,142,0.09); top: 42%; left: 52%; }
     .inner {
       position: relative;
       z-index: 2;
