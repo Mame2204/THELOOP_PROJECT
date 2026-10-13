@@ -18,6 +18,16 @@ Dossier unique : **`exports-png-v4-light/`** (15 fichiers, pas de doublons).
 
 Regénérer #1–#2 : `node scripts/export-slides-png-v4.mjs`  
 Regénérer #3 : `node scripts/export-video-0611-frames.mjs`  
-Regénérer story 8/11 : `node scripts/export-story-0811.mjs`
+Regénérer story 8/11 : `node scripts/export-story-0811.mjs`  
+Regénérer carrousel 11/11 : `node scripts/export-carousel-1111.mjs`
+
+### Carrousel 11/11 (à valider)
+
+| Fichier |
+|---------|
+| `CARROUSEL_11-11_01_ne-liste-pas-tout.png` |
+| `CARROUSEL_11-11_02_respire.png` |
+| `CARROUSEL_11-11_03_plus-value.png` |
+| `CARROUSEL_11-11_04_en-clair-17nov.png` |
 
 **Pas encore validé par toi :** export **.mp4** après montage CapCut (#2 et #6).
