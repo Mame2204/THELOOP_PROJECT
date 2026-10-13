@@ -11,6 +11,7 @@
 | Ouverture liste 17/11 | `waitlist_open_2026` | Facebook | Carrousel | `facebook` | `carousel` | `100places_1711` |
 | Ouverture liste 17/11 | `waitlist_open_2026` | Facebook | Story | `facebook` | `story` | `reserve_1711` |
 | Rappel liste 19/11 | `waitlist_open_2026` | Facebook | Image feed | `facebook` | `image` | `merci_1911` |
+| Pourquoi 21/11 | `waitlist_open_2026` | Facebook | Vidéo | `facebook` | `video` | `pourquoi_2111` |
 | Teasing | `teasing_2026` | Instagram (secondaire) | Vidéo | `instagram` | `video` | `mirror_fb_*` |
 | Pré-launch 17/12 | `prelaunch_2026` | E-mail | Invitation auto | `email` | `invite` | `batch_100` |
 | Lancement 24/12 | `launch_2026` | Facebook | Vidéo | `facebook` | `video` | `noel_2412` |

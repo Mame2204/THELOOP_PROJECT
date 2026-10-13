@@ -29,7 +29,7 @@ Dossier unique : **`exports-png-v4-light/`**
 
 Fiche : `fiches/10-2026-11-17.md`
 
-## 19/11 — à valider (1 PNG)
+## 19/11 validé (1 PNG)
 
 | Date | Fichier |
 |------|---------|
@@ -37,10 +37,18 @@ Fiche : `fiches/10-2026-11-17.md`
 
 Regénérer : `node scripts/export-merci-1911.mjs` · Fiche : `fiches/11-2026-11-19.md`
 
+## 21/11 — à valider (6 PNG)
+
+| Type | Fichiers |
+|------|----------|
+| Vidéo | `FRAME_2111_01_conakry-avance.png` … `06_reserve.png` |
+
+Regénérer : `node scripts/export-video-2111-frames.mjs` · Fiche : `fiches/12-2026-11-21.md`
+
 ---
 
 Regénérer (Acte A) : voir scripts `export-slides-png-v4.mjs`, `export-video-0611-frames.mjs`, `export-story-0811.mjs`, `export-carousel-1111.mjs`, `export-j5-1211.mjs`, `export-video-1311-frames.mjs`, `export-story-1511.mjs`, `export-j1-1611.mjs`
 
 Regénérer 17/11 : `export-video-1711-frames.mjs` · `export-carousel-1711.mjs` · `export-story-1711.mjs`
 
-**Pas encore validé côté montage :** export **.mp4** CapCut (5/11, 6/11, 13/11, 17/11).
+**Pas encore validé côté montage :** export **.mp4** CapCut (5/11, 6/11, 13/11, 17/11, **21/11**).
