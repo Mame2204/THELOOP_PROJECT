@@ -61,7 +61,7 @@ Regénérer : `node scripts/export-story-2211.mjs` · Fiche : `fiches/13-2026-11
 
 Regénérer : `node scripts/export-regle-2511.mjs` · Fiche : `fiches/14-2026-11-25.md`
 
-## 26/11 — à valider (5 PNG)
+## 26/11 validé (5 PNG)
 
 | Type | Fichiers |
 |------|----------|
@@ -69,10 +69,18 @@ Regénérer : `node scripts/export-regle-2511.mjs` · Fiche : `fiches/14-2026-11
 
 Regénérer : `node scripts/export-carousel-2611.mjs` · Fiche : `fiches/15-2026-11-26.md`
 
+## 28/11 — à valider (5 PNG)
+
+| Type | Fichiers |
+|------|----------|
+| Vidéo | `FRAME_2811_01_monnaie.png` … `05_reserve.png` |
+
+Regénérer : `node scripts/export-video-2811-frames.mjs` · Fiche : `fiches/16-2026-11-28.md`
+
 ---
 
 Regénérer (Acte A) : voir scripts `export-slides-png-v4.mjs`, `export-video-0611-frames.mjs`, `export-story-0811.mjs`, `export-carousel-1111.mjs`, `export-j5-1211.mjs`, `export-video-1311-frames.mjs`, `export-story-1511.mjs`, `export-j1-1611.mjs`
 
 Regénérer 17/11 : `export-video-1711-frames.mjs` · `export-carousel-1711.mjs` · `export-story-1711.mjs`
 
-**Pas encore validé côté montage :** export **.mp4** CapCut (5/11, 6/11, 13/11, 17/11, **21/11**).
+**Pas encore validé côté montage :** export **.mp4** CapCut (5/11, 6/11, 13/11, 17/11, 21/11, **28/11**).

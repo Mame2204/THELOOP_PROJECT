@@ -15,6 +15,7 @@
 | Sondage 22/11 | `waitlist_open_2026` | Facebook | Story (frame 2) | `facebook` | `story` | `sondage_2211` |
 | Règle 1/3 25/11 | `waitlist_open_2026` | Facebook | Image feed | `facebook` | `image` | `regle1_2511` |
 | 4 piliers 26/11 | `waitlist_open_2026` | Facebook | Carrousel | `facebook` | `carousel` | `4piliers_2611` |
+| Outil 28/11 | `waitlist_open_2026` | Facebook | Vidéo | `facebook` | `video` | `outil_2811` |
 | Teasing | `teasing_2026` | Instagram (secondaire) | Vidéo | `instagram` | `video` | `mirror_fb_*` |
 | Pré-launch 17/12 | `prelaunch_2026` | E-mail | Invitation auto | `email` | `invite` | `batch_100` |
 | Lancement 24/12 | `launch_2026` | Facebook | Vidéo | `facebook` | `video` | `noel_2412` |
