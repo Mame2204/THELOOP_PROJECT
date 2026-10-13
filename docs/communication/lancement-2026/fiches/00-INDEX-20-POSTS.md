@@ -18,7 +18,8 @@
 | 14 | 25/11 | Image série | `14-2026-11-25.md` | `POST_25-11_regle-1-PUBLIER.png` |
 | 15 | 26/11 | Carrousel | `15-2026-11-26.md` | `CARROUSEL_26-11_01` … `05` |
 | 16 | 28/11 | Vidéo | `16-2026-11-28.md` | `FRAME_2811_01` … `05` |
-| Lot A | 30/11–9/12 | Story + feed + vidéo | `17-LOT-A-30-11-09-12.md` | 10 PNG · `export-lot-a-nov-dec.mjs` |
-| Lots B–D | 7/12–24/12 | terrain · teaser · lancement | `PLAN-LOTS-PUBLICATION.md` | à venir |
+| Lot A | 30/11–9/12 | Story + feed + vidéo | `17-LOT-A-30-11-09-12.md` | 10 PNG · validé |
+| Lot B | 7/12–16/12 | Stories terrain | `18-LOT-B-terrain-7-16.md` | 31 PNG · `export-terrain-7-16.mjs` |
+| Lots C–D | 17/12–24/12 | teaser · lancement | `PLAN-LOTS-PUBLICATION.md` | à venir |
 
 Stories : 8/11, 15/11, 22/11, 30/11, 7–16/12, 21/12, 24/12.

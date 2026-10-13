@@ -77,7 +77,7 @@ Regénérer : `node scripts/export-carousel-2611.mjs` · Fiche : `fiches/15-2026
 
 Regénérer : `node scripts/export-video-2811-frames.mjs` · Fiche : `fiches/16-2026-11-28.md`
 
-## Lot A — à valider (10 PNG) · 30/11 → 9/12
+## Lot A — validé (10 PNG) · 30/11 → 9/12
 
 | Date | Fichiers |
 |------|----------|
@@ -89,6 +89,11 @@ Regénérer : `node scripts/export-video-2811-frames.mjs` · Fiche : `fiches/16-
 
 Regénérer le lot : `node scripts/export-lot-a-nov-dec.mjs` · Fiche : `fiches/17-LOT-A-30-11-09-12.md` · Plan : `PLAN-LOTS-PUBLICATION.md`
 
-**Lots suivants :** B terrain 7–16/12 · C 17–23/12 · D 24/12
+## Lot B — à valider (31 PNG) · terrain 7–16/12
+
+Préfixe `STORY_07-12_*` … `STORY_16-12_*` · fiche `fiches/18-LOT-B-terrain-7-16.md`  
+Regénérer : `node scripts/export-terrain-7-16.mjs`
+
+**Lots suivants :** C 17–23/12 · D 24/12
 
 **Montages .mp4** (CapCut) : 5/11, 6/11, 13/11, 17/11, 21/11, 28/11, **5/12** + lancement 24/12 (Lot D).
