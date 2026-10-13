@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 15/11 · story J-2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; --muted: #3d5560; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 40%, #96c4d4 100%); color: var(--deep);
+    }
+    .slide.dark { background: linear-gradient(165deg, #0f7a8e 0%, #0a3a44 55%, #062830 100%); color: #fff; }
+    .atmo { position: absolute; inset: -20%; background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat; filter: blur(40px); opacity: 0.28; }
+    .atmo-teal { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(236,244,247,0.82) 100%); z-index: 1; }
+    .top-ribbon {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+      background: linear-gradient(90deg, var(--deep) 0%, var(--teal) 100%);
+      color: #fff; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 0.26em; text-transform: uppercase; padding: 24px;
+    }
+    .inner {
+      position: relative; z-index: 2; height: 100%; padding: 140px 64px 220px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box;
+    }
+    .panel {
+      background: #fff; border-radius: 36px; padding: 72px 56px; width: 100%; max-width: 920px;
+      box-shadow: 0 24px 64px rgba(10,58,68,0.14); border: 2px solid rgba(15,122,142,0.12); box-sizing: border-box;
+    }
+    .slide.dark .panel { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); box-shadow: none; }
+    .j { font-size: 200px; font-weight: 800; line-height: 0.95; margin: 0; color: var(--gold); }
+    .slide.dark .j { color: var(--gold); text-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+    .h { font-size: 56px; font-weight: 800; line-height: 1.15; margin: 0; }
+    .p { font-size: 38px; line-height: 1.4; font-weight: 600; color: var(--muted); margin-top: 28px; }
+    .slide.dark .p { color: rgba(255,255,255,0.9); }
+    .gold { color: #9a7720; font-weight: 800; }
+    .slide.dark .gold { color: var(--gold); }
+    .rule { width: 88px; height: 5px; background: var(--gold); border-radius: 3px; margin: 36px auto; }
+    .pill {
+      display: inline-block; margin-top: 36px; padding: 20px 36px; background: var(--deep); color: #fff;
+      border-radius: 999px; font-size: 30px; font-weight: 800;
+    }
+    .slide.dark .pill { background: rgba(255,255,255,0.15); border: 2px solid rgba(230,185,58,0.5); }
+    .foot { margin-top: 40px; font-size: 30px; font-weight: 700; color: var(--deep); }
+    .slide.dark .foot { color: rgba(255,255,255,0.7); }
+  </style>
+</head>
+<body>
+
+  <div class="label">15/11 · Story 1/3</div>
+  <div class="slide dark">
+    <div class="inner">
+      <div class="panel">
+        <p class="p" style="margin:0;color:rgba(255,255,255,0.8);letter-spacing:0.2em;text-transform:uppercase;font-size:26px">Compte à rebours</p>
+        <h1 class="j">J-2</h1>
+        <div class="rule"></div>
+        <p class="p">Deux jours avant<br />l’ouverture de la liste.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">15/11 · Story 2/3</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="top-ribbon">The Loop</div>
+    <div class="inner">
+      <div class="panel">
+        <p class="p" style="margin:0;color:var(--teal);letter-spacing:0.18em;text-transform:uppercase;font-size:24px">Accès anticipé</p>
+        <h2 class="h"><span class="gold">100 premières</span><br />places</h2>
+        <div class="rule"></div>
+        <p class="p" style="margin-top:0">Invitation le <span class="gold">17 décembre</span><br />Avant l’ouverture publique du 24.</p>
+      </div>
+      <p class="foot">Suite →</p>
+    </div>
+  </div>
+
+  <div class="label">15/11 · Story 3/3</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="top-ribbon">17 novembre · mardi</div>
+    <div class="inner">
+      <div class="panel">
+        <h2 class="h">Mardi, tu pourras<br /><span class="gold">réserver ta place.</span></h2>
+        <div class="rule"></div>
+        <p class="p" style="margin-top:0">Pas de lien aujourd’hui.<br />Demain : dernier rappel.</p>
+        <span class="pill">theloop-app.com · dès mardi</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

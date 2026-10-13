@@ -1,4 +1,4 @@
-# Visuels validés — Acte A (#1 → #3, 8/11, 11/11)
+# Visuels validés — Acte A (→ 13/11)
 
 Dossier unique : **`exports-png-v4-light/`** (27 fichiers, pas de doublons).
 
@@ -29,4 +29,9 @@ Regénérer carrousel 11/11 : `node scripts/export-carousel-1111.mjs`
 Regénérer J-5 12/11 : `node scripts/export-j5-1211.mjs`  
 Regénérer vidéo 13/11 : `node scripts/export-video-1311-frames.mjs`
 
-**Pas encore validé par toi :** export **.mp4** après montage CapCut (#2 et #6).
+### Story 15/11 + J-1 16/11 (à valider)
+`STORY_15-11_01_J-2.png` · `02_100-places.png` · `03_mardi-reserve.png` · `POST_16-11_J-1-PUBLIER.png`
+
+Regénérer : `node scripts/export-story-1511.mjs` · `node scripts/export-j1-1611.mjs`
+
+**Pas encore validé par toi :** export **.mp4** après montage CapCut (vidéos 5/11, 6/11, 13/11).

@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const dir = path.dirname(fileURLToPath(import.meta.url));
+const htmlPath = path.join(dir, '..', 'export-visuels-j1-1611.html');
+const outDir = path.join(dir, '..', 'exports-png-v4-light');
+const name = 'POST_16-11_J-1-PUBLIER.png';
+
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1200, height: 1500 } });
+await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(300);
+await page.$('.slide').then((el) => el.screenshot({ path: path.join(outDir, name) }));
+await browser.close();
+console.log('Exported', name);

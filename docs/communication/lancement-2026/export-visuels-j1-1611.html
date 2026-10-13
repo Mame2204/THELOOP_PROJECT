@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 16/11 · J-1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1350px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      background: linear-gradient(165deg, #0a3a44 0%, #062830 50%, #041820 100%); color: #fff;
+    }
+    .glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(230,185,58,0.2), transparent 60%);
+    }
+    .inner {
+      position: relative; z-index: 2; height: 100%; padding: 88px 64px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box;
+    }
+    .mark-row { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+    .mark-row span { font-size: 22px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; }
+    .demain { font-size: 120px; font-weight: 800; line-height: 1; margin: 0; color: #fff; }
+    .rule { width: 100px; height: 5px; background: var(--gold); border-radius: 3px; margin: 40px auto; }
+    .h { font-size: 52px; font-weight: 800; line-height: 1.2; margin: 0; }
+    .p { font-size: 36px; line-height: 1.45; font-weight: 600; margin-top: 32px; color: rgba(255,255,255,0.88); max-width: 880px; }
+    .gold { color: var(--gold); font-weight: 800; }
+    .pill {
+      margin-top: 44px; padding: 20px 40px; border-radius: 999px;
+      background: rgba(255,255,255,0.1); border: 2px solid rgba(230,185,58,0.55);
+      font-size: 28px; font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="label">16/11 · Feed · J-1</div>
+  <div class="slide">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="mark-row">
+        <svg width="48" height="48" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#fff" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>The Loop</span>
+      </div>
+      <p class="p" style="margin:0;font-size:24px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(255,255,255,0.75)">J-1</p>
+      <h1 class="demain">Demain.</h1>
+      <div class="rule"></div>
+      <h2 class="h">Ouverture de la liste</h2>
+      <p class="p">Mardi <span class="gold">17 novembre</span> · vidéo + carrousel<br /><span class="gold">100 premières places</span></p>
+      <span class="pill">Lien demain · pas aujourd’hui</span>
+    </div>
+  </div>
+
+</body>
+</html>
