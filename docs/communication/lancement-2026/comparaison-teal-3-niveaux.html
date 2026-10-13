@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Comparaison teal — 3 niveaux</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; font-family: Manrope, sans-serif; background: #222; }
+    p.guide { color: #ccc; padding: 16px; font-size: 14px; line-height: 1.4; margin: 0; }
+    .panel {
+      width: 1080px;
+      height: 1350px;
+      margin: 0 auto 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .badge {
+      position: absolute;
+      top: 48px;
+      left: 48px;
+      z-index: 10;
+      background: #e6b93a;
+      color: #0a3a44;
+      font-weight: 800;
+      font-size: 28px;
+      letter-spacing: 0.12em;
+      padding: 16px 28px;
+      border-radius: 12px;
+    }
+    .card {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.95);
+      border-radius: 28px;
+      padding: 48px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.15);
+    }
+    .card h2 { margin: 0; font-size: 52px; color: #0a3a44; line-height: 1.1; }
+    .card p { font-size: 28px; color: #5a7278; margin-top: 16px; }
+    /* N1 = léger (proche app) */
+    .n1 { background: linear-gradient(180deg, #eef6f8 0%, #dceef2 100%); }
+    /* N2 = moyen (actuel approx) */
+    .n2 { background: linear-gradient(145deg, #a8dce8 0%, #5eb3c4 40%, #3a9aad 75%, #0f7a8e 100%); }
+    /* N3 = fort = bleu-vert assumé */
+    .n3 { background: linear-gradient(165deg, #5eb3c4 0%, #0f7a8e 45%, #0a3a44 100%); }
+    .n3 .card { border: 2px solid rgba(15,122,142,0.35); }
+  </style>
+</head>
+<body>
+  <p class="guide">Choisis NIVEAU 1, 2 ou 3. Enregistre celui que tu vois le mieux sur ton écran (lien PNG ci-dessous).</p>
+
+  <div class="panel n1"><span class="badge">NIVEAU 1 · LÉGER</span>
+    <div class="card"><h2>Vendredi soir.<br/>La question revient.</h2><p>Fond très clair · proche écrans app</p></div>
+  </div>
+  <div class="panel n2"><span class="badge">NIVEAU 2 · MOYEN</span>
+    <div class="card"><h2>Vendredi soir.<br/>La question revient.</h2><p>Teal visible · équilibre</p></div>
+  </div>
+  <div class="panel n3"><span class="badge">NIVEAU 3 · FONCÉ</span>
+    <div class="card"><h2>Vendredi soir.<br/>La question revient.</h2><p>Bleu-vert marqué · carte blanche contraste</p></div>
+  </div>
+</body>
+</html>
