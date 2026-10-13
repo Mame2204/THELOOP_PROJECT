@@ -216,6 +216,71 @@
       line-height: 1.4;
     }
     .sig-line em { color: var(--deep); font-style: normal; font-weight: 600; }
+    /* Reels 9:16 — remplir la hauteur (safe zone basse pour UI TikTok/IG) */
+    .slide.reel .inner {
+      padding: 120px 72px 200px;
+      justify-content: flex-start;
+      gap: 36px;
+    }
+    .slide.reel .stamp { top: 118px; }
+    .slide.reel .watermark { top: 320px; opacity: 0.12; }
+    .slide.reel .h.sm { font-size: 62px; }
+    .slide.reel .p { font-size: 34px; }
+    .reel-convo {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 8px;
+    }
+    .bubble {
+      max-width: 78%;
+      padding: 22px 28px;
+      border-radius: 24px;
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1.35;
+      box-shadow: 0 8px 28px rgba(15,122,142,0.1);
+    }
+    .bubble.them {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.92);
+      color: var(--muted);
+      border: 1px solid rgba(15,122,142,0.12);
+    }
+    .bubble.me {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-mid) 100%);
+      color: #fff;
+    }
+    .bubble .sk {
+      display: block;
+      height: 12px;
+      border-radius: 6px;
+      background: rgba(15,122,142,0.15);
+      margin-top: 14px;
+      width: 70%;
+    }
+    .bubble.me .sk { background: rgba(255,255,255,0.35); width: 55%; }
+    .slide.reel .card {
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .slide.reel .pillars { margin-top: 28px; justify-content: center; }
+    .slide.reel .pill-date {
+      display: block;
+      text-align: center;
+      margin-top: 28px;
+      font-size: 24px;
+      padding: 18px 32px;
+    }
+    .reel-foot {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(10,58,68,0.55);
+    }
   </style>
 </head>
 <body>
@@ -254,14 +319,31 @@
   <div class="slide reel">
     <div class="atmo"></div>
     <div class="atmo-teal"></div>
-    <div class="blobs"><div class="blob a"></div><div class="blob b" style="top:120px;right:-40px"></div></div>
-    <div class="inner" style="justify-content:flex-end;padding-bottom:160px">
+    <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="blobs"><div class="blob a"></div><div class="blob b" style="top:280px;right:-40px"></div><div class="blob c" style="top:55%;left:8%"></div></div>
+    <div class="top-ribbon">Liste d’attente · 17 novembre</div>
+    <div class="stamp">BIENTÔT</div>
+    <div class="inner">
+      <div class="mark-row" style="margin-bottom:0">
+        <svg width="44" height="44" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>The Loop · Conakry</span>
+      </div>
+      <div class="reel-convo" aria-hidden="true">
+        <div class="bubble them">On se voit où vendredi ?<span class="sk"></span></div>
+        <div class="bubble me">Comme d’hab… t’as une idée ?<span class="sk"></span></div>
+        <div class="bubble them">Même endroit que la dernière fois ?<span class="sk"></span></div>
+      </div>
       <div class="card">
-        <p class="ey">The Loop</p>
+        <p class="ey">La question revient</p>
+        <div class="rule"></div>
         <h1 class="h sm">On va où<br />ce week-end ?</h1>
         <p class="p">Même fil. Mêmes habitudes. Bientôt, un repère — pas un énième bruit.</p>
-        <span class="pill-date">17 nov. · liste</span>
+        <div class="pillars">
+          <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+        </div>
+        <span class="pill-date">17 nov. · réserve ta place</span>
       </div>
+      <p class="reel-foot">Guide sélectif · Conakry</p>
     </div>
   </div>
 
