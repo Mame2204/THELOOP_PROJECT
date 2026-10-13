@@ -69,7 +69,7 @@ Regénérer : `node scripts/export-regle-2511.mjs` · Fiche : `fiches/14-2026-11
 
 Regénérer : `node scripts/export-carousel-2611.mjs` · Fiche : `fiches/15-2026-11-26.md`
 
-## 28/11 — à valider (5 PNG)
+## 28/11 validé (5 PNG)
 
 | Type | Fichiers |
 |------|----------|
@@ -77,10 +77,18 @@ Regénérer : `node scripts/export-carousel-2611.mjs` · Fiche : `fiches/15-2026
 
 Regénérer : `node scripts/export-video-2811-frames.mjs` · Fiche : `fiches/16-2026-11-28.md`
 
----
+## Lot A — à valider (10 PNG) · 30/11 → 9/12
 
-Regénérer (Acte A) : voir scripts `export-slides-png-v4.mjs`, `export-video-0611-frames.mjs`, `export-story-0811.mjs`, `export-carousel-1111.mjs`, `export-j5-1211.mjs`, `export-video-1311-frames.mjs`, `export-story-1511.mjs`, `export-j1-1611.mjs`
+| Date | Fichiers |
+|------|----------|
+| 30/11 | `STORY_30-11_01_signature.png` · `STORY_30-11_02_lien.png` |
+| 2/12 | `POST_02-12_regle-2-PUBLIER.png` |
+| 4/12 | `POST_04-12_J-20-PUBLIER.png` |
+| 5/12 | `FRAME_0512_01_pas-tout-conakry.png` … `04_reserve.png` |
+| 9/12 | `POST_09-12_regle-3-PUBLIER.png` |
 
-Regénérer 17/11 : `export-video-1711-frames.mjs` · `export-carousel-1711.mjs` · `export-story-1711.mjs`
+Regénérer le lot : `node scripts/export-lot-a-nov-dec.mjs` · Fiche : `fiches/17-LOT-A-30-11-09-12.md` · Plan : `PLAN-LOTS-PUBLICATION.md`
 
-**Pas encore validé côté montage :** export **.mp4** CapCut (5/11, 6/11, 13/11, 17/11, 21/11, **28/11**).
+**Lots suivants :** B terrain 7–16/12 · C 17–23/12 · D 24/12
+
+**Montages .mp4** (CapCut) : 5/11, 6/11, 13/11, 17/11, 21/11, 28/11, **5/12** + lancement 24/12 (Lot D).
