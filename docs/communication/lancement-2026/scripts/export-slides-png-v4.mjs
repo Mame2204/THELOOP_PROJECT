@@ -18,7 +18,7 @@ await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
 const labels = await page.$$eval('.label', (els) => els.map((e) => e.textContent?.trim() ?? ''));
 const slides = await page.$$('.c');
 
-const aliases = ['POST_3-11_feed-v2.png', 'POST_3-11_reels-v2.png', 'POST_5-11_citation-v2.png'];
+const aliases = ['POST_3-11_feed-final.png', 'POST_3-11_reels-v2.png', 'POST_5-11_citation-v2.png'];
 
 for (let i = 0; i < slides.length; i++) {
   const safe = (labels[i] ?? `slide-${i}`).replace(/[^\w\-]+/g, '_').slice(0, 55);

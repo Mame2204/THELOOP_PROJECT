@@ -156,6 +156,47 @@
       font-weight: 700;
       letter-spacing: 0.06em;
     }
+    .stamp {
+      position: absolute;
+      top: 92px;
+      right: 72px;
+      z-index: 4;
+      border: 2px solid var(--gold);
+      color: var(--deep);
+      font-size: 17px;
+      letter-spacing: 0.22em;
+      padding: 14px 22px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      font-weight: 800;
+    }
+    .pillars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+    .pillars span {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: rgba(15,122,142, 0.1);
+      border: 1px solid rgba(15,122,142, 0.18);
+    }
+    .sig-line {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(15,122,142, 0.12);
+      font-size: 22px;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .sig-line em { color: var(--deep); font-style: normal; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -166,6 +207,7 @@
     <div class="atmo-teal"></div>
     <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
     <div class="blobs"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div></div>
+    <div class="stamp">BIENTÔT</div>
     <div class="inner">
       <div class="mark-row">
         <svg width="48" height="48" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#0A3A44"/></svg>
@@ -176,10 +218,13 @@
         <div class="rule"></div>
         <h1 class="h sm">Vendredi soir.<br />La question revient.</h1>
         <p class="p">Un guide <span class="gold">sélectif</span> se prépare. Liste d’attente · <span class="gold">17 nov.</span></p>
+        <div class="pillars">
+          <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+        </div>
+        <p class="sig-line">Les bonnes adresses ne s'annoncent pas. <em>Elles se transmettent.</em></p>
         <div class="ghost-stack" aria-hidden="true">
           <div class="ghost bar"></div>
           <div class="ghost w90"></div>
-          <div class="ghost w60"></div>
         </div>
       </div>
     </div>

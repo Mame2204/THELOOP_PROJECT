@@ -7,7 +7,8 @@
 
 ## Fichier source (version validée)
 - HTML : `export-visuels-pack-acte-a-v4-light.html`
-- **Style :** **N1 adouci + micro-teal** (`#f4f9fa → #ecf3f6 → #dceef2`) + atmo légère + carte blanche + squelettes.
+- **Style :** dégradé **v2** (`#ecf4f7 → #c8e3ec → #96c4d4`) + stamp **BIENTÔT** + 4 piliers + signature (sans capture app).
+- **Fichier #1 validé :** `POST_3-11_feed-final.png` (v1/v2 = même fond à ~3 % — pas de différence visible ; **final** = fond v2 + éléments ajoutés).
 
 ## Pourquoi tous les visuels changent en même temps ?
 Un seul fichier **`export-visuels-pack-acte-a-v4-light.html`** contient **3 slides** (3/11 feed, Reels, 5/11). Quand on modifie le **fond** (CSS) et qu’on lance `export-slides-png-v4.mjs`, les PNG **`01_`, `02_`, `03_`** sont **regénérés** — même fond sur tout le pack.  
