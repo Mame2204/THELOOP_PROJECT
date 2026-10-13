@@ -23,6 +23,8 @@
 | Règle 3/3 9/12 | `waitlist_open_2026` | Facebook | Image | `facebook` | `image` | `regle3_0912` |
 | Teasing | `teasing_2026` | Instagram (secondaire) | Vidéo | `instagram` | `video` | `mirror_fb_*` |
 | Pré-launch 17/12 | `prelaunch_2026` | E-mail | Invitation auto | `email` | `invite` | `batch_100` |
+| Story J-3 21/12 | `launch_2026` | Facebook | Story | `facebook` | `story` | `j3_2112` |
+| Teaser 23/12 | `launch_2026` | Facebook | Carrousel | `facebook` | `carousel` | `launch_teaser_2312` |
 | Lancement 24/12 | `launch_2026` | Facebook | Vidéo | `facebook` | `video` | `noel_2412` |
 | Terrain 7–16/12 | `terrain_gn_2026` | Facebook | Story | `facebook` | `story` | `jour_07` … `jour_16` |
 

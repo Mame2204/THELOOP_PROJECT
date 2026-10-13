@@ -1,6 +1,6 @@
 # Lot B — Stories terrain 7/12 → 16/12/2026
 
-**Statut lot :** **Prêt à valider** · **31 frames** · plan : `PLAN-LOTS-PUBLICATION.md`
+**Statut lot :** **Validé** · **31 frames** · plan : `PLAN-LOTS-PUBLICATION.md`
 
 Regénérer : `node docs/communication/lancement-2026/scripts/export-terrain-7-16.mjs`
 

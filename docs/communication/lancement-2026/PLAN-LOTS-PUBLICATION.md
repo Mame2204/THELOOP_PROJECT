@@ -5,8 +5,8 @@ Chaque lot = un bloc à valider d’un coup · PNG dans `exports-png-v4-light/` 
 | Lot | Période | Contenu | Statut |
 |-----|---------|---------|--------|
 | **A** | 30/11 → 9/12 | Fin Acte B liste : story signature · règles 2/3 & 3/3 · J-20 · vidéo anti-annuaire | **Validé** · `17-LOT-A-30-11-09-12.md` |
-| **B** | 7/12 → 16/12 | Stories terrain quotidiennes (10 j × ~3 frames) · UTM `terrain_gn_2026` · `jour_07`…`jour_16` | **Prêt à valider** · `18-LOT-B-terrain-7-16.md` |
-| **C** | 17/12 → 23/12 | Pré-launch 100 · story J-3 (21/12) · carrousel teaser Noël | À faire |
+| **B** | 7/12 → 16/12 | Stories terrain quotidiennes (10 j × ~3 frames) · UTM `terrain_gn_2026` · `jour_07`…`jour_16` | **Validé** · `18-LOT-B-terrain-7-16.md` |
+| **C** | 17/12 → 23/12 | Pré-launch 100 · story J-3 (21/12) · carrousel teaser Noël | **Prêt à valider** · `19-LOT-C-17-23-12.md` |
 | **D** | 24/12 | Vidéo lancement + 5 stories Jour J · UTM `launch_2026` | À faire |
 
 ## Lot A — détail (fiches #17–#21)
