@@ -1,6 +1,6 @@
 # Visuels validés — Acte A (#1 → #3 + story 8/11)
 
-Dossier unique : **`exports-png-v4-light/`** (15 fichiers, pas de doublons).
+Dossier unique : **`exports-png-v4-light/`** (19 fichiers, pas de doublons).
 
 | Date | Fichier | Usage |
 |------|---------|--------|
@@ -15,19 +15,14 @@ Dossier unique : **`exports-png-v4-light/`** (15 fichiers, pas de doublons).
 | 8/11 | `STORY_8-11_01_marque.png` | Story 1/3 |
 | 8/11 | `STORY_8-11_02_piliers.png` | Story 2/3 |
 | 8/11 | `STORY_8-11_03_17nov.png` | Story 3/3 |
+| 11/11 | `CARROUSEL_11-11_01_ne-liste-pas-tout.png` | Carrousel 1/4 |
+| 11/11 | `CARROUSEL_11-11_02_respire.png` | Carrousel 2/4 |
+| 11/11 | `CARROUSEL_11-11_03_plus-value.png` | Carrousel 3/4 |
+| 11/11 | `CARROUSEL_11-11_04_en-clair-17nov.png` | Carrousel 4/4 |
 
 Regénérer #1–#2 : `node scripts/export-slides-png-v4.mjs`  
 Regénérer #3 : `node scripts/export-video-0611-frames.mjs`  
 Regénérer story 8/11 : `node scripts/export-story-0811.mjs`  
 Regénérer carrousel 11/11 : `node scripts/export-carousel-1111.mjs`
-
-### Carrousel 11/11 (à valider)
-
-| Fichier |
-|---------|
-| `CARROUSEL_11-11_01_ne-liste-pas-tout.png` |
-| `CARROUSEL_11-11_02_respire.png` |
-| `CARROUSEL_11-11_03_plus-value.png` |
-| `CARROUSEL_11-11_04_en-clair-17nov.png` |
 
 **Pas encore validé par toi :** export **.mp4** après montage CapCut (#2 et #6).
