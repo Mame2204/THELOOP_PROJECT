@@ -1,5 +1,7 @@
 # Visuels validés — lancement com 2026
 
+**Calendrier 3/11 → 24/12 : complet · 126 PNG · tous lots validés.**
+
 Dossier unique : **`exports-png-v4-light/`**
 
 ## Acte A — validés (31 PNG)
@@ -104,7 +106,7 @@ Regénérer : `node scripts/export-terrain-7-16.mjs`
 
 Regénérer : `node scripts/export-lot-c-dec.mjs` · Fiche : `fiches/19-LOT-C-17-23-12.md`
 
-## Lot D — à valider (11 PNG) · 24/12 lancement
+## Lot D — validé (11 PNG) · 24/12 lancement
 
 | Type | Fichiers |
 |------|----------|
