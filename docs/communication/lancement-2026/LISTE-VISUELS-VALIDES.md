@@ -1,6 +1,8 @@
-# Visuels validés — Acte A (→ 13/11)
+# Visuels validés — Acte A (→ 16/11) + Acte B 17/11 (à valider)
 
-Dossier unique : **`exports-png-v4-light/`** (27 fichiers, pas de doublons).
+Dossier unique : **`exports-png-v4-light/`**
+
+## Acte A — validés (31 PNG)
 
 | Date | Fichier | Usage |
 |------|---------|--------|
@@ -21,17 +23,29 @@ Dossier unique : **`exports-png-v4-light/`** (27 fichiers, pas de doublons).
 | 11/11 | `CARROUSEL_11-11_04_en-clair-17nov.png` | Carrousel 4/4 |
 | 12/11 | `POST_12-11_J-5-PUBLIER.png` | Feed J-5 |
 | 13/11 | `FRAME_1311_01_envie.png` … `07_17nov.png` | Vidéo CapCut (7 plans) |
+| 15/11 | `STORY_15-11_01_J-2.png` | Story J-2 |
+| 15/11 | `STORY_15-11_02_100-places.png` | Story |
+| 15/11 | `STORY_15-11_03_mardi-reserve.png` | Story |
+| 16/11 | `POST_16-11_J-1-PUBLIER.png` | Feed J-1 |
 
 Regénérer #1–#2 : `node scripts/export-slides-png-v4.mjs`  
 Regénérer #3 : `node scripts/export-video-0611-frames.mjs`  
 Regénérer story 8/11 : `node scripts/export-story-0811.mjs`  
 Regénérer carrousel 11/11 : `node scripts/export-carousel-1111.mjs`  
 Regénérer J-5 12/11 : `node scripts/export-j5-1211.mjs`  
-Regénérer vidéo 13/11 : `node scripts/export-video-1311-frames.mjs`
+Regénérer vidéo 13/11 : `node scripts/export-video-1311-frames.mjs`  
+Regénérer story 15/11 : `node scripts/export-story-1511.mjs`  
+Regénérer J-1 16/11 : `node scripts/export-j1-1611.mjs`
 
-### Story 15/11 + J-1 16/11 (à valider)
-`STORY_15-11_01_J-2.png` · `02_100-places.png` · `03_mardi-reserve.png` · `POST_16-11_J-1-PUBLIER.png`
+## Acte B — 17/11 (prêt à valider · 16 PNG)
 
-Regénérer : `node scripts/export-story-1511.mjs` · `node scripts/export-j1-1611.mjs`
+| Type | Fichiers |
+|------|----------|
+| Vidéo | `FRAME_1711_01_chaos.png` … `08_reserve.png` |
+| Carrousel | `CARROUSEL_17-11_01_liste-ouverte.png` … `05_reserve.png` |
+| Story | `STORY_17-11_01_ouvert.png` · `02_100-places.png` · `03_lien.png` |
 
-**Pas encore validé par toi :** export **.mp4** après montage CapCut (vidéos 5/11, 6/11, 13/11).
+Regénérer : `node scripts/export-video-1711-frames.mjs` · `export-carousel-1711.mjs` · `export-story-1711.mjs`  
+Fiche : `fiches/10-2026-11-17.md`
+
+**Pas encore validé par toi :** export **.mp4** après montage CapCut (vidéos 5/11, 6/11, 13/11, **17/11**).

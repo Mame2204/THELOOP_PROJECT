@@ -35,7 +35,7 @@ The Loop ouvre sa liste : **100 premières places** pour l’accès anticipé (1
 Spots · Agenda · Parcours · Outils — Conakry, en clair.
 
 **Réserve ta place** → theloop-app.com  
-(Lien avec UTM `fb_opening_1711` — voir grille UTM.)
+(Lien UTM vidéo : `utm_campaign=waitlist_open_2026` · `utm_content=frequence_1711` — voir `utm-grille.md`.)
 
 **Commentaire épinglé (optionnel) :**  
 « Accès anticipé » = invitation e-mail automatique le 17/12, sous réserve des tests. Pas de nom de lieu publié sans accord écrit.
