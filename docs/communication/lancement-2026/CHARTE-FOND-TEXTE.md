@@ -8,15 +8,14 @@
 ## Fichier source (version validée)
 - HTML : `export-visuels-pack-acte-a-v4-light.html`
 - **Style :** dégradé **v2** (`#ecf4f7 → #c8e3ec → #96c4d4`) + bandeau **Liste · 17 nov.** + stamp **BIENTÔT** + 4 piliers + signature (sans capture app).
-- **Fichier #1 à poster :** `POST_3-11_feed-PUBLIER-3nov.png` (alias `POST_3-11_feed-final.png`).
-- **Ne pas confondre :** `POST_3-11_feed-v2.png` = **uniquement** le fond teal (+3 %) — **aucun** bandeau / tampon / piliers. Comparaison visuelle : `GUIDE_DIFF_feed-v2-vs-PUBLIER-3nov.png`.
+- **Fichier #1 à poster :** `POST_3-11_feed-PUBLIER-3nov.png`
+- **Inventaire validé :** `LISTE-VISUELS-VALIDES.md`
 
 ## Pourquoi tous les visuels changent en même temps ?
 Un seul fichier **`export-visuels-pack-acte-a-v4-light.html`** contient **7 slides** (#1 feed + Reels, #2 feed + Reels/story + 3 story). Quand on modifie le **fond** (CSS) et qu’on lance `export-slides-png-v4.mjs`, **tous** les PNG du pack sont **regénérés** — même fond partout.  
 Les images vues **plus haut dans le chat** = anciennes captures à un instant T ; seuls comptent les fichiers **téléchargés** depuis `exports-png-v4-light/` après le dernier export.  
 **Astuce :** enregistre sur ton tel avec un nom (`loop-3nov-v1.png`) quand tu valides une version.
 - PNG : `exports-png-v4-light/` — `01_`, `02_`, `03_`
-- Ignorer `COMPARAISON_NIVEAU_*` (tests).
 - Regénérer : `node scripts/export-slides-png-v4.mjs`
 
 ## Recette visuelle

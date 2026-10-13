@@ -1,21 +1,12 @@
 # Télécharger les visuels sur téléphone
 
-Branche : `cursor/com-lancement-video-1711-3dfe`
+Branche : `cursor/com-lancement-video-1711-3dfe`  
+Dossier : **`exports-png-v4-light/`** — liste complète dans `LISTE-VISUELS-VALIDES.md`
 
-**Dossier PNG (v2) — appuie long → enregistrer l’image :**
+Base GitHub :
+https://github.com/Mame2204/THELOOP_PROJECT/tree/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v4-light
 
-Base GitHub (liste des fichiers) :
-https://github.com/Mame2204/THELOOP_PROJECT/tree/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v2
+**Exemples raw (remplace le nom de fichier) :**
+https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/c584c49/docs/communication/lancement-2026/exports-png-v4-light/POST_3-11_feed-PUBLIER-3nov.png
 
-**Liens directs (raw) — contenus #1 à #3 :**
-
-1. https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v2/01_3_11_Feed_hook_dilemma.png
-
-2. https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v2/02_3_11_Reels_9_16_m_me_hook_.png
-
-3. https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v2/03_5_11_Citation_sur_photo.png
-
-**Aperçu scroll (HTML) :**
-https://github.com/Mame2204/THELOOP_PROJECT/blob/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/apercu-mobile-v2.html
-
-**Fiches contenu :** dossier `fiches/` (markdown lisible sur GitHub app).
+**Fiches contenu :** `fiches/01` … `03` + scripts vidéo `video-0511-*.md`, `video-0611-*.md`

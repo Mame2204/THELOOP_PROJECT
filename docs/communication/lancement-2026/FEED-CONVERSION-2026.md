@@ -48,4 +48,5 @@
 ## Pack visuel
 
 - **v1** : typographique (archive)
-- **v2** : `export-visuels-pack-feed-v2.html` + `exports-png-v2/` — **à publier**
+- **Acte A (nov.)** : `export-visuels-pack-acte-a-v4-light.html` + `exports-png-v4-light/` — **validé #1–#3**
+- **Pack capture plein écran (v2 HTML)** : reporter ≥ **17/12** (pas Acte A)
