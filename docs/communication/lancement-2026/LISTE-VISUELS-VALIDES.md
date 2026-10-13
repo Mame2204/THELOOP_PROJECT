@@ -53,13 +53,21 @@ Regénérer : `node scripts/export-video-2111-frames.mjs` · Fiche : `fiches/12-
 
 Regénérer : `node scripts/export-story-2211.mjs` · Fiche : `fiches/13-2026-11-22.md`
 
-## 25/11 — à valider (1 PNG)
+## 25/11 validé (1 PNG)
 
 | Date | Fichier |
 |------|---------|
 | 25/11 | `POST_25-11_regle-1-PUBLIER.png` |
 
 Regénérer : `node scripts/export-regle-2511.mjs` · Fiche : `fiches/14-2026-11-25.md`
+
+## 26/11 — à valider (5 PNG)
+
+| Type | Fichiers |
+|------|----------|
+| Carrousel | `CARROUSEL_26-11_01_spots.png` … `05_reserve.png` |
+
+Regénérer : `node scripts/export-carousel-2611.mjs` · Fiche : `fiches/15-2026-11-26.md`
 
 ---
 
