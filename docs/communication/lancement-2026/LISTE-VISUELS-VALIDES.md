@@ -94,7 +94,7 @@ Regénérer le lot : `node scripts/export-lot-a-nov-dec.mjs` · Fiche : `fiches/
 Préfixe `STORY_07-12_*` … `STORY_16-12_*` · fiche `fiches/18-LOT-B-terrain-7-16.md`  
 Regénérer : `node scripts/export-terrain-7-16.mjs`
 
-## Lot C — à valider (7 PNG) · 17/12 · 21/12 · 23/12
+## Lot C — validé (7 PNG) · 17/12 · 21/12 · 23/12
 
 | Date | Fichiers |
 |------|----------|
