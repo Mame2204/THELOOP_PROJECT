@@ -7,7 +7,7 @@
 
 ## Fichier source (version validée)
 - HTML : `export-visuels-pack-acte-a-v4-light.html`
-- **Style :** dégradé **bleu-vert renforcé** (pas le très clair initial) + atmo floue + carte blanche + squelettes.
+- **Style :** dégradé **niveau 2** (`#a8dce8 → #5eb3c4 → #3a9aad → #0f7a8e`) + atmo floue + carte blanche + squelettes.
 - PNG : `exports-png-v4-light/` — `01_`, `02_`, `03_`
 - Ignorer `COMPARAISON_NIVEAU_*` (tests).
 - Regénérer : `node scripts/export-slides-png-v4.mjs`
