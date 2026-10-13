@@ -37,13 +37,21 @@ Fiche : `fiches/10-2026-11-17.md`
 
 Regénérer : `node scripts/export-merci-1911.mjs` · Fiche : `fiches/11-2026-11-19.md`
 
-## 21/11 — à valider (6 PNG)
+## 21/11 validé (6 PNG)
 
 | Type | Fichiers |
 |------|----------|
 | Vidéo | `FRAME_2111_01_conakry-avance.png` … `06_reserve.png` |
 
 Regénérer : `node scripts/export-video-2111-frames.mjs` · Fiche : `fiches/12-2026-11-21.md`
+
+## 22/11 — à valider (2 PNG)
+
+| Type | Fichiers |
+|------|----------|
+| Story | `STORY_22-11_01_sondage.png` · `STORY_22-11_02_reserve.png` |
+
+Regénérer : `node scripts/export-story-2211.mjs` · Fiche : `fiches/13-2026-11-22.md`
 
 ---
 
