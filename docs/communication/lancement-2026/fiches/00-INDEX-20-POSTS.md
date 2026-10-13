@@ -12,6 +12,7 @@
 | 8 | 15/11 | Story | `08-2026-11-15.md` | `STORY_15-11_01`…`03` |
 | 9 | 16/11 | Image | `09-2026-11-16.md` | `POST_16-11_J-1-PUBLIER.png` |
 | 10 | 17/11 | Vidéo + carrousel + story | `10-2026-11-17.md` | `FRAME_1711_*` · `CARROUSEL_17-11_*` · `STORY_17-11_*` |
-| 9–20 | … | voir calendrier-chronologique-complet.md | | |
+| 11 | 19/11 | Image | `11-2026-11-19.md` | `POST_19-11_merci-PUBLIER.png` |
+| 12–20 | … | voir calendrier-chronologique-complet.md | | |
 
 Stories : 8/11, 15/11, 22/11, 30/11, 7–16/12, 21/12, 24/12.
