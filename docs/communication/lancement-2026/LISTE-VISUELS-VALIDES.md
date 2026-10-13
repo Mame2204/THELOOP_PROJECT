@@ -104,6 +104,13 @@ Regénérer : `node scripts/export-terrain-7-16.mjs`
 
 Regénérer : `node scripts/export-lot-c-dec.mjs` · Fiche : `fiches/19-LOT-C-17-23-12.md`
 
-**Lot D :** 24/12 lancement (vidéo + stories)
+## Lot D — à valider (11 PNG) · 24/12 lancement
+
+| Type | Fichiers |
+|------|----------|
+| Vidéo | `FRAME_2412_01_24dec.png` … `06_signature.png` |
+| Story | `STORY_24-12_01_ouvert.png` … `05_merci.png` |
+
+Regénérer : `node scripts/export-lot-d-2412.mjs` · Fiche : `fiches/20-LOT-D-24-12.md`
 
 **Montages .mp4** (CapCut) : 5/11, 6/11, 13/11, 17/11, 21/11, 28/11, **5/12** + lancement 24/12 (Lot D).

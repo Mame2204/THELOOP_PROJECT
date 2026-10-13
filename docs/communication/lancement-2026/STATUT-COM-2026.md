@@ -16,7 +16,7 @@
 
 | Item | Détail |
 |------|--------|
-| **Lot D — 24/12** | Vidéo lancement « Cadeau de Noël » (~6 frames) + **5 stories** Jour J · UTM `noel_2412` · **pas encore généré** |
+| **Lot D — 24/12** | Livré · **11 PNG** + SRT · fiche `20-LOT-D-24-12.md` · **à valider** |
 
 ## Hors repo (toi / Meta / CapCut)
 

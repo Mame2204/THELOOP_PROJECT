@@ -21,6 +21,6 @@
 | Lot A | 30/11–9/12 | Story + feed + vidéo | `17-LOT-A-30-11-09-12.md` | 10 PNG · validé |
 | Lot B | 7/12–16/12 | Stories terrain | `18-LOT-B-terrain-7-16.md` | 31 PNG · validé |
 | Lot C | 17–23/12 | pré-launch · J-3 · carrousel | `19-LOT-C-17-23-12.md` | 7 PNG · `export-lot-c-dec.mjs` |
-| Lot D | 24/12 | Lancement | `PLAN-LOTS-PUBLICATION.md` | à venir |
+| Lot D | 24/12 | Lancement | `20-LOT-D-24-12.md` | 11 PNG · `export-lot-d-2412.mjs` |
 
 Stories : 8/11, 15/11, 22/11, 30/11, 7–16/12, 21/12, 24/12.
