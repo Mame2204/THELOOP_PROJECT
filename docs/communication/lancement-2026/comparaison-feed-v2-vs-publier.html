@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Diff v2 teal vs PUBLIER</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; font-family: Manrope, sans-serif; background: #1a1a1a; padding: 24px; }
+    h1 { color: #fff; text-align: center; font-size: 28px; letter-spacing: 0.08em; margin-bottom: 8px; }
+    p.sub { color: #aaa; text-align: center; font-size: 18px; max-width: 900px; margin: 0 auto 32px; line-height: 1.5; }
+    .row { display: flex; gap: 24px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+    .panel { width: 520px; }
+    .tag {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .tag.old { background: #555; }
+    .tag.new { background: #0f7a8e; }
+    .panel img { width: 100%; height: auto; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.45); }
+    .bullets {
+      color: #ddd;
+      font-size: 16px;
+      line-height: 1.55;
+      margin-top: 16px;
+      padding: 16px;
+      background: #2a2a2a;
+      border-radius: 10px;
+    }
+    .bullets strong { color: #e6b93a; }
+  </style>
+</head>
+<body>
+  <h1>Post #1 — pourquoi v2 ≈ final ?</h1>
+  <p class="sub">À gauche : <strong>feed-v2</strong> = même carte, fond teal un peu plus marqué (écart ~3 %). À droite : <strong>PUBLIER</strong> = bandeau + BIENTÔT + piliers + signature.</p>
+  <div class="row" id="compare">
+    <div class="panel">
+      <div class="tag old">POST_3-11_feed-v2.png · fond seulement</div>
+      <img src="exports-png-v4-light/POST_3-11_feed-v2.png" alt="v2" />
+      <div class="bullets">Pas de bandeau teal en haut.<br />Pas de tampon <strong>BIENTÔT</strong>.<br />Pas des pills Spots / Agenda / Parcours / Outils.<br />Pas de ligne signature sous le texte.</div>
+    </div>
+    <div class="panel">
+      <div class="tag new">POST_3-11_feed-PUBLIER-3nov.png · à poster</div>
+      <img src="exports-png-v4-light/POST_3-11_feed-PUBLIER-3nov.png" alt="publier" />
+      <div class="bullets">Bandeau <strong>Liste d’attente · 17 novembre</strong>.<br />Tampon <strong>BIENTÔT</strong> (or).<br />4 piliers blancs bordure or.<br />Signature en italique.</div>
+    </div>
+  </div>
+</body>
+</html>

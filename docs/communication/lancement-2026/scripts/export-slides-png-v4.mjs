@@ -12,13 +12,19 @@ fs.mkdirSync(outDir, { recursive: true });
 fs.mkdirSync(artifactsDir, { recursive: true });
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1200, height: 2200 } });
+const page = await browser.newPage({ viewport: { width: 1200, height: 2100 } });
 await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(400);
 
 const labels = await page.$$eval('.label', (els) => els.map((e) => e.textContent?.trim() ?? ''));
-const slides = await page.$$('.c');
+/** `.c` matchait aussi `.blob.c` → exports Reels corrompus (~3 Ko). */
+const slides = await page.$$('.slide');
 
-const aliases = ['POST_3-11_feed-final.png', 'POST_3-11_reels-v2.png', 'POST_5-11_citation-v2.png'];
+const aliases = [
+  ['POST_3-11_feed-PUBLIER-3nov.png', 'POST_3-11_feed-final.png'],
+  ['POST_3-11_reels-PUBLIER-3nov.png', 'POST_3-11_reels-v2.png'],
+  ['POST_5-11_citation-v2.png'],
+];
 
 for (let i = 0; i < slides.length; i++) {
   const safe = (labels[i] ?? `slide-${i}`).replace(/[^\w\-]+/g, '_').slice(0, 55);
@@ -26,9 +32,9 @@ for (let i = 0; i < slides.length; i++) {
   const dest = path.join(outDir, name);
   await slides[i].screenshot({ path: dest });
   fs.copyFileSync(dest, path.join(artifactsDir, name));
-  if (aliases[i]) {
-    fs.copyFileSync(dest, path.join(outDir, aliases[i]));
-    fs.copyFileSync(dest, path.join(artifactsDir, aliases[i]));
+  for (const alias of aliases[i] ?? []) {
+    fs.copyFileSync(dest, path.join(outDir, alias));
+    fs.copyFileSync(dest, path.join(artifactsDir, alias));
   }
 }
 
