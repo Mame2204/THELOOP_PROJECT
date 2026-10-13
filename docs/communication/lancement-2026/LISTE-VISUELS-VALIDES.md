@@ -45,13 +45,21 @@ Regénérer : `node scripts/export-merci-1911.mjs` · Fiche : `fiches/11-2026-11
 
 Regénérer : `node scripts/export-video-2111-frames.mjs` · Fiche : `fiches/12-2026-11-21.md`
 
-## 22/11 — à valider (2 PNG)
+## 22/11 validé (2 PNG)
 
 | Type | Fichiers |
 |------|----------|
 | Story | `STORY_22-11_01_sondage.png` · `STORY_22-11_02_reserve.png` |
 
 Regénérer : `node scripts/export-story-2211.mjs` · Fiche : `fiches/13-2026-11-22.md`
+
+## 25/11 — à valider (1 PNG)
+
+| Date | Fichier |
+|------|---------|
+| 25/11 | `POST_25-11_regle-1-PUBLIER.png` |
+
+Regénérer : `node scripts/export-regle-2511.mjs` · Fiche : `fiches/14-2026-11-25.md`
 
 ---
 
