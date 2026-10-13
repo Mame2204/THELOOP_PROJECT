@@ -11,8 +11,8 @@
       --teal-mid: #1596ad;
       --teal-light: #a8d9e4;
       --gold: #e6b93a;
-      --bg: #dff0f4;
-      --bg2: #b5dde8;
+      --bg: #c8e8ef;
+      --bg2: #8ecbd9;
       --card: #ffffff;
       --muted: #4a6570;
     }
@@ -24,7 +24,7 @@
       margin: 0 auto 16px;
       position: relative;
       overflow: hidden;
-      background: linear-gradient(155deg, var(--bg) 0%, var(--bg2) 42%, var(--teal-light) 78%, rgba(15,122,142,0.35) 100%);
+      background: linear-gradient(150deg, var(--bg) 0%, var(--bg2) 38%, #6eb8c9 72%, rgba(15,122,142,0.55) 100%);
       color: var(--deep);
     }
     .c.reel { height: 1920px; }
@@ -34,13 +34,14 @@
       inset: -20%;
       background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat;
       filter: blur(52px) saturate(1.25) brightness(1.05) hue-rotate(-8deg);
-      opacity: 0.42;
+      opacity: 0.48;
     }
     .atmo-teal {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 90% 70% at 70% 20%, rgba(15,122,142,0.28), transparent 55%),
-        radial-gradient(ellipse 80% 60% at 10% 80%, rgba(21,150,173,0.22), transparent 50%);
+      background: radial-gradient(ellipse 95% 75% at 75% 15%, rgba(15,122,142,0.38), transparent 52%),
+        radial-gradient(ellipse 85% 65% at 8% 85%, rgba(21,150,173,0.32), transparent 48%),
+        linear-gradient(180deg, rgba(15,122,142,0.08) 0%, rgba(15,122,142,0.18) 100%);
       pointer-events: none;
       z-index: 1;
     }
@@ -50,7 +51,7 @@
       top: 180px;
       width: 520px;
       height: 520px;
-      opacity: 0.07;
+      opacity: 0.1;
       z-index: 1;
     }
     .blobs {
@@ -63,9 +64,9 @@
       border-radius: 50%;
       filter: blur(2px);
     }
-    .blob.a { width: 480px; height: 480px; background: rgba(15,122,142,0.26); top: -100px; right: -120px; }
-    .blob.b { width: 320px; height: 320px; background: rgba(21,150,173,0.2); bottom: 180px; left: -80px; }
-    .blob.c { width: 200px; height: 200px; background: rgba(15,122,142,0.18); top: 45%; left: 55%; }
+    .blob.a { width: 520px; height: 520px; background: rgba(15,122,142,0.34); top: -110px; right: -130px; }
+    .blob.b { width: 360px; height: 360px; background: rgba(21,150,173,0.28); bottom: 160px; left: -90px; }
+    .blob.c { width: 240px; height: 240px; background: rgba(15,122,142,0.26); top: 42%; left: 52%; }
     .inner {
       position: relative;
       z-index: 2;
@@ -80,7 +81,7 @@
       border-radius: 28px;
       padding: 56px 52px;
       box-shadow: 0 24px 64px rgba(15,122,142,0.14);
-      border: 1px solid rgba(15,122,142,0.12);
+      border: 1px solid rgba(15,122,142,0.2);
       margin-top: auto;
       margin-bottom: auto;
     }
