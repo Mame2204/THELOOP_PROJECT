@@ -8,11 +8,13 @@
     :root {
       --deep: #0a3a44;
       --teal: #0f7a8e;
+      --teal-mid: #1596ad;
+      --teal-light: #a8d9e4;
       --gold: #e6b93a;
-      --bg: #eef6f8;
-      --bg2: #dceef2;
+      --bg: #a8dce8;
+      --bg2: #5eb3c4;
       --card: #ffffff;
-      --muted: #5a7278;
+      --muted: #4a6570;
     }
     body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
     .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
@@ -22,7 +24,7 @@
       margin: 0 auto 16px;
       position: relative;
       overflow: hidden;
-      background: linear-gradient(165deg, var(--bg) 0%, var(--bg2) 55%, #c5e0e8 100%);
+      background: linear-gradient(145deg, var(--bg) 0%, var(--bg2) 35%, #3a9aad 68%, #0f7a8e 100%);
       color: var(--deep);
     }
     .c.reel { height: 1920px; }
@@ -31,8 +33,26 @@
       position: absolute;
       inset: -20%;
       background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat;
-      filter: blur(48px) saturate(0.85) brightness(1.15);
-      opacity: 0.35;
+      filter: blur(52px) saturate(1.25) brightness(1.05) hue-rotate(-8deg);
+      opacity: 0.52;
+    }
+    .atmo-teal {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 100% 80% at 80% 10%, rgba(10,58,68,0.25), transparent 50%),
+        radial-gradient(ellipse 90% 70% at 5% 90%, rgba(15,122,142,0.45), transparent 45%),
+        linear-gradient(180deg, rgba(15,122,142,0.15) 0%, rgba(10,58,68,0.28) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .watermark {
+      position: absolute;
+      right: -120px;
+      top: 180px;
+      width: 520px;
+      height: 520px;
+      opacity: 0.14;
+      z-index: 1;
     }
     .blobs {
       position: absolute;
@@ -44,8 +64,9 @@
       border-radius: 50%;
       filter: blur(2px);
     }
-    .blob.a { width: 420px; height: 420px; background: rgba(15,122,142,0.12); top: -80px; right: -100px; }
-    .blob.b { width: 280px; height: 280px; background: rgba(230,185,58,0.14); bottom: 200px; left: -60px; }
+    .blob.a { width: 560px; height: 560px; background: rgba(10,58,68,0.22); top: -120px; right: -140px; }
+    .blob.b { width: 400px; height: 400px; background: rgba(15,122,142,0.38); bottom: 140px; left: -100px; }
+    .blob.c { width: 280px; height: 280px; background: rgba(21,150,173,0.35); top: 40%; left: 50%; }
     .inner {
       position: relative;
       z-index: 2;
@@ -55,12 +76,12 @@
       flex-direction: column;
     }
     .card {
-      background: rgba(255,255,255,0.88);
-      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(16px);
       border-radius: 28px;
       padding: 56px 52px;
-      box-shadow: 0 20px 60px rgba(10,58,68,0.08);
-      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 28px 72px rgba(10,58,68,0.22);
+      border: 1px solid rgba(15,122,142,0.28);
       margin-top: auto;
       margin-bottom: auto;
     }
@@ -140,7 +161,9 @@
   <div class="label">#1 — 3/11 · Feed · clair + atmosphère (sans contenu lisible)</div>
   <div class="c">
     <div class="atmo"></div>
-    <div class="blobs"><div class="blob a"></div><div class="blob b"></div></div>
+    <div class="atmo-teal"></div>
+    <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="blobs"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div></div>
     <div class="inner">
       <div class="mark-row">
         <svg width="48" height="48" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#0A3A44"/></svg>
@@ -163,7 +186,8 @@
   <div class="label">#1 · Reels 9:16</div>
   <div class="c reel">
     <div class="atmo"></div>
-    <div class="blobs"><div class="blob b" style="top:120px;right:-40px"></div></div>
+    <div class="atmo-teal"></div>
+    <div class="blobs"><div class="blob a"></div><div class="blob b" style="top:120px;right:-40px"></div></div>
     <div class="inner" style="justify-content:flex-end;padding-bottom:160px">
       <div class="card">
         <p class="ey">The Loop</p>
@@ -176,7 +200,8 @@
 
   <div class="label">#2 — 5/11 · Signature · clair</div>
   <div class="c">
-    <div class="atmo" style="opacity:0.25;background-position:center 60%"></div>
+    <div class="atmo" style="background-position:center 60%"></div>
+    <div class="atmo-teal"></div>
     <div class="inner" style="justify-content:center">
       <div class="card" style="text-align:center">
         <p class="quote">« Les bonnes adresses ne s'annoncent pas. »</p>
