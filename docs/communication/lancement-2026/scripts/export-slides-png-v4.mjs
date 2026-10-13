@@ -18,11 +18,18 @@ await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
 const labels = await page.$$eval('.label', (els) => els.map((e) => e.textContent?.trim() ?? ''));
 const slides = await page.$$('.c');
 
+const aliases = ['POST_3-11_feed.png', 'POST_3-11_reels.png', 'POST_5-11_citation.png'];
+
 for (let i = 0; i < slides.length; i++) {
   const safe = (labels[i] ?? `slide-${i}`).replace(/[^\w\-]+/g, '_').slice(0, 55);
   const name = `${String(i + 1).padStart(2, '0')}_${safe}.png`;
-  await slides[i].screenshot({ path: path.join(outDir, name) });
-  fs.copyFileSync(path.join(outDir, name), path.join(artifactsDir, name));
+  const dest = path.join(outDir, name);
+  await slides[i].screenshot({ path: dest });
+  fs.copyFileSync(dest, path.join(artifactsDir, name));
+  if (aliases[i]) {
+    fs.copyFileSync(dest, path.join(outDir, aliases[i]));
+    fs.copyFileSync(dest, path.join(artifactsDir, aliases[i]));
+  }
 }
 
 await browser.close();

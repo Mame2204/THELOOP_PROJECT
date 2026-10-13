@@ -25,7 +25,8 @@
       position: relative;
       overflow: hidden;
       /* N1 adouci + léger renfort teal (micro-assombrissement) */
-      background: linear-gradient(180deg, #f2f8fa 0%, #e8f2f6 46%, #d2e6ef 100%);
+      /* Saut visible (entre « trop adouci » et niveau 2) — validé visuellement sur export */
+      background: linear-gradient(175deg, #eef6f8 0%, #d6ebf0 42%, #b0d4e0 100%);
       color: var(--deep);
     }
     .c.reel { height: 1920px; }
@@ -34,8 +35,8 @@
       position: absolute;
       inset: -20%;
       background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat;
-      filter: blur(48px) saturate(0.84) brightness(1.05) hue-rotate(-3deg);
-      opacity: 0.35;
+      filter: blur(48px) saturate(0.95) brightness(1.02) hue-rotate(-4deg);
+      opacity: 0.4;
     }
     .atmo-teal {
       position: absolute;
