@@ -67,13 +67,13 @@ Sous-titres : `srt/POST_6-11_dilemme.srt`
 
 ## Légende (feed / Reels)
 
-Vendredi soir, la même question revient.
+Vendredi soir, la même question.
 
-**The Loop** prépare un repère **sélectif** pour Conakry — spots, agenda, parcours, outils.
+**The Loop** prépare un guide **sélectif** pour Conakry. Pas un annuaire — un repère.
 
-**Bientôt.** Pas de liste aujourd’hui : on ouvre le **17 novembre**.
+Spots · agenda · parcours · outils — **en clair**, sans fil bruyant.
 
-**Pas de lien.**
+La liste d’attente ouvre le **17 novembre**. D’ici là, pas d’inscription · **pas de lien**.
 
 ---
 

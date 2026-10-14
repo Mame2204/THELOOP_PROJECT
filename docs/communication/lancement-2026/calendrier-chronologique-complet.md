@@ -50,7 +50,7 @@ D’ici là : on tease, on ne vend pas.
 | 0:20–0:28 | Bleu-vert + logo | **The Loop** · **Bientôt.** | The Loop arrive. | Montée |
 | 0:28–0:32 | Carte | **Les bonnes adresses ne s'annoncent pas.** | Elles se transmettent. | Cut |
 
-**Légende :** Vendredi soir, la même question revient. The Loop prépare un repère **sélectif** pour Conakry. **Bientôt** — liste ouverte le **17 novembre**.  
+**Légende :** Vendredi soir, la même question. The Loop prépare un guide **sélectif** pour Conakry. Pas un annuaire — un repère. Liste d’attente : **17 novembre** (pas d’inscription avant · pas de lien).  
 **Lien :** aucun · **UTM :** n/a
 
 ---
