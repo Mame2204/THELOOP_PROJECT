@@ -2,7 +2,7 @@ import { File } from 'expo-file-system';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { Image, Platform } from 'react-native';
+import { Alert, Image, InteractionManager, Platform } from 'react-native';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export type MediaFolder = 'events' | 'spots' | 'gallery';
@@ -228,8 +228,17 @@ export async function cropAndCompressToAspect(
 }
 
 export async function requestImageLibraryPermission(): Promise<boolean> {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  return status === 'granted';
+  const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+  if (current.granted) return true;
+  const { status, canAskAgain } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status === 'granted') return true;
+  if (!canAskAgain && Platform.OS === 'android') {
+    Alert.alert(
+      'Accès aux photos',
+      'Autorisez l’accès aux photos dans Paramètres → THE LOOP pour choisir une image.',
+    );
+  }
+  return false;
 }
 
 export async function pickImageFromLibrary(options?: {
@@ -241,20 +250,34 @@ export async function pickImageFromLibrary(options?: {
   const allowed = await requestImageLibraryPermission();
   if (!allowed) return null;
 
-  const allowsEditing = options?.allowsEditing !== false;
-  const aspect = options?.aspect ?? ([16, 9] as [number, number]);
+  // Pas de recadrage natif (iOS ni Android) : évite IllegalStateException / crop launcher
+  // non enregistré sur Android (Expo SDK 54) et mauvais cadrage iOS. Recadrage 16:9 en JS.
+  void options;
 
-  // iOS : l’éditeur natif centre le cadre et coupe souvent le haut.
-  // On laisse choisir la photo sans crop natif, puis on force 16:9 ancré en haut.
-  // Android : l’éditeur natif fonctionne mieux → on le garde.
-  const useNativeEditor = allowsEditing && Platform.OS === 'android';
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    allowsEditing: useNativeEditor,
-    aspect: useNativeEditor ? aspect : undefined,
-    quality: 1,
+  await new Promise<void>((resolve) => {
+    InteractionManager.runAfterInteractions(() => resolve());
   });
+
+  let result: ImagePicker.ImagePickerResult;
+  try {
+    result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 1,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const staleLauncher =
+      Platform.OS === 'android' &&
+      (msg.includes('IllegalStateException') || msg.includes('unregistered ActivityResultLauncher'));
+    Alert.alert(
+      'Galerie',
+      staleLauncher
+        ? 'Le sélecteur photo a été interrompu. Fermez THE LOOP complètement (pas seulement minimiser), rouvrez l’app, puis réessayez.'
+        : 'Impossible d’ouvrir la galerie. Réessayez ou redémarrez l’application.',
+    );
+    return null;
+  }
 
   if (result.canceled) return null;
   const asset = result.assets?.[0];

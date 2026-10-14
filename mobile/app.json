@@ -52,7 +52,8 @@
         "android.permission.CAMERA",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.READ_MEDIA_IMAGES"
       ],
       "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
