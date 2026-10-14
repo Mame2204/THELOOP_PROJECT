@@ -6,6 +6,9 @@ interface CoverImageProps {
   height: number;
   fallbackColor?: string;
   borderRadius?: number;
+  renderWidth?: number;
+  onDisplayLoad?: () => void;
+  onDisplayError?: () => void;
 }
 
 export function CoverImage({
@@ -13,6 +16,9 @@ export function CoverImage({
   height,
   fallbackColor = '#374151',
   borderRadius = 0,
+  renderWidth = 800,
+  onDisplayLoad,
+  onDisplayError,
 }: CoverImageProps) {
   return (
     <View
@@ -30,7 +36,9 @@ export function CoverImage({
         style={styles.image}
         fallbackColor={fallbackColor}
         resizeMode="cover"
-        renderWidth={800}
+        renderWidth={renderWidth}
+        onDisplayLoad={onDisplayLoad}
+        onDisplayError={onDisplayError}
       />
     </View>
   );
