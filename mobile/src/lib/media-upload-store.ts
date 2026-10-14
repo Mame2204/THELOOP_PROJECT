@@ -68,6 +68,25 @@ export async function ensureReadableFileUri(localUri: string): Promise<string> {
   return normalizeLocalFileUri(converted.uri);
 }
 
+/**
+ * URI garantie pour l’aperçu (Image RN) — sur Android, copie systématique en cache .jpg
+ * (les chemins renvoyés par manipulateAsync / content:// ne se peignent pas toujours en grand 16:9).
+ */
+export async function uriForImagePreview(localUri: string): Promise<string> {
+  const readable = await ensureReadableFileUri(localUri);
+  if (Platform.OS !== 'android') {
+    return readable;
+  }
+
+  const dest = `${LegacyFileSystem.cacheDirectory ?? ''}loop-preview-${Date.now()}.jpg`;
+  try {
+    await LegacyFileSystem.copyAsync({ from: readable, to: dest });
+    return normalizeLocalFileUri(dest);
+  } catch {
+    return readable;
+  }
+}
+
 /** Lit une image locale en ArrayBuffer — compatible Expo 54 (iOS / Android). */
 async function readLocalImageAsArrayBuffer(localUri: string): Promise<ArrayBuffer> {
   const readableUri = await ensureReadableFileUri(localUri);
