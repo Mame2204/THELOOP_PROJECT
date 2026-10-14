@@ -88,7 +88,7 @@ export function ImageUploadField({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Échec du téléversement.';
       Alert.alert('Image', message);
-      if (!hasRemote) setLocalPreview(null);
+      if (!value.trim()) setLocalPreview(null);
     } finally {
       setUploading(false);
     }
