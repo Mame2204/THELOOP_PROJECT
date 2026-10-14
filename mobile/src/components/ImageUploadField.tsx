@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image as RNImage,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { RemoteImage } from '@/components/RemoteImage';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import {
   cropToAspect,
@@ -18,7 +19,7 @@ import {
   uploadContentImage,
   type MediaFolder,
 } from '@/lib/media-upload-store';
-import { resolveRemoteImageUrl } from '@/lib/resolve-image-url';
+import { resolveRemoteImageCandidates } from '@/lib/resolve-image-url';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import type { ShellTheme } from '@/lib/member-grade-theme';
 
@@ -32,10 +33,20 @@ interface Props {
   cropAspect?: [number, number];
 }
 
+function isLocalPreviewUri(uri: string): boolean {
+  const lower = uri.toLowerCase();
+  return (
+    lower.startsWith('file://') ||
+    lower.startsWith('content://') ||
+    lower.startsWith('ph://') ||
+    lower.startsWith('assets-library://')
+  );
+}
+
 /**
  * Champ image admin / partenaire.
- * Aperçu = expo-image avec taille fixe en px (évite hauteur 0 sur Android).
- * Fichier local gardé en dessous jusqu’à ce que l’URL Storage ait peint (onLoad).
+ * Aperçu local : Image RN (file:// fiable en grand 16:9 sur Android).
+ * URL Storage : RemoteImage (candidats https/http), après prefetch ou sans aperçu local.
  */
 export function ImageUploadField({
   label,
@@ -49,25 +60,46 @@ export function ImageUploadField({
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
-  const [remoteVisible, setRemoteVisible] = useState(false);
 
   const { width: windowWidth } = useWindowDimensions();
   const previewAspect = cropAspect[0] / cropAspect[1];
   const boxWidth = Math.round(Math.min(windowWidth - 48, windowWidth * 0.92));
   const boxHeight = Math.round(boxWidth / previewAspect);
-  const imageStyle = { width: boxWidth, height: boxHeight };
+  const boxStyle = { width: boxWidth, height: boxHeight };
 
-  const remoteUrl = resolveRemoteImageUrl(value.trim()) ?? '';
-  const showPreviewBox = Boolean(localPreview || remoteUrl || uploading);
+  const remoteUrl = value.trim();
+  const hasPreview = Boolean(localPreview || remoteUrl || uploading);
+
+  useEffect(() => {
+    if (!localPreview || !remoteUrl.startsWith('http')) return;
+
+    let cancelled = false;
+    const candidates = resolveRemoteImageCandidates(remoteUrl, { allowHttpFallback: true });
+
+    void (async () => {
+      for (const candidate of candidates) {
+        if (cancelled) return;
+        try {
+          const ok = await RNImage.prefetch(candidate);
+          if (ok) {
+            if (!cancelled) setLocalPreview(null);
+            return;
+          }
+        } catch {
+          /* essayer la variante suivante */
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [remoteUrl, localPreview]);
 
   async function handlePick() {
     setUploading(true);
-    setRemoteVisible(false);
     try {
-      const rawUri = await pickImageFromLibrary({
-        aspect: cropAspect,
-        allowsEditing: true,
-      });
+      const rawUri = await pickImageFromLibrary({ aspect: cropAspect });
       if (!rawUri) return;
 
       const preparedUri = normalizeLocalFileUri(await cropToAspect(rawUri, cropAspect, 'top'));
@@ -76,7 +108,6 @@ export function ImageUploadField({
 
       const url = await uploadContentImage(preparedUri, folder, { aspect: cropAspect });
       onChange(url);
-      setRemoteVisible(false);
 
       if (!isSupabaseConfigured()) {
         Alert.alert(
@@ -93,57 +124,44 @@ export function ImageUploadField({
     }
   }
 
-  function handleRemoteLoaded() {
-    setRemoteVisible(true);
-    setLocalPreview(null);
+  function renderPreviewImage() {
+    if (localPreview && isLocalPreviewUri(localPreview)) {
+      return (
+        <RNImage
+          source={{ uri: localPreview }}
+          style={boxStyle}
+          resizeMode="cover"
+          accessibilityLabel={label}
+        />
+      );
+    }
+    if (remoteUrl) {
+      return (
+        <RemoteImage
+          uri={remoteUrl}
+          style={boxStyle}
+          resizeMode="cover"
+          contentPosition="top"
+          renderWidth={Math.min(boxWidth, 800)}
+          fallbackColor={shell.filterInactiveBg}
+          onDisplayLoad={() => setLocalPreview(null)}
+        />
+      );
+    }
+    return null;
   }
 
   return (
     <View style={styles.wrap}>
       <Text style={[styles.label, { color: shell.pageKicker }]}>{label}</Text>
 
-      {showPreviewBox ? (
-        <View style={[styles.previewWrap, imageStyle]}>
-          {localPreview && !remoteVisible ? (
-            <Image
-              source={{ uri: localPreview }}
-              style={[StyleSheet.absoluteFill, imageStyle]}
-              contentFit="cover"
-              contentPosition="top"
-              cachePolicy="memory-disk"
-              transition={0}
-              recyclingKey={`local-${localPreview}`}
-            />
-          ) : null}
-          {remoteUrl ? (
-            <Image
-              source={{ uri: remoteUrl }}
-              style={[
-                StyleSheet.absoluteFill,
-                imageStyle,
-                localPreview && !remoteVisible ? styles.hiddenUntilRemote : null,
-              ]}
-              contentFit="cover"
-              contentPosition="top"
-              cachePolicy="memory-disk"
-              transition={0}
-              recyclingKey={`remote-${remoteUrl}`}
-              onLoad={handleRemoteLoaded}
-              onError={() => {
-                /* Garde l’aperçu local si l’URL distante échoue. */
-              }}
-            />
-          ) : null}
-          {!localPreview && !remoteUrl && uploading ? (
+      {hasPreview ? (
+        <View style={[styles.previewWrap, boxStyle]}>
+          {renderPreviewImage() ?? (
             <View style={[styles.uploadingFill, { backgroundColor: shell.filterInactiveBg }]}>
               <ActivityIndicator color={shell.pageTitle} />
             </View>
-          ) : null}
-          {!localPreview && !remoteUrl && !uploading ? (
-            <View style={[styles.uploadingFill, { backgroundColor: shell.filterInactiveBg }]}>
-              <Text style={{ color: shell.pageKicker, fontSize: 11 }}>Aperçu indisponible</Text>
-            </View>
-          ) : null}
+          )}
           {uploading ? (
             <View style={styles.uploadOverlay}>
               <ActivityIndicator color="#fff" />
@@ -153,7 +171,6 @@ export function ImageUploadField({
             style={styles.removeBtn}
             onPress={() => {
               setLocalPreview(null);
-              setRemoteVisible(false);
               onChange('');
             }}
           >
@@ -214,7 +231,6 @@ export function ImageUploadField({
           value={value}
           onChangeText={(t) => {
             setLocalPreview(null);
-            setRemoteVisible(false);
             onChange(t);
           }}
           placeholder="https://..."
@@ -242,11 +258,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor: '#E5E7EB',
   },
-  hiddenUntilRemote: {
-    opacity: 0,
-  },
   uploadingFill: {
-    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -255,7 +269,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
   },
   placeholder: {
     borderWidth: 1,
