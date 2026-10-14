@@ -951,6 +951,7 @@ export async function createPartnerBenefitOffer(
 export async function proposeCatalogBenefitsToPartners(
   catalogItem: Pick<BenefitCatalogItem, 'id' | 'title' | 'description' | 'countryCode' | 'city' | 'defaultValidityDays' | 'benefitKind'>,
   partners: BenefitOfferingPartner[],
+  templateLocalId?: string | null,
 ): Promise<PartnerBenefitOffer[]> {
   const created: PartnerBenefitOffer[] = [];
 
@@ -988,7 +989,11 @@ export async function proposeCatalogBenefitsToPartners(
   const hasAccepted = catalogOffers.some((o) => isPartnerOfferActive(o.status));
 
   if (hasAccepted && !hasPending) {
-    await updateBenefitCatalogItem(catalogItem.id, { isActive: true });
+    await updateBenefitCatalogItem(catalogItem.id, { isActive: true, isTemplate: false });
+    if (templateLocalId?.trim()) {
+      const { deactivateCatalogTemplateAfterDeployment } = await import('@/lib/benefit-catalog-store');
+      await deactivateCatalogTemplateAfterDeployment(templateLocalId);
+    }
   } else if (hasPending) {
     const item = await getBenefitCatalogItem(catalogItem.id);
     if (item?.isActive) {
@@ -1224,7 +1229,17 @@ async function runPartnerOfferRespondSideEffects(
   }
 
   const catalogLocalId = resolvePartnerOfferCatalogLocalId(current);
-  await updateBenefitCatalogItem(catalogLocalId || current.catalogId, { isActive: true }, { syncMode: 'partner' });
+  const catalogIdForActivation = catalogLocalId || current.catalogId;
+  await updateBenefitCatalogItem(
+    catalogIdForActivation,
+    { isActive: true, isTemplate: false },
+    { syncMode: 'partner' },
+  );
+  const deployed = await getBenefitCatalogItem(catalogIdForActivation);
+  if (deployed?.templateLocalId?.trim()) {
+    const { deactivateCatalogTemplateAfterDeployment } = await import('@/lib/benefit-catalog-store');
+    await deactivateCatalogTemplateAfterDeployment(deployed.templateLocalId);
+  }
   if (isSupabaseConfigured() && catalogLocalId) {
     const activation = await acceptPartnerCatalogOfferViaSupabase(catalogLocalId);
     if (!activation.ok && __DEV__) {

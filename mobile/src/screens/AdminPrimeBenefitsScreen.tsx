@@ -903,8 +903,10 @@ export function AdminPrimeBenefitsScreen({ navigation }: Props) {
         countryCode: template.countryCode ?? countryCode,
         city: template.city ?? null,
         isActive: false,
+        isTemplate: false,
+        templateLocalId: template.id,
       });
-      await proposeCatalogBenefitsToPartners(item, partnersToAdd);
+      await proposeCatalogBenefitsToPartners(item, partnersToAdd, template.id);
 
       const onlyTheLoop = partnersToAdd.every(
         (p) =>

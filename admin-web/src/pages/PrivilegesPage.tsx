@@ -234,6 +234,7 @@ export function PrivilegesPage() {
       benefitKind: template.benefitKind,
       partners: partnersToAdd,
       onlyTheLoop,
+      templateLocalId: template.localId,
     });
     setBusy(false);
     if (!proposed.ok) {

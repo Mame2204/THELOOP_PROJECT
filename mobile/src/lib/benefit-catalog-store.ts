@@ -58,6 +58,9 @@ export interface BenefitCatalogItem {
   quantityPerGrant: number | null;
   maxUsesPerGrant: number | null;
   isActive: boolean;
+  /** Modèle Paramètres (THE LOOP sans lieu). */
+  isTemplate?: boolean;
+  templateLocalId?: string | null;
   /** Ciblage géographique optionnel */
   countryCode?: string | null;
   city?: string | null;
@@ -105,6 +108,8 @@ type DbCatalogRow = {
   validity_ends_at: string | null;
   validity_starts_on_activation: boolean | null;
   is_active: boolean;
+  is_template?: boolean | null;
+  template_local_id?: string | null;
   offering_partners: BenefitOfferingPartner[] | null;
   benefit_kind: string | null;
   quantity_per_grant: number | null;
@@ -157,6 +162,8 @@ function rowToItem(row: DbCatalogRow): BenefitCatalogItem {
     quantityPerGrant: row.quantity_per_grant,
     maxUsesPerGrant: row.max_uses_per_grant,
     isActive: row.is_active,
+    isTemplate: row.is_template === true,
+    templateLocalId: row.template_local_id ? String(row.template_local_id) : null,
     benefitPurpose: (row.benefit_purpose as BenefitPurpose) ?? 'standard',
     countryCode: row.country_code,
     city: row.city,
@@ -176,6 +183,8 @@ function itemToRow(item: BenefitCatalogItem) {
     validity_ends_at: item.validityEndsAt ?? null,
     validity_starts_on_activation: item.validityStartsOnActivation !== false,
     is_active: item.isActive,
+    is_template: item.isTemplate === true,
+    template_local_id: item.templateLocalId ?? null,
     offering_partners: asJson(item.offeringPartners),
     benefit_kind: item.benefitKind,
     quantity_per_grant: item.quantityPerGrant,
@@ -191,7 +200,7 @@ async function fetchRemoteCatalog(): Promise<BenefitCatalogItem[] | null> {
   if (!isSupabaseConfigured() || !supabase) return null;
   const client = supabase;
   const fullSelect =
-    'id, local_id, title, description, partner_name, default_validity_days, validity_ends_at, validity_starts_on_activation, is_active, offering_partners, benefit_kind, quantity_per_grant, max_uses_per_grant, country_code, city, benefit_purpose, created_at, updated_at';
+    'id, local_id, title, description, partner_name, default_validity_days, validity_ends_at, validity_starts_on_activation, is_active, is_template, template_local_id, offering_partners, benefit_kind, quantity_per_grant, max_uses_per_grant, country_code, city, benefit_purpose, created_at, updated_at';
   const legacySelect =
     'id, local_id, title, description, partner_name, default_validity_days, is_active, offering_partners, benefit_kind, quantity_per_grant, max_uses_per_grant, country_code, city, benefit_purpose, created_at, updated_at';
 
@@ -671,6 +680,7 @@ export async function listBenefitCatalog(activeOnly = false): Promise<BenefitCat
 
 /** Avantages créés côté Paramètres sans association partenaire Pro (offrant THE LOOP). */
 export function isStandaloneTheLoopBenefit(item: BenefitCatalogItem): boolean {
+  if (item.isTemplate) return true;
   const partners = item.offeringPartners ?? [];
   if (partners.length === 0) return false;
   return partners.every(
@@ -1061,6 +1071,12 @@ export async function createBenefitCatalogItem(input: {
   return item;
 }
 
+export async function deactivateCatalogTemplateAfterDeployment(templateLocalId: string): Promise<void> {
+  const id = templateLocalId.trim();
+  if (!id) return;
+  await updateBenefitCatalogItem(id, { isActive: false, isTemplate: true });
+}
+
 export async function createBenefitCatalogItemMulti(input: {
   title: string;
   description: string;
@@ -1075,6 +1091,8 @@ export async function createBenefitCatalogItemMulti(input: {
   city?: string | null;
   /** Défaut false : activé seulement après validation partenaire. */
   isActive?: boolean;
+  isTemplate?: boolean;
+  templateLocalId?: string | null;
 }): Promise<BenefitCatalogItem> {
   const now = new Date().toISOString();
   const partners = input.offeringPartners.filter((p) => p.displayName.trim());
@@ -1095,6 +1113,8 @@ export async function createBenefitCatalogItemMulti(input: {
     countryCode: input.countryCode ?? null,
     city: input.city ?? null,
     isActive: input.isActive ?? false,
+    isTemplate: input.isTemplate ?? false,
+    templateLocalId: input.templateLocalId ?? null,
     createdAt: now,
     updatedAt: now,
     pendingRemoteSync: true,
@@ -1227,6 +1247,8 @@ export async function updateBenefitCatalogItem(
       | 'quantityPerGrant'
       | 'maxUsesPerGrant'
       | 'isActive'
+      | 'isTemplate'
+      | 'templateLocalId'
       | 'benefitPurpose'
     >
   >,
