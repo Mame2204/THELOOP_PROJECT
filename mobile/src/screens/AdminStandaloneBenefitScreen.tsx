@@ -297,6 +297,7 @@ export function AdminStandaloneBenefitScreen({ navigation }: Props) {
         maxUsesPerGrant: kind === 'usage_limit' ? Number(maxUses) || null : null,
         countryCode,
         isActive: false,
+        isTemplate: true,
       });
       setTitle('');
       setDescription('');

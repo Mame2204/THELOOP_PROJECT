@@ -17,6 +17,9 @@ export interface BenefitCatalogRow {
   title: string;
   description: string;
   isActive: boolean;
+  /** Modèle Paramètres (THE LOOP sans lieu) — pas un déploiement catalogue. */
+  isTemplate: boolean;
+  templateLocalId: string | null;
   countryCode: string | null;
   partnerNames: string[];
   offeringPartners: BenefitOfferingPartner[];
@@ -382,7 +385,10 @@ function parsePartners(raw: unknown): string[] {
 }
 
 /** Modèles Paramètres sans lieu — exclus des listes TEAMS / offres partenaire. */
-export function isStandaloneTheLoopBenefit(item: Pick<BenefitCatalogRow, 'offeringPartners'>): boolean {
+export function isStandaloneTheLoopBenefit(
+  item: Pick<BenefitCatalogRow, 'offeringPartners' | 'isTemplate'>,
+): boolean {
+  if (item.isTemplate) return true;
   const partners = item.offeringPartners ?? [];
   if (partners.length === 0) return false;
   return partners.every(
@@ -563,7 +569,7 @@ export async function listBenefitCatalog(
   const { data, error } = await supabase
     .from('benefit_catalog')
     .select(
-      'id, local_id, title, description, is_active, offering_partners, partner_name, benefit_kind, country_code, default_validity_days, validity_starts_on_activation, benefit_purpose, updated_at',
+      'id, local_id, title, description, is_active, is_template, template_local_id, offering_partners, partner_name, benefit_kind, country_code, default_validity_days, validity_starts_on_activation, benefit_purpose, updated_at',
     )
     .order('updated_at', { ascending: false })
     .limit(200);
@@ -580,6 +586,8 @@ export async function listBenefitCatalog(
         title: String(row.title ?? ''),
         description: String(row.description ?? ''),
         isActive: row.is_active !== false,
+        isTemplate: row.is_template === true,
+        templateLocalId: row.template_local_id ? String(row.template_local_id) : null,
         countryCode: row.country_code ? String(row.country_code) : null,
         partnerNames: partners.length ? partners : parsePartners(row.offering_partners),
         offeringPartners,
@@ -978,6 +986,7 @@ export async function createBenefitCatalogItem(input: {
     title: input.title.trim(),
     description: input.description.trim(),
     is_active: input.isActive ?? true,
+    is_template: true,
     country_code: input.countryCode,
     offering_partners: input.partnerName
       ? [{ displayName: input.partnerName, partnerId: EXTERNAL_PARTNER_ID }]
@@ -1015,6 +1024,8 @@ function catalogToRpcRow(item: {
   isActive: boolean;
   countryCode: string | null;
   benefitPurpose?: string;
+  isTemplate?: boolean;
+  templateLocalId?: string | null;
 }): Record<string, unknown> {
   return {
     local_id: item.localId,
@@ -1024,12 +1035,29 @@ function catalogToRpcRow(item: {
     default_validity_days: item.defaultValidityDays,
     validity_starts_on_activation: item.validityStartsOnActivation,
     is_active: item.isActive,
+    is_template: item.isTemplate ?? false,
+    template_local_id: item.templateLocalId ?? null,
     offering_partners: item.offeringPartners,
     benefit_kind: item.benefitKind,
     country_code: item.countryCode,
     benefit_purpose: item.benefitPurpose ?? 'standard',
     updated_at: new Date().toISOString(),
   };
+}
+
+/** Évite modèle + déploiement actifs avec le même titre (Paramètres vs Catalogue). */
+export async function deactivateCatalogTemplateAfterDeployment(
+  templateLocalId: string,
+): Promise<void> {
+  if (!templateLocalId.trim()) return;
+  await supabase
+    .from('benefit_catalog')
+    .update({
+      is_active: false,
+      is_template: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('local_id', templateLocalId.trim());
 }
 
 export async function upsertBenefitCatalogRpc(
@@ -1058,6 +1086,8 @@ export async function createCatalogAssociation(input: {
     validityStartsOnActivation: input.template.validityStartsOnActivation,
     benefitKind: input.template.benefitKind,
     isActive: false,
+    isTemplate: false,
+    templateLocalId: input.template.localId,
     countryCode: input.countryCode,
     benefitPurpose: input.template.benefitPurpose,
   });
@@ -1074,6 +1104,8 @@ export async function proposeCatalogBenefitsToPartners(input: {
   benefitKind: string;
   partners: BenefitOfferingPartner[];
   onlyTheLoop: boolean;
+  /** Modèle Paramètres source — désactivé quand le déploiement est activé. */
+  templateLocalId?: string | null;
 }): Promise<{ ok: boolean; error?: string }> {
   const now = new Date().toISOString();
   let anyAccepted = input.onlyTheLoop;
@@ -1119,8 +1151,14 @@ export async function proposeCatalogBenefitsToPartners(input: {
     validityStartsOnActivation: true,
     benefitKind: input.benefitKind,
     isActive: anyAccepted,
+    isTemplate: false,
+    templateLocalId: input.templateLocalId ?? null,
     countryCode: input.countryCode,
   });
+
+  if (anyAccepted && input.templateLocalId) {
+    await deactivateCatalogTemplateAfterDeployment(input.templateLocalId);
+  }
 
   return { ok: true };
 }
