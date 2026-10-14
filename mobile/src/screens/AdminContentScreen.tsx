@@ -375,7 +375,10 @@ export function AdminContentScreen({ navigation, route }: Props) {
       type: item.kind,
       id: item.id,
       asAdmin: true,
-      contentChannel: item.contentOrigin === 'loop' ? 'loop' : 'admin',
+      contentChannel:
+        item.contentOrigin === 'loop' || item.contentOrigin === 'partner' || item.contentOrigin === 'admin'
+          ? item.contentOrigin
+          : 'admin',
       isTool: toolIds.has(item.id),
     });
   }

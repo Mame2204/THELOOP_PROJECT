@@ -227,9 +227,27 @@ export async function cropToAspect(
       compress: UPLOAD_JPEG_QUALITY,
       format: SaveFormat.JPEG,
     });
-    return normalizeLocalFileUri(result.uri);
+    const croppedUri = normalizeLocalFileUri(result.uri);
+    if (!(await jpegHasPixels(croppedUri))) {
+      return compressImageForUpload(orientedUri);
+    }
+    return croppedUri;
   } catch {
     return compressImageForUpload(orientedUri);
+  }
+}
+
+/** Un JPEG de recadrage raté fait quelques centaines d’octets et ne s’affiche pas. */
+async function jpegHasPixels(uri: string): Promise<boolean> {
+  try {
+    const info = await LegacyFileSystem.getInfoAsync(uri);
+    if (!info.exists) return false;
+    const size = 'size' in info && typeof info.size === 'number' ? info.size : 0;
+    if (size > 0 && size < 1500) return false;
+    const dims = await getImageSize(uri);
+    return dims.width >= 8 && dims.height >= 8;
+  } catch {
+    return false;
   }
 }
 
