@@ -86,6 +86,8 @@ Gates **figées** à l’envoi :
 
 # Partie D — Nettoyage base (avant envoi)
 
+> **Audit complet table par table :** `13-Audit-Base-Stores-Prod.md` + script `supabase/scripts/audit_store_prod_readiness.sql`.
+
 | Action | Détail |
 |--------|--------|
 | Contenu | ~2 events, 2 spots, 2 outils **propres** |
