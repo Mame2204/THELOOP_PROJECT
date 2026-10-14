@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 24/12 · stories Jour J</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide { width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden; color: #fff; }
+    .slide.gold-bg { background: linear-gradient(165deg, #5c4520 0%, #c9a050 40%, #0a3a44 100%); }
+    .slide.teal { background: linear-gradient(165deg, #0f7a8e 0%, #0a3a44 55%, #062830 100%); }
+    .slide.light { background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 45%, #96c4d4 100%); color: var(--deep); }
+    .ribbon { position: absolute; top: 0; left: 0; right: 0; padding: 24px; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; background: linear-gradient(90deg, var(--deep), var(--teal)); }
+    .inner { height: 100%; padding: 140px 64px 260px; display: flex; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; }
+    .panel { max-width: 920px; width: 100%; padding: 64px 48px; border-radius: 36px; box-sizing: border-box; }
+    .slide.gold-bg .panel, .slide.teal .panel { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.15); }
+    .slide.light .panel { background: #fff; border: 2px solid rgba(15,122,142,0.12); box-shadow: 0 24px 64px rgba(10,58,68,0.12); }
+    .h { font-size: 72px; font-weight: 800; line-height: 1.1; margin: 0; }
+    .p { font-size: 34px; font-weight: 600; margin-top: 24px; line-height: 1.4; }
+    .gold { color: var(--gold); }
+    .slide.light .gold { color: #9a7720; }
+    .pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .pillars span { font-size: 28px; font-weight: 800; padding: 24px 12px; border-radius: 18px; border: 2px solid rgba(230,185,58,0.5); }
+    .slide.light .pillars span { background: rgba(10,58,68,0.05); }
+    .quote { font-size: 36px; font-weight: 700; line-height: 1.35; margin: 0; }
+    .sticker { margin-top: 36px; padding: 18px 28px; border: 3px dashed rgba(230,185,58,0.65); border-radius: 999px; font-size: 24px; font-weight: 800; color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <div class="label">24/12 · story 1/5</div>
+  <div class="slide gold-bg">
+    <div class="ribbon">24 décembre</div>
+    <div class="inner"><div class="panel"><h1 class="h">C’est <span class="gold">ouvert</span>.</h1><p class="p">The Loop · guide Conakry</p></div></div>
+  </div>
+
+  <div class="label">24/12 · story 2/5</div>
+  <div class="slide teal">
+    <div class="ribbon">Entrez dans le guide</div>
+    <div class="inner"><div class="panel"><h1 class="h gold">theloop-app.com</h1><p class="p">Entrez dans le guide</p></div></div>
+  </div>
+
+  <div class="label">24/12 · story 3/5</div>
+  <div class="slide light">
+    <div class="ribbon">4 piliers</div>
+    <div class="inner"><div class="panel"><div class="pillars"><span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span></div></div></div>
+  </div>
+
+  <div class="label">24/12 · story 4/5</div>
+  <div class="slide teal">
+    <div class="inner"><div class="panel"><p class="quote">Les bonnes adresses ne s'annoncent pas.<br /><span class="gold">Elles se transmettent.</span></p></div></div>
+  </div>
+
+  <div class="label">24/12 · story 5/5</div>
+  <div class="slide gold-bg">
+    <div class="ribbon">Merci</div>
+    <div class="inner"><div class="panel"><h1 class="h">Merci.</h1><p class="p">Bienvenue dans <span class="gold">The Loop</span></p></div></div>
+  </div>
+
+</body>
+</html>

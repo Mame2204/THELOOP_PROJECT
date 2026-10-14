@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — Export visuels Pack 1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0a3a44;
+      --teal: #0f7a8e;
+      --gold: #e6b93a;
+      --bg: #eef4f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Manrope, sans-serif;
+      background: #1a1a1a;
+      padding: 24px;
+      color: var(--deep);
+    }
+    .help {
+      max-width: 540px;
+      color: #ccc;
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .help strong { color: #fff; }
+    .slide {
+      width: 1080px;
+      height: 1350px;
+      margin: 0 auto 48px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .slide-label {
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    /* Logo mark inline SVG */
+    .mark { display: block; }
+    .caps {
+      font-size: 22px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .title {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.08;
+      margin: 24px 0 0;
+    }
+    .sub {
+      font-size: 28px;
+      font-weight: 600;
+      margin-top: 32px;
+      opacity: 0.9;
+    }
+    .deep { background: var(--deep); color: #fff; padding: 120px 80px; }
+    .light { background: var(--bg); padding: 120px 80px; }
+    .teal { background: var(--teal); color: #fff; padding: 120px 80px; }
+    .gold-text { color: var(--gold); }
+    .quote {
+      font-size: 48px;
+      font-weight: 600;
+      line-height: 1.35;
+      font-style: normal;
+    }
+    .phone-wrap {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 520px;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+      border: 8px solid #111;
+    }
+    .phone-wrap img {
+      width: 100%;
+      display: block;
+      filter: blur(14px);
+      transform: scale(1.08);
+    }
+    .phone-wrap .safe {
+      position: absolute;
+      inset: 0;
+      background: rgba(238, 244, 246, 0.15);
+      backdrop-filter: blur(2px);
+    }
+    .phone-wrap.unblur img {
+      filter: blur(8px);
+    }
+    .footer-brand {
+      position: absolute;
+      bottom: 64px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 26px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .j-big {
+      font-size: 200px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--gold);
+    }
+    .carousel-slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100%;
+      padding: 100px 80px;
+    }
+    .carousel-slide h2 {
+      font-size: 64px;
+      font-weight: 800;
+      margin: 0 0 24px;
+      line-height: 1.1;
+    }
+    .carousel-slide p {
+      font-size: 36px;
+      line-height: 1.45;
+      margin: 0;
+      opacity: 0.92;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .pill {
+      border: 2px solid rgba(255,255,255,0.5);
+      padding: 16px 28px;
+      border-radius: 999px;
+      font-size: 24px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .cta {
+      font-size: 56px;
+      font-weight: 800;
+      margin-top: 40px;
+    }
+    .url {
+      font-size: 32px;
+      letter-spacing: 0.06em;
+      margin-top: 24px;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <div class="help">
+    <strong>Export PNG (1080×1350)</strong> — Ouvre ce fichier dans Chrome → zoom 100% → capture chaque slide (outil capture fenêtre ou extension « GoFullPage » zone sélection).<br />
+    Captures app : contenu <strong>fictif</strong> (validation stores). Variante floutée = teasing ; tu peux dupliquer la slide et retirer <code>filter: blur</code> pour montrer l’UI nette.<br />
+    Story 9:16 : recadre en CapCut ou recapture en rognant haut/bas.
+  </div>
+
+  <!-- 3 nov -->
+  <div class="slide-label">Mardi 3/11 — Teasing</div>
+  <div class="slide deep">
+    <svg class="mark" width="80" height="80" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+      <circle cx="18" cy="18" r="15" stroke="#E6B93A" stroke-width="3"/>
+      <path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#E6B93A" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="10" cy="18" r="2" fill="#E6B93A"/>
+    </svg>
+    <p class="caps" style="margin-top:48px;opacity:0.75">Conakry</p>
+    <h1 class="title">Quelque chose se prépare.</h1>
+    <p class="sub gold-text">The Loop · Bientôt</p>
+  </div>
+
+  <!-- 5 nov -->
+  <div class="slide-label">Jeudi 5/11 — Citation</div>
+  <div class="slide light">
+    <p class="quote">Les bonnes adresses ne s'annoncent pas.<br /><span class="gold-text">Elles se transmettent.</span></p>
+    <p class="footer-brand" style="position:relative;margin-top:80px;color:var(--deep)">The Loop</p>
+  </div>
+
+  <!-- 12 nov J-5 -->
+  <div class="slide-label">Jeudi 12/11 — J-5</div>
+  <div class="slide teal">
+    <p class="caps" style="opacity:0.85">Ouverture de la liste</p>
+    <p class="j-big">J-5</p>
+    <p class="title" style="font-size:56px;margin-top:24px">100 premières places</p>
+  </div>
+
+  <!-- 16 nov -->
+  <div class="slide-label">Lundi 16/11 — J-1</div>
+  <div class="slide deep">
+    <p class="j-big" style="font-size:120px">Demain.</p>
+    <p class="title" style="font-size:56px">Ouverture de la liste</p>
+    <p class="sub">100 premières places · accès anticipé</p>
+  </div>
+
+  <!-- 17 nov carrousel 1-5 -->
+  <div class="slide-label">17/11 Carrousel — Slide 1</div>
+  <div class="slide deep carousel-slide">
+    <h2>100 premières places</h2>
+    <p>La liste est ouverte.</p>
+  </div>
+
+  <div class="slide-label">17/11 Carrousel — Slide 2</div>
+  <div class="slide light carousel-slide">
+    <h2>Pourquoi The Loop</h2>
+    <p>Un repère pour Conakry — pas un fil bruyant.</p>
+  </div>
+
+  <div class="slide-label">17/11 Carrousel — Slide 3</div>
+  <div class="slide teal carousel-slide">
+    <h2>Quatre piliers</h2>
+    <div class="pill-row">
+      <span class="pill">Spots</span>
+      <span class="pill">Agenda</span>
+      <span class="pill">Parcours</span>
+      <span class="pill">Outils</span>
+    </div>
+  </div>
+
+  <div class="slide-label">17/11 Carrousel — Slide 4</div>
+  <div class="slide light carousel-slide">
+    <h2>Sélectif, pas exhaustif</h2>
+    <p>Valeur réelle. Expérience soignée. En français simple.</p>
+  </div>
+
+  <div class="slide-label">17/11 Carrousel — Slide 5</div>
+  <div class="slide deep carousel-slide">
+    <h2 class="gold-text">Réserve ta place</h2>
+    <p class="cta" style="font-size:40px;margin-top:24px">theloop-app.com</p>
+    <p class="url">Accès anticipé · 17 déc.<br />Ouverture publique · 24 déc.</p>
+  </div>
+
+  <!-- 17 nov avec capture -->
+  <div class="slide-label">17/11 Option — Aperçu app (flouté)</div>
+  <div class="slide light" style="padding:0">
+    <div style="padding:100px 80px 40px">
+      <p class="caps">The Loop</p>
+      <h1 class="title" style="font-size:56px">Un seul endroit pour décider.</h1>
+    </div>
+    <div class="phone-wrap unblur">
+      <img src="assets/capture-accueil-2.jpg" alt="" />
+      <div class="safe"></div>
+    </div>
+  </div>
+
+  <!-- Cartes vidéo 17 -->
+  <div class="slide-label">Vidéo 17/11 — Carte « Tout crie »</div>
+  <div class="slide deep carousel-slide" style="justify-content:center;text-align:center">
+    <h2 style="font-size:96px">Tout crie.</h2>
+  </div>
+
+  <div class="slide-label">Vidéo 17/11 — Carte finale</div>
+  <div class="slide teal carousel-slide" style="text-align:center">
+    <h2 class="gold-text">Réserve ta place</h2>
+    <p class="url">theloop-app.com</p>
+  </div>
+</body>
+</html>

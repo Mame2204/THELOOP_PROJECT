@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 13/11 · frames CapCut</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0a3a44;
+      --teal: #0f7a8e;
+      --gold: #e6b93a;
+      --muted: #3d5560;
+    }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 40%, #96c4d4 100%);
+      color: var(--deep);
+    }
+    .slide.dark {
+      background: linear-gradient(180deg, #0a1628 0%, #0a3a44 100%);
+      color: #fff;
+    }
+    .slide.contrast {
+      background: linear-gradient(180deg, #1a1a22 0%, #2a3540 100%);
+      color: #fff;
+    }
+    .atmo { position: absolute; inset: -20%; background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat; filter: blur(44px) saturate(0.85); opacity: 0.32; }
+    .atmo-teal {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(236,244,247,0.82) 100%);
+      pointer-events: none; z-index: 1;
+    }
+    .inner {
+      position: relative; z-index: 2; height: 100%; padding: 140px 64px 220px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; box-sizing: border-box;
+    }
+    .panel {
+      background: #fff; border-radius: 36px; padding: 72px 56px; width: 100%; max-width: 920px;
+      box-shadow: 0 24px 64px rgba(10,58,68,0.16); border: 2px solid rgba(15,122,142,0.12);
+      box-sizing: border-box;
+    }
+    .slide.dark .panel, .slide.contrast .panel {
+      background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); box-shadow: none;
+    }
+    .word {
+      font-size: 96px; font-weight: 800; line-height: 1.05; margin: 0;
+    }
+    .word.sm { font-size: 72px; }
+    .ey { font-size: 24px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); margin-bottom: 24px; }
+    .slide.dark .ey, .slide.contrast .ey { color: rgba(255,255,255,0.75); }
+    .tags { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 16px; }
+    .tags span {
+      font-size: 32px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 22px 28px; border-radius: 20px; background: #fff;
+      border: 3px solid rgba(230,185,58,0.55); color: var(--deep);
+    }
+    .slide.dark .tags span { background: rgba(255,255,255,0.95); }
+    .pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
+    .pillars span {
+      font-size: 28px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 28px 16px; border-radius: 20px; background: #fff;
+      border: 3px solid rgba(230,185,58,0.55); color: var(--deep);
+    }
+    .p { font-size: 38px; line-height: 1.4; font-weight: 600; color: var(--muted); margin-top: 28px; }
+    .slide.dark .p, .slide.contrast .p { color: rgba(255,255,255,0.88); }
+    .gold { color: #9a7720; font-weight: 800; }
+    .slide.dark .gold, .slide.contrast .gold { color: var(--gold); }
+    .pill-date {
+      display: inline-block; margin-top: 40px; padding: 22px 40px;
+      background: var(--deep); color: #fff; border-radius: 999px;
+      font-size: 32px; font-weight: 800;
+    }
+    .hint {
+      margin-top: 48px; font-size: 28px; font-weight: 600; color: rgba(10,58,68,0.5);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .slide.dark .hint, .slide.contrast .hint { color: rgba(255,255,255,0.45); }
+  </style>
+</head>
+<body>
+
+  <div class="label">13/11 · 1 · B-roll ou fond</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <p class="ey">Plan 1 · mer / terrasse</p>
+      <div class="panel"><h1 class="word">Une envie.</h1></div>
+      <p class="hint">Ton clip calme par-dessus</p>
+    </div>
+  </div>
+
+  <div class="label">13/11 · 2</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <p class="ey">Plan 2 · table</p>
+      <div class="panel"><h1 class="word">Calme.</h1></div>
+      <p class="hint">Lumière douce</p>
+    </div>
+  </div>
+
+  <div class="label">13/11 · 3</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <p class="ey">Plan 3 · horizon</p>
+      <div class="panel"><h1 class="word sm">Peu de bruit.</h1></div>
+    </div>
+  </div>
+
+  <div class="label">13/11 · 4 · contraste</div>
+  <div class="slide contrast">
+    <div class="inner">
+      <p class="ey">Plan 4 · foule floue</p>
+      <div class="panel"><h1 class="word sm" style="color:#fff">Pas ça.</h1></div>
+      <p class="p">1 seconde de bruit · puis silence</p>
+    </div>
+  </div>
+
+  <div class="label">13/11 · 5</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <div class="panel">
+        <p class="ey">The Loop</p>
+        <div class="tags">
+          <span>Sélectif</span>
+          <span>Clair</span>
+          <span>En clair</span>
+        </div>
+        <p class="p" style="margin-top:40px;color:var(--deep)">Ne liste pas tout.<br /><span class="gold">Il guide.</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">13/11 · 6 · piliers (sans app lisible)</div>
+  <div class="slide">
+    <div class="atmo" style="filter:blur(64px);opacity:0.25"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <div class="panel">
+        <p class="ey">Dans le guide</p>
+        <div class="pillars">
+          <span>Spots</span><span>Agenda</span>
+          <span>Parcours</span><span>Outils</span>
+        </div>
+        <p class="p" style="color:var(--deep)">Un seul repère pour décider.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">13/11 · 7 · fin</div>
+  <div class="slide dark">
+    <div class="inner">
+      <div class="panel" style="background:rgba(255,255,255,0.08)">
+        <p class="ey" style="color:#a8dce8">J-4</p>
+        <h1 class="word sm" style="color:#fff"><span class="gold">17</span> NOV.</h1>
+        <p class="p">100 premières places</p>
+        <span class="pill-date">Liste · 17 novembre</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

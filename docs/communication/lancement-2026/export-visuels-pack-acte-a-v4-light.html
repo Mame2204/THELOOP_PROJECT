@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — Acte A · clair (comme l’app)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0a3a44;
+      --teal: #0f7a8e;
+      --teal-mid: #1596ad;
+      --teal-light: #a8d9e4;
+      --gold: #e6b93a;
+      --bg: #a8dce8;
+      --bg2: #5eb3c4;
+      --card: #ffffff;
+      --muted: #4a6570;
+    }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px;
+      height: 1350px;
+      margin: 0 auto 16px;
+      position: relative;
+      overflow: hidden;
+      /* N1 adouci + léger renfort teal (micro-assombrissement) */
+      /* Saut visible (entre « trop adouci » et niveau 2) — validé visuellement sur export */
+      background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 40%, #96c4d4 100%);
+      color: var(--deep);
+    }
+    .slide.reel { height: 1920px; }
+    /* Atmosphère : capture illisible = lumière de l’app, pas le contenu */
+    .atmo {
+      position: absolute;
+      inset: -20%;
+      background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat;
+      filter: blur(48px) saturate(0.95) brightness(1.02) hue-rotate(-4deg);
+      opacity: 0.4;
+    }
+    .atmo-teal {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 90% 70% at 75% 18%, rgba(15,122,142,0.14), transparent 55%),
+        radial-gradient(ellipse 80% 60% at 10% 88%, rgba(21,150,173,0.11), transparent 50%),
+        linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(15,122,142,0.11) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .watermark {
+      position: absolute;
+      right: -120px;
+      top: 180px;
+      width: 520px;
+      height: 520px;
+      opacity: 0.14;
+      z-index: 1;
+    }
+    .blobs {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(2px);
+    }
+    .blob.a { width: 480px; height: 480px; background: rgba(15,122,142,0.12); top: -100px; right: -120px; }
+    .blob.b { width: 320px; height: 320px; background: rgba(21,150,173,0.1); bottom: 180px; left: -80px; }
+    .blob.c { width: 220px; height: 220px; background: rgba(15,122,142,0.09); top: 42%; left: 52%; }
+    .inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      padding: 88px 72px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card {
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(16px);
+      border-radius: 28px;
+      padding: 56px 52px;
+      box-shadow: 0 24px 64px rgba(15,122,142,0.16);
+      border: 1px solid rgba(15,122,142,0.2);
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+    .card.top { margin-top: 120px; margin-bottom: 0; }
+    .ey {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 20px;
+    }
+    .h {
+      font-size: 68px;
+      font-weight: 800;
+      line-height: 1.06;
+      margin: 0;
+      color: var(--deep);
+    }
+    .h.sm { font-size: 52px; }
+    .p {
+      font-size: 32px;
+      line-height: 1.45;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .gold { color: #b8922a; font-weight: 700; }
+    .rule {
+      width: 72px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 2px;
+      margin: 28px 0;
+    }
+    .mark-row { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+    .mark-row span {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--deep);
+    }
+    /* Fausses cartes vides = rhythm UI sans contenu */
+    .ghost-stack {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .ghost {
+      height: 28px;
+      border-radius: 14px;
+      background: linear-gradient(90deg, rgba(15,122,142,0.12), rgba(15,122,142,0.04));
+    }
+    .ghost.w80 { width: 80%; }
+    .ghost.w60 { width: 60%; }
+    .ghost.w90 { width: 90%; }
+    .ghost.bar { height: 120px; border-radius: 20px; background: rgba(255,255,255,0.6); border: 1px solid rgba(15,122,142,0.08); }
+    .quote { font-size: 46px; font-weight: 700; line-height: 1.32; color: var(--deep); }
+    .quote .gold { font-weight: 800; }
+    .pill-date {
+      display: inline-block;
+      margin-top: 32px;
+      padding: 14px 28px;
+      background: var(--deep);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .top-ribbon {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      background: linear-gradient(90deg, var(--deep) 0%, var(--teal) 100%);
+      color: #fff;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      padding: 22px 32px;
+      box-shadow: 0 8px 24px rgba(10,58,68,0.22);
+    }
+    .stamp {
+      position: absolute;
+      top: 108px;
+      right: 56px;
+      z-index: 4;
+      border: 3px solid var(--gold);
+      color: var(--deep);
+      font-size: 22px;
+      letter-spacing: 0.28em;
+      padding: 18px 26px;
+      border-radius: 12px;
+      background: #fff;
+      font-weight: 800;
+      transform: rotate(-4deg);
+      box-shadow: 0 12px 32px rgba(230,185,58,0.35);
+    }
+    .pillars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+    .pillars span {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--deep);
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: #fff;
+      border: 2px solid rgba(230,185,58,0.55);
+      box-shadow: 0 4px 14px rgba(15,122,142,0.12);
+    }
+    .sig-line {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(15,122,142, 0.12);
+      font-size: 22px;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .sig-line em { color: var(--deep); font-style: normal; font-weight: 600; }
+    /* Reels 9:16 — remplir la hauteur (safe zone basse pour UI TikTok/IG) */
+    .slide.reel .inner {
+      padding: 120px 72px 200px;
+      justify-content: flex-start;
+      gap: 36px;
+    }
+    .slide.reel .stamp { top: 118px; }
+    .slide.reel .watermark { top: 320px; opacity: 0.12; }
+    .slide.reel .h.sm { font-size: 62px; }
+    .slide.reel .p { font-size: 34px; }
+    .reel-convo {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 8px;
+    }
+    .bubble {
+      max-width: 78%;
+      padding: 22px 28px;
+      border-radius: 24px;
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1.35;
+      box-shadow: 0 8px 28px rgba(15,122,142,0.1);
+    }
+    .bubble.them {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.92);
+      color: var(--muted);
+      border: 1px solid rgba(15,122,142,0.12);
+    }
+    .bubble.me {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-mid) 100%);
+      color: #fff;
+    }
+    .bubble .sk {
+      display: block;
+      height: 12px;
+      border-radius: 6px;
+      background: rgba(15,122,142,0.15);
+      margin-top: 14px;
+      width: 70%;
+    }
+    .bubble.me .sk { background: rgba(255,255,255,0.35); width: 55%; }
+    .slide.reel .card {
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .slide.reel .pillars { margin-top: 28px; justify-content: center; }
+    .slide.reel .pill-date {
+      display: block;
+      text-align: center;
+      margin-top: 28px;
+      font-size: 24px;
+      padding: 18px 32px;
+    }
+    .reel-foot {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(10,58,68,0.55);
+    }
+    .slide.reel.story-center .inner {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding-top: 140px;
+      padding-bottom: 220px;
+    }
+    .slide.reel.story-center .card {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .quote.xl { font-size: 58px; line-height: 1.28; }
+    .quote.hero { font-size: 76px; line-height: 1.15; margin: 0; }
+  </style>
+</head>
+<body>
+
+  <div class="label">#1 — 3/11 · Feed · clair + atmosphère (sans contenu lisible)</div>
+  <div class="slide">
+    <div class="atmo"></div>
+    <div class="atmo-teal"></div>
+    <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="blobs"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div></div>
+    <div class="top-ribbon">Liste d’attente · 17 novembre</div>
+    <div class="stamp">BIENTÔT</div>
+    <div class="inner">
+      <div class="mark-row">
+        <svg width="48" height="48" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="2" fill="#0A3A44"/></svg>
+        <span>The Loop</span>
+      </div>
+      <div class="card">
+        <p class="ey">Conakry</p>
+        <div class="rule"></div>
+        <h1 class="h sm">Vendredi soir.<br />La question revient.</h1>
+        <p class="p">Un guide <span class="gold">sélectif</span> se prépare. Liste d’attente · <span class="gold">17 nov.</span></p>
+        <div class="pillars">
+          <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+        </div>
+        <p class="sig-line">Les bonnes adresses ne s'annoncent pas. <em>Elles se transmettent.</em></p>
+        <div class="ghost-stack" aria-hidden="true">
+          <div class="ghost bar"></div>
+          <div class="ghost w90"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">#1 · Reels 9:16</div>
+  <div class="slide reel">
+    <div class="atmo"></div>
+    <div class="atmo-teal"></div>
+    <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="blobs"><div class="blob a"></div><div class="blob b" style="top:280px;right:-40px"></div><div class="blob c" style="top:55%;left:8%"></div></div>
+    <div class="top-ribbon">Liste d’attente · 17 novembre</div>
+    <div class="stamp">BIENTÔT</div>
+    <div class="inner">
+      <div class="mark-row" style="margin-bottom:0">
+        <svg width="44" height="44" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>The Loop · Conakry</span>
+      </div>
+      <div class="reel-convo" aria-hidden="true">
+        <div class="bubble them">On se voit où vendredi ?<span class="sk"></span></div>
+        <div class="bubble me">Comme d’hab… t’as une idée ?<span class="sk"></span></div>
+        <div class="bubble them">Même endroit que la dernière fois ?<span class="sk"></span></div>
+      </div>
+      <div class="card">
+        <p class="ey">La question revient</p>
+        <div class="rule"></div>
+        <h1 class="h sm">On va où<br />ce week-end ?</h1>
+        <p class="p">Même fil. Mêmes habitudes. Bientôt, un repère — pas un énième bruit.</p>
+        <div class="pillars">
+          <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+        </div>
+        <span class="pill-date">17 nov. · réserve ta place</span>
+      </div>
+      <p class="reel-foot">Guide sélectif · Conakry</p>
+    </div>
+  </div>
+
+  <div class="label">#2 — 5/11 · Signature · clair</div>
+  <div class="slide">
+    <div class="atmo" style="background-position:center 60%"></div>
+    <div class="atmo-teal"></div>
+    <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="blobs"><div class="blob a"></div><div class="blob b"></div></div>
+    <div class="top-ribbon">17 novembre · 100 premières places</div>
+    <div class="stamp">SIGNATURE</div>
+    <div class="inner" style="justify-content:center;padding-top:140px">
+      <div class="mark-row" style="justify-content:center;margin-bottom:40px">
+        <svg width="48" height="48" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>The Loop</span>
+      </div>
+      <div class="card" style="text-align:center;padding:64px 56px">
+        <p class="ey" style="margin-bottom:28px">Guide sélectif · Conakry</p>
+        <p class="quote">« Les bonnes adresses ne s'annoncent pas. »</p>
+        <p class="quote gold" style="margin-top:20px;font-size:52px">Elles se transmettent.</p>
+        <div class="rule" style="margin:40px auto"></div>
+        <p class="p" style="margin:0;color:var(--deep);font-weight:600;font-size:28px">Liste d’attente · <span class="gold">17 nov.</span></p>
+        <div class="pillars" style="justify-content:center;margin-top:36px">
+          <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">#2 · Reels / Story vidéo 9:16 · signature</div>
+  <div class="slide reel story-center">
+    <div class="atmo" style="background-position:center 50%"></div>
+    <div class="atmo-teal"></div>
+    <svg class="watermark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0F7A8E" stroke-width="2"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0F7A8E" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="blobs"><div class="blob a"></div><div class="blob b" style="bottom:320px"></div></div>
+    <div class="top-ribbon">Signature · The Loop</div>
+    <div class="stamp">5 NOV.</div>
+    <div class="inner">
+      <div class="mark-row" style="justify-content:center;margin-bottom:24px">
+        <svg width="52" height="52" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>The Loop</span>
+      </div>
+      <div class="card" style="text-align:center;padding:72px 56px">
+        <p class="quote xl">« Les bonnes adresses ne s'annoncent pas. »</p>
+        <p class="quote gold hero" style="margin-top:32px">Elles se transmettent.</p>
+        <div class="rule" style="margin:48px auto"></div>
+        <p class="p" style="margin:0;font-size:30px">Guide <span class="gold">sélectif</span> · Conakry</p>
+        <span class="pill-date">17 nov. · 100 premières places</span>
+      </div>
+      <p class="reel-foot">Rendez-vous · 17 novembre</p>
+    </div>
+  </div>
+
+  <div class="label">#2 · Story 1/3 · ligne 1</div>
+  <div class="slide reel story-center">
+    <div class="atmo"></div>
+    <div class="atmo-teal"></div>
+    <div class="top-ribbon">The Loop</div>
+    <div class="inner">
+      <p class="ey" style="text-align:center;margin-bottom:48px">Signature</p>
+      <div class="card" style="text-align:center;padding:80px 64px">
+        <p class="quote xl">« Les bonnes adresses ne s'annoncent pas. »</p>
+      </div>
+      <p class="reel-foot" style="margin-top:48px">Suite →</p>
+    </div>
+  </div>
+
+  <div class="label">#2 · Story 2/3 · ligne 2</div>
+  <div class="slide reel story-center">
+    <div class="atmo"></div>
+    <div class="atmo-teal"></div>
+    <div class="top-ribbon">The Loop</div>
+    <div class="inner">
+      <div class="card" style="text-align:center;padding:100px 64px;background:linear-gradient(180deg,#fff 0%,#f4fafc 100%)">
+        <p class="quote gold hero">Elles se transmettent.</p>
+        <div class="rule" style="margin:40px auto"></div>
+        <p class="p" style="margin:0;font-size:28px;color:var(--teal);font-weight:700">Conakry · guide sélectif</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">#2 · Story 3/3 · rappel date</div>
+  <div class="slide reel story-center">
+    <div class="atmo"></div>
+    <div class="atmo-teal"></div>
+    <div class="top-ribbon">17 novembre · 100 premières places</div>
+    <div class="stamp">BIENTÔT</div>
+    <div class="inner">
+      <div class="mark-row" style="justify-content:center;margin-bottom:32px">
+        <svg width="56" height="56" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>The Loop</span>
+      </div>
+      <div class="pillars" style="justify-content:center;margin:0 0 40px">
+        <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+      </div>
+      <span class="pill-date" style="font-size:26px;padding:22px 40px">Liste d’attente · 17 nov.</span>
+      <p class="p" style="text-align:center;margin-top:40px;font-size:28px;max-width:880px">Accès anticipé pour les <span class="gold">100 premières</span> inscriptions.<br />Pas de lien aujourd’hui — reste connecté.</p>
+    </div>
+  </div>
+
+</body>
+</html>

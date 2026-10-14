@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 24/12 · Cadeau de Noël · frames</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide { width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden; color: #fff; }
+    .slide.dawn { background: linear-gradient(165deg, #4a3820 0%, #c9a050 35%, #0f7a8e 70%, #0a3a44 100%); }
+    .slide.calm { background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 50%, #0a3a44 100%); color: var(--deep); }
+    .slide.deep { background: linear-gradient(165deg, #0f7a8e 0%, #0a3a44 55%, #062830 100%); }
+    .slide.light { background: linear-gradient(175deg, #fff8ee 0%, #ffe9c4 30%, #c8e3ec 100%); color: var(--deep); }
+    .inner { position: relative; z-index: 2; height: 100%; padding: 140px 64px 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; }
+    .panel { border-radius: 36px; padding: 64px 48px; max-width: 920px; width: 100%; box-sizing: border-box; }
+    .slide.dawn .panel, .slide.deep .panel { background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.18); }
+    .slide.calm .panel, .slide.light .panel { background: #fff; border: 2px solid rgba(15,122,142,0.12); box-shadow: 0 24px 64px rgba(10,58,68,0.14); }
+    .word { font-size: 80px; font-weight: 800; line-height: 1.08; margin: 0; }
+    .word.sm { font-size: 56px; }
+    .gold { color: var(--gold); }
+    .slide.calm .gold, .slide.light .gold { color: #9a7720; }
+    .phone { width: 500px; height: 900px; border-radius: 44px; overflow: hidden; margin: 24px auto 0; border: 5px solid rgba(230,185,58,0.55); box-shadow: 0 24px 64px rgba(0,0,0,0.25); }
+    .phone img { width: 100%; height: 100%; object-fit: cover; filter: blur(10px) saturate(1.05); transform: scale(1.02); }
+    .slide.light .phone img { filter: blur(6px) saturate(1.1); }
+    .tags { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 20px; }
+    .tags span { font-size: 26px; font-weight: 800; padding: 18px 22px; border-radius: 16px; border: 2px solid rgba(230,185,58,0.5); background: rgba(10,58,68,0.06); }
+    .slide.deep .tags span { background: rgba(255,255,255,0.1); color: #fff; }
+    .arc { width: 120px; height: 120px; border: 6px solid var(--gold); border-radius: 50%; border-right-color: transparent; transform: rotate(-35deg); margin: 0 auto 24px; position: relative; }
+    .arc::after { content: ""; width: 16px; height: 16px; background: var(--gold); border-radius: 50%; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+    .mark { font-size: 36px; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; }
+    .url { font-size: 40px; font-weight: 700; margin-top: 28px; }
+    .quote { font-size: 38px; font-weight: 700; line-height: 1.35; font-style: italic; margin: 0; }
+    .slide.deep .quote { font-style: normal; font-weight: 800; }
+    .hint { margin-top: 32px; font-size: 22px; opacity: 0.65; letter-spacing: 0.08em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+  <div class="label">24/12 · 1 · 24 décembre</div>
+  <div class="slide dawn">
+    <div class="inner">
+      <div class="panel">
+        <h1 class="word gold">24 décembre.</h1>
+        <p class="hint" style="color:rgba(255,255,255,0.7)">B-roll aube · lumière dorée</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">24/12 · 2 · Un repère</div>
+  <div class="slide calm">
+    <div class="inner">
+      <div class="panel"><h1 class="word sm">Un repère.</h1></div>
+    </div>
+  </div>
+
+  <div class="label">24/12 · 3 · App (flou léger Acte D)</div>
+  <div class="slide light">
+    <div class="inner">
+      <div class="panel">
+        <div class="phone"><img src="assets/capture-accueil-2.jpg" alt="" /></div>
+        <div class="tags"><span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span></div>
+        <p class="hint" style="color:var(--deep)">Remplacer par capture à jour si dispo</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">24/12 · 4 · The Loop</div>
+  <div class="slide deep">
+    <div class="inner">
+      <div class="panel">
+        <div class="arc"></div>
+        <p class="mark">The Loop</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">24/12 · 5 · Disponible</div>
+  <div class="slide deep">
+    <div class="inner">
+      <div class="panel">
+        <h1 class="word sm">Disponible<br /><span class="gold">maintenant</span></h1>
+        <p class="url">theloop-app.com</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">24/12 · 6 · Signature</div>
+  <div class="slide dawn">
+    <div class="inner">
+      <div class="panel">
+        <p class="quote">Les bonnes adresses ne s'annoncent pas.<br /><span class="gold">Elles se transmettent.</span></p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
