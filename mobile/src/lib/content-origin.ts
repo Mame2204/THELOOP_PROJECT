@@ -43,7 +43,14 @@ export function resolveContentChannel(params: {
   contentChannel?: ContentChannel;
 }): ContentChannel {
   if (!params.asAdmin) return 'partner';
-  return params.contentChannel === 'loop' ? 'loop' : 'admin';
+  if (
+    params.contentChannel === 'loop'
+    || params.contentChannel === 'partner'
+    || params.contentChannel === 'admin'
+  ) {
+    return params.contentChannel;
+  }
+  return 'admin';
 }
 
 /** Publications de l'équipe THE LOOP (admin / super admin), hors partenaires. */

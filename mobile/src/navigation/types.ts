@@ -39,7 +39,7 @@ export type RootStackParamList = {
   Settings: undefined;
   Abonnement: undefined;
   AdminModeration: { tab?: 'all' | 'events' | 'spots' | 'tools'; embedded?: boolean };
-  PartnerSubmission: { type: 'event' | 'spot'; id?: string; asAdmin?: boolean; contentChannel?: 'admin' | 'loop'; isTool?: boolean };
+  PartnerSubmission: { type: 'event' | 'spot'; id?: string; asAdmin?: boolean; contentChannel?: 'admin' | 'loop' | 'partner'; isTool?: boolean };
   PartnerContent: undefined;
   PartnerBenefits: undefined;
   PartnerFeatured: undefined;

@@ -755,11 +755,18 @@ async function applyPublishedEventUpdate(
     eventUpdate.location_id = locationId;
   }
 
-  const { error } = await supabase.from('events').update(asDbUpdate('events', eventUpdate)).eq('id', publishedId);
+  const { data: updatedRows, error } = await supabase
+    .from('events')
+    .update(asDbUpdate('events', eventUpdate))
+    .eq('id', publishedId)
+    .select('id');
 
   if (error) {
     console.warn('[AdminEdit] events update:', error.message);
     throw new Error(error.message);
+  }
+  if (!updatedRows?.length) {
+    throw new Error('Modification non enregistrée : droits insuffisants sur cet événement.');
   }
 
   await syncEventProgram(publishedId, payload.program);
