@@ -10,11 +10,9 @@ import { useFocusLoad } from '@/hooks/useFocusLoad';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { getCountryLabel } from '@/lib/countries';
 import { formatDateFr } from '@/lib/date-utils';
-import { formatLegalBodyForDisplay } from '@/lib/legal-display';
-import { getLegalContent } from '@/lib/legal-content-store';
 import { getMaxPendingPasses } from '@/lib/pass-shop-settings-store';
 import {
-  PASS_CHECKOUT_PAYMENT_METHODS,
+  PASS_CHECKOUT_CONDITIONS_SUMMARY,
   PASS_INCLUDED_BENEFITS,
   PASS_SHOP_FAQ,
 } from '@/lib/pass-shop-copy';
@@ -32,11 +30,9 @@ import {
 } from '@/lib/prime-plan-pricing-utils';
 import {
   PRIME_PLAN_OPTIONS,
-  computeSubscriptionExpiry,
   formatPassPrice,
   type PrimeBillingPeriod,
 } from '@/lib/prime-plans';
-import { getReferralStats, type ReferralStats } from '@/lib/referral-store';
 import {
   getActiveSubscription,
   getPendingSubscriptions,
@@ -86,7 +82,6 @@ export function PrimeScreen({ navigation }: Props) {
   );
   const [prices, setPrices] = useState<PassPriceMap | null>(null);
   const [loadingShop, setLoadingShop] = useState(true);
-  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [legalOpen, setLegalOpen] = useState(false);
   const [legalTitle, setLegalTitle] = useState('');
   const [legalBody, setLegalBody] = useState('');
@@ -112,20 +107,18 @@ export function PrimeScreen({ navigation }: Props) {
   const loadEligibility = useCallback(async () => {
     setLoadingShop(true);
     try {
-      const [shopCatalog, loadedPrices, stats] = await Promise.all([
+      const [shopCatalog, loadedPrices] = await Promise.all([
         listPassCatalog({ countryCode: priceCountry, status: 'active', shopOnly: true }),
         getPassPrices(priceCountry),
-        user?.id && user.id !== 'anonymous'
-          ? getReferralStats(user.id, user)
-          : Promise.resolve(null),
       ]);
       setPrices(loadedPrices);
-      setReferralStats(stats);
       const periods = shopCatalog
         .map((e) => e.shopBillingPeriod)
-        .filter((p): p is PrimeBillingPeriod => p != null);
+        .filter((p): p is PrimeBillingPeriod => p != null && p !== 'lifetime');
       const unique = [...new Set(periods)];
-      const visible = unique.length ? unique : PRIME_PLAN_OPTIONS.map((p) => p.value);
+      const visible = (unique.length ? unique : PRIME_PLAN_OPTIONS.map((p) => p.value)).filter(
+        (p) => p !== 'lifetime',
+      );
       setShopPeriods(visible);
       const preferred = visible.includes(RECOMMENDED_BILLING_PERIOD)
         ? RECOMMENDED_BILLING_PERIOD
@@ -210,16 +203,20 @@ export function PrimeScreen({ navigation }: Props) {
     navigation.navigate('PassPayment', { period: selected });
   }
 
-  async function openPassConditions() {
-    const content = await getLegalContent('conditions_pass_prime');
-    setLegalTitle(content.title);
-    setLegalBody(formatLegalBodyForDisplay(content.body));
+  function openPassConditions() {
+    setLegalTitle('Conditions du PASS Prime');
+    setLegalBody(
+      [
+        ...PASS_CHECKOUT_CONDITIONS_SUMMARY.map((line) => `• ${line}`),
+        '',
+        'Le texte complet est disponible dans Paramètres → Conditions du PASS Prime.',
+      ].join('\n'),
+    );
     setLegalOpen(true);
   }
 
   const selectedPlan = PRIME_PLAN_OPTIONS.find((p) => p.value === selected);
   const selectedPrice = prices?.[selected];
-  const selectedExpiry = computeSubscriptionExpiry(selected);
   const selectedPriceLabel =
     prices && selectedPrice != null
       ? formatPassPrice(selected, prices, priceCurrency)
@@ -340,7 +337,6 @@ export function PrimeScreen({ navigation }: Props) {
                 ))
               : PRIME_PLAN_OPTIONS.filter((plan) => shopPeriods.includes(plan.value)).map((plan) => {
                   const isActive = selected === plan.value;
-                  const expiry = computeSubscriptionExpiry(plan.value);
                   const priceLabel = prices
                     ? formatPassPrice(plan.value, prices, priceCurrency)
                     : null;
@@ -381,42 +377,10 @@ export function PrimeScreen({ navigation }: Props) {
                           −{savings.percent} % vs {savings.equivalentMonthly.toLocaleString('fr-FR')} {priceCurrency}/mois en mensuel
                         </Text>
                       ) : null}
-                      <Text style={[styles.planExpiry, { color: shell.pageKicker }]}>
-                        {expiry ? `Échéance si activé aujourd'hui : ${formatDateFr(expiry)}` : 'Sans échéance'}
-                      </Text>
                     </Pressable>
                   );
                 })}
           </View>
-
-          <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Moyens de paiement</Text>
-          <View style={[styles.paymentRow, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
-            {PASS_CHECKOUT_PAYMENT_METHODS.map((method) => (
-              <View key={method} style={[styles.paymentChip, { borderColor: shell.filterInactiveBorder }]}>
-                <Text style={[styles.paymentChipText, { color: shell.pageTitle }]}>{method}</Text>
-              </View>
-            ))}
-          </View>
-          <Text style={[styles.noteInline, { color: shell.pageKicker }]}>
-            Paiement sécurisé sur le portail — choisissez votre moyen à l'étape suivante.
-          </Text>
-
-          {referralStats ? (
-            <>
-              <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Parrainage</Text>
-              <Pressable
-                style={[styles.referralCard, { borderColor: accent.accentBorder, backgroundColor: accent.accentSoft }]}
-                onPress={() => navigation.navigate('Referral')}
-              >
-                <Text style={[styles.referralCode, { color: accent.accent }]}>{referralStats.referralCode}</Text>
-                <Text style={[styles.referralMeta, { color: shell.pageKicker }]}>
-                  {referralStats.totalReferrals} filleul{referralStats.totalReferrals > 1 ? 's' : ''} ·{' '}
-                  {referralStats.monthsGrantedThisYear} mois Prime gagnés cette année
-                </Text>
-                <Text style={[styles.referralLink, { color: accent.accent }]}>Voir le parrainage →</Text>
-              </Pressable>
-            </>
-          ) : null}
 
           <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Questions fréquentes</Text>
           <View style={[styles.faqCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
@@ -440,9 +404,9 @@ export function PrimeScreen({ navigation }: Props) {
             })}
           </View>
 
-          <Pressable onPress={() => void openPassConditions()} style={styles.legalLink}>
+          <Pressable onPress={openPassConditions} style={styles.legalLink}>
             <Text style={[styles.legalLinkText, { color: shell.tabIndicator }]}>
-              Conditions du PASS Prime
+              Résumé des conditions
             </Text>
           </Pressable>
 
@@ -472,13 +436,6 @@ export function PrimeScreen({ navigation }: Props) {
                 <Text style={[styles.recapPrice, { color: shell.pageTitle }]}>
                   {selectedPriceLabel ?? '…'}
                 </Text>
-                {selectedExpiry ? (
-                  <Text style={[styles.recapMeta, { color: shell.pageKicker }]}>
-                    Échéance : {formatDateFr(selectedExpiry)}
-                  </Text>
-                ) : (
-                  <Text style={[styles.recapMeta, { color: shell.pageKicker }]}>Sans échéance</Text>
-                )}
               </View>
               <Pressable
                 style={[styles.btn, { backgroundColor: accent.accent }]}
@@ -559,27 +516,6 @@ const styles = StyleSheet.create({
   planDesc: { marginTop: 6, fontSize: 12, lineHeight: 17 },
   planPrice: { marginTop: 8, fontSize: 15, fontWeight: '800' },
   planSavings: { marginTop: 4, fontSize: 11, fontWeight: '700', lineHeight: 16 },
-  planExpiry: { marginTop: 6, fontSize: 11, fontWeight: '600' },
-  paymentRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 12,
-  },
-  paymentChip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  paymentChipText: { fontSize: 11, fontWeight: '700' },
-  noteInline: { marginTop: 8, marginBottom: 16, fontSize: 11, lineHeight: 16 },
-  referralCard: { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 16 },
-  referralCode: { fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  referralMeta: { marginTop: 6, fontSize: 12, lineHeight: 18 },
-  referralLink: { marginTop: 8, fontSize: 12, fontWeight: '800' },
   faqCard: { borderWidth: 1, borderRadius: 14, marginBottom: 12, overflow: 'hidden' },
   faqItem: { padding: 14 },
   faqQuestion: { fontSize: 13, fontWeight: '700', lineHeight: 18 },
@@ -596,7 +532,6 @@ const styles = StyleSheet.create({
   recapRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   recapLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
   recapPrice: { marginTop: 2, fontSize: 17, fontWeight: '800' },
-  recapMeta: { marginTop: 2, fontSize: 11 },
   btn: { paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, alignItems: 'center', minWidth: 130 },
   btnText: { fontWeight: '800', color: '#000', fontSize: 14 },
 });

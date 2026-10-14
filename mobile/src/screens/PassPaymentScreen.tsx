@@ -28,11 +28,7 @@ import {
   type PassPriceMap,
 } from '@/lib/pass-pricing-store';
 import { getMaxPendingPasses } from '@/lib/pass-shop-settings-store';
-import {
-  computeSubscriptionExpiry,
-  formatPassPrice,
-  primePlanLabel,
-} from '@/lib/prime-plans';
+import { formatPassPrice, primePlanLabel } from '@/lib/prime-plans';
 import {
   getActiveSubscription,
   getPendingSubscriptions,
@@ -58,12 +54,9 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const priceCurrency = passPriceCurrency(priceCountry);
   const { shell, grade, theme } = useMemberTheme();
   const accent = getProfileAccent(role, shell, grade, theme);
-  const [payerPhone, setPayerPhone] = useState(
-    user?.phoneNumber?.replace(/\D/g, '').slice(-9) || '',
-  );
+  const [payerPhone, setPayerPhone] = useState('');
   const [passPrices, setPassPrices] = useState<PassPriceMap | null>(null);
   const [activeExpiry, setActiveExpiry] = useState<string | null>(null);
-  const [pendingCount, setPendingCount] = useState(0);
   const [maxPending, setMaxPending] = useState(3);
   const [queueStartAt, setQueueStartAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -115,7 +108,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
     const active = getActiveSubscription(history, 'prime');
     const pending = getPendingSubscriptions(history, 'prime');
     setActiveExpiry(active?.expiresAt ?? null);
-    setPendingCount(pending.length);
     const last = pending[pending.length - 1];
     setQueueStartAt(last?.scheduledStartAt ?? active?.expiresAt ?? null);
   }, [user?.id, priceCountry]);
@@ -127,7 +119,6 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const planName = primePlanLabel(period);
   const amountGnf = passPrices?.[period] ?? null;
   const displayPrice = amountGnf != null ? formatPassPrice(period, passPrices ?? undefined, priceCurrency) : '…';
-  const previewExpiry = computeSubscriptionExpiry(period);
   const hasActivePass = Boolean(activeExpiry) || role === 'USER_PRIME';
   const willQueue = hasActivePass && Boolean(activeExpiry);
   const isSandboxMode = serverSandboxMode === true;
@@ -239,7 +230,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       }
       Alert.alert(
         'Confirmation en attente',
-        `${reason}\n\nCe n’est pas forcément un refus Soutra : le serveur de paiement a pu être injoignable un moment (réveil Render). Si le débit est passé, Mon PASS se mettra à jour.`,
+        `${reason}\n\nSi votre opérateur a confirmé le débit, votre PASS apparaîtra dans Mon PASS sous peu. Sinon, réessayez.`,
         buttons,
       );
     });
@@ -495,10 +486,10 @@ export function PassPaymentScreen({ navigation, route }: Props) {
   const djomyReady = isDjomyPaymentConfigured();
   const showSandboxBanner = !djomyReady || isSandboxMode;
   const sandboxHint = sandboxPayerHint('all');
-  const payerPlaceholder = isSandboxMode ? `Ex. ${sandboxHint.display}` : 'Ex. 620 00 00 01';
+  const payerPlaceholder = isSandboxMode ? `Ex. ${sandboxHint.display}` : '620 00 00 01';
   const payerHint = isSandboxMode
-    ? `${sandboxHint.tip} Orange Money est indisponible en test — choisissez un autre moyen sur l’écran suivant.`
-    : 'Utilisez le même numéro ou compte que sur l’écran de paiement (Mobile Money, PayCard, carte…).';
+    ? `${sandboxHint.tip} En test, certains moyens peuvent être indisponibles sur l’écran suivant.`
+    : 'Numéro Mobile Money ou identifiant utilisé pour payer (9 chiffres pour Orange / MTN).';
 
   return (
     <KeyboardAwareFormScroll style={{ flex: 1, backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
@@ -527,19 +518,16 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       <View style={[styles.summaryCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
         <Text style={[styles.planName, { color: shell.pageTitle }]}>{planName}</Text>
         <Text style={[styles.planPrice, { color: accent.accent }]}>{displayPrice}</Text>
-        <Text style={[styles.planMeta, { color: shell.pageKicker }]}>
-          {willQueue
-            ? `Mise en file d'attente (${pendingCount}/${maxPending}) — démarrage prévu : ${
-                queueStartAt ? formatDateFr(queueStartAt) : 'fin du PASS actuel'
-              }`
-            : previewExpiry
-              ? `Échéance estimée : ${formatDateFr(previewExpiry)}`
-              : 'PASS sans échéance'}
-        </Text>
+        {willQueue ? (
+          <Text style={[styles.planMeta, { color: shell.pageKicker }]}>
+            Vous avez déjà un PASS actif : celui-ci démarrera à la fin du PASS en cours
+            {queueStartAt ? ` (${formatDateFr(queueStartAt)})` : ''}.
+          </Text>
+        ) : null}
       </View>
 
       <Text style={[styles.providerHint, { color: shell.pageKicker }]}>
-        Vous choisirez Orange Money, MTN MoMo, Soutra Money, PayCard ou carte bancaire sur le portail de paiement sécurisé.
+        Vous choisirez votre moyen de paiement à l’étape suivante.
       </Text>
 
       <Text style={[styles.sectionLabel, { color: shell.pageKicker }]}>Numéro de paiement</Text>
@@ -565,7 +553,7 @@ export function PassPaymentScreen({ navigation, route }: Props) {
       ) : null}
 
       <Text style={[styles.finalSaleNote, { color: shell.pageKicker }]}>
-        Le PASS est activé dès la confirmation du paiement. Une fois payé, il n’est ni rétractable ni remboursable.
+        Activation dès confirmation. Achat définitif, sans remboursement.
       </Text>
 
       <Pressable

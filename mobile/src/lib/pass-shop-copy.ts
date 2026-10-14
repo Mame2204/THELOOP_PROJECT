@@ -5,7 +5,13 @@ export const PASS_INCLUDED_BENEFITS = [
   'Privilèges chez les établissements partenaires : offres, réductions, accueil privilégié',
   'Accès aux événements LoopX réservés aux membres Prime',
   'Accès prioritaire aux invitations et aux tirages au sort',
-  'Parrainage : mois Prime offerts selon vos filleuls',
+] as const;
+
+/** Résumé court à l’achat — le texte intégral reste dans Paramètres → Conditions du PASS Prime. */
+export const PASS_CHECKOUT_CONDITIONS_SUMMARY = [
+  'Chaque PASS est un achat unique : pas de renouvellement automatique.',
+  'Activation dès confirmation du paiement ; si un PASS est déjà en cours, le nouveau démarre ensuite.',
+  'Une fois payé, le PASS n’est ni rétractable ni remboursable.',
 ] as const;
 
 /** Moyens de paiement disponibles sur le portail (agrégateur — ne pas citer le prestataire). */
