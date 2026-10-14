@@ -34,7 +34,7 @@ Installer le **58** (ou vérifier date EAS vs commits ci-dessous).
 
 | # | Correctif (commit) | Test minimal | Attendu |
 |---|-------------------|--------------|---------|
-| **R1** | Aperçu couverture = **CoverImage** + local RN (fix #113, build **61+**) | **📱🤖** Partenaire ou admin mobile : upload **couverture 16:9** | Cadre gris **+ image** visible (local puis URL Storage) |
+| **R1** | Couverture 16:9 = **même RemoteImage que la galerie**, crop après EXIF (build **62+**) | **📱🤖** Partenaire ou admin mobile : upload **couverture 16:9** | Image visible dans le cadre après téléversement |
 | **R2** | `b139264` — modale code invite **sans Alert superposé** | **📱🤖** Activation invite → saisie **6 chiffres** (membre ou partenaire) | Une seule UI lisible, pas d’Alert par-dessus la modale |
 | **R3** | `6688d84` — icône **🎁** cartes avec privilège | **📱** Agenda / Guide : fiche **avec** avantage lié | **🎁 en bas à droite** sur la carte (gate Privilèges **Visible**) |
 | **R4** | *(optionnel)* Plafond parrainage / filleuls par an | Admin + compte test (astuce SQL / param admin) | Comportement attendu documenté en smoke **C4** |

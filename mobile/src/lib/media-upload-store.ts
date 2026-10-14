@@ -3,6 +3,7 @@ import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Alert, Image, InteractionManager, Platform } from 'react-native';
+import { markNetworkReachable } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export type MediaFolder = 'events' | 'spots' | 'gallery';
@@ -129,9 +130,22 @@ function getImageSize(uri: string): Promise<{ width: number; height: number }> {
 }
 
 /**
+ * JPEG sans EXIF : Image.getSize et le crop doivent mesurer les mêmes pixels.
+ * Sur Android, une photo portrait garde souvent width/height inversés tant que l’EXIF
+ * n’est pas appliqué — le recadrage 16:9 sort alors du bitmap (fichier vide / cadre gris).
+ * Le carré galerie tombe encore dans l’image, d’où l’écart couverture vs autres photos.
+ */
+async function bakeOrientationJpeg(localUri: string): Promise<string> {
+  const result = await manipulateAsync(normalizeLocalFileUri(localUri), [], {
+    compress: 0.92,
+    format: SaveFormat.JPEG,
+  });
+  return normalizeLocalFileUri(result.uri);
+}
+
+/**
  * Recadre au ratio cible.
- * Si l’image est trop haute (portrait → 16:9), ancre en **haut** pour ne pas couper les têtes
- * (l’éditeur iOS centre souvent et coupe le haut).
+ * Si l’image est trop haute (portrait → 16:9), ancre en **haut** pour ne pas couper les têtes.
  */
 export async function cropToAspect(
   localUri: string,
@@ -139,18 +153,25 @@ export async function cropToAspect(
   gravity: 'top' | 'center' = 'top',
 ): Promise<string> {
   const readableUri = await ensureReadableFileUri(localUri);
+  let orientedUri = readableUri;
+  try {
+    orientedUri = await bakeOrientationJpeg(readableUri);
+  } catch {
+    orientedUri = readableUri;
+  }
+
   let width = 0;
   let height = 0;
   try {
-    const size = await getImageSize(readableUri);
+    const size = await getImageSize(orientedUri);
     width = size.width;
     height = size.height;
   } catch {
-    return compressImageForUpload(readableUri);
+    return compressImageForUpload(orientedUri);
   }
 
   if (width < 2 || height < 2) {
-    return compressImageForUpload(readableUri);
+    return compressImageForUpload(orientedUri);
   }
 
   const targetRatio = aspect[0] / aspect[1];
@@ -162,15 +183,13 @@ export async function cropToAspect(
   let originY = 0;
 
   if (Math.abs(currentRatio - targetRatio) <= ASPECT_EPSILON) {
-    return compressImageForUpload(readableUri);
+    return compressImageForUpload(orientedUri);
   }
 
   if (currentRatio > targetRatio) {
-    // Trop large → couper les côtés (centré)
     cropWidth = Math.max(1, Math.round(height * targetRatio));
     originX = Math.max(0, Math.round((width - cropWidth) / 2));
   } else {
-    // Trop haute → couper bas/haut ; ancrage haut pour préserver le sujet
     cropHeight = Math.max(1, Math.round(width / targetRatio));
     if (gravity === 'center') {
       originY = Math.max(0, Math.round((height - cropHeight) / 2));
@@ -179,9 +198,14 @@ export async function cropToAspect(
     }
   }
 
-  // Sécurité bounds
   if (originX + cropWidth > width) cropWidth = width - originX;
   if (originY + cropHeight > height) cropHeight = height - originY;
+  cropWidth = Math.max(1, Math.min(cropWidth, width));
+  cropHeight = Math.max(1, Math.min(cropHeight, height));
+
+  if (cropWidth < 2 || cropHeight < 2 || originX + cropWidth > width || originY + cropHeight > height) {
+    return compressImageForUpload(orientedUri);
+  }
 
   const actions: Parameters<typeof manipulateAsync>[1] = [
     {
@@ -198,11 +222,15 @@ export async function cropToAspect(
     actions.push({ resize: { width: UPLOAD_MAX_WIDTH } });
   }
 
-  const result = await manipulateAsync(readableUri, actions, {
-    compress: UPLOAD_JPEG_QUALITY,
-    format: SaveFormat.JPEG,
-  });
-  return normalizeLocalFileUri(result.uri);
+  try {
+    const result = await manipulateAsync(orientedUri, actions, {
+      compress: UPLOAD_JPEG_QUALITY,
+      format: SaveFormat.JPEG,
+    });
+    return normalizeLocalFileUri(result.uri);
+  } catch {
+    return compressImageForUpload(orientedUri);
+  }
 }
 
 /**
@@ -337,6 +365,7 @@ export async function uploadContentImage(
     throw new Error(error.message);
   }
 
+  markNetworkReachable();
   await uploadThumbnail(preparedUri, path);
 
   const { data } = supabase.storage.from('content-media').getPublicUrl(path);

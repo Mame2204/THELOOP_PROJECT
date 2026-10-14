@@ -53,7 +53,7 @@ function spotToPayload(spot: StagingSpot): Record<string, unknown> {
 
 export async function syncPartnerSpotSubmission(spot: StagingSpot): Promise<{ ok: boolean; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
 
   const partnerUserId = await resolveSubmissionPartnerUserId(spot.partnerId, spot.partnerName);
   if (!partnerUserId) {
@@ -79,7 +79,7 @@ export async function syncPartnerSpotSubmission(spot: StagingSpot): Promise<{ ok
 
 export async function publishPartnerSpotToEstablishments(localId: string): Promise<{ ok: boolean; establishmentId?: string; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
 
   const { data, error } = await supabase.rpc('publish_partner_spot_submission', {
     p_local_id: localId,
@@ -108,7 +108,7 @@ export async function rejectPartnerSpotSubmission(
   reason?: string,
 ): Promise<{ ok: boolean; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
   const { error } = await supabase.rpc('reject_partner_spot_submission', {
     p_local_id: localId,
     p_reason: reason ?? 'Refusé',
@@ -166,7 +166,7 @@ function resolveMasterUserId(event: StagingEvent, partnerUserId: string): string
 
 export async function syncPartnerEventSubmission(event: StagingEvent): Promise<{ ok: boolean; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
 
   const partnerUserId = await resolveSubmissionPartnerUserId(event.partnerId, event.partnerName);
   if (!partnerUserId) {
@@ -196,7 +196,7 @@ export async function syncPartnerEventSubmission(event: StagingEvent): Promise<{
 
 export async function publishPartnerEventToEvents(localId: string): Promise<{ ok: boolean; eventId?: string; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
 
   const { data, error } = await supabase.rpc('publish_partner_event_submission', {
     p_local_id: localId,
@@ -215,7 +215,7 @@ export async function rejectPartnerEventSubmission(
   reason?: string,
 ): Promise<{ ok: boolean; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
   const { error } = await supabase.rpc('reject_partner_event_submission', {
     p_local_id: localId,
     p_reason: reason ?? 'Refusé',
@@ -229,7 +229,7 @@ export async function rejectPartnerEventSubmission(
 
 export async function deletePartnerEventSubmission(localId: string): Promise<{ ok: boolean; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: true };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
   const { error } = await supabase
     .from('partner_event_submissions')
     .delete()
@@ -244,7 +244,7 @@ export async function deletePartnerEventSubmission(localId: string): Promise<{ o
 
 export async function deletePartnerSpotSubmission(localId: string): Promise<{ ok: boolean; reason?: string }> {
   if (!isSupabaseConfigured() || !supabase) return { ok: true };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline' };
   const { error } = await supabase
     .from('partner_spot_submissions')
     .delete()
@@ -385,7 +385,7 @@ export async function fetchRemotePartnerEventSubmissions(options?: {
   partnerUserId?: string;
   statuses?: RemoteSubmissionStatus[];
 }): Promise<StagingEvent[]> {
-  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return [];
+  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline(true))) return [];
 
   const authUid = await getPartnerAuthUserIdFromSession();
   if (!authUid) return [];
@@ -411,7 +411,7 @@ export async function fetchRemotePartnerEventSubmissions(options?: {
 export async function fetchRemotePartnerSpotSubmissionByLocalId(
   localId: string,
 ): Promise<StagingSpot | null> {
-  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return null;
+  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline(true))) return null;
   const id = localId.trim();
   if (!id) return null;
 
@@ -431,7 +431,7 @@ export async function fetchRemotePartnerSpotSubmissionByLocalId(
 export async function fetchRemotePartnerEventSubmissionByLocalId(
   localId: string,
 ): Promise<StagingEvent | null> {
-  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return null;
+  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline(true))) return null;
   const id = localId.trim();
   if (!id) return null;
 
@@ -452,7 +452,7 @@ export async function fetchRemotePartnerSpotSubmissions(options?: {
   partnerUserId?: string;
   statuses?: RemoteSubmissionStatus[];
 }): Promise<StagingSpot[]> {
-  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline())) return [];
+  if (!isSupabaseConfigured() || !supabase || !(await isNetworkOnline(true))) return [];
 
   const authUid = await getPartnerAuthUserIdFromSession();
   if (!authUid) return [];

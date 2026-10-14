@@ -50,15 +50,18 @@ export function formatPublicationError(detail: string): { title: string; message
     lower.includes('admin_spot_publish_failed')
   ) {
     return {
-      title: 'Publication impossible',
-      message: 'L\'enregistrement n\'a pas abouti. Vérifiez votre connexion et réessayez.',
+      title: 'Enregistrement impossible',
+      message: 'L\'enregistrement n\'a pas abouti. Réessayez dans un instant.',
     };
   }
 
   console.warn('[Publication]', detail);
+  const safeDetail = detail.trim();
   return {
-    title: 'Publication impossible',
-    message: 'Une erreur s\'est produite. Vérifiez votre connexion et réessayez. Si le problème continue, contactez THE LOOP.',
+    title: 'Enregistrement impossible',
+    message: safeDetail
+      ? safeDetail
+      : 'Une erreur s\'est produite. Réessayez. Si le problème continue, contactez THE LOOP.',
   };
 }
 

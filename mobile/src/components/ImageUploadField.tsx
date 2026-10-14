@@ -1,20 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image as RNImage,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
-import { CoverImage } from '@/components/CoverImage';
+import { RemoteImage } from '@/components/RemoteImage';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import {
   pickImageFromLibrary,
   uploadContentImage,
-  uriForImagePreview,
   type MediaFolder,
 } from '@/lib/media-upload-store';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -31,9 +29,8 @@ interface Props {
 }
 
 /**
- * Champ image admin / partenaire.
- * Même principe que GalleryUploadField : upload puis RemoteImage (via CoverImage).
- * Pendant l’envoi : aperçu local Image RN (cache Android) jusqu’à ce que l’URL Storage s’affiche.
+ * Même affichage que la galerie spot : URL Storage + RemoteImage (taille fixe).
+ * Le recadrage 16:9 est fait dans uploadContentImage, après correction EXIF.
  */
 export function ImageUploadField({
   label,
@@ -46,35 +43,20 @@ export function ImageUploadField({
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
-  const [localPreview, setLocalPreview] = useState<string | null>(null);
-  const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   const { width: windowWidth } = useWindowDimensions();
   const previewAspect = cropAspect[0] / cropAspect[1];
-  const boxWidth = Math.max(
-    240,
-    Math.round(Math.min(Math.max(windowWidth, 320) - 48, Math.max(windowWidth, 320) * 0.92)),
-  );
+  const boxWidth = Math.max(240, Math.round(Math.min(Math.max(windowWidth, 320) - 48, 640)));
   const boxHeight = Math.round(boxWidth / previewAspect);
   const boxStyle = { width: boxWidth, height: boxHeight };
 
   const remoteUrl = value.trim();
-  const hasRemote = remoteUrl.length > 0;
-  const hasPreview = Boolean(localPreview || hasRemote || uploading);
-
-  useEffect(() => {
-    setRemoteLoaded(false);
-  }, [remoteUrl]);
 
   async function handlePick() {
     setUploading(true);
-    setRemoteLoaded(false);
     try {
       const rawUri = await pickImageFromLibrary({ aspect: cropAspect });
       if (!rawUri) return;
-
-      const previewUri = await uriForImagePreview(rawUri);
-      setLocalPreview(previewUri);
 
       const url = await uploadContentImage(rawUri, folder, { aspect: cropAspect });
       onChange(url);
@@ -88,67 +70,46 @@ export function ImageUploadField({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Échec du téléversement.';
       Alert.alert('Image', message);
-      if (!value.trim()) setLocalPreview(null);
     } finally {
       setUploading(false);
     }
   }
 
-  const showLocalLayer = Boolean(localPreview && (!hasRemote || !remoteLoaded));
-
   return (
     <View style={styles.wrap}>
       <Text style={[styles.label, { color: shell.pageKicker }]}>{label}</Text>
 
-      {hasPreview ? (
+      {remoteUrl || uploading ? (
         <View style={[styles.previewWrap, boxStyle]}>
-          {hasRemote ? (
-            <CoverImage
+          {remoteUrl ? (
+            <RemoteImage
               uri={remoteUrl}
-              height={boxHeight}
-              fallbackColor={shell.filterInactiveBg}
-              renderWidth={Math.min(boxWidth, 320)}
-              onDisplayLoad={() => {
-                setRemoteLoaded(true);
-                setLocalPreview(null);
-              }}
-              onDisplayError={() => {
-                /* Garde l’aperçu local si l’URL distante échoue. */
-              }}
-            />
-          ) : null}
-
-          {showLocalLayer ? (
-            <RNImage
-              source={{ uri: localPreview! }}
-              style={[StyleSheet.absoluteFillObject, styles.localLayer]}
+              style={boxStyle}
               resizeMode="cover"
-              accessibilityLabel={label}
+              contentPosition="top"
+              renderWidth={800}
+              fallbackColor={shell.filterInactiveBg}
             />
-          ) : null}
-
-          {!hasRemote && !localPreview && uploading ? (
+          ) : (
             <View style={[styles.uploadingFill, { backgroundColor: shell.filterInactiveBg }]}>
               <ActivityIndicator color={shell.pageTitle} />
             </View>
-          ) : null}
-
+          )}
           {uploading ? (
             <View style={styles.uploadOverlay}>
               <ActivityIndicator color="#fff" />
             </View>
           ) : null}
-
-          <Pressable
-            style={styles.removeBtn}
-            onPress={() => {
-              setLocalPreview(null);
-              setRemoteLoaded(false);
-              onChange('');
-            }}
-          >
-            <Text style={styles.removeText}>Retirer</Text>
-          </Pressable>
+          {remoteUrl ? (
+            <Pressable
+              style={styles.removeBtn}
+              onPress={() => {
+                onChange('');
+              }}
+            >
+              <Text style={styles.removeText}>Retirer</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : (
         <View
@@ -202,11 +163,7 @@ export function ImageUploadField({
             },
           ]}
           value={value}
-          onChangeText={(t) => {
-            setLocalPreview(null);
-            setRemoteLoaded(false);
-            onChange(t);
-          }}
+          onChangeText={onChange}
           placeholder="https://..."
           placeholderTextColor={shell.pageKicker}
           autoCapitalize="none"
@@ -232,11 +189,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor: '#E5E7EB',
   },
-  localLayer: {
-    zIndex: 1,
-  },
   uploadingFill: {
-    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -245,7 +200,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 2,
   },
   placeholder: {
     borderWidth: 1,
@@ -270,7 +224,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    zIndex: 3,
+    zIndex: 2,
   },
   removeText: { color: '#fff', fontWeight: '700', fontSize: 12 },
   hint: { fontSize: 11, marginTop: 4, lineHeight: 16 },
