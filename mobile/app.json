@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "gn.theloop.app",
-      "buildNumber": "61",
+      "buildNumber": "62",
       "icon": "./assets/icon.png",
       "backgroundColor": "#F4FCFD",
       "splash": {
@@ -46,7 +46,7 @@
         "imageWidth": 220
       },
       "package": "gn.theloop.app",
-      "versionCode": 61,
+      "versionCode": 62,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "android.permission.CAMERA",

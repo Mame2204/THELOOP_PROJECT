@@ -181,7 +181,7 @@ async function applyEventLoopXFlag(eventId: string, isLoopX: boolean): Promise<s
 
 export async function createAdminEventDirect(input: AdminEventDirectInput): Promise<AdminDirectPublishResult> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase', table: 'events' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'events' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline', table: 'events' };
 
   const { data, error } = await supabase.rpc('admin_create_event_direct', {
     p_payload: asJson(eventPayload(input)),
@@ -206,7 +206,7 @@ export async function createAdminEventDirect(input: AdminEventDirectInput): Prom
 
 export async function createAdminEstablishmentDirect(input: AdminSpotDirectInput): Promise<AdminDirectPublishResult> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase', table: 'establishments' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'establishments' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline', table: 'establishments' };
 
   const { data, error } = await supabase.rpc('admin_create_establishment_direct', {
     p_payload: asJson(spotPayload(input)),
@@ -227,7 +227,7 @@ export async function createAdminEstablishmentDirect(input: AdminSpotDirectInput
 
 export async function createAdminToolDirect(input: AdminToolDirectInput): Promise<AdminDirectPublishResult> {
   if (!isSupabaseConfigured() || !supabase) return { ok: false, reason: 'no_supabase', table: 'tools' };
-  if (!(await isNetworkOnline())) return { ok: false, reason: 'offline', table: 'tools' };
+  if (!(await isNetworkOnline(true))) return { ok: false, reason: 'offline', table: 'tools' };
 
   const { data, error } = await supabase.rpc('admin_create_tool_direct', {
     p_payload: asJson(toolPayload(input)),

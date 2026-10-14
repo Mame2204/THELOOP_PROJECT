@@ -759,7 +759,7 @@ async function applyPublishedEventUpdate(
 
   if (error) {
     console.warn('[AdminEdit] events update:', error.message);
-    return false;
+    throw new Error(error.message);
   }
 
   await syncEventProgram(publishedId, payload.program);
@@ -798,7 +798,7 @@ async function applyPublishedSpotUpdate(
 
     if (error) {
       console.warn('[AdminEdit] tools update:', error.message);
-      return false;
+      throw new Error(error.message);
     }
 
     await syncSpotSubmissionFull(target, payload);
@@ -850,7 +850,7 @@ async function applyPublishedSpotUpdate(
 
   if (error) {
     console.warn('[AdminEdit] establishments update:', error.message);
-    return false;
+    throw new Error(error.message);
   }
 
   await syncEstablishmentOpeningHours(target.id, payload.openingHours);
