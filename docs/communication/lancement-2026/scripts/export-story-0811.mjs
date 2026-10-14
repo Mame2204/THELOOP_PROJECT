@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { copyToArtifacts } from './lib-artifacts.mjs';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const htmlPath = path.join(dir, '..', 'export-visuels-story-0811.html');
@@ -15,8 +16,6 @@ const aliases = [
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
-fs.mkdirSync(artifactsDir, { recursive: true });
-
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 2100 } });
 await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
@@ -28,7 +27,7 @@ for (let i = 0; i < slides.length; i++) {
   const name = aliases[i] ?? `STORY_8-11_${String(i + 1).padStart(2, '0')}.png`;
   const dest = path.join(outDir, name);
   await slides[i].screenshot({ path: dest });
-  fs.copyFileSync(dest, path.join(artifactsDir, name));
+  copyToArtifacts(dest, artifactsDir, name);
 }
 
 await browser.close();

@@ -81,9 +81,9 @@ const days = [
 ];
 
 function frameHtml({ dayLabel, index, total, line, isLast, utm }) {
-  const sticker = isLast
-    ? `<p class="sticker">Option : sticker lien · terrain_gn_2026 · ${utm}</p>`
-    : `<p class="hint">Tes plans iPhone par-dessus · pas de visage · pas de nom de lieu</p>`;
+  const footer = isLast
+    ? `<p class="foot">Réserve ta place · <span class="gold">theloop-app.com</span></p>`
+    : '';
   return `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="utf-8"/>
@@ -106,15 +106,14 @@ function frameHtml({ dayLabel, index, total, line, isLast, utm }) {
   .panel { max-width: 920px; width: 100%; padding: 56px 40px; border-radius: 32px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); }
   .line { font-size: ${line.length > 28 ? 56 : 72}px; font-weight: 800; line-height: 1.12; margin: 0; }
   .gold { color: #e6b93a; }
-  .hint, .sticker { margin-top: 40px; font-size: 22px; font-weight: 600; line-height: 1.4; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
-  .sticker { color: #e6b93a; border: 2px dashed rgba(230,185,58,0.5); padding: 16px 24px; border-radius: 16px; }
+  .foot { margin-top: 40px; font-size: 28px; font-weight: 700; line-height: 1.35; color: rgba(255,255,255,0.85); }
 </style></head>
 <body><div class="slide"><div class="grain"></div>
 <div class="ribbon">Terrain · ${dayLabel}</div>
 <div class="badge">${index} / ${total}</div>
 <div class="inner"><div class="panel">
 <p class="line">${line.replace(/(\d+\s*décembre|100 premiers)/gi, '<span class="gold">$1</span>').replace(/J-\d+/g, (m) => `<span class="gold">${m}</span>`)}</p>
-${sticker}
+${footer}
 </div></div></div></body></html>`;
 }
 
