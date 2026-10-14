@@ -21,6 +21,8 @@ Tous les lots **A → D**, Actes A/B, fiches #1–#20, SRT vidéos, scripts d’
 
 ## Fichiers utiles
 
+- **Carte du dossier :** `GUIDE-SUPPORTS-COM.md`
 - Inventaire : `LISTE-VISUELS-VALIDES.md`
 - Lots : `PLAN-LOTS-PUBLICATION.md`
-- Aperçu PC : `galerie-preview-lots.html`
+- Aperçu PC : `galerie-preview-lots.html` · échantillon polish : `galerie-polish-v5.html`
+- Regénérer visuels polish : `node scripts/export-polish-v5.mjs`
