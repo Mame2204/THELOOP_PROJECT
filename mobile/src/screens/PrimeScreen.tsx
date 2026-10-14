@@ -48,6 +48,9 @@ import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Prime'>;
 
+/** Forfaits vendus en boutique (hors PASS à vie). */
+type ShopBillingPeriod = Exclude<PrimeBillingPeriod, 'lifetime'>;
+
 type PassStatusKind = 'none' | 'active' | 'pending' | 'heritage' | 'lifetime';
 
 function resolvePassStatus(active: SubscriptionRecord | null, pendingCount: number): PassStatusKind {
@@ -77,8 +80,8 @@ export function PrimeScreen({ navigation }: Props) {
   const [passStatus, setPassStatus] = useState<PassStatusKind>('none');
   const [activePassRecord, setActivePassRecord] = useState<SubscriptionRecord | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
-  const [shopPeriods, setShopPeriods] = useState<PrimeBillingPeriod[]>(
-    PRIME_PLAN_OPTIONS.map((p) => p.value),
+  const [shopPeriods, setShopPeriods] = useState<ShopBillingPeriod[]>(
+    PRIME_PLAN_OPTIONS.map((p) => p.value).filter((p): p is ShopBillingPeriod => p !== 'lifetime'),
   );
   const [prices, setPrices] = useState<PassPriceMap | null>(null);
   const [loadingShop, setLoadingShop] = useState(true);
@@ -117,13 +120,16 @@ export function PrimeScreen({ navigation }: Props) {
         .filter((p): p is PrimeBillingPeriod => p != null && p !== 'lifetime');
       const unique = [...new Set(periods)];
       const visible = (unique.length ? unique : PRIME_PLAN_OPTIONS.map((p) => p.value)).filter(
-        (p) => p !== 'lifetime',
+        (p): p is ShopBillingPeriod => p !== 'lifetime',
       );
       setShopPeriods(visible);
-      const preferred = visible.includes(RECOMMENDED_BILLING_PERIOD)
-        ? RECOMMENDED_BILLING_PERIOD
-        : visible[0] ?? RECOMMENDED_BILLING_PERIOD;
-      setSelected((prev) => (visible.includes(prev) ? prev : preferred));
+      const shopRecommended = RECOMMENDED_BILLING_PERIOD as ShopBillingPeriod;
+      const preferred: ShopBillingPeriod = visible.includes(shopRecommended)
+        ? shopRecommended
+        : visible[0] ?? shopRecommended;
+      setSelected((prev) =>
+        prev !== 'lifetime' && visible.includes(prev) ? prev : preferred,
+      );
 
       if (!user?.id || user.id === 'anonymous') {
         setCanPurchase(false);
@@ -335,7 +341,11 @@ export function PrimeScreen({ navigation }: Props) {
                     pulseColor={shell.pageKicker}
                   />
                 ))
-              : PRIME_PLAN_OPTIONS.filter((plan) => shopPeriods.includes(plan.value)).map((plan) => {
+              : PRIME_PLAN_OPTIONS.filter(
+                  (plan) =>
+                    plan.value !== 'lifetime' &&
+                    shopPeriods.includes(plan.value as ShopBillingPeriod),
+                ).map((plan) => {
                   const isActive = selected === plan.value;
                   const priceLabel = prices
                     ? formatPassPrice(plan.value, prices, priceCurrency)

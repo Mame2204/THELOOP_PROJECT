@@ -1247,6 +1247,8 @@ export async function updateBenefitCatalogItem(
       | 'quantityPerGrant'
       | 'maxUsesPerGrant'
       | 'isActive'
+      | 'isTemplate'
+      | 'templateLocalId'
       | 'benefitPurpose'
     >
   >,
