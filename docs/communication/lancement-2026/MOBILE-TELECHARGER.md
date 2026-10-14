@@ -1,7 +1,7 @@
 # Télécharger les visuels sur téléphone
 
-Branche : **`cursor/com-lancement-video-1711-3dfe`**  
-Dossier : **`exports-png-v4-light/`** (~115 PNG)  
+Branche : **`main`** (pack fusionné — un simple `git pull` suffit)  
+Dossier : **`exports-png-v4-light/`** (~130 PNG)  
 Liste : `LISTE-VISUELS-VALIDES.md` · état global : `STATUT-COM-2026.md`
 
 ---
@@ -9,7 +9,7 @@ Liste : `LISTE-VISUELS-VALIDES.md` · état global : `STATUT-COM-2026.md`
 ## Méthode 1 — ZIP (la plus simple sur mobile)
 
 1. Sur un **PC** (ou GitHub web) :  
-   https://github.com/Mame2204/THELOOP_PROJECT/archive/refs/heads/cursor/com-lancement-video-1711-3dfe.zip
+   https://github.com/Mame2204/THELOOP_PROJECT/archive/refs/heads/main.zip
 2. Dézippe sur le PC.
 3. Ouvre le dossier :  
    `THELOOP_PROJECT-…/docs/communication/lancement-2026/exports-png-v4-light/`
@@ -21,7 +21,7 @@ Tu peux aussi ne copier qu’un sous-ensemble (ex. tout `STORY_07-12_*` pour la 
 
 ## Méthode 2 — App GitHub (iPhone / Android)
 
-1. Repo **THELOOP_PROJECT** → branche **`cursor/com-lancement-video-1711-3dfe`**
+1. Repo **THELOOP_PROJECT** → branche **`main`**
 2. Navigue : `docs` → `communication` → `lancement-2026` → **`exports-png-v4-light`**
 3. Ouvre un **.png** → menu **⋯** → **Télécharger** / **Save image**
 
@@ -46,12 +46,12 @@ Navigateur : http://localhost:8765/galerie-preview-lots.html
 Remplace `NOM_DU_FICHIER.png` :
 
 ```
-https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v4-light/NOM_DU_FICHIER.png
+https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/main/docs/communication/lancement-2026/exports-png-v4-light/NOM_DU_FICHIER.png
 ```
 
 Exemple 17/11 :
 
-https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/cursor/com-lancement-video-1711-3dfe/docs/communication/lancement-2026/exports-png-v4-light/CARROUSEL_17-11_01_liste-ouverte.png
+https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/main/docs/communication/lancement-2026/exports-png-v4-light/CARROUSEL_17-11_01_liste-ouverte.png
 
 ---
 
