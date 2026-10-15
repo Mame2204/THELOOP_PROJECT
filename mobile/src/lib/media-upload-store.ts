@@ -356,8 +356,13 @@ export async function uploadContentImage(
   options?: { aspect?: [number, number] },
 ): Promise<string> {
   const aspect = options?.aspect ?? ([16, 9] as [number, number]);
-  // Force le ratio (surtout iOS) avec ancrage haut, puis compress.
-  const preparedUri = await cropToAspect(localUri, aspect, 'top');
+  // Le carré (logo, galerie) supporte le recadrage. Le 16:9 sur Android produit
+  // un JPEG illisible : cadre gris dans le formulaire et bloc de couleur dans l'agenda.
+  // On compresse seulement ; l'affichage rogne en 16:9 (cover, ancré en haut).
+  const square = aspect[0] === aspect[1];
+  const preparedUri = square
+    ? await cropToAspect(localUri, aspect, 'center')
+    : await compressImageForUpload(localUri);
 
   if (!isSupabaseConfigured() || !supabase) {
     return preparedUri;

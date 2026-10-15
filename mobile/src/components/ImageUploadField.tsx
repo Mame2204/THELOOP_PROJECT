@@ -139,7 +139,7 @@ export function ImageUploadField({
           <ActivityIndicator color={shell.pageTitle} />
         ) : (
           <Text style={{ color: shell.pageTitle, fontWeight: '700' }}>
-            {value ? "Changer l'image (recadrer)" : 'Choisir depuis la galerie'}
+            {value ? "Changer l'image" : 'Choisir depuis la galerie'}
           </Text>
         )}
       </Pressable>
