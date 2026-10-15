@@ -3,6 +3,7 @@ import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Alert, Image, InteractionManager, Platform } from 'react-native';
+import { aspectPreparedForUpload } from '@/lib/media-upload-aspect';
 import { markNetworkReachable } from '@/lib/offline-store';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
@@ -355,14 +356,9 @@ export async function uploadContentImage(
   folder: MediaFolder,
   options?: { aspect?: [number, number] },
 ): Promise<string> {
-  const aspect = options?.aspect ?? ([16, 9] as [number, number]);
-  // Le carré (logo, galerie) supporte le recadrage. Le 16:9 sur Android produit
-  // un JPEG illisible : cadre gris dans le formulaire et bloc de couleur dans l'agenda.
-  // On compresse seulement ; l'affichage rogne en 16:9 (cover, ancré en haut).
-  const square = aspect[0] === aspect[1];
-  const preparedUri = square
-    ? await cropToAspect(localUri, aspect, 'center')
-    : await compressImageForUpload(localUri);
+  // Même préparation que la galerie (carré, ancré au centre). Un 16:9 ne s'affiche pas.
+  const aspect = aspectPreparedForUpload(options?.aspect);
+  const preparedUri = await cropToAspect(localUri, aspect, 'center');
 
   if (!isSupabaseConfigured() || !supabase) {
     return preparedUri;

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { RemoteImage } from '@/components/RemoteImage';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
+import { aspectPreparedForUpload } from '@/lib/media-upload-aspect';
 import {
   pickImageFromLibrary,
   uploadContentImage,
@@ -29,8 +30,8 @@ interface Props {
 }
 
 /**
- * Même affichage que la galerie spot : URL Storage + RemoteImage (taille fixe).
- * Le recadrage 16:9 est fait dans uploadContentImage, après correction EXIF.
+ * Couverture : même envoi que la galerie (JPEG carré) et même peinture
+ * (RemoteImage en 100 % dans un cadre). Le cadre reste 16:9 ; l'image est rognée à l'affichage.
  */
 export function ImageUploadField({
   label,
@@ -58,7 +59,9 @@ export function ImageUploadField({
       const rawUri = await pickImageFromLibrary({ aspect: cropAspect });
       if (!rawUri) return;
 
-      const url = await uploadContentImage(rawUri, folder, { aspect: cropAspect });
+      const url = await uploadContentImage(rawUri, folder, {
+        aspect: aspectPreparedForUpload(cropAspect),
+      });
       onChange(url);
 
       if (!isSupabaseConfigured()) {
@@ -84,9 +87,9 @@ export function ImageUploadField({
           {remoteUrl ? (
             <RemoteImage
               uri={remoteUrl}
-              style={boxStyle}
+              style={styles.previewImg}
               resizeMode="cover"
-              contentPosition="top"
+              contentPosition="center"
               renderWidth={800}
               fallbackColor={shell.filterInactiveBg}
             />
@@ -188,6 +191,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     position: 'relative',
     backgroundColor: '#E5E7EB',
+  },
+  previewImg: {
+    width: '100%',
+    height: '100%',
   },
   uploadingFill: {
     width: '100%',
