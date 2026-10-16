@@ -34,7 +34,7 @@ Installer le **58** (ou vérifier date EAS vs commits ci-dessous).
 
 | # | Correctif (commit) | Test minimal | Attendu |
 |---|-------------------|--------------|---------|
-| **R1** | Aperçu couverture = même affichage que la carte Agenda (build **64**) | **📱🤖** Admin : choisir une couverture, rester sur le formulaire | Photo visible dans le cadre juste après la sélection, puis sur la carte Agenda |
+| **R1** | Aperçu couverture = photo Android en taille fixe (build **65**) | **📱🤖** Admin : choisir une couverture, rester sur le formulaire | Photo visible dans le cadre juste après la sélection |
 | **R2** | `b139264` — modale code invite **sans Alert superposé** | **📱🤖** Activation invite → saisie **6 chiffres** (membre ou partenaire) | Une seule UI lisible, pas d’Alert par-dessus la modale |
 | **R3** | `6688d84` — icône **🎁** cartes avec privilège | **📱** Agenda / Guide : fiche **avec** avantage lié | **🎁 en bas à droite** sur la carte (gate Privilèges **Visible**) |
 | **R4** | *(optionnel)* Plafond parrainage / filleuls par an | Admin + compte test (astuce SQL / param admin) | Comportement attendu documenté en smoke **C4** |
