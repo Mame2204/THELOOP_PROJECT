@@ -1,14 +1,14 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
-import { CoverImage } from '@/components/CoverImage';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import {
   pickImageFromLibrary,
@@ -30,8 +30,10 @@ interface Props {
 }
 
 /**
- * Couverture : même JPEG carré que la galerie, peint comme la carte Agenda
- * (CoverImage, remplissage absolu). Un cadre en pourcentage ne dessinait pas la photo.
+ * Aperçu formulaire : Image Android en pixels fixes.
+ * expo-image (pourcentage ou CoverImage) reste vide dans ce cadre, alors que
+ * la même URL s'affiche sur la carte Agenda. On montre d'abord le JPEG local
+ * qui vient d'être envoyé.
  */
 export function ImageUploadField({
   label,
@@ -44,30 +46,30 @@ export function ImageUploadField({
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
-  const [showLocalFile, setShowLocalFile] = useState(false);
-  const picked = useRef<{ url: string; previewUri: string } | null>(null);
+  const [columnWidth, setColumnWidth] = useState(0);
+  const [picked, setPicked] = useState<{ url: string; previewUri: string } | null>(null);
+  const [hideLocal, setHideLocal] = useState(false);
 
   const { width: windowWidth } = useWindowDimensions();
   const previewAspect = cropAspect[0] / cropAspect[1];
-  const boxWidth = Math.max(240, Math.round(Math.min(Math.max(windowWidth, 320) - 48, 640)));
-  const boxHeight = Math.round(boxWidth / previewAspect);
-  const boxStyle = { width: boxWidth, height: boxHeight };
+  const fallbackWidth = Math.max(240, Math.round(Math.min(Math.max(windowWidth, 320) - 32, 640)));
+  const boxWidth = columnWidth > 0 ? columnWidth : fallbackWidth;
+  const boxHeight = Math.max(1, Math.round(boxWidth / previewAspect));
 
   const remoteUrl = value.trim();
-  const localPreview =
-    showLocalFile && picked.current?.url === remoteUrl ? picked.current.previewUri : null;
-  const previewUri = localPreview || remoteUrl;
+  const localUri = !hideLocal && picked?.url === remoteUrl ? picked.previewUri : null;
+  const shownUri = localUri || remoteUrl;
 
   async function handlePick() {
     setUploading(true);
-    setShowLocalFile(false);
+    setHideLocal(false);
     try {
       const rawUri = await pickImageFromLibrary({ aspect: cropAspect });
       if (!rawUri) return;
 
       const uploaded = await uploadContentImageWithPreview(rawUri, folder, { aspect: cropAspect });
-      const cachedPreview = await uriForImagePreview(uploaded.previewUri);
-      picked.current = { url: uploaded.url, previewUri: cachedPreview };
+      const previewUri = await uriForImagePreview(uploaded.previewUri);
+      setPicked({ url: uploaded.url, previewUri });
       onChange(uploaded.url);
 
       if (!isSupabaseConfigured()) {
@@ -84,62 +86,66 @@ export function ImageUploadField({
     }
   }
 
+  function handleRemove() {
+    setPicked(null);
+    setHideLocal(false);
+    onChange('');
+  }
+
+  const frameStyle = {
+    width: boxWidth,
+    height: boxHeight,
+    borderRadius: 12,
+    backgroundColor: '#E5E7EB',
+  };
+
   return (
-    <View style={styles.wrap}>
+    <View
+      style={styles.wrap}
+      onLayout={(event) => {
+        const next = Math.round(event.nativeEvent.layout.width);
+        if (next > 0) {
+          setColumnWidth((current) => (current === next ? current : next));
+        }
+      }}
+    >
       <Text style={[styles.label, { color: shell.pageKicker }]}>{label}</Text>
 
-      {remoteUrl || uploading ? (
-        <View style={[styles.previewWrap, boxStyle]}>
-          {previewUri ? (
-            <CoverImage
-              uri={previewUri}
-              height={boxHeight}
-              renderWidth={800}
-              fallbackColor={shell.filterInactiveBg}
-              onDisplayError={() => {
-                if (picked.current?.url === remoteUrl && picked.current.previewUri) {
-                  setShowLocalFile(true);
-                }
-              }}
-            />
-          ) : (
-            <View style={[styles.uploadingFill, { backgroundColor: shell.filterInactiveBg }]}>
-              <ActivityIndicator color={shell.pageTitle} />
-            </View>
-          )}
-          {uploading ? (
-            <View style={styles.uploadOverlay}>
-              <ActivityIndicator color="#fff" />
-            </View>
-          ) : null}
-          {remoteUrl ? (
-            <Pressable
-              style={styles.removeBtn}
-              onPress={() => {
-                picked.current = null;
-                setShowLocalFile(false);
-                onChange('');
-              }}
-            >
-              <Text style={styles.removeText}>Retirer</Text>
-            </Pressable>
-          ) : null}
-        </View>
+      {shownUri ? (
+        <Image
+          key={shownUri}
+          source={{ uri: shownUri }}
+          style={frameStyle}
+          resizeMode="cover"
+          resizeMethod="resize"
+          fadeDuration={0}
+          accessibilityLabel={label}
+          onError={() => {
+            if (localUri) setHideLocal(true);
+          }}
+        />
       ) : (
         <View
           style={[
             styles.placeholder,
+            frameStyle,
             {
               borderColor: shell.filterInactiveBorder,
               backgroundColor: shell.filterInactiveBg,
-              width: boxWidth,
-              height: boxHeight,
             },
           ]}
         >
-          <Text style={{ color: shell.pageKicker, fontSize: 12 }}>Aucune image sélectionnée</Text>
+          {uploading ? (
+            <ActivityIndicator color={shell.pageTitle} />
+          ) : (
+            <Text style={{ color: shell.pageKicker, fontSize: 12 }}>Aucune image sélectionnée</Text>
+          )}
         </View>
       )}
+
+      {uploading && shownUri ? (
+        <ActivityIndicator style={styles.uploadingBelow} color={shell.pageTitle} />
+      ) : null}
 
       <Pressable
         style={[
@@ -157,6 +163,12 @@ export function ImageUploadField({
           </Text>
         )}
       </Pressable>
+
+      {remoteUrl ? (
+        <Pressable onPress={handleRemove} disabled={uploading}>
+          <Text style={[styles.urlToggle, { color: shell.pageKicker }]}>Retirer l'image</Text>
+        </Pressable>
+      ) : null}
 
       {hint ? <Text style={[styles.hint, { color: shell.pageKicker }]}>{hint}</Text> : null}
 
@@ -188,7 +200,7 @@ export function ImageUploadField({
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 10 },
+  wrap: { marginBottom: 10, alignSelf: 'stretch' },
   label: {
     fontSize: 10,
     fontWeight: '700',
@@ -196,51 +208,22 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginTop: 4,
   },
-  previewWrap: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 8,
-    position: 'relative',
-    backgroundColor: '#E5E7EB',
-  },
-  uploadingFill: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  uploadOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   placeholder: {
     borderWidth: 1,
-    borderRadius: 12,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
+  uploadingBelow: { marginTop: 8 },
   pickBtn: {
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 4,
+    marginTop: 8,
   },
-  removeBtn: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    zIndex: 2,
-  },
-  removeText: { color: '#fff', fontWeight: '700', fontSize: 12 },
   hint: { fontSize: 11, marginTop: 4, lineHeight: 16 },
   urlToggle: { fontSize: 11, fontWeight: '600', marginTop: 6, textDecorationLine: 'underline' },
   input: { borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 6, fontSize: 14 },
