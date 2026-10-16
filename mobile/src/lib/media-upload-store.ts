@@ -351,17 +351,28 @@ export async function pickImageFromLibrary(options?: {
   return asset.uri;
 }
 
-export async function uploadContentImage(
+export type UploadedContentImage = {
+  /** URL enregistrée (Storage, ou fichier local si Supabase est absent). */
+  url: string;
+  /** JPEG local déjà préparé — même octets que l'envoi. Sert d'aperçu si l'URL distante ne se peint pas. */
+  previewUri: string;
+};
+
+/**
+ * Prépare le JPEG (même carré que la galerie) et l'envoie.
+ * `previewUri` reste le fichier local : le formulaire peut l'afficher sans réseau.
+ */
+export async function uploadContentImageWithPreview(
   localUri: string,
   folder: MediaFolder,
   options?: { aspect?: [number, number] },
-): Promise<string> {
+): Promise<UploadedContentImage> {
   // Même préparation que la galerie (carré, ancré au centre). Un 16:9 ne s'affiche pas.
   const aspect = aspectPreparedForUpload(options?.aspect);
-  const preparedUri = await cropToAspect(localUri, aspect, 'center');
+  const previewUri = await cropToAspect(localUri, aspect, 'center');
 
   if (!isSupabaseConfigured() || !supabase) {
-    return preparedUri;
+    return { url: previewUri, previewUri };
   }
 
   const {
@@ -370,7 +381,7 @@ export async function uploadContentImage(
   const owner = user?.id ?? 'anonymous';
   const path = `${folder}/${owner}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
 
-  const arrayBuffer = await readLocalImageAsArrayBuffer(preparedUri);
+  const arrayBuffer = await readLocalImageAsArrayBuffer(previewUri);
   if (!arrayBuffer.byteLength) {
     throw new Error('Image vide après compression — réessayez avec une autre photo.');
   }
@@ -385,10 +396,19 @@ export async function uploadContentImage(
   }
 
   markNetworkReachable();
-  await uploadThumbnail(preparedUri, path);
+  await uploadThumbnail(previewUri, path);
 
   const { data } = supabase.storage.from('content-media').getPublicUrl(path);
-  return data.publicUrl;
+  return { url: data.publicUrl, previewUri };
+}
+
+export async function uploadContentImage(
+  localUri: string,
+  folder: MediaFolder,
+  options?: { aspect?: [number, number] },
+): Promise<string> {
+  const uploaded = await uploadContentImageWithPreview(localUri, folder, options);
+  return uploaded.url;
 }
 
 /**

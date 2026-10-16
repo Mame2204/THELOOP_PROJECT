@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -8,12 +8,12 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { RemoteImage } from '@/components/RemoteImage';
+import { CoverImage } from '@/components/CoverImage';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
-import { aspectPreparedForUpload } from '@/lib/media-upload-aspect';
 import {
   pickImageFromLibrary,
-  uploadContentImage,
+  uploadContentImageWithPreview,
+  uriForImagePreview,
   type MediaFolder,
 } from '@/lib/media-upload-store';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -30,8 +30,8 @@ interface Props {
 }
 
 /**
- * Couverture : même envoi que la galerie (JPEG carré) et même peinture
- * (RemoteImage en 100 % dans un cadre). Le cadre reste 16:9 ; l'image est rognée à l'affichage.
+ * Couverture : même JPEG carré que la galerie, peint comme la carte Agenda
+ * (CoverImage, remplissage absolu). Un cadre en pourcentage ne dessinait pas la photo.
  */
 export function ImageUploadField({
   label,
@@ -44,6 +44,8 @@ export function ImageUploadField({
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
+  const [showLocalFile, setShowLocalFile] = useState(false);
+  const picked = useRef<{ url: string; previewUri: string } | null>(null);
 
   const { width: windowWidth } = useWindowDimensions();
   const previewAspect = cropAspect[0] / cropAspect[1];
@@ -52,17 +54,21 @@ export function ImageUploadField({
   const boxStyle = { width: boxWidth, height: boxHeight };
 
   const remoteUrl = value.trim();
+  const localPreview =
+    showLocalFile && picked.current?.url === remoteUrl ? picked.current.previewUri : null;
+  const previewUri = localPreview || remoteUrl;
 
   async function handlePick() {
     setUploading(true);
+    setShowLocalFile(false);
     try {
       const rawUri = await pickImageFromLibrary({ aspect: cropAspect });
       if (!rawUri) return;
 
-      const url = await uploadContentImage(rawUri, folder, {
-        aspect: aspectPreparedForUpload(cropAspect),
-      });
-      onChange(url);
+      const uploaded = await uploadContentImageWithPreview(rawUri, folder, { aspect: cropAspect });
+      const cachedPreview = await uriForImagePreview(uploaded.previewUri);
+      picked.current = { url: uploaded.url, previewUri: cachedPreview };
+      onChange(uploaded.url);
 
       if (!isSupabaseConfigured()) {
         Alert.alert(
@@ -84,14 +90,17 @@ export function ImageUploadField({
 
       {remoteUrl || uploading ? (
         <View style={[styles.previewWrap, boxStyle]}>
-          {remoteUrl ? (
-            <RemoteImage
-              uri={remoteUrl}
-              style={styles.previewImg}
-              resizeMode="cover"
-              contentPosition="center"
+          {previewUri ? (
+            <CoverImage
+              uri={previewUri}
+              height={boxHeight}
               renderWidth={800}
               fallbackColor={shell.filterInactiveBg}
+              onDisplayError={() => {
+                if (picked.current?.url === remoteUrl && picked.current.previewUri) {
+                  setShowLocalFile(true);
+                }
+              }}
             />
           ) : (
             <View style={[styles.uploadingFill, { backgroundColor: shell.filterInactiveBg }]}>
@@ -107,6 +116,8 @@ export function ImageUploadField({
             <Pressable
               style={styles.removeBtn}
               onPress={() => {
+                picked.current = null;
+                setShowLocalFile(false);
                 onChange('');
               }}
             >
@@ -191,10 +202,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     position: 'relative',
     backgroundColor: '#E5E7EB',
-  },
-  previewImg: {
-    width: '100%',
-    height: '100%',
   },
   uploadingFill: {
     width: '100%',
