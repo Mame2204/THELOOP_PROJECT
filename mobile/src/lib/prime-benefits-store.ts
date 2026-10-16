@@ -140,6 +140,19 @@ export function canPushBenefitValidation(benefit: PrimeBenefit): boolean {
   return benefit.status === 'active' || benefit.status === 'pending_validation';
 }
 
+export function getBenefitKindLabel(
+  kind: PrimeBenefit['benefitKind'],
+): string {
+  switch (kind) {
+    case 'quantity':
+      return 'Quota (quantité)';
+    case 'usage_limit':
+      return 'Quota (utilisations)';
+    default:
+      return 'Usage unique ou libre';
+  }
+}
+
 export function getBenefitUsageLabel(benefit: PrimeBenefit): string {
   if (benefit.benefitKind === 'quantity' && benefit.quantityTotal != null) {
     return `${benefit.quantityUsed}/${benefit.quantityTotal} utilisé(s)`;
