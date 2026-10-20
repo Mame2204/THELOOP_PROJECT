@@ -213,7 +213,7 @@ export function ProfilScreen({ navigation }: Props) {
                 ? `${referralStats?.totalReferrals ?? 0} filleul${(referralStats?.totalReferrals ?? 0) > 1 ? 's' : ''} · suivi sans récompense`
                 : referralStats
                   ? referralProgressView(referralStats).label
-                  : '0/10 filleuls vers 1 mois Prime'}
+                  : '0/1 filleul avec un PASS vers 1 mois Prime'}
           </Text>
           <Text style={[styles.referralLink, { color: accent.accent }]}>Voir mon parrainage →</Text>
         </Pressable>

@@ -59,6 +59,8 @@ export interface ReferralStats {
   referralsPerReward: number;
   rewardMonths: number;
   maxRewardMonthsPerYear: number;
+  /** Vrai quand le décompte de progression vient des PASS payés (pas des seules inscriptions). */
+  countsPaidPasses: boolean;
 }
 
 /** Barre de progression parrainage (évite 0 % quand un palier vient d’être atteint). */
@@ -77,6 +79,17 @@ export function referralProgressView(stats: Pick<
       ? `${per} / ${per} — palier atteint`
       : `${inTier} / ${per} vers le prochain mois offert`;
   return { fillRatio, label };
+}
+
+/** Phrase membre : le palier compte les filleuls qui ont payé un PASS. */
+export function referralRewardRuleText(referralsPerReward: number, rewardMonths: number): string {
+  const per = Math.max(1, Math.floor(referralsPerReward));
+  const months = Math.max(1, Math.floor(rewardMonths));
+  const mois = months === 1 ? '1 mois Prime gratuit' : `${months} mois Prime gratuits`;
+  if (per === 1) {
+    return `Chaque filleul qui prend un PASS avec votre code vous offre ${mois}.`;
+  }
+  return `Tous les ${per} filleuls qui prennent un PASS avec votre code, vous recevez ${mois}.`;
 }
 
 const REFERRALS_KEY = 'loop_referrals_v1';
@@ -106,6 +119,17 @@ async function loadReferralsRemote(userId: string): Promise<ReferralRecord[]> {
     referralCode: String(row.referral_code),
     createdAt: String(row.created_at),
   }));
+}
+
+async function loadPaidReferralCounts(): Promise<{ total: number; thisYear: number } | null> {
+  if (!isSupabaseConfigured() || !supabase) return null;
+  const { data, error } = await supabase.rpc('my_paid_referral_counts');
+  if (error || !data || typeof data !== 'object' || Array.isArray(data)) return null;
+  const row = data as { total?: unknown; thisYear?: unknown };
+  const total = Number(row.total);
+  const thisYear = Number(row.thisYear);
+  if (!Number.isFinite(total) || !Number.isFinite(thisYear)) return null;
+  return { total, thisYear };
 }
 
 async function loadRewardsRemote(userId: string): Promise<ReferralRewardRecord[]> {
@@ -258,7 +282,6 @@ export async function registerNewMemberReferral(
             );
             if (rewardError) {
               console.warn('[Referral] process reward RPC:', rewardError.message);
-              rewardGranted = await evaluateAndGrantReferralReward(referrer.id);
             } else {
               rewardGranted = Number(months) || 0;
             }
@@ -386,19 +409,21 @@ export async function getReferralStats(
   const yearReferrals = referrals.filter(
     (r) => r.referrerUserId === userId && new Date(r.createdAt).getFullYear() === year,
   );
+  const paidCounts = await loadPaidReferralCounts();
+  const qualifiedThisYear = paidCounts ? paidCounts.thisYear : yearReferrals.length;
   const yearRewards = rewards.filter((r) => r.referrerUserId === userId && r.rewardYear === year);
   const monthsGrantedThisYear = yearRewards.reduce((sum, r) => sum + r.monthsGranted, 0);
   const monthsRemainingThisYear = Math.max(0, settings.maxRewardMonthsPerYear - monthsGrantedThisYear);
   const per = settings.referralsPerReward;
-  const progressToNextReward = per > 0 ? yearReferrals.length % per : 0;
-  const tiersEarnedThisYear = per > 0 ? Math.floor(yearReferrals.length / per) : 0;
+  const progressToNextReward = per > 0 ? qualifiedThisYear % per : 0;
+  const tiersEarnedThisYear = per > 0 ? Math.floor(qualifiedThisYear / per) : 0;
   const tiersGrantedThisYear = yearRewards.length;
   const pendingRewardTiers = Math.max(0, tiersEarnedThisYear - tiersGrantedThisYear);
 
   return {
     referralCode,
     totalReferrals: referrals.filter((r) => r.referrerUserId === userId).length,
-    referralsThisYear: yearReferrals.length,
+    referralsThisYear: qualifiedThisYear,
     rewardsGrantedThisYear: yearRewards.length,
     monthsGrantedThisYear,
     monthsRemainingThisYear,
@@ -409,6 +434,7 @@ export async function getReferralStats(
     referralsPerReward: settings.referralsPerReward,
     rewardMonths: settings.rewardMonths,
     maxRewardMonthsPerYear: settings.maxRewardMonthsPerYear,
+    countsPaidPasses: paidCounts !== null,
   };
 }
 

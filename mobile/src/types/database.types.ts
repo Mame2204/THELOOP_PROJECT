@@ -4043,6 +4043,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      my_paid_referral_counts: { Args: never; Returns: Json }
       process_referrer_reward_for_referred: { Args: never; Returns: number }
       publish_partner_event_submission: {
         Args: { p_local_id: string }
