@@ -27,6 +27,7 @@ interface AdminContentPickerProps {
   selected: AdminPickerEntry[];
   mode: 'single' | 'multiple';
   max?: number;
+  loading?: boolean;
   onToggle: (item: AdminPickerEntry) => void;
 }
 
@@ -36,6 +37,7 @@ export function AdminContentPicker({
   selected,
   mode,
   max = 8,
+  loading = false,
   onToggle,
 }: AdminContentPickerProps) {
   const [kind, setKind] = useState<AdminPickerKind>('spot');
@@ -129,7 +131,9 @@ export function AdminContentPicker({
           );
         })}
         {visible.length === 0 ? (
-          <Text style={[styles.empty, { color: shell.pageKicker }]}>Aucun contenu publié.</Text>
+          <Text style={[styles.empty, { color: shell.pageKicker }]}>
+            {loading ? 'Chargement du catalogue…' : query.trim() ? 'Aucun résultat.' : 'Aucun contenu publié.'}
+          </Text>
         ) : null}
       </ScrollView>
     </View>

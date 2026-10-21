@@ -19,6 +19,7 @@ export function WalkStepPicker({ countryCode, steps, onChange, maxSteps = 8 }: P
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<CatalogContentItem[]>([]);
   const [truncated, setTruncated] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,6 +28,7 @@ export function WalkStepPicker({ countryCode, steps, onChange, maxSteps = 8 }: P
         if (cancelled) return;
         setItems(res.items);
         setTruncated(res.truncated);
+        setLoadError(res.error ?? null);
       });
     }, 250);
     return () => {
@@ -92,6 +94,7 @@ export function WalkStepPicker({ countryCode, steps, onChange, maxSteps = 8 }: P
         onChange={(e) => setQuery(e.target.value)}
         style={{ width: '100%', marginBottom: 8 }}
       />
+      {loadError ? <p className="error">Chargement impossible : {loadError}</p> : null}
       {truncated ? <p className="meta">Affinez la recherche pour voir la suite.</p> : null}
       <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #e5e5e5', borderRadius: 8 }}>
         {items.map((item) => {

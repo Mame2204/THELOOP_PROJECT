@@ -657,6 +657,8 @@ export async function peekAdminCatalogSnapshot(): Promise<ContentSnapshot> {
   if (adminCatalogSnapshot) return adminCatalogSnapshot;
   const base = await peekContentSnapshot();
   const merged = await mergeApprovedStaging(base);
+  // Cache public absent : ne pas figer un catalogue vide (sinon pickers Accueil vides 10 min).
+  if (merged.events.length === 0 && merged.locations.length === 0) return merged;
   adminCatalogSnapshot = merged;
   // Marque comme « frais » pour ne pas déclencher un refresh réseau immédiat au mount.
   adminCatalogFetchedAt = Date.now();

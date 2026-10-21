@@ -101,7 +101,7 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
   const { role } = useAuthContext();
   const { countryCode, countryLabel } = useAdminCountry();
   const { shell } = useMemberTheme();
-  const { locations, events } = useAdminCatalog();
+  const { locations, events, isLoading: catalogLoading, refresh: refreshCatalog } = useAdminCatalog();
   const { allowed, isLoading, permissionLabel } = useAdminModuleAccess('featured');
 
   const initialTab: TabId = route.params?.tab ?? 'overview';
@@ -280,9 +280,9 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     invalidateAdminAccueilCache(countryCode);
-    await run(true);
+    await Promise.all([run(true), refreshCatalog()]);
     setRefreshing(false);
-  }, [countryCode, run]);
+  }, [countryCode, run, refreshCatalog]);
 
   const activePoll = useMemo(
     () => pickCurrentAccueilItem(polls.map((p) => ({ ...p, isActive: p.isActive }))),
@@ -1077,6 +1077,7 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
           <AdminContentPicker
             shell={shell}
             items={pickerItems}
+            loading={catalogLoading}
             mode="multiple"
             max={8}
             selected={walkSteps.map((step) => pickerEntry(step.targetType, step.targetId, step.title))}
@@ -1290,6 +1291,7 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
           <AdminContentPicker
             shell={shell}
             items={pickerItems}
+            loading={catalogLoading}
             mode="single"
             selected={
               cornerRelatedType && cornerRelatedId
@@ -1449,6 +1451,7 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
               <AdminContentPicker
                 shell={shell}
                 items={pickerItems}
+                loading={catalogLoading}
                 mode="single"
                 selected={
                   chroniqueTargetType && chroniqueTargetId
