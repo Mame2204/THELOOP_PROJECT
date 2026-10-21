@@ -400,7 +400,9 @@ export function isStandaloneTheLoopBenefit(
 }
 
 /** Aligné mobile : avantage lié à un partenaire / event·spot·outil (hors modèle Paramètres seul). */
-export function isPartnerAssociatedBenefit(item: Pick<BenefitCatalogRow, 'offeringPartners'>): boolean {
+export function isPartnerAssociatedBenefit(
+  item: Pick<BenefitCatalogRow, 'offeringPartners' | 'isTemplate'>,
+): boolean {
   if (isStandaloneTheLoopBenefit(item)) return false;
   const partners = item.offeringPartners ?? [];
   if (!partners.length) return false;

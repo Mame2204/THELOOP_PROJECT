@@ -20,7 +20,12 @@ import {
   type ChroniqueTargetType,
 } from '@/lib/chronique-store';
 import { emitHomeRefresh } from '@/lib/home-refresh';
-import type { HomePoll, HomePollOption } from '@/lib/home-poll-store';
+import {
+  forgetLocalHomePoll,
+  invalidateHomePollSnapshot,
+  type HomePoll,
+  type HomePollOption,
+} from '@/lib/home-poll-store';
 import type { LoopWalk, LoopWalkStep } from '@/lib/loop-walks-store';
 import { invalidateLoopWalksCache } from '@/lib/loop-walks-store';
 import { hydrateScoped, invalidateScope, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
@@ -97,19 +102,19 @@ export function invalidateAdminAccueilCache(
   }
 }
 
-function notifyHome(): void {
-  invalidateLoopWalksCache();
-  void import('@/lib/home-partners-store').then((m) => m.invalidateHomePartnerLogosCache());
-  emitHomeRefresh('admin-accueil');
-}
-
 /** Refresh Accueil public + invalide uniquement le cache admin du kind touché. */
 function notifyAccueilKind(
   countryCode: string,
   kind: 'walks' | 'corners' | 'chroniques' | 'logos' | 'polls',
 ): void {
   invalidateAdminAccueilCache(countryCode, [kind]);
-  void import('@/lib/admin-insights-store').then((m) => m.invalidateAdminInsightsCache(countryCode));
+  try {
+    void import('@/lib/admin-insights-store')
+      .then((m) => m.invalidateAdminInsightsCache(countryCode))
+      .catch(() => undefined);
+  } catch {
+    /* import() dynamique indisponible sous Jest */
+  }
   if (kind === 'walks') invalidateLoopWalksCache(countryCode);
   if (kind === 'logos') {
     void import('@/lib/home-partners-store').then((m) => m.invalidateHomePartnerLogosCache(countryCode));
@@ -119,6 +124,9 @@ function notifyAccueilKind(
   }
   if (kind === 'corners') {
     void import('@/lib/creator-corner-store').then((m) => m.invalidateActiveCreatorCornerCache(countryCode));
+  }
+  if (kind === 'polls') {
+    invalidateHomePollSnapshot(countryCode);
   }
   emitHomeRefresh(`admin-accueil-${kind}`);
 }
@@ -442,7 +450,7 @@ export async function upsertAdminHomePoll(input: {
         console.warn('[AdminAccueil] poll update:', error?.message);
         return null;
       }
-      notifyHome();
+      notifyAccueilKind(input.countryCode, 'polls');
       return {
         id: String(data.id),
         question: String(data.question),
@@ -467,7 +475,7 @@ export async function upsertAdminHomePoll(input: {
       console.warn('[AdminAccueil] poll insert:', error?.message);
       return null;
     }
-    notifyHome();
+    notifyAccueilKind(input.countryCode, 'polls');
     return {
       id: String(data.id),
       question: String(data.question),
@@ -499,7 +507,7 @@ export async function upsertAdminHomePoll(input: {
   };
   const others = list.filter((p) => p.id !== next.id);
   await AsyncStorage.setItem(DEMO_POLLS_ADMIN, JSON.stringify([next, ...others]));
-  notifyHome();
+  notifyAccueilKind(input.countryCode, 'polls');
   return next;
 }
 
@@ -528,6 +536,43 @@ export async function setAdminHomePollActive(
   await AsyncStorage.setItem(DEMO_POLLS_ADMIN, JSON.stringify(next));
   notifyAccueilKind(countryCode, 'polls');
   return true;
+}
+
+export type AdminHomePollDeleteResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/** Supprime le sondage et ses votes. Les autres pays du cache démo sont conservés. */
+export async function deleteAdminHomePoll(
+  id: string,
+  countryCode = 'GN',
+): Promise<AdminHomePollDeleteResult> {
+  if (isSupabaseConfigured() && supabase) {
+    const { error: votesError } = await supabase.from('home_poll_votes').delete().eq('poll_id', id);
+    if (votesError) {
+      console.warn('[AdminAccueil] poll votes delete:', votesError.message);
+    }
+    const { error } = await supabase.from('home_polls').delete().eq('id', id);
+    if (error) {
+      console.warn('[AdminAccueil] poll delete:', error.message);
+      return { ok: false, error: error.message || 'Suppression impossible.' };
+    }
+    notifyAccueilKind(countryCode, 'polls');
+    return { ok: true };
+  }
+
+  try {
+    const raw = await AsyncStorage.getItem(DEMO_POLLS_ADMIN);
+    const parsed = raw ? (JSON.parse(raw) as AdminHomePoll[]) : [];
+    const next = Array.isArray(parsed) ? parsed.filter((p) => p.id !== id) : [];
+    await AsyncStorage.setItem(DEMO_POLLS_ADMIN, JSON.stringify(next));
+  } catch {
+    return { ok: false, error: 'Suppression impossible.' };
+  }
+
+  await forgetLocalHomePoll(id, countryCode);
+  notifyAccueilKind(countryCode, 'polls');
+  return { ok: true };
 }
 
 // ─── Walks ──────────────────────────────────────────────────────────────────

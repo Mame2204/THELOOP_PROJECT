@@ -441,8 +441,12 @@ export async function upsertAccueilCorner(
     favorite_pick: null,
     useful_links: [],
     period_label: null,
-    period_start: input.periodStart?.trim() || null,
-    period_end: input.periodEnd?.trim() || null,
+    ...(input.id && input.periodStart === undefined && input.periodEnd === undefined
+      ? {}
+      : {
+          period_start: input.periodStart?.trim() || null,
+          period_end: input.periodEnd?.trim() || null,
+        }),
     is_active: input.activate === true,
     country_code: countryCode,
     category: null,
@@ -540,8 +544,12 @@ export async function upsertAccueilChronique(
     target_id: input.targetId?.trim() || null,
     target_slug: targetSlug,
     period_label: input.volumeLabel?.trim() || null,
-    period_start: input.periodStart?.trim() || null,
-    period_end: input.periodEnd?.trim() || null,
+    ...(input.id && input.periodStart === undefined && input.periodEnd === undefined
+      ? {}
+      : {
+          period_start: input.periodStart?.trim() || null,
+          period_end: input.periodEnd?.trim() || null,
+        }),
     is_active: input.activate === true,
     country_code: countryCode,
     updated_at: now,
@@ -574,6 +582,10 @@ export async function setPollActive(
 }
 
 export async function deletePoll(id: string): Promise<{ ok: boolean; error?: string }> {
+  const { error: votesError } = await supabase.from('home_poll_votes').delete().eq('poll_id', id);
+  if (votesError) {
+    console.warn('[Accueil] poll votes delete:', votesError.message);
+  }
   const { error } = await supabase.from('home_polls').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
   return { ok: true };

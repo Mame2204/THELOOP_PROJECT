@@ -76,6 +76,7 @@ export function AccueilScreen({ navigation }: Props) {
   const [heroCollapsed, setHeroCollapsed] = useState(false);
   const [blocks, setBlocks] = useState<AccueilBlocksConfig>(DEFAULT_SECTIONS.accueil);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [pollEpoch, setPollEpoch] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [walkCatalog, setWalkCatalog] = useState<LoopWalk[]>([]);
   const [walksLoading, setWalksLoading] = useState(false);
@@ -132,6 +133,7 @@ export function AccueilScreen({ navigation }: Props) {
         : null,
     );
     setWalksLoading(false);
+    setPollEpoch((n) => n + 1);
     if (force) setRefreshKey((k) => k + 1);
   }, [activeCountryCode]);
 
@@ -527,6 +529,7 @@ export function AccueilScreen({ navigation }: Props) {
               {blocks.poll ? (
                 <OneTapPoll
                   key={`poll-${refreshKey}`}
+                  epoch={pollEpoch}
                   accent={c.accent}
                   surface={c.surface}
                   border={c.border}
