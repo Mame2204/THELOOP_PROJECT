@@ -102,12 +102,6 @@ export function invalidateAdminAccueilCache(
   }
 }
 
-function notifyHome(): void {
-  invalidateLoopWalksCache();
-  void import('@/lib/home-partners-store').then((m) => m.invalidateHomePartnerLogosCache());
-  emitHomeRefresh('admin-accueil');
-}
-
 /** Refresh Accueil public + invalide uniquement le cache admin du kind touché. */
 function notifyAccueilKind(
   countryCode: string,
@@ -456,7 +450,7 @@ export async function upsertAdminHomePoll(input: {
         console.warn('[AdminAccueil] poll update:', error?.message);
         return null;
       }
-      notifyHome();
+      notifyAccueilKind(input.countryCode, 'polls');
       return {
         id: String(data.id),
         question: String(data.question),
@@ -481,7 +475,7 @@ export async function upsertAdminHomePoll(input: {
       console.warn('[AdminAccueil] poll insert:', error?.message);
       return null;
     }
-    notifyHome();
+    notifyAccueilKind(input.countryCode, 'polls');
     return {
       id: String(data.id),
       question: String(data.question),
@@ -513,7 +507,7 @@ export async function upsertAdminHomePoll(input: {
   };
   const others = list.filter((p) => p.id !== next.id);
   await AsyncStorage.setItem(DEMO_POLLS_ADMIN, JSON.stringify([next, ...others]));
-  notifyHome();
+  notifyAccueilKind(input.countryCode, 'polls');
   return next;
 }
 

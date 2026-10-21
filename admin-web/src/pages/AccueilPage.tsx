@@ -137,6 +137,8 @@ export function AccueilPage() {
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
   const [pollActivate, setPollActivate] = useState(true);
+  const [pollPeriodStart, setPollPeriodStart] = useState('');
+  const [pollPeriodEnd, setPollPeriodEnd] = useState('');
 
   const [newWalkTitle, setNewWalkTitle] = useState('');
   const [newWalkDuration, setNewWalkDuration] = useState('');
@@ -181,6 +183,8 @@ export function AccueilPage() {
     setPollQuestion(p.question);
     setPollOptions(p.optionLabels.length >= 2 ? p.optionLabels : [...p.optionLabels, '', ''].slice(0, 2));
     setPollActivate(p.isActive);
+    setPollPeriodStart(p.periodStart?.slice(0, 10) ?? '');
+    setPollPeriodEnd(p.periodEnd?.slice(0, 10) ?? '');
     setTab('poll');
   }
 
@@ -267,6 +271,22 @@ export function AccueilPage() {
     setPollQuestion('');
     setPollOptions(['', '']);
     setPollActivate(true);
+    setPollPeriodStart('');
+    setPollPeriodEnd('');
+  }
+
+  function pollScheduleError(): string | null {
+    const start = pollPeriodStart.trim();
+    const end = pollPeriodEnd.trim();
+    if (start && end && end < start) {
+      return 'La date de fin doit être postérieure ou égale à la date de début.';
+    }
+    if (!start) return null;
+    const conflict = polls.find(
+      (p) => p.id !== editingPollId && (p.periodStart ?? '').slice(0, 10) === start,
+    );
+    if (!conflict) return null;
+    return `Un sondage existe déjà avec la date de début ${start} pour ce pays.`;
   }
 
   const loadOverview = useCallback(async () => {
@@ -616,18 +636,36 @@ export function AccueilPage() {
               />
               Activer sur l’Accueil membre
             </label>
+            <div className="field" style={{ marginTop: 12 }}>
+              <label>Date de début (optionnel)</label>
+              <input type="date" value={pollPeriodStart} onChange={(e) => setPollPeriodStart(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Date de fin (optionnel)</label>
+              <input type="date" value={pollPeriodEnd} onChange={(e) => setPollPeriodEnd(e.target.value)} />
+            </div>
+            <p className="meta">
+              Plusieurs sondages actifs possibles. À l’Accueil, celui dont la date de début est la plus récente et encore valide s’affiche. Deux sondages ne peuvent pas partager la même date de début pour ce pays.
+            </p>
             <button
               type="button"
               className="btn"
               style={{ marginTop: 12 }}
               disabled={busy}
               onClick={() => {
+                const scheduleErr = pollScheduleError();
+                if (scheduleErr) {
+                  setMsg(scheduleErr);
+                  return;
+                }
                 setBusy(true);
                 void upsertAccueilPoll(countryCode, {
                   id: editingPollId ?? undefined,
                   question: pollQuestion,
                   optionLabels: pollOptions,
                   activate: pollActivate,
+                  periodStart: pollPeriodStart || null,
+                  periodEnd: pollPeriodEnd || null,
                 }).then((r) => {
                   setBusy(false);
                   if (!r.ok) setMsg(r.error ?? 'Erreur');

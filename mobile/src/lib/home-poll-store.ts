@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { pickCurrentAccueilItem } from '@/lib/accueil-scheduling';
-import { asArray, hydrateScoped, invalidateScope, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
+import { asArray, hydrateScoped, invalidateScope, peekScoped, scopedStorageKey } from '@/lib/swr-cache';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { asDbInsert, undefinedIfNull } from '@/lib/supabase-types';
 
@@ -314,12 +314,17 @@ function parsePollResults(
   };
 }
 
+type RemotePollLoad =
+  | { kind: 'bundle'; bundle: CachedPollBundle }
+  | { kind: 'empty' }
+  | { kind: 'error' };
+
 async function loadRemoteBundle(
   voter: HomePollVoter,
   countryCode?: string,
-): Promise<CachedPollBundle | null> {
-  if (!isSupabaseConfigured() || !supabase) return null;
-  if (!countryCode) return null;
+): Promise<RemotePollLoad> {
+  if (!isSupabaseConfigured() || !supabase) return { kind: 'error' };
+  if (!countryCode) return { kind: 'error' };
 
   const { data: pollRows, error } = await supabase
     .from('home_polls')
@@ -331,7 +336,7 @@ async function loadRemoteBundle(
 
   if (error) {
     console.warn('[HomePoll] lecture:', error.message);
-    return null;
+    return { kind: 'error' };
   }
 
   const picked = pickCurrentAccueilItem(
@@ -347,10 +352,10 @@ async function loadRemoteBundle(
     ? (pollRows ?? []).find((row) => String(row.id) === picked.id)
     : null;
 
-  if (!pollRow) return null;
+  if (!pollRow) return { kind: 'empty' };
 
   const options = parseOptions(pollRow.options);
-  if (options.length < 2) return null;
+  if (options.length < 2) return { kind: 'empty' };
 
   const poll: HomePoll = {
     id: String(pollRow.id),
@@ -370,51 +375,54 @@ async function loadRemoteBundle(
 
   const { counts, total, userOptionId } = parsePollResults(resultsError ? null : resultsData, options);
 
-  return { poll, counts, total, userOptionId, voterKey: voterKeyFor(voter) };
+  return {
+    kind: 'bundle',
+    bundle: { poll, counts, total, userOptionId, voterKey: voterKeyFor(voter) },
+  };
 }
 
 async function loadRemoteSnapshot(
   voter: HomePollVoter,
   countryCode?: string,
-): Promise<HomePollSnapshot | null> {
+): Promise<{ kind: 'ok'; snap: HomePollSnapshot } | { kind: 'empty' } | { kind: 'error' }> {
   const resolvedVoter = isLoggedInVoter(voter)
     ? voter
     : { ...voter, phoneId: voter.phoneId ?? (await getPollPhoneId()) };
 
-  const bundle = await loadRemoteBundle(resolvedVoter, countryCode);
-  if (!bundle) return null;
+  const loaded = await loadRemoteBundle(resolvedVoter, countryCode);
+  if (loaded.kind === 'error') return { kind: 'error' };
+  if (loaded.kind === 'empty') {
+    invalidateHomePollSnapshot(countryCode);
+    return { kind: 'empty' };
+  }
 
   const scope = pollScope(countryCode);
-  await hydrateScoped(scope, scopedStorageKey(POLL_SNAPSHOT_CACHE, scope), bundle);
-  return attachUserVote(bundle, resolvedVoter);
+  await hydrateScoped(scope, scopedStorageKey(POLL_SNAPSHOT_CACHE, scope), loaded.bundle);
+  return { kind: 'ok', snap: attachUserVote(loaded.bundle, resolvedVoter) };
 }
 
 export async function loadHomePollSnapshot(
   voter: HomePollVoter,
   countryCode?: string,
+  options?: { force?: boolean },
 ): Promise<HomePollSnapshot | null> {
   const resolvedVoter = isLoggedInVoter(voter)
     ? voter
     : { ...voter, phoneId: voter.phoneId ?? (await getPollPhoneId()) };
 
   if (isSupabaseConfigured()) {
-    const cached = await peekHomePollBundle(countryCode);
-    if (cached) {
-      scheduleScopedRefresh(
-        `home_poll_${pollScope(countryCode)}`,
-        () => loadRemoteBundle(resolvedVoter, countryCode),
-        undefined,
-        async (fresh) => {
-          if (fresh === null) {
-            invalidateScope(pollScope(countryCode), scopedStorageKey(POLL_SNAPSHOT_CACHE, pollScope(countryCode)));
-            return;
-          }
-          await hydrateScoped(pollScope(countryCode), scopedStorageKey(POLL_SNAPSHOT_CACHE, pollScope(countryCode)), fresh);
-        },
-      );
-      return attachUserVote(cached, resolvedVoter);
+    if (options?.force) {
+      const fresh = await loadRemoteSnapshot(resolvedVoter, countryCode);
+      if (fresh.kind === 'ok') return fresh.snap;
+      if (fresh.kind === 'empty') return null;
+      const cached = await peekHomePollBundle(countryCode);
+      if (cached) return attachUserVote(cached, resolvedVoter);
+      return null;
     }
-    return loadRemoteSnapshot(resolvedVoter, countryCode);
+    const cached = await peekHomePollBundle(countryCode);
+    if (cached) return attachUserVote(cached, resolvedVoter);
+    const remote = await loadRemoteSnapshot(resolvedVoter, countryCode);
+    return remote.kind === 'ok' ? remote.snap : null;
   }
   if (countryCode && countryCode !== 'GN') return null;
   return loadDemoSnapshot(resolvedVoter);
@@ -488,7 +496,7 @@ export async function voteHomePoll(
     }
 
     const snap = await loadRemoteSnapshot(loggedIn ? voter : { ...voter, phoneId }, countryCode);
-    if (snap) return snap;
+    if (snap.kind === 'ok') return snap.snap;
     return {
       poll: {
         id: pollId,

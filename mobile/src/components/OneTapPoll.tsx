@@ -24,6 +24,8 @@ interface OneTapPollProps {
   text: string;
   muted: string;
   background: string;
+  /** Incrémenté à chaque rechargement Accueil : relit le sondage en base. */
+  epoch?: number;
 }
 
 /** Vote one-tap : compte connecté ou id téléphone local (anonyme). */
@@ -34,6 +36,7 @@ export function OneTapPoll({
   text,
   muted,
   background,
+  epoch = 0,
 }: OneTapPollProps) {
   const { user } = useAuthContext();
   const { activeCountryCode } = useContent();
@@ -55,11 +58,11 @@ export function OneTapPoll({
     };
   }, [user?.id, user?.phoneNumber, phoneId]);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (force = false) => {
     if (!voter.userId && !voter.phoneId) return;
     setLoading(true);
     try {
-      setSnap(await loadHomePollSnapshot(voter, activeCountryCode));
+      setSnap(await loadHomePollSnapshot(voter, activeCountryCode, { force }));
     } finally {
       setLoading(false);
     }
@@ -69,9 +72,10 @@ export function OneTapPoll({
     let cancelled = false;
     void (async () => {
       if (!voter.userId && !voter.phoneId) return;
+      if (epoch <= 0) return;
       setLoading(true);
       try {
-        const next = await loadHomePollSnapshot(voter, activeCountryCode);
+        const next = await loadHomePollSnapshot(voter, activeCountryCode, { force: true });
         if (!cancelled) setSnap(next);
       } finally {
         if (!cancelled) setLoading(false);
@@ -80,7 +84,7 @@ export function OneTapPoll({
     return () => {
       cancelled = true;
     };
-  }, [voter, activeCountryCode]);
+  }, [voter, activeCountryCode, epoch]);
 
   useEffect(() => {
     if (!snap?.poll.id) return;
@@ -91,7 +95,7 @@ export function OneTapPoll({
     () =>
       subscribeHomeRefresh((reason) => {
         if (reason !== 'admin-accueil-polls' && reason !== 'admin-accueil') return;
-        void refresh();
+        void refresh(true);
       }),
     [refresh],
   );
