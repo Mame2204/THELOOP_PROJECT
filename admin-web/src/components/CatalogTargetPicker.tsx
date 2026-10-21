@@ -36,6 +36,7 @@ export function CatalogTargetPicker({
   const [items, setItems] = useState<CatalogContentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [truncated, setTruncated] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +46,7 @@ export function CatalogTargetPicker({
         if (cancelled) return;
         setItems(res.items);
         setTruncated(res.truncated);
+        setLoadError(res.error ?? null);
         setLoading(false);
       });
     }, 250);
@@ -97,6 +99,7 @@ export function CatalogTargetPicker({
         style={{ marginBottom: 8, width: '100%' }}
       />
       {loading ? <p className="muted">Chargement…</p> : null}
+      {loadError ? <p className="error">Chargement impossible : {loadError}</p> : null}
       {truncated ? <p className="meta">Affinez la recherche pour voir la suite.</p> : null}
       <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #e5e5e5', borderRadius: 8 }}>
         {items.map((item) => (

@@ -52,8 +52,9 @@ export function useAdminCatalog() {
       }
       try {
         if (!force) {
-          applySnapshot(await peekAdminCatalogSnapshot());
-          setIsLoading(false);
+          const peeked = await peekAdminCatalogSnapshot();
+          applySnapshot(peeked);
+          if (peeked.events.length > 0 || peeked.locations.length > 0) setIsLoading(false);
         }
         await loadAdminCatalogSnapshot(force, force ? undefined : applySnapshot);
         if (force) {

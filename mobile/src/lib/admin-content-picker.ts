@@ -9,7 +9,7 @@ export interface AdminPickerEntry {
 }
 
 export function foldPickerText(value: string): string {
-  return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
 /** Tous les contenus du type, filtrés par le texte saisi (titre et détail). */
