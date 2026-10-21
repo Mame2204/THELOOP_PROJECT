@@ -313,8 +313,12 @@ export async function pickImageFromLibrary(options?: {
   /** Affiche l’éditeur de recadrage natif avant retour. */
   allowsEditing?: boolean;
 }): Promise<string | null> {
-  const allowed = await requestImageLibraryPermission();
-  if (!allowed) return null;
+  // Android : le sélecteur photo système n'a pas besoin de READ_MEDIA_IMAGES.
+  // iOS : l'accès à la photothèque reste demandé.
+  if (Platform.OS !== 'android') {
+    const allowed = await requestImageLibraryPermission();
+    if (!allowed) return null;
+  }
 
   // Pas de recadrage natif (iOS ni Android) : évite IllegalStateException / crop launcher
   // non enregistré sur Android (Expo SDK 54) et mauvais cadrage iOS. Recadrage 16:9 en JS.
