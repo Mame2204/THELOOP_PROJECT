@@ -8,6 +8,7 @@ import { getProfileAccent } from '@/lib/profile-accent';
 import {
   getReferralStats,
   referralProgressView,
+  referralRewardCapText,
   referralRewardRuleText,
   type ReferralStats,
 } from '@/lib/referral-store';
@@ -90,7 +91,7 @@ export function ReferralScreen({ navigation }: Props) {
             {referralRewardRuleText(stats?.referralsPerReward ?? 1, stats?.rewardMonths ?? 1)}
           </Text>
           <Text style={[styles.body, { color: shell.pageKicker, marginTop: 6 }]}>
-            Maximum {stats?.maxRewardMonthsPerYear ?? 5} mois offerts par an.
+            {referralRewardCapText(stats?.maxRewardMonthsPerYear ?? 1)}
           </Text>
         </>
       ) : isPartnerReferrer ? (

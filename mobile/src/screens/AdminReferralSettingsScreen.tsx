@@ -13,7 +13,7 @@ import {
   saveReferralSettings,
   type ReferralSettings,
 } from '@/lib/referral-config-store';
-import { referralRewardRuleText } from '@/lib/referral-store';
+import { referralRewardCapText, referralRewardRuleText } from '@/lib/referral-store';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminReferralSettings'>;
@@ -117,7 +117,7 @@ export function AdminReferralSettingsScreen({ navigation }: Props) {
 
       <View style={[styles.card, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
         <Text style={[styles.preview, { color: shell.pageTitle }]}>
-          {referralRewardRuleText(perRewardPreview, monthsPreview)} Maximum {maxYearPreview} mois offerts par an.
+          {referralRewardRuleText(perRewardPreview, monthsPreview)} {referralRewardCapText(maxYearPreview)}
         </Text>
         <Text style={[styles.hint, { color: shell.pageKicker }]}>
           Un filleul compte quand le paiement de son PASS est confirmé. Le seuil et les mois sont pris en compte tout de suite.

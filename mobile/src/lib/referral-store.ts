@@ -92,6 +92,12 @@ export function referralRewardRuleText(referralsPerReward: number, rewardMonths:
   return `Tous les ${per} filleuls qui prennent un PASS avec votre code, vous recevez ${mois}.`;
 }
 
+/** Plafond annuel, lu dans les réglages admin (pas une valeur fixe). */
+export function referralRewardCapText(maxRewardMonthsPerYear: number): string {
+  const max = Math.max(1, Math.floor(maxRewardMonthsPerYear));
+  return max === 1 ? 'Maximum 1 mois offert par an.' : `Maximum ${max} mois offerts par an.`;
+}
+
 const REFERRALS_KEY = 'loop_referrals_v1';
 const REWARDS_KEY = 'loop_referral_rewards_v1';
 const PENDING_REWARDS_KEY = 'loop_pending_prime_rewards_v1';
