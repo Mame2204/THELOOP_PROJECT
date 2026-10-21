@@ -172,7 +172,7 @@ function defaultCatalog(): PassCatalogEntry[] {
       id: REFERRAL_CATALOG_ID,
       label: 'PASS Parrainage',
       description:
-        'Octroi automatique (palier filleuls). Dates calculées à l’activation — non octroyable manuellement.',
+        'Octroi automatique quand un filleul a payé un PASS. Dates calculées à l’activation — non octroyable manuellement.',
       priceGnf: 0,
       validityDays: 30,
       grantableBySuperAdmin: false,

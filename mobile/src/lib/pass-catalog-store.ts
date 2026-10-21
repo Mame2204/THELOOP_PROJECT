@@ -104,7 +104,7 @@ function defaultCatalog(): PassCatalogEntry[] {
       id: REFERRAL_CATALOG_ID,
       label: REFERRAL_PASS_LABEL,
       description:
-        '1 mois Loop Prime par palier de filleuls. Dates de début et fin fixées à l’octroi (non visible en boutique).',
+        'Mois Loop Prime offerts quand un filleul paie un PASS. Dates fixées à l’octroi (non visible en boutique).',
       priceGnf: 0,
       /** Durée indicative catalogue ; les dates réelles sont calculées à l’octroi RPC. */
       validityDays: 30,

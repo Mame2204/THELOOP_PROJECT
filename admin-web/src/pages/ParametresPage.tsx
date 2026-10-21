@@ -578,7 +578,7 @@ export function ParametresPage() {
         <div className="card" style={{ maxWidth: 560 }}>
           <h3>Parrainage</h3>
           <p className="meta" style={{ marginBottom: 16 }}>
-            Récompenses membres — filleuls validés et mois Prime offerts (PASS Parrainage à l’octroi).
+            Un filleul compte quand il a payé un PASS. Le seuil, les mois offerts et le plafond annuel se règlent ici.
           </p>
           {referral ? (
             <p className="meta" style={{ marginBottom: 12 }}>

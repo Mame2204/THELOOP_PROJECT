@@ -5,7 +5,13 @@ import { useAuthContext } from '@/context/AuthContext';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
 import { PageHeader } from '@/components/PageHeader';
 import { getProfileAccent } from '@/lib/profile-accent';
-import { getReferralStats, referralProgressView, type ReferralStats } from '@/lib/referral-store';
+import {
+  getReferralStats,
+  referralProgressView,
+  referralRewardCapText,
+  referralRewardRuleText,
+  type ReferralStats,
+} from '@/lib/referral-store';
 import { isAuthenticated } from '@/types';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -69,7 +75,9 @@ export function ReferralScreen({ navigation }: Props) {
         <Text style={[styles.heroKicker, { color: accent.accent }]}>Votre code parrain</Text>
         <Text style={[styles.heroCode, { color: accent.accent }]}>{stats?.referralCode ?? '…'}</Text>
         <Text style={[styles.heroHint, { color: shell.pageKicker }]}>
-          Partagez ce code lors de l'inscription de vos contacts.
+          {showReferralRewards
+            ? "Partagez ce code à l'inscription. La récompense part quand votre filleul prend un PASS."
+            : "Partagez ce code lors de l'inscription de vos contacts."}
         </Text>
         <Pressable style={[styles.copyBtn, { backgroundColor: shell.tabIndicator }]} onPress={() => void shareCode()}>
           <Text style={styles.copyBtnText}>Partager mon code</Text>
@@ -80,11 +88,10 @@ export function ReferralScreen({ navigation }: Props) {
         <>
           <Text style={[styles.section, { color: shell.pageKicker }]}>Récompense</Text>
           <Text style={[styles.body, { color: shell.pageTitle }]}>
-            Tous les {stats?.referralsPerReward ?? 10} comptes créés avec votre code, vous recevez{' '}
-            {stats?.rewardMonths ?? 1} mois Prime gratuit.
+            {referralRewardRuleText(stats?.referralsPerReward ?? 1, stats?.rewardMonths ?? 1)}
           </Text>
           <Text style={[styles.body, { color: shell.pageKicker, marginTop: 6 }]}>
-            Maximum {stats?.maxRewardMonthsPerYear ?? 5} mois offerts par an.
+            {referralRewardCapText(stats?.maxRewardMonthsPerYear ?? 1)}
           </Text>
         </>
       ) : isPartnerReferrer ? (
@@ -131,7 +138,9 @@ export function ReferralScreen({ navigation }: Props) {
       <View style={styles.statsRow}>
         <View style={[styles.statCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
           <Text style={[styles.statValue, { color: shell.pageTitle }]}>{stats?.referralsThisYear ?? 0}</Text>
-          <Text style={[styles.statLabel, { color: shell.pageKicker }]}>Filleuls cette année</Text>
+          <Text style={[styles.statLabel, { color: shell.pageKicker }]}>
+            {stats?.countsPaidPasses ? 'Avec PASS cette année' : 'Filleuls cette année'}
+          </Text>
         </View>
         {showReferralRewards ? (
           <>
@@ -153,7 +162,7 @@ export function ReferralScreen({ navigation }: Props) {
       </View>
 
       <Text style={[styles.totalMeta, { color: shell.pageKicker }]}>
-        Total filleuls depuis l'ouverture : {stats?.totalReferrals ?? 0}
+        Inscrits avec votre code : {stats?.totalReferrals ?? 0}
       </Text>
     </ScrollView>
   );
