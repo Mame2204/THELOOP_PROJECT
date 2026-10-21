@@ -11,6 +11,7 @@ import {
 import { KeyboardAwareFormScroll } from '@/components/KeyboardAwareFormScroll';
 import { KeyboardSafeTextInput as TextInput } from '@/components/KeyboardSafeTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AdminContentPicker } from '@/components/admin/AdminContentPicker';
 import { AdminCountryBar } from '@/components/admin/AdminCountryBar';
 import { AdminModuleDenied } from '@/components/admin/AdminModuleDenied';
 import { AdminPageHeader, ADMIN_THEME, adminCardStyle } from '@/components/admin/AdminShell';
@@ -66,8 +67,9 @@ import {
   type AppSectionsConfig,
 } from '@/lib/app-sections-store';
 import { AdminFeaturedPanel } from '@/components/admin/AdminFeaturedPanel';
+import type { AdminPickerEntry } from '@/lib/admin-content-picker';
+import { filterPublishedActiveEvents, filterPublishedActiveLocations } from '@/lib/content-visibility';
 import { formatDateFr } from '@/lib/date-utils';
-import { filterUpcomingEvents } from '@/lib/event-list-utils';
 import type { CreatorUsefulLink, SinguliersRelatedType } from '@/lib/creator-corner-store';
 import { defaultChroniqueCtaLabel, type ChroniqueTargetType } from '@/lib/chronique-store';
 import { formatWalkDuration, type LoopWalk, type LoopWalkStep } from '@/lib/loop-walks-store';
@@ -99,7 +101,7 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
   const { role } = useAuthContext();
   const { countryCode, countryLabel } = useAdminCountry();
   const { shell } = useMemberTheme();
-  const { publicEvents, getHomeLocations } = useAdminCatalog();
+  const { locations, events } = useAdminCatalog();
   const { allowed, isLoading, permissionLabel } = useAdminModuleAccess('featured');
 
   const initialTab: TabId = route.params?.tab ?? 'overview';
@@ -183,15 +185,61 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
   const [logoName, setLogoName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
 
-  const spotOptions = useMemo(
-    () => getHomeLocations().filter((l) => l.subCategory !== 'tools'),
-    [getHomeLocations],
-  );
-  const toolOptions = useMemo(
-    () => getHomeLocations().filter((l) => l.subCategory === 'tools'),
-    [getHomeLocations],
-  );
-  const eventOptions = useMemo(() => filterUpcomingEvents(publicEvents).slice(0, 40), [publicEvents]);
+  const pickerItems = useMemo((): AdminPickerEntry[] => {
+    const publishedLocations = filterPublishedActiveLocations(locations);
+    const isTool = (location: (typeof publishedLocations)[number]) =>
+      location.subCategory === 'tools' || (location.categories?.includes('tools') ?? false);
+    const placeOf = (location: (typeof publishedLocations)[number]) => {
+      const place = location.address?.trim() || location.district || location.subtitle?.trim() || '';
+      return location.visibility === 'prime' && place ? `LoopX · ${place}` : place || (location.visibility === 'prime' ? 'LoopX' : '');
+    };
+    const spots = publishedLocations
+      .filter((location) => !isTool(location))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+      .map((location) => ({
+        id: location.id,
+        kind: 'spot' as const,
+        title: location.name,
+        subtitle: placeOf(location),
+        slug: location.slug,
+      }));
+    const tools = publishedLocations
+      .filter((location) => isTool(location))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+      .map((location) => ({
+        id: location.id,
+        kind: 'tool' as const,
+        title: location.name,
+        subtitle: location.toolCategory?.trim() || location.subtitle?.trim() || '',
+        slug: location.slug,
+      }));
+    const publishedEvents = filterPublishedActiveEvents(events)
+      .slice()
+      .sort((a, b) => b.startsAt.localeCompare(a.startsAt))
+      .map((event) => {
+        const place = event.venueAddress?.trim() || event.venueName?.trim() || '';
+        const when = formatDateFr(event.startsAt);
+        const loop = event.visibility === 'prime' ? 'LoopX · ' : '';
+        return {
+          id: event.id,
+          kind: 'event' as const,
+          title: event.title,
+          subtitle: `${loop}${when}${place ? ` · ${place}` : ''}`,
+          slug: event.slug,
+        };
+      });
+    return [...spots, ...tools, ...publishedEvents];
+  }, [locations, events]);
+
+  function pickerEntry(kind: 'event' | 'spot' | 'tool', id: string, fallbackTitle: string, slug = ''): AdminPickerEntry {
+    return pickerItems.find((item) => item.kind === kind && item.id === id) ?? {
+      id,
+      kind,
+      title: fallbackTitle,
+      subtitle: '',
+      slug,
+    };
+  }
 
   const load = useCallback(async (options?: { force?: boolean }) => {
     const apply = (
@@ -1023,71 +1071,17 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
           <ImageUploadField label="Image de couverture" value={walkCover} onChange={setWalkCover} shell={shell} folder="gallery" cropAspect={[16, 9]} hint="Recadrage 16:9 — galerie ou URL" />
 
           <Text style={[styles.sectionTitle, { color: shell.pageKicker }]}>Étapes ({walkSteps.length}/8) *</Text>
-          <Text style={[styles.hint, { color: shell.pageKicker }]}>Touche pour ajouter / retirer un spot, outil ou événement publié.</Text>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Spots</Text>
-          <View style={styles.chipWrap}>
-            {spotOptions.slice(0, 24).map((s) => {
-              const on = walkSteps.some((x) => x.targetType === 'spot' && x.targetId === s.id);
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => toggleWalkStep('spot', s.id, s.name)}
-                  style={[styles.chip, { borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder, backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg }]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                  <Text style={{ color: shell.pageKicker, fontSize: 9, marginTop: 2 }} numberOfLines={1}>
-                    {s.address?.trim() || s.district || 'Adresse —'}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Outils</Text>
-          <View style={styles.chipWrap}>
-            {toolOptions.slice(0, 24).map((s) => {
-              const on = walkSteps.some((x) => x.targetType === 'tool' && x.targetId === s.id);
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => toggleWalkStep('tool', s.id, s.name)}
-                  style={[styles.chip, { borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder, backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg }]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                  <Text style={{ color: shell.pageKicker, fontSize: 9, marginTop: 2 }} numberOfLines={1}>
-                    {s.subtitle?.trim() || s.toolCategory || 'Outil'}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Événements à venir</Text>
-          <View style={styles.chipWrap}>
-            {eventOptions.map((e) => {
-              const on = walkSteps.some((x) => x.targetType === 'event' && x.targetId === e.id);
-              const place = e.venueAddress?.trim() || e.venueName?.trim() || '—';
-              return (
-                <Pressable
-                  key={e.id}
-                  onPress={() => toggleWalkStep('event', e.id, e.title)}
-                  style={[styles.chip, { borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder, backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg }]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {e.title}
-                  </Text>
-                  <Text style={{ color: shell.pageKicker, fontSize: 9, marginTop: 2 }} numberOfLines={1}>
-                    {formatDateFr(e.startsAt)} · {place}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <Text style={[styles.hint, { color: shell.pageKicker }]}>
+            Recherche dans tous les spots, outils et événements publiés.
+          </Text>
+          <AdminContentPicker
+            shell={shell}
+            items={pickerItems}
+            mode="multiple"
+            max={8}
+            selected={walkSteps.map((step) => pickerEntry(step.targetType, step.targetId, step.title))}
+            onToggle={(item) => toggleWalkStep(item.kind, item.id, item.title)}
+          />
 
           <Pressable
             onPress={() => setWalkFeatured((v) => !v)}
@@ -1293,74 +1287,17 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
           />
 
           <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Contenu lié (optionnel)</Text>
-          <Text style={[styles.cardMeta, { color: shell.pageKicker, marginBottom: 6 }]}>
-            Spot / événement / outil déjà publié dans l’app.
-          </Text>
-          <View style={styles.chipWrap}>
-            {spotOptions.slice(0, 10).map((s) => {
-              const on = cornerRelatedType === 'spot' && cornerRelatedId === s.id;
-              return (
-                <Pressable
-                  key={`c-spot-${s.id}`}
-                  onPress={() => selectCornerRelated('spot', s.id, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-            {eventOptions.slice(0, 10).map((e) => {
-              const on = cornerRelatedType === 'event' && cornerRelatedId === e.id;
-              return (
-                <Pressable
-                  key={`c-evt-${e.id}`}
-                  onPress={() => selectCornerRelated('event', e.id, e.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {e.title}
-                  </Text>
-                </Pressable>
-              );
-            })}
-            {toolOptions.slice(0, 8).map((s) => {
-              const on = cornerRelatedType === 'tool' && cornerRelatedId === s.id;
-              return (
-                <Pressable
-                  key={`c-tool-${s.id}`}
-                  onPress={() => selectCornerRelated('tool', s.id, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <AdminContentPicker
+            shell={shell}
+            items={pickerItems}
+            mode="single"
+            selected={
+              cornerRelatedType && cornerRelatedId
+                ? [pickerEntry(cornerRelatedType, cornerRelatedId, cornerRelatedSlug ?? 'Contenu lié', cornerRelatedSlug ?? '')]
+                : []
+            }
+            onToggle={(item) => selectCornerRelated(item.kind, item.id, item.slug)}
+          />
 
           <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Liens utiles (3 max)</Text>
           {cornerLinks.map((link, i) => (
@@ -1509,7 +1446,17 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
               />
 
               <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Contenu lié *</Text>
-              <Text style={[styles.hint, { color: shell.pageKicker }]}>Un seul choix — spot, événement ou outil.</Text>
+              <AdminContentPicker
+                shell={shell}
+                items={pickerItems}
+                mode="single"
+                selected={
+                  chroniqueTargetType && chroniqueTargetId
+                    ? [pickerEntry(chroniqueTargetType, chroniqueTargetId, chroniqueLoc || 'Contenu lié', chroniqueTargetSlug ?? '')]
+                    : []
+                }
+                onToggle={(item) => selectChroniqueTarget(item.kind, item.id, item.title, item.slug)}
+              />
             </>
           ) : (
             <>
@@ -1542,83 +1489,6 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
               />
             </>
           )}
-
-          {chroniqueCtaEnabled ? (
-          <>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Spots</Text>
-          <View style={styles.chipWrap}>
-            {spotOptions.slice(0, 24).map((s) => {
-              const on = chroniqueTargetType === 'spot' && chroniqueTargetId === s.id;
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => selectChroniqueTarget('spot', s.id, s.name, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Outils</Text>
-          <View style={styles.chipWrap}>
-            {toolOptions.slice(0, 24).map((s) => {
-              const on = chroniqueTargetType === 'tool' && chroniqueTargetId === s.id;
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => selectChroniqueTarget('tool', s.id, s.name, s.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {s.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Événements</Text>
-          <View style={styles.chipWrap}>
-            {eventOptions.map((e) => {
-              const on = chroniqueTargetType === 'event' && chroniqueTargetId === e.id;
-              return (
-                <Pressable
-                  key={e.id}
-                  onPress={() => selectChroniqueTarget('event', e.id, e.title, e.slug)}
-                  style={[
-                    styles.chip,
-                    {
-                      borderColor: on ? ADMIN_THEME.accent : shell.filterInactiveBorder,
-                      backgroundColor: on ? ADMIN_THEME.glow : shell.filterInactiveBg,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: shell.pageTitle, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
-                    {on ? '✓ ' : ''}
-                    {e.title}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          </>
-          ) : null}
 
           <Text style={[styles.subLabel, { color: shell.pageKicker }]}>Planification (optionnel)</Text>
           <DateTimeField

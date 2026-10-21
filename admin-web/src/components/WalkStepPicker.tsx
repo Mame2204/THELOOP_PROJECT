@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  CATALOG_PICKER_LIMIT,
   KIND_LABELS,
-  listCatalogContent,
+  listPublishedForPicker,
   type CatalogContentItem,
   type CatalogKind,
 } from '../lib/content';
@@ -19,18 +18,22 @@ export function WalkStepPicker({ countryCode, steps, onChange, maxSteps = 8 }: P
   const [kind, setKind] = useState<CatalogKind>('spot');
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<CatalogContentItem[]>([]);
-
-  const load = useCallback(async () => {
-    const res = await listCatalogContent(countryCode, [kind], {
-      pageSize: CATALOG_PICKER_LIMIT,
-      status: 'published',
-    });
-    setItems(res.items);
-  }, [countryCode, kind]);
+  const [truncated, setTruncated] = useState(false);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void listPublishedForPicker(countryCode, kind, query).then((res) => {
+        if (cancelled) return;
+        setItems(res.items);
+        setTruncated(res.truncated);
+      });
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [countryCode, kind, query]);
 
   function toggle(item: CatalogContentItem) {
     const exists = steps.find((s) => s.targetType === item.kind && s.targetId === item.id);
@@ -44,12 +47,6 @@ export function WalkStepPicker({ countryCode, steps, onChange, maxSteps = 8 }: P
       { targetType: item.kind, targetId: item.id, title: item.title },
     ]);
   }
-
-  const filtered = items.filter((i) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return i.title.toLowerCase().includes(q);
-  });
 
   return (
     <div className="field">
@@ -95,8 +92,9 @@ export function WalkStepPicker({ countryCode, steps, onChange, maxSteps = 8 }: P
         onChange={(e) => setQuery(e.target.value)}
         style={{ width: '100%', marginBottom: 8 }}
       />
-      <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid #e5e5e5', borderRadius: 8 }}>
-        {filtered.slice(0, 30).map((item) => {
+      {truncated ? <p className="meta">Affinez la recherche pour voir la suite.</p> : null}
+      <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #e5e5e5', borderRadius: 8 }}>
+        {items.map((item) => {
           const selected = steps.some((s) => s.targetType === item.kind && s.targetId === item.id);
           return (
             <button
