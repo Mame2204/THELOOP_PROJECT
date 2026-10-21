@@ -153,6 +153,55 @@ function isLocalStagingId(id: string): boolean {
   return id.startsWith('evt-') || id.startsWith('spot-') || id.startsWith('tool-');
 }
 
+type RemoteContentStatus = 'draft' | 'published' | 'deactivated' | 'archived';
+
+/**
+ * Écrit le statut en base et exige qu'une ligne ait vraiment changé.
+ * Un update PostgREST sans erreur peut toucher 0 ligne (RLS, mauvais id).
+ * Les spots sont dans establishments : un update sur tools qui ne matche
+ * rien ne doit pas être pris pour un succès.
+ */
+async function persistRemoteContentStatus(
+  kind: 'event' | 'spot',
+  id: string,
+  remoteStatus: RemoteContentStatus,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!supabase) return { ok: false, error: 'Base indisponible.' };
+  const isActive = remoteStatus === 'published';
+
+  if (kind === 'event') {
+    const { data, error } = await supabase
+      .from('events')
+      .update({ content_status: remoteStatus, is_active: isActive })
+      .eq('id', id)
+      .select('id');
+    if (error) return { ok: false, error: error.message };
+    if (!data?.length) return { ok: false, error: 'Événement introuvable, ou modification refusée.' };
+    return { ok: true };
+  }
+
+  const toolPatch = await supabase
+    .from('tools')
+    .update({
+      content_status: remoteStatus,
+      is_active: isActive,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select('id');
+  if (!toolPatch.error && (toolPatch.data?.length ?? 0) > 0) return { ok: true };
+
+  const spotPatch = await supabase
+    .from('establishments')
+    .update({ content_status: remoteStatus, is_active: isActive })
+    .eq('id', id)
+    .select('id');
+  if (!spotPatch.error && (spotPatch.data?.length ?? 0) > 0) return { ok: true };
+  if (spotPatch.error) return { ok: false, error: spotPatch.error.message };
+  if (toolPatch.error) return { ok: false, error: toolPatch.error.message };
+  return { ok: false, error: 'Spot ou outil introuvable, ou modification refusée.' };
+}
+
 /**
  * Brouillon local (evt-/spot-/tool-) → insert réel dans events / establishments / tools.
  * Sans ça, Contenu affichait « Publié » + staging sans jamais alimenter l’Agenda.
@@ -302,11 +351,8 @@ export async function setContentStatus(
     }
     await saveOverrides(overrides);
   } else {
-    overrides[key] = { ...overrides[key], contentStatus, updatedAt: new Date().toISOString() };
-    await saveOverrides(overrides);
-
     if (isSupabaseConfigured() && supabase && !isLocalStagingId(id)) {
-      const remoteStatus: 'draft' | 'published' | 'deactivated' | 'archived' =
+      const remoteStatus: RemoteContentStatus =
         contentStatus === 'archived'
           ? 'archived'
           : contentStatus === 'deactivated'
@@ -314,33 +360,15 @@ export async function setContentStatus(
             : contentStatus === 'published'
               ? 'published'
               : 'draft';
-      const isActive = remoteStatus === 'published';
-      if (kind === 'event') {
-        const { error } = await supabase
-          .from('events')
-          .update({ content_status: remoteStatus, is_active: isActive })
-          .eq('id', id);
-        if (error) {
-          console.warn('[AdminContent] event status:', error.message);
-          return { ok: false, error: error.message };
-        }
-      } else {
-        const toolPatch = await supabase
-          .from('tools')
-          .update({ content_status: remoteStatus, is_active: isActive, updated_at: new Date().toISOString() })
-          .eq('id', id);
-        if (toolPatch.error) {
-          const { error } = await supabase
-            .from('establishments')
-            .update({ content_status: remoteStatus, is_active: isActive })
-            .eq('id', id);
-          if (error) {
-            console.warn('[AdminContent] spot status:', error.message);
-            return { ok: false, error: error.message };
-          }
-        }
+      const persisted = await persistRemoteContentStatus(kind, id, remoteStatus);
+      if (!persisted.ok) {
+        console.warn('[AdminContent] status:', persisted.error);
+        return { ok: false, error: persisted.error };
       }
     }
+
+    overrides[key] = { ...overrides[key], contentStatus, updatedAt: new Date().toISOString() };
+    await saveOverrides(overrides);
   }
 
   try {

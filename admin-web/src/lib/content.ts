@@ -360,6 +360,20 @@ export async function listPublishedForPicker(
   return { items, truncated: true, error };
 }
 
+async function updateCatalogStatusRow(
+  table: 'events' | 'establishments' | 'tools',
+  id: string,
+  patch: { content_status: ContentStatus; is_active: boolean; updated_at?: string },
+  missingLabel: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { data, error } = await supabase.from(table).update(patch).eq('id', id).select('id');
+  if (error) return { ok: false, error: error.message };
+  if (!data?.length) {
+    return { ok: false, error: `${missingLabel} introuvable, ou modification refusée.` };
+  }
+  return { ok: true };
+}
+
 export async function setCatalogContentStatus(
   kind: CatalogKind,
   id: string,
@@ -373,26 +387,24 @@ export async function setCatalogContentStatus(
   };
 
   if (kind === 'event') {
-    const { error } = await supabase
-      .from('events')
-      .update({ content_status: contentStatus, is_active: isActive })
-      .eq('id', id);
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    return updateCatalogStatusRow(
+      'events',
+      id,
+      { content_status: contentStatus, is_active: isActive },
+      'Événement',
+    );
   }
 
   if (kind === 'tool') {
-    const { error } = await supabase.from('tools').update(patch).eq('id', id);
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    return updateCatalogStatusRow('tools', id, patch, 'Outil');
   }
 
-  const { error } = await supabase
-    .from('establishments')
-    .update({ content_status: contentStatus, is_active: isActive })
-    .eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return updateCatalogStatusRow(
+    'establishments',
+    id,
+    { content_status: contentStatus, is_active: isActive },
+    'Spot',
+  );
 }
 
 export async function setCatalogContentFeatured(
