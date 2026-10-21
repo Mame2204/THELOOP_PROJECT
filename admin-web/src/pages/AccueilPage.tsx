@@ -699,7 +699,7 @@ export function AccueilPage() {
                         className="btn small ghost"
                         disabled={busy}
                         onClick={() => {
-                          if (!window.confirm('Supprimer ce sondage ?')) return;
+                          if (!window.confirm('Supprimer ce sondage ? Les votes seront aussi effacés.')) return;
                           void deletePoll(p.id).then((r) => {
                             if (!r.ok) setMsg(r.error ?? 'Erreur');
                             else void loadPolls();

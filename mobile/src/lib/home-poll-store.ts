@@ -210,6 +210,38 @@ function pollScope(countryCode?: string): string {
   return countryCode ?? 'GN';
 }
 
+/** Vide le snapshot Accueil du sondage (après suppression ou désactivation admin). */
+export function invalidateHomePollSnapshot(countryCode?: string): void {
+  const scope = pollScope(countryCode);
+  invalidateScope(scope, scopedStorageKey(POLL_SNAPSHOT_CACHE, scope));
+}
+
+/** Retire les votes démo locaux d’un sondage supprimé. */
+export async function forgetLocalHomePoll(pollId: string, countryCode?: string): Promise<void> {
+  invalidateHomePollSnapshot(countryCode);
+  try {
+    const raw = await AsyncStorage.getItem(DEMO_VOTES_KEY);
+    if (raw) {
+      const all = JSON.parse(raw) as Record<string, StoredVote[]>;
+      if (all && typeof all === 'object' && pollId in all) {
+        delete all[pollId];
+        await saveDemoVotes(all);
+      }
+    }
+  } catch {
+    /* votes démo déjà absents */
+  }
+
+  try {
+    const rawPoll = await AsyncStorage.getItem(DEMO_POLL_KEY);
+    if (!rawPoll) return;
+    const parsed = JSON.parse(rawPoll) as HomePoll;
+    if (parsed?.id === pollId) await AsyncStorage.removeItem(DEMO_POLL_KEY);
+  } catch {
+    /* pas de sondage démo */
+  }
+}
+
 function attachUserVote(bundle: CachedPollBundle, voter: HomePollVoter): HomePollSnapshot {
   const voterKey = voterKeyFor(voter);
   const mine = voterKey !== null && voterKey === bundle.voterKey ? bundle.userOptionId : null;

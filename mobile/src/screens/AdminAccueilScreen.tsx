@@ -29,6 +29,7 @@ import {
   deleteAdminChronique,
   deleteAdminCreatorCorner,
   deleteAdminHomePartnerLogo,
+  deleteAdminHomePoll,
   deleteAdminLoopWalk,
   invalidateAdminAccueilCache,
   listAdminChroniques,
@@ -901,6 +902,42 @@ export function AdminAccueilScreen({ navigation, route }: Props) {
                   <Text style={{ color: p.isActive ? '#ef4444' : ADMIN_THEME.accent, fontWeight: '700' }}>
                     {p.isActive ? 'Désactiver' : 'Activer'}
                   </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    Alert.alert(
+                      'Supprimer',
+                      `Supprimer « ${p.question} » ? Les votes de ce sondage seront aussi effacés.`,
+                      [
+                        { text: 'Annuler', style: 'cancel' },
+                        {
+                          text: 'Supprimer',
+                          style: 'destructive',
+                          onPress: () => {
+                            const previous = polls;
+                            const wasEditing = editingPollId === p.id;
+                            setPolls((prev) => prev.filter((x) => x.id !== p.id));
+                            void deleteAdminHomePoll(p.id, countryCode).then((result) => {
+                              if (!result.ok) {
+                                setPolls(previous);
+                                Alert.alert(
+                                  'Erreur',
+                                  result.error?.includes('Network')
+                                    ? 'Connexion instable. Réessayez avec un meilleur réseau.'
+                                    : result.error || 'Suppression impossible.',
+                                );
+                                return;
+                              }
+                              if (wasEditing) resetPollForm();
+                              void load({ force: true });
+                            });
+                          },
+                        },
+                      ],
+                    )
+                  }
+                >
+                  <Text style={{ color: '#ef4444', fontWeight: '700' }}>Supprimer</Text>
                 </Pressable>
               </View>
             </View>

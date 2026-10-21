@@ -574,6 +574,10 @@ export async function setPollActive(
 }
 
 export async function deletePoll(id: string): Promise<{ ok: boolean; error?: string }> {
+  const { error: votesError } = await supabase.from('home_poll_votes').delete().eq('poll_id', id);
+  if (votesError) {
+    console.warn('[Accueil] poll votes delete:', votesError.message);
+  }
   const { error } = await supabase.from('home_polls').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
   return { ok: true };

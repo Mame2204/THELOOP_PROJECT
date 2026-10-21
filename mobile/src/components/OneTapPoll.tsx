@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContent } from '@/context/ContentContext';
+import { subscribeHomeRefresh } from '@/lib/home-refresh';
 import {
   getPollPhoneId,
   loadHomePollSnapshot,
@@ -85,6 +86,15 @@ export function OneTapPoll({
     if (!snap?.poll.id) return;
     void import('@/lib/home-poll-store').then((m) => m.recordHomePollView(snap.poll.id));
   }, [snap?.poll.id]);
+
+  useEffect(
+    () =>
+      subscribeHomeRefresh((reason) => {
+        if (reason !== 'admin-accueil-polls' && reason !== 'admin-accueil') return;
+        void refresh();
+      }),
+    [refresh],
+  );
 
   async function onVote(optionId: string) {
     if (!snap || snap.userOptionId || voting) return;

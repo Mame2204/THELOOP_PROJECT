@@ -20,7 +20,12 @@ import {
   type ChroniqueTargetType,
 } from '@/lib/chronique-store';
 import { emitHomeRefresh } from '@/lib/home-refresh';
-import type { HomePoll, HomePollOption } from '@/lib/home-poll-store';
+import {
+  forgetLocalHomePoll,
+  invalidateHomePollSnapshot,
+  type HomePoll,
+  type HomePollOption,
+} from '@/lib/home-poll-store';
 import type { LoopWalk, LoopWalkStep } from '@/lib/loop-walks-store';
 import { invalidateLoopWalksCache } from '@/lib/loop-walks-store';
 import { hydrateScoped, invalidateScope, peekScoped, scheduleScopedRefresh, scopedStorageKey } from '@/lib/swr-cache';
@@ -109,7 +114,13 @@ function notifyAccueilKind(
   kind: 'walks' | 'corners' | 'chroniques' | 'logos' | 'polls',
 ): void {
   invalidateAdminAccueilCache(countryCode, [kind]);
-  void import('@/lib/admin-insights-store').then((m) => m.invalidateAdminInsightsCache(countryCode));
+  try {
+    void import('@/lib/admin-insights-store')
+      .then((m) => m.invalidateAdminInsightsCache(countryCode))
+      .catch(() => undefined);
+  } catch {
+    /* import() dynamique indisponible sous Jest */
+  }
   if (kind === 'walks') invalidateLoopWalksCache(countryCode);
   if (kind === 'logos') {
     void import('@/lib/home-partners-store').then((m) => m.invalidateHomePartnerLogosCache(countryCode));
@@ -119,6 +130,9 @@ function notifyAccueilKind(
   }
   if (kind === 'corners') {
     void import('@/lib/creator-corner-store').then((m) => m.invalidateActiveCreatorCornerCache(countryCode));
+  }
+  if (kind === 'polls') {
+    invalidateHomePollSnapshot(countryCode);
   }
   emitHomeRefresh(`admin-accueil-${kind}`);
 }
@@ -528,6 +542,43 @@ export async function setAdminHomePollActive(
   await AsyncStorage.setItem(DEMO_POLLS_ADMIN, JSON.stringify(next));
   notifyAccueilKind(countryCode, 'polls');
   return true;
+}
+
+export type AdminHomePollDeleteResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/** Supprime le sondage et ses votes. Les autres pays du cache démo sont conservés. */
+export async function deleteAdminHomePoll(
+  id: string,
+  countryCode = 'GN',
+): Promise<AdminHomePollDeleteResult> {
+  if (isSupabaseConfigured() && supabase) {
+    const { error: votesError } = await supabase.from('home_poll_votes').delete().eq('poll_id', id);
+    if (votesError) {
+      console.warn('[AdminAccueil] poll votes delete:', votesError.message);
+    }
+    const { error } = await supabase.from('home_polls').delete().eq('id', id);
+    if (error) {
+      console.warn('[AdminAccueil] poll delete:', error.message);
+      return { ok: false, error: error.message || 'Suppression impossible.' };
+    }
+    notifyAccueilKind(countryCode, 'polls');
+    return { ok: true };
+  }
+
+  try {
+    const raw = await AsyncStorage.getItem(DEMO_POLLS_ADMIN);
+    const parsed = raw ? (JSON.parse(raw) as AdminHomePoll[]) : [];
+    const next = Array.isArray(parsed) ? parsed.filter((p) => p.id !== id) : [];
+    await AsyncStorage.setItem(DEMO_POLLS_ADMIN, JSON.stringify(next));
+  } catch {
+    return { ok: false, error: 'Suppression impossible.' };
+  }
+
+  await forgetLocalHomePoll(id, countryCode);
+  notifyAccueilKind(countryCode, 'polls');
+  return { ok: true };
 }
 
 // ─── Walks ──────────────────────────────────────────────────────────────────
