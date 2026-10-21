@@ -26,6 +26,17 @@ function paginateRange(page: number, pageSize: number): { from: number; to: numb
   return { from, to: from + pageSize - 1 };
 }
 
+const NOT_IN_DB = 'Modification non enregistrée en base.';
+
+function savedRows(
+  data: { id: string }[] | null,
+  error: { message: string } | null,
+): { ok: boolean; error?: string } {
+  if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: NOT_IN_DB };
+  return { ok: true };
+}
+
 export interface AccueilBlocksConfig {
   hero: boolean;
   poll: boolean;
@@ -279,9 +290,8 @@ export async function upsertAccueilPoll(
   };
 
   if (input.id) {
-    const { error } = await supabase.from('home_polls').update(payload).eq('id', input.id);
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    const { data, error } = await supabase.from('home_polls').update(payload).eq('id', input.id).select('id');
+    return savedRows(data, error);
   }
 
   const { error } = await supabase.from('home_polls').insert({
@@ -367,9 +377,8 @@ export async function upsertAccueilWalk(
   };
 
   if (input.id) {
-    const { error } = await supabase.from('loop_walks').update(payload).eq('id', input.id);
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    const { data, error } = await supabase.from('loop_walks').update(payload).eq('id', input.id).select('id');
+    return savedRows(data, error);
   }
 
   const { error } = await supabase.from('loop_walks').insert({
@@ -461,9 +470,8 @@ export async function upsertAccueilCorner(
   };
 
   if (input.id) {
-    const { error } = await supabase.from('creator_corner_features').update(payload).eq('id', input.id);
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    const { data, error } = await supabase.from('creator_corner_features').update(payload).eq('id', input.id).select('id');
+    return savedRows(data, error);
   }
 
   const { error } = await supabase.from('creator_corner_features').insert({
@@ -556,9 +564,8 @@ export async function upsertAccueilChronique(
   };
 
   if (input.id) {
-    const { error } = await supabase.from('chronique_features').update(payload).eq('id', input.id);
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    const { data, error } = await supabase.from('chronique_features').update(payload).eq('id', input.id).select('id');
+    return savedRows(data, error);
   }
 
   const { error } = await supabase.from('chronique_features').insert({
@@ -573,12 +580,12 @@ export async function setPollActive(
   id: string,
   active: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('home_polls')
     .update({ is_active: active, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    .eq('id', id)
+    .select('id');
+  return savedRows(data, error);
 }
 
 export async function deletePoll(id: string): Promise<{ ok: boolean; error?: string }> {
@@ -586,9 +593,8 @@ export async function deletePoll(id: string): Promise<{ ok: boolean; error?: str
   if (votesError) {
     console.warn('[Accueil] poll votes delete:', votesError.message);
   }
-  const { error } = await supabase.from('home_polls').delete().eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  const { data, error } = await supabase.from('home_polls').delete().eq('id', id).select('id');
+  return savedRows(data, error);
 }
 
 function parseWalkSteps(raw: unknown): WalkStepInput[] {
@@ -641,12 +647,12 @@ export async function setWalkPublished(
   id: string,
   published: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('loop_walks')
     .update({ is_published: published, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    .eq('id', id)
+    .select('id');
+  return savedRows(data, error);
 }
 
 export async function setWalkFeaturedWeek(
@@ -658,16 +664,16 @@ export async function setWalkFeaturedWeek(
     .update({ is_featured_week: false, updated_at: new Date().toISOString() })
     .eq('country_code', countryCode)
     .eq('is_featured_week', true);
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('loop_walks')
     .update({
       is_featured_week: true,
       is_published: true,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', walkId);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    .eq('id', walkId)
+    .select('id');
+  return savedRows(data, error);
 }
 
 export async function clearWalkFeaturedWeek(
@@ -683,9 +689,8 @@ export async function clearWalkFeaturedWeek(
 }
 
 export async function deleteWalk(id: string): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase.from('loop_walks').delete().eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  const { data, error } = await supabase.from('loop_walks').delete().eq('id', id).select('id');
+  return savedRows(data, error);
 }
 
 const CORNER_LIST_SELECT =
@@ -740,18 +745,17 @@ export async function setCornerActive(
   id: string,
   active: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('creator_corner_features')
     .update({ is_active: active, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    .eq('id', id)
+    .select('id');
+  return savedRows(data, error);
 }
 
 export async function deleteCorner(id: string): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase.from('creator_corner_features').delete().eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  const { data, error } = await supabase.from('creator_corner_features').delete().eq('id', id).select('id');
+  return savedRows(data, error);
 }
 
 const CHRONIQUE_LIST_SELECT =
@@ -807,18 +811,17 @@ export async function setChroniqueActive(
   id: string,
   active: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('chronique_features')
     .update({ is_active: active, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    .eq('id', id)
+    .select('id');
+  return savedRows(data, error);
 }
 
 export async function deleteChronique(id: string): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase.from('chronique_features').delete().eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  const { data, error } = await supabase.from('chronique_features').delete().eq('id', id).select('id');
+  return savedRows(data, error);
 }
 
 export async function listAccueilLogos(countryCode: string): Promise<AccueilLogoRow[]> {
@@ -846,18 +849,17 @@ export async function setLogoActive(
   id: string,
   active: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('home_partner_logos')
     .update({ is_active: active })
-    .eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    .eq('id', id)
+    .select('id');
+  return savedRows(data, error);
 }
 
 export async function deleteLogo(id: string): Promise<{ ok: boolean; error?: string }> {
-  const { error } = await supabase.from('home_partner_logos').delete().eq('id', id);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  const { data, error } = await supabase.from('home_partner_logos').delete().eq('id', id).select('id');
+  return savedRows(data, error);
 }
 
 /** Création rapide parcours (brouillon — édition complète sur mobile). */
@@ -989,17 +991,13 @@ export async function upsertAccueilLogo(
   }
 
   if (input.id) {
-    const { error } = await supabase.from('home_partner_logos').update(payload).eq('id', input.id);
-    if (error) {
-      if (/source/i.test(error.message)) {
-        const { source: _s, ...withoutSource } = payload;
-        const retry = await supabase.from('home_partner_logos').update(withoutSource).eq('id', input.id);
-        if (retry.error) return { ok: false, error: retry.error.message };
-      } else {
-        return { ok: false, error: error.message };
-      }
+    const written = await supabase.from('home_partner_logos').update(payload).eq('id', input.id).select('id');
+    if (written.error && /source/i.test(written.error.message)) {
+      const { source: _s, ...withoutSource } = payload;
+      const retry = await supabase.from('home_partner_logos').update(withoutSource).eq('id', input.id).select('id');
+      return savedRows(retry.data, retry.error);
     }
-    return { ok: true };
+    return savedRows(written.data, written.error);
   }
 
   const { count } = await supabase

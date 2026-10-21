@@ -346,7 +346,7 @@ export async function createTool(form: ToolEditorForm): Promise<EditorResult> {
 export async function updateEvent(id: string, form: EventEditorForm): Promise<EditorResult> {
   const entryPrice = form.entryPrice.trim() ? Number(form.entryPrice) : null;
   const isActive = form.contentStatus === 'published';
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('events')
     .update({
       title: form.title.trim(),
@@ -370,16 +370,18 @@ export async function updateEvent(id: string, form: EventEditorForm): Promise<Ed
       country_code: form.countryCode,
       is_loop_x: form.isLoopX,
     })
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: 'Événement introuvable, ou modification refusée.' };
   return { ok: true, id };
 }
 
 export async function updateSpot(id: string, form: SpotEditorForm): Promise<EditorResult> {
   const sub = form.subCategory.trim() || 'restaurant';
   const isActive = form.contentStatus === 'published';
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('establishments')
     .update({
       name: form.name.trim(),
@@ -395,9 +397,11 @@ export async function updateSpot(id: string, form: SpotEditorForm): Promise<Edit
       is_active: isActive,
       country_code: form.countryCode,
     })
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: 'Spot introuvable, ou modification refusée.' };
 
   const cover = form.coverImageUrl.trim();
   if (cover) {
@@ -415,7 +419,7 @@ export async function updateSpot(id: string, form: SpotEditorForm): Promise<Edit
 export async function updateTool(id: string, form: ToolEditorForm): Promise<EditorResult> {
   const cat = form.toolCategory.trim() || 'productivity';
   const isActive = form.contentStatus === 'published';
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tools')
     .update({
       name: form.name.trim(),
@@ -434,9 +438,11 @@ export async function updateTool(id: string, form: ToolEditorForm): Promise<Edit
       country_code: form.countryCode,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: 'Outil introuvable, ou modification refusée.' };
   return { ok: true, id };
 }
 

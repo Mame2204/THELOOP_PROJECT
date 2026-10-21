@@ -783,7 +783,7 @@ async function applyPublishedSpotUpdate(
 
   if (target.kind === 'tool') {
     const toolCategorySlugs = resolveToolCategorySlugs(payload);
-    const { error } = await supabase
+    const { data: updatedTools, error } = await supabase
       .from('tools')
       .update({
         name: payload.name.trim(),
@@ -801,11 +801,15 @@ async function applyPublishedSpotUpdate(
         partnership_status: payload.partnershipStatus ?? null,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', target.id);
+      .eq('id', target.id)
+      .select('id');
 
     if (error) {
       console.warn('[AdminEdit] tools update:', error.message);
       throw new Error(error.message);
+    }
+    if (!updatedTools?.length) {
+      throw new Error('Modification non enregistrée : droits insuffisants sur cet outil.');
     }
 
     await syncSpotSubmissionFull(target, payload);
@@ -850,14 +854,18 @@ async function applyPublishedSpotUpdate(
     establishmentUpdate.location_id = locationId;
   }
 
-  const { error } = await supabase
+  const { data: updatedSpots, error } = await supabase
     .from('establishments')
     .update(asDbUpdate('establishments', establishmentUpdate))
-    .eq('id', target.id);
+    .eq('id', target.id)
+    .select('id');
 
   if (error) {
     console.warn('[AdminEdit] establishments update:', error.message);
     throw new Error(error.message);
+  }
+  if (!updatedSpots?.length) {
+    throw new Error('Modification non enregistrée : droits insuffisants sur ce spot.');
   }
 
   await syncEstablishmentOpeningHours(target.id, payload.openingHours);

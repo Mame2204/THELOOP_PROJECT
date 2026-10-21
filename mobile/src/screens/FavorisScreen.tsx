@@ -26,6 +26,8 @@ import { isSpotLocation, isToolLocation } from '@/lib/location-kind-utils';
 import type { TabScreenProps } from '@/navigation/types';
 import { FAVORITES_AUTH_MESSAGE, usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
 import { resolveMissingFavoriteTools } from '@/lib/favorites-store';
+import { mergePrimeIntoFavorites } from '@/lib/favorite-catalog';
+import { canViewPrimeContent } from '@/types';
 import type { HomeLocation } from '@/lib/demo-data';
 
 type Props = TabScreenProps<'Favoris'>;
@@ -47,7 +49,7 @@ export function FavorisScreen({ navigation }: Props) {
   const { role, user } = useAuthContext();
   const { gates } = useAppGates();
   const { shell, theme } = useMemberTheme();
-  const { publicEvents, getHomeLocations, activeCountryCode } = useContent();
+  const { publicEvents, primeEvents, primeLocations, getHomeLocations, activeCountryCode } = useContent();
   const {
     favoriteEventIds,
     favoriteLocationIds,
@@ -75,14 +77,28 @@ export function FavorisScreen({ navigation }: Props) {
     },
   );
 
-  const events = useMemo(() => publicEvents, [publicEvents]);
+  const canViewExclusive = canViewPrimeContent(role, user);
+  const events = useMemo(
+    () => mergePrimeIntoFavorites(publicEvents, primeEvents, canViewExclusive),
+    [publicEvents, primeEvents, canViewExclusive],
+  );
   const locations = useMemo(
-    () => getHomeLocations().filter((l) => l.visibility !== 'prime' && isSpotLocation(l)),
-    [getHomeLocations],
+    () =>
+      mergePrimeIntoFavorites(
+        getHomeLocations().filter((l) => isSpotLocation(l)),
+        primeLocations.filter((l) => isSpotLocation(l)),
+        canViewExclusive,
+      ),
+    [getHomeLocations, primeLocations, canViewExclusive],
   );
   const tools = useMemo(
-    () => getHomeLocations().filter((l) => isToolLocation(l)),
-    [getHomeLocations],
+    () =>
+      mergePrimeIntoFavorites(
+        getHomeLocations().filter((l) => isToolLocation(l)),
+        primeLocations.filter((l) => isToolLocation(l)),
+        canViewExclusive,
+      ),
+    [getHomeLocations, primeLocations, canViewExclusive],
   );
 
   useFocusLoad(

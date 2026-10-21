@@ -39,6 +39,23 @@ const DEMO_CHRONIQUE_ADMIN = 'loop_admin_chronique_v1';
 const DEMO_LOGOS_ADMIN = 'loop_admin_home_logos_v1';
 const ADMIN_ACCUEIL_CACHE = 'loop_admin_accueil_v1';
 
+/** Une action admin n'est réussie que si la base a modifié la ligne demandée. */
+async function wroteOne(
+  pending: PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>,
+  label: string,
+): Promise<boolean> {
+  const { data, error } = await pending;
+  if (error) {
+    console.warn(`[AdminAccueil] ${label}:`, error.message);
+    return false;
+  }
+  if (!data?.length) {
+    console.warn(`[AdminAccueil] ${label}: aucune ligne enregistrée`);
+    return false;
+  }
+  return true;
+}
+
 function accueilScope(kind: string, countryCode: string): string {
   return `${kind}_${countryCode}`;
 }
@@ -517,14 +534,15 @@ export async function setAdminHomePollActive(
   active: boolean,
 ): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase
-      .from('home_polls')
-      .update({ is_active: active, updated_at: new Date().toISOString() })
-      .eq('id', pollId);
-    if (error) {
-      console.warn('[AdminAccueil] poll active:', error.message);
-      return false;
-    }
+    const saved = await wroteOne(
+      supabase
+        .from('home_polls')
+        .update({ is_active: active, updated_at: new Date().toISOString() })
+        .eq('id', pollId)
+        .select('id'),
+      'poll active',
+    );
+    if (!saved) return false;
     notifyAccueilKind(countryCode, 'polls');
     return true;
   }
@@ -552,10 +570,10 @@ export async function deleteAdminHomePoll(
     if (votesError) {
       console.warn('[AdminAccueil] poll votes delete:', votesError.message);
     }
-    const { error } = await supabase.from('home_polls').delete().eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] poll delete:', error.message);
-      return { ok: false, error: error.message || 'Suppression impossible.' };
+    const { data, error } = await supabase.from('home_polls').delete().eq('id', id).select('id');
+    if (error || !data?.length) {
+      console.warn('[AdminAccueil] poll delete:', error?.message);
+      return { ok: false, error: error?.message || 'Suppression non enregistrée en base.' };
     }
     notifyAccueilKind(countryCode, 'polls');
     return { ok: true };
@@ -618,14 +636,15 @@ export async function setAdminWalkPublished(
   countryCode = 'GN',
 ): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase
-      .from('loop_walks')
-      .update({ is_published: published, updated_at: new Date().toISOString() })
-      .eq('id', walkId);
-    if (error) {
-      console.warn('[AdminAccueil] walk publish:', error.message);
-      return false;
-    }
+    const saved = await wroteOne(
+      supabase
+        .from('loop_walks')
+        .update({ is_published: published, updated_at: new Date().toISOString() })
+        .eq('id', walkId)
+        .select('id'),
+      'walk publish',
+    );
+    if (!saved) return false;
     notifyAccueilKind(countryCode, 'walks');
     return true;
   }
@@ -646,14 +665,15 @@ export async function setAdminWalkFeaturedWeek(
       .update({ is_featured_week: false, updated_at: new Date().toISOString() })
       .eq('country_code', countryCode)
       .eq('is_featured_week', true);
-    const { error } = await supabase
-      .from('loop_walks')
-      .update({ is_featured_week: true, is_published: true, updated_at: new Date().toISOString() })
-      .eq('id', walkId);
-    if (error) {
-      console.warn('[AdminAccueil] walk featured:', error.message);
-      return false;
-    }
+    const saved = await wroteOne(
+      supabase
+        .from('loop_walks')
+        .update({ is_featured_week: true, is_published: true, updated_at: new Date().toISOString() })
+        .eq('id', walkId)
+        .select('id'),
+      'walk featured',
+    );
+    if (!saved) return false;
     notifyAccueilKind(countryCode, 'walks');
     return true;
   }
@@ -841,10 +861,10 @@ export async function deleteAdminLoopWalk(
   countryCode = 'GN',
 ): Promise<AdminLoopWalkDeleteResult> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase.from('loop_walks').delete().eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] walk delete:', error.message);
-      return { ok: false, error: error.message || 'Suppression impossible.' };
+    const { data, error } = await supabase.from('loop_walks').delete().eq('id', id).select('id');
+    if (error || !data?.length) {
+      console.warn('[AdminAccueil] walk delete:', error?.message);
+      return { ok: false, error: error?.message || 'Suppression non enregistrée en base.' };
     }
     notifyAccueilKind(countryCode, 'walks');
     return { ok: true };
@@ -910,14 +930,15 @@ export async function setAdminCreatorCornerActive(
   active = true,
 ): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase
-      .from('creator_corner_features')
-      .update({ is_active: active, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] corner active:', error.message);
-      return false;
-    }
+    const saved = await wroteOne(
+      supabase
+        .from('creator_corner_features')
+        .update({ is_active: active, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id'),
+      'corner active',
+    );
+    if (!saved) return false;
     notifyAccueilKind(countryCode, 'corners');
     return true;
   }
@@ -933,11 +954,11 @@ export async function setAdminCreatorCornerActive(
 
 export async function deleteAdminCreatorCorner(id: string, countryCode = 'GN'): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase.from('creator_corner_features').delete().eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] corner delete:', error.message);
-      return false;
-    }
+    const removed = await wroteOne(
+      supabase.from('creator_corner_features').delete().eq('id', id).select('id'),
+      'corner delete',
+    );
+    if (!removed) return false;
     notifyAccueilKind(countryCode, 'corners');
     return true;
   }
@@ -1032,11 +1053,15 @@ export async function upsertAdminCreatorCorner(input: {
     };
 
     if (input.id) {
-      const { error } = await supabase.from('creator_corner_features').update(asDbUpdate('creator_corner_features', payload)).eq('id', input.id);
-      if (error) {
-        console.warn('[AdminAccueil] corner update:', error.message);
-        return null;
-      }
+      const saved = await wroteOne(
+        supabase
+          .from('creator_corner_features')
+          .update(asDbUpdate('creator_corner_features', payload))
+          .eq('id', input.id)
+          .select('id'),
+        'corner update',
+      );
+      if (!saved) return null;
     } else {
       const { error } = await supabase.from('creator_corner_features').insert(asDbInsert('creator_corner_features', payload));
       if (error) {
@@ -1142,14 +1167,15 @@ export async function setAdminChroniqueActive(
   active = true,
 ): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase
-      .from('chronique_features')
-      .update({ is_active: active, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] chronique active:', error.message);
-      return false;
-    }
+    const saved = await wroteOne(
+      supabase
+        .from('chronique_features')
+        .update({ is_active: active, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id'),
+      'chronique active',
+    );
+    if (!saved) return false;
     notifyAccueilKind(countryCode, 'chroniques');
     return true;
   }
@@ -1164,11 +1190,11 @@ export async function setAdminChroniqueActive(
 
 export async function deleteAdminChronique(id: string, countryCode = 'GN'): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase.from('chronique_features').delete().eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] chronique delete:', error.message);
-      return false;
-    }
+    const removed = await wroteOne(
+      supabase.from('chronique_features').delete().eq('id', id).select('id'),
+      'chronique delete',
+    );
+    if (!removed) return false;
     notifyAccueilKind(countryCode, 'chroniques');
     return true;
   }
@@ -1412,23 +1438,25 @@ export async function upsertAdminHomePartnerLogo(input: {
       source: 'manual',
     };
     if (input.id) {
-      const { error } = await supabase.from('home_partner_logos').update(asDbUpdate('home_partner_logos', payload)).eq('id', input.id);
-      if (error) {
-        // Colonne `source` absente sur anciens schémas
-        if (/source/i.test(error.message)) {
-          const { source: _s, ...withoutSource } = payload;
-          const { error: retryError } = await supabase
-            .from('home_partner_logos')
-            .update(asDbUpdate('home_partner_logos', withoutSource))
-            .eq('id', input.id);
-          if (retryError) {
-            console.warn('[AdminAccueil] logo update:', retryError.message);
-            return null;
-          }
-        } else {
-          console.warn('[AdminAccueil] logo update:', error.message);
+      const logoWrite = await supabase
+        .from('home_partner_logos')
+        .update(asDbUpdate('home_partner_logos', payload))
+        .eq('id', input.id)
+        .select('id');
+      if (logoWrite.error && /source/i.test(logoWrite.error.message)) {
+        const { source: _s, ...withoutSource } = payload;
+        const retry = await supabase
+          .from('home_partner_logos')
+          .update(asDbUpdate('home_partner_logos', withoutSource))
+          .eq('id', input.id)
+          .select('id');
+        if (retry.error || !retry.data?.length) {
+          console.warn('[AdminAccueil] logo update:', retry.error?.message);
           return null;
         }
+      } else if (logoWrite.error || !logoWrite.data?.length) {
+        console.warn('[AdminAccueil] logo update:', logoWrite.error?.message);
+        return null;
       }
     } else {
       const list = await listAdminHomePartnerLogos(input.countryCode, { force: true });
@@ -1474,14 +1502,15 @@ export async function setAdminHomePartnerLogoActive(
   countryCode = 'GN',
 ): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase
-      .from('home_partner_logos')
-      .update({ is_active: active, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] logo active:', error.message);
-      return false;
-    }
+    const saved = await wroteOne(
+      supabase
+        .from('home_partner_logos')
+        .update({ is_active: active, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id'),
+      'logo active',
+    );
+    if (!saved) return false;
     notifyAccueilKind(countryCode, 'logos');
     return true;
   }
@@ -1501,11 +1530,11 @@ export async function setAdminHomePartnerLogoActive(
 
 export async function deleteAdminHomePartnerLogo(id: string, countryCode = 'GN'): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
-    const { error } = await supabase.from('home_partner_logos').delete().eq('id', id);
-    if (error) {
-      console.warn('[AdminAccueil] logo delete:', error.message);
-      return false;
-    }
+    const removed = await wroteOne(
+      supabase.from('home_partner_logos').delete().eq('id', id).select('id'),
+      'logo delete',
+    );
+    if (!removed) return false;
     notifyAccueilKind(countryCode, 'logos');
     return true;
   }
