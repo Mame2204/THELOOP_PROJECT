@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "gn.theloop.app",
-      "buildNumber": "69",
+      "buildNumber": "70",
       "icon": "./assets/icon.png",
       "backgroundColor": "#F4FCFD",
       "splash": {
