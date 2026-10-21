@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  CATALOG_PICKER_LIMIT,
   KIND_LABELS,
-  listCatalogContent,
+  listPublishedForPicker,
   type CatalogContentItem,
   type CatalogKind,
 } from '../lib/content';
@@ -36,32 +35,30 @@ export function CatalogTargetPicker({
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<CatalogContentItem[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const res = await listCatalogContent(countryCode, [kind], {
-      pageSize: CATALOG_PICKER_LIMIT,
-      status: 'published',
-    });
-    setItems(res.items);
-    setLoading(false);
-  }, [countryCode, kind]);
+  const [truncated, setTruncated] = useState(false);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      void listPublishedForPicker(countryCode, kind, query).then((res) => {
+        if (cancelled) return;
+        setItems(res.items);
+        setTruncated(res.truncated);
+        setLoading(false);
+      });
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [countryCode, kind, query]);
 
   useEffect(() => {
     if (value && allowedKinds.includes(value.targetType)) {
       setKind(value.targetType);
     }
   }, [value, allowedKinds]);
-
-  const filtered = items.filter((i) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return i.title.toLowerCase().includes(q) || (i.subtitle ?? '').toLowerCase().includes(q);
-  });
 
   return (
     <div className="field">
@@ -100,8 +97,9 @@ export function CatalogTargetPicker({
         style={{ marginBottom: 8, width: '100%' }}
       />
       {loading ? <p className="muted">Chargement…</p> : null}
+      {truncated ? <p className="meta">Affinez la recherche pour voir la suite.</p> : null}
       <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #e5e5e5', borderRadius: 8 }}>
-        {filtered.slice(0, 40).map((item) => (
+        {items.map((item) => (
           <button
             key={`${item.kind}-${item.id}`}
             type="button"
@@ -123,7 +121,7 @@ export function CatalogTargetPicker({
             {item.subtitle ? <span className="meta"> · {item.subtitle}</span> : null}
           </button>
         ))}
-        {!loading && filtered.length === 0 ? (
+        {!loading && items.length === 0 ? (
           <p className="muted" style={{ padding: 12 }}>
             Aucun contenu publié.
           </p>

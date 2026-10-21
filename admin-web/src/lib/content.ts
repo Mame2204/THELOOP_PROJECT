@@ -95,6 +95,8 @@ export async function listCatalogContent(
     status?: ContentStatus | 'all';
     /** Compteur exact (1 round-trip count) — uniquement pour pager Contenu. */
     withTotal?: boolean;
+    /** Filtre titre / nom, côté base. */
+    search?: string;
   },
 ): Promise<{ items: CatalogContentItem[]; total: number; error?: string }> {
   const want = (kinds?.length ? kinds : (['event', 'spot', 'tool'] as CatalogKind[])).filter(
@@ -108,6 +110,7 @@ export async function listCatalogContent(
   );
   const status = options?.status && options.status !== 'all' ? options.status : null;
   const withTotal = options?.withTotal === true && want.length === 1;
+  const search = options?.search?.replace(/[%_,]/g, '').trim() ?? '';
   const errors: string[] = [];
   const items: CatalogContentItem[] = [];
   let total = 0;
@@ -137,6 +140,7 @@ export async function listCatalogContent(
       if (countryCode) q = q.eq('country_code', countryCode);
       if (status) q = q.eq('content_status', status);
       if (origins?.length) q = q.in('content_origin', origins);
+      if (search) q = q.ilike('title', `%${search}%`);
       const { data, error, count } = await q;
       if (error) {
         errors.push(`events: ${error.message}`);
@@ -184,6 +188,7 @@ export async function listCatalogContent(
       if (countryCode) q = q.eq('country_code', countryCode);
       if (status) q = q.eq('content_status', status);
       if (origins?.length) q = q.in('content_origin', origins);
+      if (search) q = q.ilike('name', `%${search}%`);
       const { data, error, count } = await q;
       if (error) {
         // Fallback si l’opérateur cs n’est pas dispo / colonne absente
@@ -198,6 +203,7 @@ export async function listCatalogContent(
         if (countryCode) q2 = q2.eq('country_code', countryCode);
         if (status) q2 = q2.eq('content_status', status);
         if (origins?.length) q2 = q2.in('content_origin', origins);
+        if (search) q2 = q2.ilike('name', `%${search}%`);
         const res2 = await q2;
         if (res2.error) {
           errors.push(`spots: ${error.message}`);
@@ -274,6 +280,7 @@ export async function listCatalogContent(
     if (countryCode) q = q.eq('country_code', countryCode);
     if (status) q = q.eq('content_status', status);
     if (origins?.length) q = q.in('content_origin', origins);
+    if (search) q = q.ilike('name', `%${search}%`);
     const { data, error, count } = await q;
     if (error) {
       errors.push(`tools: ${error.message}`);
@@ -318,6 +325,39 @@ export async function listCatalogContent(
   if (!withTotal) total = items.length;
   items.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
   return { items, total, error: errors.length ? errors.join(' · ') : undefined };
+}
+
+/** Tous les contenus publiés d’un type, ou les correspondances d’une recherche. */
+export async function listPublishedForPicker(
+  countryCode: string,
+  kind: CatalogKind,
+  search = '',
+): Promise<{ items: CatalogContentItem[]; truncated: boolean; error?: string }> {
+  const needle = search.trim();
+  if (needle) {
+    const res = await listCatalogContent(countryCode, [kind], {
+      pageSize: 50,
+      status: 'published',
+      search: needle,
+    });
+    return { items: res.items, truncated: res.items.length >= 50, error: res.error };
+  }
+
+  const items: CatalogContentItem[] = [];
+  let error: string | undefined;
+  for (let page = 0; page < 30; page += 1) {
+    const res = await listCatalogContent(countryCode, [kind], {
+      page,
+      pageSize: 50,
+      status: 'published',
+    });
+    if (res.error) error = res.error;
+    items.push(...res.items);
+    if (res.items.length < 50) {
+      return { items, truncated: false, error };
+    }
+  }
+  return { items, truncated: true, error };
 }
 
 export async function setCatalogContentStatus(
