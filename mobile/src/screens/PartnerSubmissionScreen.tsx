@@ -40,6 +40,7 @@ import { FormTextInput } from '@/components/FormTextInput';
 import { ADMIN_THEME } from '@/components/admin/AdminShell';
 import { useContent } from '@/context/ContentContext';
 import { invalidateContentCache } from '@/lib/content-store';
+import { invalidatePartnerContentOptionsCache } from '@/lib/partner-content-options';
 import { eventGalleryExtras } from '@/lib/detail-gallery-utils';
 import { createAdminEstablishmentDirect, createAdminEventDirect, createAdminToolDirect } from '@/lib/admin-direct-publish';
 import { getAdminContentStatus, promoteStagingDraftToCatalog } from '@/lib/admin-content-store';
@@ -1095,6 +1096,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
         }
       }
       invalidateContentCache();
+      invalidatePartnerContentOptionsCache();
       await refresh();
       const finalCopy = successCopy ?? publicationSuccessCopy({
         asDraft,
@@ -1146,6 +1148,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
                 return;
               }
               invalidateContentCache();
+              invalidatePartnerContentOptionsCache();
               await refresh();
               Alert.alert('Soumission annulée', 'Votre contenu n\'est plus en attente de validation.', [
                 { text: 'OK', onPress: () => navigation.goBack() },
@@ -1178,6 +1181,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
               : await deletePartnerSpot(id, user.id, partnerNameHint);
           if (ok) {
             invalidateContentCache();
+            invalidatePartnerContentOptionsCache();
             await refresh();
             navigation.goBack();
           } else {
@@ -1222,6 +1226,7 @@ export function PartnerSubmissionScreen({ route, navigation }: Props) {
                   return;
                 }
                 invalidateContentCache();
+                invalidatePartnerContentOptionsCache();
                 await refresh();
                 await refreshContentOwner();
                 Alert.alert(

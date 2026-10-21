@@ -1,6 +1,7 @@
+import { buildTeamAdminContentList } from '@/lib/admin-content-store';
 import { matchesAdminCountry } from '@/lib/admin-country';
 import { isTeamContentOrigin } from '@/lib/content-origin';
-import { loadContentSnapshot, peekContentSnapshot, type ContentSnapshot } from '@/lib/content-store';
+import { loadAdminCatalogSnapshot, type ContentSnapshot } from '@/lib/content-store';
 import { isToolLocation } from '@/lib/location-kind-utils';
 import type { PartnerDirectoryEntry } from '@/lib/partner-directory-store';
 import { partnerAccountDisplayName } from '@/lib/partner-directory-store';
@@ -78,13 +79,36 @@ export function getCachedPartnerContentOptions(
   return null;
 }
 
-function buildTheLoopTeamContentOptions(snapshot: ContentSnapshot, countryCode?: string): PartnerContentOption[] {
+export interface TeamBenefitContentIds {
+  events: Set<string>;
+  locations: Set<string>;
+}
+
+function isPublishedCatalogItem(status: string | null | undefined, isActive: boolean | null | undefined): boolean {
+  if (isActive === false) return false;
+  return (status ?? 'published') === 'published';
+}
+
+/**
+ * Contenu équipe proposable pour un avantage.
+ * `teamContentIds` vient de la même résolution que Mon contenu (origine admin/loop,
+ * y compris les fiches équipe enregistrées sans origine ou corrigées depuis « partner »).
+ * Sans ce jeu d'ids, on retombe sur content_origin admin/loop uniquement.
+ */
+export function buildTheLoopTeamContentOptions(
+  snapshot: ContentSnapshot,
+  countryCode?: string,
+  teamContentIds?: TeamBenefitContentIds,
+): PartnerContentOption[] {
   const options: PartnerContentOption[] = [];
   const seen = new Set<string>();
 
   for (const event of snapshot.events) {
-    if (!isTeamContentOrigin(event.contentOrigin)) continue;
-    if (event.status !== 'published' || event.isActive === false) continue;
+    const allowed = teamContentIds
+      ? teamContentIds.events.has(event.id)
+      : isTeamContentOrigin(event.contentOrigin);
+    if (!allowed) continue;
+    if (!isPublishedCatalogItem(event.contentStatus ?? event.status, event.isActive)) continue;
     if (countryCode && !matchesAdminCountry(event.countryCode, countryCode)) continue;
     const key = contentKey('event', event.id);
     if (seen.has(key)) continue;
@@ -99,8 +123,12 @@ function buildTheLoopTeamContentOptions(snapshot: ContentSnapshot, countryCode?:
   }
 
   for (const location of snapshot.locations) {
-    if (!isTeamContentOrigin(location.contentOrigin)) continue;
-    if (location.isActive === false || location.hidden) continue;
+    const allowed = teamContentIds
+      ? teamContentIds.locations.has(location.id)
+      : isTeamContentOrigin(location.contentOrigin);
+    if (!allowed) continue;
+    if (location.hidden) continue;
+    if (!isPublishedCatalogItem(location.contentStatus, location.isActive)) continue;
     if (countryCode && !matchesAdminCountry(location.countryCode, countryCode)) continue;
     const isTool = isToolLocation(location);
     const type: PartnerEstablishmentType = isTool ? 'tool' : 'spot';
@@ -121,11 +149,14 @@ function buildTheLoopTeamContentOptions(snapshot: ContentSnapshot, countryCode?:
 
 async function listTheLoopTeamContentOptions(countryCode?: string): Promise<PartnerContentOption[]> {
   const cacheKey = `loop:${countryCode ?? 'all'}`;
-  let snapshot = await peekContentSnapshot();
-  if (!snapshot.events.length && !snapshot.locations.length) {
-    snapshot = await loadContentSnapshot();
-  }
-  const options = buildTheLoopTeamContentOptions(snapshot, countryCode);
+  // Catalogue admin frais : le peek public filtre les catégories masquées
+  // et peut servir un cache disque d'avant la publication.
+  const snapshot = await loadAdminCatalogSnapshot(true);
+  const team = await buildTeamAdminContentList(snapshot.events, snapshot.locations);
+  const options = buildTheLoopTeamContentOptions(snapshot, countryCode, {
+    events: new Set(team.events.map((item) => item.id)),
+    locations: new Set(team.spots.map((item) => item.id)),
+  });
   if (options.length) {
     contentOptionsCache.set(cacheKey, { at: Date.now(), data: options });
   }
@@ -271,17 +302,10 @@ async function appendPartnerOptionsFromSnapshot(
     staffIds.add(queryUserId);
   }
 
-  let snapshot = await peekContentSnapshot();
-  if (!snapshot.events.length && !snapshot.locations.length && publishedIds.size > 0) {
-    try {
-      snapshot = await loadContentSnapshot();
-    } catch {
-      /* peek vide : les soumissions suffisent */
-    }
-  }
+  const snapshot = await loadAdminCatalogSnapshot(true);
 
   for (const event of snapshot.events) {
-    if (event.status !== 'published') continue;
+    if (!isPublishedCatalogItem(event.contentStatus ?? event.status, event.isActive)) continue;
     if (countryCode && !matchesAdminCountry(event.countryCode, countryCode)) continue;
     const owned =
       publishedIds.has(event.id)
@@ -298,7 +322,8 @@ async function appendPartnerOptionsFromSnapshot(
   }
 
   for (const location of snapshot.locations) {
-    if (location.isActive === false || location.hidden) continue;
+    if (location.hidden) continue;
+    if (!isPublishedCatalogItem(location.contentStatus, location.isActive)) continue;
     if (countryCode && !matchesAdminCountry(location.countryCode, countryCode)) continue;
     const loc = location as { partnerId?: string | null; masterId?: string | null };
     const owned =

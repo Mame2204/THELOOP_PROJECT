@@ -90,8 +90,41 @@ export async function listPartnerOfferingAccounts(
   };
 }
 
-function teamOriginsFilter() {
-  return ['admin', 'loop'];
+/** Fiches vraiment publiées par un partenaire (pas une création équipe mal étiquetée). */
+async function loadPartnerOwnedContentIds(): Promise<Set<string> | null> {
+  const [{ data: subs, error: subsError }, { data: admins, error: adminsError }] = await Promise.all([
+    supabase
+      .from('partner_spot_submissions')
+      .select('published_establishment_id, published_tool_id, partner_user_id')
+      .or('published_establishment_id.not.is.null,published_tool_id.not.is.null')
+      .limit(1000),
+    supabase.from('users').select('id').in('user_role', ['admin', 'super_admin']).limit(50),
+  ]);
+  if (subsError || adminsError) return null;
+
+  const adminIds = new Set((admins ?? []).map((row) => String(row.id)));
+  const ids = new Set<string>();
+  for (const row of subs ?? []) {
+    if (row.partner_user_id && adminIds.has(String(row.partner_user_id))) continue;
+    if (row.published_establishment_id) ids.add(String(row.published_establishment_id));
+    if (row.published_tool_id) ids.add(String(row.published_tool_id));
+  }
+  return ids;
+}
+
+/**
+ * Équipe THE LOOP : admin, loop, origine vide, ou « partner » sans vraie soumission partenaire.
+ * Même règle que la liste Mon contenu.
+ */
+function isTeamBenefitContent(
+  origin: string | null | undefined,
+  id: string,
+  partnerOwned: Set<string> | null,
+): boolean {
+  const value = (origin ?? '').trim().toLowerCase();
+  if (value === 'admin' || value === 'loop' || value === '') return true;
+  if (value === 'partner' && partnerOwned && !partnerOwned.has(id)) return true;
+  return false;
 }
 
 /** IDs utilisés pour rattacher catalogue partenaire (user + lignes partner_staff). */
@@ -264,34 +297,41 @@ export async function listPartnerContentOptions(input: {
   const options: PartnerContentOptionRow[] = [];
 
   if (input.isTheLoop) {
+    const errors: string[] = [];
+    const partnerOwned = await loadPartnerOwnedContentIds();
     let eventsQ = supabase
       .from('events')
       .select('id, title, country_code, content_origin, content_status, is_active')
       .eq('content_status', 'published')
       .eq('is_active', true)
-      .in('content_origin', teamOriginsFilter());
+      .order('created_at', { ascending: false });
     if (cc) eventsQ = eventsQ.eq('country_code', cc);
-    const eventsRes = await eventsQ.limit(200);
+    const eventsRes = await eventsQ.limit(500);
 
     let spotsQ = supabase
       .from('establishments')
       .select('id, name, country_code, content_origin, content_status, is_active, category_slugs')
       .eq('content_status', 'published')
       .eq('is_active', true)
-      .in('content_origin', teamOriginsFilter());
+      .order('created_at', { ascending: false });
     if (cc) spotsQ = spotsQ.eq('country_code', cc);
-    const spotsRes = await spotsQ.limit(200);
+    const spotsRes = await spotsQ.limit(500);
 
     let toolsQ = supabase
       .from('tools')
       .select('id, name, country_code, content_origin, content_status, is_active')
       .eq('content_status', 'published')
       .eq('is_active', true)
-      .in('content_origin', teamOriginsFilter());
+      .order('created_at', { ascending: false });
     if (cc) toolsQ = toolsQ.eq('country_code', cc);
-    const toolsRes = await toolsQ.limit(200);
+    const toolsRes = await toolsQ.limit(500);
+
+    if (eventsRes.error) errors.push(eventsRes.error.message);
+    if (spotsRes.error) errors.push(spotsRes.error.message);
+    if (toolsRes.error) errors.push(toolsRes.error.message);
 
     for (const row of eventsRes.data ?? []) {
+      if (!isTeamBenefitContent(row.content_origin as string | null, String(row.id), partnerOwned)) continue;
       options.push({
         key: `event:${row.id}`,
         contentId: String(row.id),
@@ -303,6 +343,7 @@ export async function listPartnerContentOptions(input: {
     for (const row of spotsRes.data ?? []) {
       const slugs = Array.isArray(row.category_slugs) ? row.category_slugs.map(String) : [];
       if (slugs.includes('tools')) continue;
+      if (!isTeamBenefitContent(row.content_origin as string | null, String(row.id), partnerOwned)) continue;
       options.push({
         key: `spot:${row.id}`,
         contentId: String(row.id),
@@ -312,6 +353,7 @@ export async function listPartnerContentOptions(input: {
       });
     }
     for (const row of toolsRes.data ?? []) {
+      if (!isTeamBenefitContent(row.content_origin as string | null, String(row.id), partnerOwned)) continue;
       options.push({
         key: `tool:${row.id}`,
         contentId: String(row.id),
@@ -320,7 +362,10 @@ export async function listPartnerContentOptions(input: {
         subtitle: 'Outil',
       });
     }
-    return { items: options.sort((a, b) => a.title.localeCompare(b.title, 'fr')) };
+    return {
+      items: options.sort((a, b) => a.title.localeCompare(b.title, 'fr')),
+      error: errors.length ? errors.join(' · ') : undefined,
+    };
   }
 
   const seen = new Set<string>([PARTNER_WIDE_CONTENT_KEY]);
