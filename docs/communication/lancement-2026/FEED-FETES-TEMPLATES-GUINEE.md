@@ -6,7 +6,8 @@
 ## Fichier maquette HTML (à regénérer en PNG)
 
 - **Source :** `export-visuels-template-fete.html`  
-- **Regénérer :** `node scripts/export-template-fete.mjs` (après edit texte dans le HTML)  
+- **Regénérer feed 4:5 :** `node scripts/export-template-fete.mjs`  
+- **Téléphone / Story / Reels 9:16 :** `exports-png-telephone-fete/` · `node scripts/export-template-fete-telephone.mjs`  
 - **Année :** champ `data-annee="2026"` — laisser **vide** dans le HTML pour une version **sans année** (réutilisable).
 
 ## Liste suggérée (priorité Conakry / communauté)
