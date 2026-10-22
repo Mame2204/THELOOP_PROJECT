@@ -21,7 +21,7 @@ Tout le calendrier vidéo (seulement après validations) : `node scripts/stitch-
 
 | Date | MP4 | Validé avec toi ? |
 |------|-----|-------------------|
-| **6/11** | `VIDEO_0611_dilemme-PUBLIER.mp4` (~20 s) | **En cours** |
+| **6/11** | **`VIDEO_0611_dilemme-SOCIAL.mp4`** (~21 s · fondus + SFX + pad) | **À valider** |
 | 13/11 | `VIDEO_1311_envie-PUBLIER.mp4` | Non — après 6/11 |
 | 17/11 | `VIDEO_1711_frequence-PUBLIER.mp4` | Non |
 | 21/11 | `VIDEO_2111_pourquoi-PUBLIER.mp4` | Non |
