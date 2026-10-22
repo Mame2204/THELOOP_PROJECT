@@ -1,6 +1,6 @@
 /**
  * 6/11 · Reels « social » sans VO — effets visuels + SFX + fond musical léger (procédural).
- * Usage : node scripts/render-video-0611-social.mjs
+ * Usage : node scripts/render-video-0611-social.mjs [--tempo medium|slow]
  */
 import { spawnSync } from 'child_process';
 import fs from 'fs';
@@ -13,16 +13,44 @@ const outDir = path.join(dir, '..', 'exports-mp4');
 const outFile = path.join(outDir, 'VIDEO_0611_dilemme-SOCIAL.mp4');
 const tmp = path.join(outDir, '.render-0611-social');
 
-const plans = [
-  { file: 'FRAME_0611_01_vendredi-19h.png', dur: 2.6, sfx: 'rumble' },
-  { file: 'FRAME_0611_02_question-weekend.png', dur: 2.6, sfx: 'notif' },
-  { file: 'FRAME_0611_03_quatre-reponses.png', dur: 5.2, sfx: 'tick' },
-  { file: 'FRAME_0611_04_moins-de-temps.png', dur: 3.8, sfx: 'none' },
-  { file: 'FRAME_0611_05_the-loop-bientot.png', dur: 4.8, sfx: 'none' },
-  { file: 'FRAME_0611_06_signature-fin.png', dur: 3.0, sfx: 'none' },
-];
+const tempoArg = process.argv.find((a) => a.startsWith('--tempo='))?.split('=')[1]
+  ?? (process.argv.includes('--tempo') ? process.argv[process.argv.indexOf('--tempo') + 1] : 'slow');
 
-const XFADE = 0.22;
+/** slow ≈ 28 s · calé storyboard · sans VO */
+const tempoPresets = {
+  medium: {
+    plans: [
+      { file: 'FRAME_0611_01_vendredi-19h.png', dur: 2.8 },
+      { file: 'FRAME_0611_02_question-weekend.png', dur: 2.8 },
+      { file: 'FRAME_0611_03_quatre-reponses.png', dur: 6 },
+      { file: 'FRAME_0611_04_moins-de-temps.png', dur: 4.2 },
+      { file: 'FRAME_0611_05_the-loop-bientot.png', dur: 5.2 },
+      { file: 'FRAME_0611_06_signature-fin.png', dur: 3.2 },
+    ],
+    xfade: 0.28,
+    tickCount: 7,
+    tickStep: 0.62,
+  },
+  slow: {
+    plans: [
+      { file: 'FRAME_0611_01_vendredi-19h.png', dur: 3.2 },
+      { file: 'FRAME_0611_02_question-weekend.png', dur: 3.2 },
+      { file: 'FRAME_0611_03_quatre-reponses.png', dur: 7.5 },
+      { file: 'FRAME_0611_04_moins-de-temps.png', dur: 5 },
+      { file: 'FRAME_0611_05_the-loop-bientot.png', dur: 6.5 },
+      { file: 'FRAME_0611_06_signature-fin.png', dur: 4 },
+    ],
+    xfade: 0.38,
+    tickCount: 6,
+    tickStep: 0.85,
+  },
+};
+
+const preset = tempoPresets[tempoArg === 'medium' ? 'medium' : 'slow'];
+const plans = preset.plans;
+const XFADE = preset.xfade;
+const tickCount = preset.tickCount;
+const tickStep = preset.tickStep;
 const fps = 30;
 
 function run(cmd, args, quiet = false) {
@@ -36,7 +64,7 @@ function run(cmd, args, quiet = false) {
 function segmentVf(dur, frames, extra = '') {
   const fade = Math.min(0.18, dur / 5);
   const out = Math.max(0, dur - fade);
-  const zStep = 0.045 / frames;
+  const zStep = 0.032 / frames;
   return [
     'scale=1080:1920:force_original_aspect_ratio=decrease',
     'pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0xECF4F7',
@@ -128,8 +156,8 @@ run('ffmpeg', [
 ], true);
 
 const tickInputsList = [];
-for (let k = 0; k < 9; k++) {
-  const start = t2 + 0.3 + k * 0.52;
+for (let k = 0; k < tickCount; k++) {
+  const start = t2 + 0.45 + k * tickStep;
   run('ffmpeg', [
     '-y',
     '-f',
