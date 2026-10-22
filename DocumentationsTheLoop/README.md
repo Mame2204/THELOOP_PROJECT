@@ -1,6 +1,6 @@
 # THE LOOP — Documentation projet (état actuel)
 
-> **Dernière mise à jour :** août 2026  
+> **Dernière mise à jour :** 22 octobre 2026  
 > **Périmètre :** application mobile Expo (`mobile/`) + backend Supabase (`supabase/`) + PWA web legacy (`src/`)  
 > **Public :** équipe produit, développement, exploitation sandbox
 
@@ -33,6 +33,11 @@ Il répond notamment aux questions suivantes :
 | 7 | [07-Smoke-Push.md](./07-Smoke-Push.md) | — |
 | 8 | [08-Smoke-Global.md](./08-Smoke-Global.md) | — |
 | 10 | [10-Smoke-Exhaustif-Build48.md](./10-Smoke-Exhaustif-Build48.md) | — |
+| 11 | [11-Publication-Stores.md](./11-Publication-Stores.md) | — |
+| 12 | [12-Checklist-Validation-Store.md](./12-Checklist-Validation-Store.md) | — |
+| 13 | [13-Audit-Base-Stores-Prod.md](./13-Audit-Base-Stores-Prod.md) | — |
+| 15 | [15-Lancement-Gates-Prod.md](./15-Lancement-Gates-Prod.md) | — |
+| 16 | [16-Suivi-Review-Build-70.md](./16-Suivi-Review-Build-70.md) | — |
 
 **Document unique Word (tout en un) :** [Word/THE_LOOP_Documentation_Complete.docx](./Word/THE_LOOP_Documentation_Complete.docx)
 

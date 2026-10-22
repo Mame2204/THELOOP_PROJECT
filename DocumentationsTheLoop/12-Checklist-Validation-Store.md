@@ -1,7 +1,8 @@
 # Checklist — QA build 58 → build 59 → validation stores (oct.–déc. 2026)
 
 > Complète `11-Publication-Stores.md` (notes relecteurs, PASS, confidentialité) et `10-Smoke-Exhaustif-Build48.md` (smoke global).  
-> **Enchaînement retenu :** tout tester sur **build 58** → si OK, **build 59** (dernier binaire) → envoi stores.  
+> **Enchaînement retenu à l’époque :** tout tester sur **build 58** → si OK, **build 59** → envoi stores.  
+> **Envoi réel :** build **70** (1.0.0), 22 octobre 2026, en examen. Suivi : `16-Suivi-Review-Build-70.md`.  
 > **Stratégie stores :** review avec **achat PASS ON**, **2 comptes** (membre + Prime), Djomy **annulation seulement** ; après approbation, gates sans nouveau build si le **59 approuvé** a montré l’achat.
 
 ---
@@ -98,15 +99,17 @@ Re-smoke **10 min** membre review sur **59**.
 
 ---
 
-# Partie E — Envoi stores (build 59) puis **gel**
+# Partie E — Envoi stores (build 70) puis **gel**
 
-- [ ] Upload **59** (iOS + Android).
-- [ ] Notes FR + EN — `11-Publication-Stores.md` §5.
-- [ ] 2 comptes dans les champs review.
-- [ ] URL suppression Google OK.
+- [x] Upload **70** (iOS + Android), 22 octobre 2026.
+- [x] Notes FR + EN — `11-Publication-Stores.md` §5.
+- [x] 2 comptes dans les champs review.
+- [x] URL suppression Google OK.
+
+Détail des déclarations : `16-Suivi-Review-Build-70.md`.
 
 **Jusqu’à « Approuvé » :** ne plus toucher gates, Edge, Render, mots de passe review.  
-Rejet technique → **60+** et resoumission.
+Rejet technique → **71** sur les deux stores, puis resoumission.
 
 ---
 
