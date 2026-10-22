@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — Template fête (éditable)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1350px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 45%, #96c4d4 100%); color: var(--deep);
+    }
+    .slide.theme-noel { background: linear-gradient(165deg, #1a3a44 0%, #0a3a44 40%, #2d5018 100%); color: #fff; }
+    .slide.theme-noel .p { color: rgba(255,255,255,0.88); }
+    .slide.theme-noel .ey { color: var(--gold); }
+    .ribbon { position: absolute; top: 0; left: 0; right: 0; padding: 22px; text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; background: linear-gradient(90deg, var(--deep), var(--teal)); color: #fff; }
+    .slide.theme-noel .ribbon { background: linear-gradient(90deg, #5c2a2a, #0a3a44); }
+    .inner { position: relative; z-index: 2; height: 100%; padding: 120px 64px 88px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; }
+    .logo-wrap { position: relative; margin-bottom: 40px; }
+    .logo-mark { width: 88px; height: 88px; }
+    .hat { position: absolute; top: -28px; left: 50%; transform: translateX(-50%) rotate(-8deg); font-size: 48px; line-height: 1; display: none; }
+    .slide.theme-noel .hat { display: block; }
+    .ey { font-size: 22px; font-weight: 800; letter-spacing: 0.26em; text-transform: uppercase; color: var(--teal); margin: 0 0 20px; }
+    .h { font-size: 58px; font-weight: 800; line-height: 1.1; margin: 0; max-width: 920px; }
+    .p { font-size: 32px; font-weight: 600; line-height: 1.45; max-width: 880px; margin: 28px 0 0; color: var(--deep); opacity: 0.85; }
+    .rule { width: 80px; height: 4px; background: var(--gold); border-radius: 2px; margin: 32px auto; }
+    .foot { margin-top: 36px; font-size: 24px; font-weight: 700; letter-spacing: 0.12em; opacity: 0.7; }
+    .gold { color: #9a7720; font-weight: 800; }
+    .slide.theme-noel .gold { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- VARIANTE NEUTRE — Bonne fête (sans année : laisser foot vide ou "Conakry") -->
+  <div class="label">Template · neutre · 4:5 feed/story crop</div>
+  <div class="slide" data-annee="">
+    <div class="ribbon">The Loop · Conakry</div>
+    <div class="inner">
+      <div class="logo-wrap">
+        <span class="hat" aria-hidden="true">🎄</span>
+        <svg class="logo-mark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <p class="ey">Bonne fête</p>
+      <h1 class="h">Joyeuses fêtes<br /><span class="gold">Conakry</span></h1>
+      <div class="rule"></div>
+      <p class="p">De la part de toute l’équipe <strong>The Loop</strong>.</p>
+      <p class="foot">theloop-app.com</p>
+    </div>
+  </div>
+
+  <!-- VARIANTE NOËL — décor + fond sombre (25/12 vœux ou hors lancement 24/12) -->
+  <div class="label">Template · Noël · class="theme-noel"</div>
+  <div class="slide theme-noel" data-annee="2026">
+    <div class="ribbon">Season's greetings</div>
+    <div class="inner">
+      <div class="logo-wrap">
+        <span class="hat" aria-hidden="true">🎅</span>
+        <svg class="logo-mark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#fff" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <p class="ey">Noël</p>
+      <h1 class="h">Joyeux <span class="gold">Noël</span></h1>
+      <div class="rule"></div>
+      <p class="p">Paix et bons moments à Conakry.</p>
+      <p class="foot">2026</p>
+    </div>
+  </div>
+
+  <!-- VARIANTE FIN D'ANNÉE -->
+  <div class="label">Template · 31/12 · 1/1</div>
+  <div class="slide" data-annee="">
+    <div class="ribbon">The Loop</div>
+    <div class="inner">
+      <div class="logo-wrap">
+        <svg class="logo-mark" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#0A3A44" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#0A3A44" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <p class="ey">Bonne année</p>
+      <h1 class="h">Meilleurs vœux<br /><span class="gold">pour la suite</span></h1>
+      <div class="rule"></div>
+      <p class="p">Merci de suivre l’aventure The Loop.</p>
+      <p class="foot">Conakry</p>
+    </div>
+  </div>
+
+</body>
+</html>

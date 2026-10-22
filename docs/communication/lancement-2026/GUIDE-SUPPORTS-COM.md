@@ -43,7 +43,9 @@ Prérequis : `npm install` à la racine du repo (Playwright).
 
 | Document | Rôle |
 |----------|------|
-| [`calendrier-chronologique-complet.md`](./calendrier-chronologique-complet.md) | Dates, actes, légendes type |
+| [`CALENDRIER-PUBLICATION-GUIDE-2026.md`](./CALENDRIER-PUBLICATION-GUIDE-2026.md) | **Vue simple** : date · format · objectif · légende résumée · vidéo toi |
+| [`calendrier-chronologique-complet.md`](./calendrier-chronologique-complet.md) | Dates, actes, légendes type (détail) |
+| [`FEED-FETES-TEMPLATES-GUINEE.md`](./FEED-FETES-TEMPLATES-GUINEE.md) | Fêtes post-24/12 · templates |
 | [`PLAN-LOTS-PUBLICATION.md`](./PLAN-LOTS-PUBLICATION.md) | Lots A–D |
 | [`CHECKLIST-PUBLICATION-2026.md`](./CHECKLIST-PUBLICATION-2026.md) | Avant publication Meta |
 | [`STATUT-COM-2026.md`](./STATUT-COM-2026.md) | État du pack |
