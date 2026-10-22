@@ -36,6 +36,8 @@ Dossier : [`scripts/`](./scripts/)
 | `node scripts/export-lot-c-dec.mjs` | Lot C (17–23/12) |
 | `node scripts/export-lot-d-2412.mjs` | Lot D (24/12) |
 | `node scripts/export-polish-v5.mjs` | **Tous les visuels touchés par le polish v5** (nov. → 24/12 + terrain + Acte A) |
+| `node scripts/export-regenerate-all-affiches.mjs` | **Regénère tout le pack** après correction logo (point + chapeau Noël) |
+| `node scripts/patch-all-loop-marks.mjs` | Réapplique le SVG marque officielle dans les HTML `export-visuels-*` |
 
 Prérequis : `npm install` à la racine du repo (Playwright).
 
