@@ -1,32 +1,37 @@
 # Vidéos Reels sans CapCut (générées dans le repo)
 
-**Ce que l’agent / le script fait :** enchaîne les **`FRAME_*.png`** avec zoom léger + fondus → **.mp4** 9:16.  
-**Ce que ça ne remplace pas :** ta voix, ta musique, tes rushs iPhone, les effets sonores du storyboard premium.
+**Règle avec toi :** **un jour · un MP4 · on valide** avant de passer au suivant.  
+**Sans voix off :** viser **~18–22 s**, plans **courts** (sinon ça traîne).
 
-**Ce n’est pas obligatoire** d’avoir voix off ni texte à retaper : le texte est **sur les PNG**.
+**Ce que le script fait :** enchaîne les **`FRAME_*.png`** (zoom léger + fondus).  
+**Ce que ça ne remplace pas :** voix, musique, rushs iPhone, montage premium du storyboard.
 
-## Générer / regénérer
+Le texte est **déjà sur les PNG** — pas de retape en CapCut.
+
+## Générer un seul jour (recommandé)
 
 ```bash
 cd docs/communication/lancement-2026
-node scripts/stitch-all-videos.mjs
+node scripts/stitch-all-videos.mjs 0611
 ```
 
-Un seul jour : `node scripts/stitch-all-videos.mjs 1311`
+Tout le calendrier vidéo (seulement après validations) : `node scripts/stitch-all-videos.mjs`
 
-## Fichiers produits (`exports-mp4/`)
+## Statut validation
 
-| Date | MP4 | Légende |
-|------|-----|---------|
-| 6/11 | `VIDEO_0611_dilemme-PUBLIER.mp4` | `fiches/03-2026-11-06.md` |
-| 13/11 | `VIDEO_1311_envie-PUBLIER.mp4` | `fiches/07-2026-11-13.md` |
-| 17/11 | `VIDEO_1711_frequence-PUBLIER.mp4` | `fiches/10-2026-11-17.md` (+ carrousel / stories) |
-| 21/11 | `VIDEO_2111_pourquoi-PUBLIER.mp4` | `fiches/12-2026-11-21.md` |
-| 28/11 | `VIDEO_2811_outil-PUBLIER.mp4` | `fiches/16-2026-11-28.md` |
-| 5/12 | `VIDEO_0512_anti-annuaire-PUBLIER.mp4` | Lot A fiche 17 |
-| 24/12 | `VIDEO_2412_noel-PUBLIER.mp4` | `fiches/20-LOT-D-24-12.md` |
+| Date | MP4 | Validé avec toi ? |
+|------|-----|-------------------|
+| **6/11** | `VIDEO_0611_dilemme-PUBLIER.mp4` (~20 s) | **En cours** |
+| 13/11 | `VIDEO_1311_envie-PUBLIER.mp4` | Non — après 6/11 |
+| 17/11 | `VIDEO_1711_frequence-PUBLIER.mp4` | Non |
+| 21/11 | `VIDEO_2111_pourquoi-PUBLIER.mp4` | Non |
+| 28/11 | `VIDEO_2811_outil-PUBLIER.mp4` | Non |
+| 5/12 | `VIDEO_0512_anti-annuaire-PUBLIER.mp4` | Non |
+| 24/12 | `VIDEO_2412_noel-PUBLIER.mp4` | Non |
 
-Publier en **Reels** (Facebook) · coller la légende · UTM seulement **à partir du 17/11** (sauf 6/11 et 13/11 = pas de lien).
+Légendes : fiches du jour (6/11 → `fiches/03-2026-11-06.md`).
+
+Publier en **Reels** · **pas de lien** avant le 17/11 pour 6/11 et 13/11.
 
 ## Plan B sans vidéo
 

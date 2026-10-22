@@ -19,14 +19,15 @@ const jobs = [
     id: '0611',
     glob: 'FRAME_0611_*.png',
     out: 'VIDEO_0611_dilemme-PUBLIER.mp4',
-    durations: [3, 3, 8, 6, 8, 4],
+    /** Sans VO : rythme serré (~20 s) — validé avec toi avant les autres dates. */
+    durations: [2, 2, 5, 3, 5, 3],
   },
-  { id: '1311', glob: 'FRAME_1311_*.png', out: 'VIDEO_1311_envie-PUBLIER.mp4', totalSec: 35 },
-  { id: '1711', glob: 'FRAME_1711_*.png', out: 'VIDEO_1711_frequence-PUBLIER.mp4', totalSec: 40 },
-  { id: '2111', glob: 'FRAME_2111_*.png', out: 'VIDEO_2111_pourquoi-PUBLIER.mp4', totalSec: 32 },
-  { id: '2811', glob: 'FRAME_2811_*.png', out: 'VIDEO_2811_outil-PUBLIER.mp4', totalSec: 28 },
-  { id: '0512', glob: 'FRAME_0512_*.png', out: 'VIDEO_0512_anti-annuaire-PUBLIER.mp4', totalSec: 24 },
-  { id: '2412', glob: 'FRAME_2412_*.png', out: 'VIDEO_2412_noel-PUBLIER.mp4', totalSec: 32 },
+  { id: '1311', glob: 'FRAME_1311_*.png', out: 'VIDEO_1311_envie-PUBLIER.mp4', totalSec: 21 },
+  { id: '1711', glob: 'FRAME_1711_*.png', out: 'VIDEO_1711_frequence-PUBLIER.mp4', totalSec: 24 },
+  { id: '2111', glob: 'FRAME_2111_*.png', out: 'VIDEO_2111_pourquoi-PUBLIER.mp4', totalSec: 20 },
+  { id: '2811', glob: 'FRAME_2811_*.png', out: 'VIDEO_2811_outil-PUBLIER.mp4', totalSec: 18 },
+  { id: '0512', glob: 'FRAME_0512_*.png', out: 'VIDEO_0512_anti-annuaire-PUBLIER.mp4', totalSec: 16 },
+  { id: '2412', glob: 'FRAME_2412_*.png', out: 'VIDEO_2412_noel-PUBLIER.mp4', totalSec: 20 },
 ];
 
 const filter = process.argv.slice(2);
