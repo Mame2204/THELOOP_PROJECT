@@ -1,6 +1,7 @@
 # Publication App Store / Google Play — dossier prêt à remplir
 
-> Mis à jour : 30 sept. 2026 · complète `10-Smoke-Exhaustif-Build48.md` et `12-Checklist-Validation-Store.md`.
+> Mis à jour : 22 octobre 2026. Le build **70** (1.0.0) est en examen sur les deux stores. Le détail de ce qui a été déclaré est dans `16-Suivi-Review-Build-70.md`.
+> Complète `10-Smoke-Exhaustif-Build48.md` et `12-Checklist-Validation-Store.md`.
 > Aucun mot de passe dans ce fichier : les identifiants des comptes relecteurs se saisissent directement dans les consoles.
 
 ## 1. Suppression de compte (Apple 5.1.1(v) · Google « Account deletion »)
@@ -95,11 +96,11 @@ Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu�
 > THE LOOP est un guide de sorties et d'expériences à Conakry (Guinée). Les privilèges Loop Prime se consomment **sur place** chez les établissements partenaires (carte QR, validation au comptoir).
 >
 > **Compte membre (test achat PASS)**  
-> E-mail : [MEMBRE_REVIEW] · Mot de passe : [MDP]  
+> E-mail : member@theloop-app.com · Mot de passe : [MDP]  
 > Pour vérifier l'achat : ouvrir l'écran Loop Prime / abonnement, choisir une formule, lancer le paiement. Une page **Djomy** (mobile money Guinée) s'ouvre dans le navigateur. **Merci de ne pas finaliser le paiement** : annuler ou fermer la page, puis revenir à l'application. Un paiement complet nécessite un numéro mobile money guinéen, indisponible pour la relecture.
 >
 > **Compte Loop Prime (expérience complète)**  
-> E-mail : [PRIME_REVIEW] · Mot de passe : [MDP]  
+> E-mail : prime@theloop-app.com · Mot de passe : [MDP]  
 > Ce compte est **déjà** Loop Prime (attribution interne). Utilisez-le pour parcourir privilèges et contenu réservé **sans passer par l'achat**.
 >
 > Suppression de compte : Profil → Paramètres → Fermer mon compte.  
@@ -110,11 +111,11 @@ Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu�
 > THE LOOP is a city guide for Conakry, Guinea. Loop Prime benefits are redeemed **in person** at partner venues (member QR card, validated by staff).
 >
 > **Member account (PASS purchase flow)**  
-> Email: [MEMBER_REVIEW] · Password: [PWD]  
+> Email: member@theloop-app.com · Password: [PWD]  
 > To review purchase UI: open Loop Prime / subscription, pick a plan, start checkout. A **Djomy** page (Guinea mobile money) opens in the browser. **Please do not complete payment** — cancel or close the page and return to the app. Full payment requires a Guinean mobile-money wallet, which reviewers typically do not have.
 >
 > **Loop Prime account (full experience)**  
-> Email: [PRIME_REVIEW] · Password: [PWD]  
+> Email: prime@theloop-app.com · Password: [PWD]  
 > This account is **already** Loop Prime (internal grant). Use it to explore Prime features **without purchasing**.
 >
 > Account deletion: Profile → Settings → Close my account.  
@@ -122,11 +123,11 @@ Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu�
 
 ### À préparer avant envoi
 
-- [ ] Compte **membre** review : jamais Prime, sert au parcours achat + annulation Djomy.
-- [ ] Compte **Prime** review : statut Prime **actif en base** (admin), pas via paiement test.
-- [ ] Contenu visible (Guinée) ; **pas** de compte admin pour la review.
-- [ ] L'app sans compte n'affiche que la **connexion** — les reviewers doivent se connecter.
-- [ ] Parcours complet : `12-Checklist-Validation-Store.md`.
+- [x] Compte **membre** review : `member@theloop-app.com`, jamais Prime, sert au parcours achat + annulation Djomy.
+- [x] Compte **Prime** review : `prime@theloop-app.com`, statut Prime **actif en base** (admin), pas via paiement test.
+- [x] Contenu visible (Guinée) ; **pas** de compte admin pour la review.
+- [x] L'app sans compte n'affiche que la **connexion** — les reviewers doivent se connecter.
+- [x] Envoi build **70** : voir `16-Suivi-Review-Build-70.md`.
 
 ## 6. PASS Prime et achats intégrés (Apple 3.1.1 / 3.1.3(e) · Google Paiements)
 
