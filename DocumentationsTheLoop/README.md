@@ -38,6 +38,7 @@ Il répond notamment aux questions suivantes :
 | 13 | [13-Audit-Base-Stores-Prod.md](./13-Audit-Base-Stores-Prod.md) | — |
 | 15 | [15-Lancement-Gates-Prod.md](./15-Lancement-Gates-Prod.md) | — |
 | 16 | [16-Suivi-Review-Build-70.md](./16-Suivi-Review-Build-70.md) | — |
+| 17 | [17-Comprendre-et-Vendre.md](./17-Comprendre-et-Vendre.md) | — |
 
 **Document unique Word (tout en un) :** [Word/THE_LOOP_Documentation_Complete.docx](./Word/THE_LOOP_Documentation_Complete.docx)
 
