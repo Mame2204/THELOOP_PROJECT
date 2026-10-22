@@ -26,7 +26,7 @@ npm run dev:pwa-legacy      # PWA legacy (dépréciée)
 - `mobile/README.md` — build EAS, env, comptes test
 - `admin-web/README.md` — deploy Netlify
 - `server/README.md` — Djomy prod, webhook, cron
-- `DocumentationsTheLoop/` — référentiel métier. Suivi de la review build 70 : `DocumentationsTheLoop/16-Suivi-Review-Build-70.md`
+- `DocumentationsTheLoop/` — référentiel métier. Review : `DocumentationsTheLoop/16-Suivi-Review-Build-70.md`. Discours de vente : `DocumentationsTheLoop/17-Comprendre-et-Vendre.md`
 
 ## Supabase
 
