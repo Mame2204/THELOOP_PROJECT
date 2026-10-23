@@ -14,7 +14,7 @@
 | **Places** | « **100 premières places** » jusqu’au 19/11. Ensuite : « **Premiers inscrits, premiers invités** » (vrai, que les 100 places soient prises ou non). Le chiffre réel n’apparaît que dans les stories compteur. |
 | **Interdits** | Pas de nom de lieu sans accord écrit. Pas de capture nette de l’app avant le 17/12. Pas de Pass / Prime. |
 
-**Déjà programmés (on n’y touche plus) :** 3/11 · 5/11 · 6/11 · **8/11** stories ×3 · **11/11** carrousel + story · **13/11** Reel + story.
+**Déjà programmés (on n’y touche plus) :** 3/11 · 5/11 · 6/11 · 8/11 · 11/11 · **12/11** J-5 · 13/11.
 
 ---
 
@@ -25,10 +25,10 @@
 | **mar. 3/11** | 19h00 | Photo feed + story 9:16 · FB + **@app.theloop** | `POST_3-11_feed-PUBLIER-3nov.png` · `POST_3-11_reels-PUBLIER-3nov.png` | 01 · **programmé** |
 | **jeu. 5/11** | 19h00 | Photo feed + story | `POST_5-11_citation-PUBLIER-5nov.png` · `STORY_5-11_01…03` | 02 · **programmé** |
 | **ven. 6/11** | 19h00 | **Reel** + story · FB + IG | `VIDEO_0611_dilemme-PUBLIER.mp4` | 03 · **programmé** |
-| **dim. 8/11** | 19h00 | Story ×3 | `STORY_8-11_01_marque` · `02_piliers` · `03_17nov` | 04 |
-| **mer. 11/11** | 19h00 | Carrousel ×4 + story (slide 4) | `CARROUSEL_11-11_01…04` | 05 |
+| **dim. 8/11** | 19h00 | Story ×3 | `STORY_8-11_01…03` | 04 · **programmé** |
+| **mer. 11/11** | 19h00 | Carrousel ×4 + story | `CARROUSEL_11-11_01…04` | 05 · **programmé** |
 | **jeu. 12/11** | 19h00 | Photo feed J-5 + story | `POST_12-11_J-5-PUBLIER.png` | 06 |
-| **ven. 13/11** | 19h00 | **Reel** + story | `VIDEO_1311_envie-PUBLIER.mp4` | 07 |
+| **ven. 13/11** | 19h00 | **Reel** + story | `VIDEO_1311_envie-PUBLIER.mp4` | 07 · **programmé** |
 | **dim. 15/11** | 19h00 | Story ×3 J-2 | `STORY_15-11_01_J-2` · `02_100-places` · `03_mardi-reserve` | 08 |
 | **lun. 16/11** | 19h00 | Photo feed J-1 + story · **messages WhatsApp aux relais** | `POST_16-11_J-1-PUBLIER.png` | 09 |
 
