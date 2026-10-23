@@ -1,52 +1,47 @@
-# Feed conversion — règles 2026 (Facebook / Reels)
+# Ce qui fait s’inscrire — règles 2026 (Facebook, Instagram, Reels)
 
-## Ce qui vend l’inscription (ordre)
+## Les 5 ressorts, dans l’ordre
 
-1. **Reconnaissance** — « c’est mon vendredi / ma ville / mon écran »
-2. **Produit visible en 2 s** — vraie app, pas manifeste typo
-3. **Tension → soulagement** — bruit → repère ; dispersion → un geste
-4. **Urgence honnête** — 100 places, dates 17/12 et 24/12
-5. **Voix humaine** (toi) — confiance sans devenir la vedette visuelle
+1. **Reconnaissance** — « c’est mon vendredi, ma ville »
+2. **Tension → soulagement** — trop de bruit → un repère
+3. **Une promesse claire** — Spots · Agenda · Parcours · Outils, en clair
+4. **Urgence honnête** — 100 places, compteur réel, puis « Premiers inscrits, premiers invités »
+5. **Une voix humaine** — tes 3 vidéos face caméra
 
-## Format prioritaire
+## Formats, par priorité
 
 | Priorité | Format | Rôle |
 |----------|--------|------|
-| 1 | **Reels 9:16** | Acquisition |
-| 2 | **Carrousel photo** | Expliquer + CTA slide 5 |
-| 3 | **Image 4:5** | J-x, citation sur photo |
-| 4 | Slide fond uni | **Interdit** sauf urgence J-1/J-5 |
+| 1 | **Reel 9:16** | Faire découvrir (portée) |
+| 2 | **Carrousel 4:5** | Expliquer, avec un CTA sur la dernière image |
+| 3 | **Photo 4:5** | Rendez-vous (J-5, J-1), série « Une règle », remerciements |
+| 4 | **Stories** | Rappels, compteur, sondages, terrain — chaque post feed y est repartagé |
 
-## Hooks 3 premières secondes (révisés)
+## Les 3 premières secondes de chaque Reel
 
-| Date | Hook visuel + son | Phrase écran / voix |
-|------|-------------------|---------------------|
-| 6/11 | Bulle WhatsApp | « On fait quoi ce week-end ? » |
-| 13/11 | Plan calme 1 s → cut bruit | « Une envie. Pas le bruit. » |
-| 17/11 | Bruit 1 s → **ta capture app** | « Tout crie. » → scroll app |
-| 21/11 | Scroll Spots/Agenda | « Dispersé ? » |
-| 5/12 | Capture nette | « Pas tout Conakry. Un repère. » |
-| 24/12 | Lumière dorée + app | « 24 décembre. The Loop est ouvert. » |
+| Date | Ce qu’on voit d’abord | Texte à l’écran |
+|------|-----------------------|-----------------|
+| 6/11 | Un téléphone qui vibre | « Vendredi 19h. Le téléphone vibre. Encore. » |
+| 13/11 | Une ambiance calme | « Une envie. » |
+| 18/11 | Un mur de notifications | « Tout crie. » |
+| 20/11 | Conakry en mouvement | « Conakry avance. » |
+| 27/11 | Les petites questions du quotidien | « Changer de monnaie. » |
+| 3/12 | Une phrase franche | « On ne promet pas tout Conakry. » |
+| 24/12 | La date, enfin dite | « 24 décembre. » |
 
-## Montage CapCut (17/11 « wow »)
+## Montrer l’app
 
-1. **0:00–0:01** — Notification + klaxon (fort)
-2. **0:01–0:02** — Noir 2 frames
-3. **0:02–0:05** — **Capture Accueil** zoom 110→100 % + texte « Tout crie. »
-4. **0:05–0:08** — Même capture swipe gauche (effet manuel) « Peu guident. »
-5. **0:08–0:14** — Parcours ou rooftop **plein écran** + voix « Conakry mérite un repère »
-6. **0:14–0:22** — 3 cuts rapides : Agenda / Spots / Outils (quand dispo)
-7. **0:22–0:28** — Logo + arc
-8. **0:28–0:38** — PNG Reels fin v2 + **ta voix** « Réserve ta place »
+- **Jusqu’au 16/12 : app floutée uniquement** (piliers floutés, silhouette de téléphone). Jamais de capture lisible.
+- **À partir du 17/12 :** captures nettes autorisées (stories des invités, 19/12, 24/12).
 
-## Légendes (ton)
+## Légendes
 
-- Phrases **courtes**. Une idée.
-- **Tu** à l’audience. **The Loop** pour la marque.
-- CTA unique : **Réserve ta place** + lien UTM.
+- Phrases courtes, une idée par phrase.
+- **Tu** pour le public, **The Loop** pour la marque.
+- Une ligne d’usage concret (« ce soir », « ce week-end », « pour faire découvrir la ville »).
+- Un seul appel à l’action : **Réserve ta place** (jusqu’au 23/12), puis **Entrez dans le guide** (à partir du 24/12).
 
-## Pack visuel
+## Visuels de référence
 
-- **v1** : typographique (archive)
-- **Acte A (nov.)** : `export-visuels-pack-acte-a-v4-light.html` + `exports-png-v4-light/` — **validé #1–#3**
-- **Pack capture plein écran (v2 HTML)** : reporter ≥ **17/12** (pas Acte A)
+- Pack 3/11 et 5/11 : `export-visuels-pack-acte-a-v4-light.html` (verrouillé)
+- Tout le reste : `export-visuels-*.html` → `exports-png-v4-light/` (voir `GUIDE-SUPPORTS-COM.md`)

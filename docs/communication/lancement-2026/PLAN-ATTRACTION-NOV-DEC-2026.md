@@ -1,7 +1,7 @@
 # Plan d’attraction — novembre → 24 décembre 2026
 
-Ce plan **ne change pas le calendrier**. Mêmes dates, mêmes formats (feed, story, vidéo, Reel), mêmes visuels, **19h00** heure de Conakry.
-Il ajoute ce qui fait venir du monde : relais, WhatsApp, boost payant aux bons moments, réponses rapides, suivi des chiffres.
+Ce plan **ne change pas le calendrier**. Mêmes dates, mêmes formats (feed, story, vidéo, Reel), mêmes visuels, **19h00** heure de Conakry (exceptions : 17/12 à 12h00, 24/12 à 10h00).
+Il ajoute ce qui fait venir du monde : relais, WhatsApp, Instagram, boost payant aux bons moments, réponses rapides, suivi des chiffres.
 
 Calendrier de référence : `CALENDRIER-PUBLICATION-GUIDE-2026.md`.
 
@@ -21,7 +21,7 @@ Les chiffres après les 100 places sont à fixer ensemble après la première se
 
 ---
 
-## 2. Les 5 leviers
+## 2. Les 6 leviers
 
 ### Levier 1 — WhatsApp (le plus fort à Conakry)
 
@@ -49,7 +49,7 @@ Pas de pub sur tout. Seulement là où ça rapporte :
 | **6/11** | Reel « Vendredi soir » | Faire connaître la page | 3 jours |
 | **17/11** | Ta vidéo face caméra | **Inscriptions** (clic vers le site) | 5 jours |
 | **26/11** | Carrousel 4 piliers | Relance inscriptions | 3 jours |
-| **24/12** | Ta vidéo de lancement | Entrées le jour J | 3 jours |
+| **24/12** | Ta vidéo de 10h00 « C’est ouvert » | Entrées le jour J | 3 jours |
 
 **Ciblage :** Conakry et environs · 18 à 45 ans · centres d’intérêt sorties, restaurants, voyages, culture, entrepreneuriat.
 **Budget :** commencer petit (le même montant par jour sur chaque boost), regarder le coût par clic au bout de 24 h, garder seulement ce qui marche.
@@ -73,8 +73,14 @@ Ajouter des stickers sur les stories **déjà prévues**, sans créer de nouvell
 | **8/11** (3e image) | **Compte à rebours** « Ouverture de la liste · 17 nov. 19h » | Les gens activent un rappel : Meta les prévient le jour J |
 | **15/11** (3e image) | Le même compte à rebours | Deuxième chance de s’abonner au rappel |
 | **17/11** (3e image) | **Lien** (déjà prévu) | Inscription |
-| **22/11** | **Sondage** (déjà prévu) puis **lien** | Engagement + inscription |
-| **21/12** | **Compte à rebours** « The Loop · 24 déc. » | Rappel du lancement |
+| **18/11** et **20/11** | Story **compteur** « Il reste NN places » + **lien** | Urgence honnête (vrai chiffre, arrondi à la dizaine inférieure) |
+| **20/11** | **Sondage** (déjà prévu) | Engagement |
+| **4/12** | Sticker **Question** sur la story du post « Question du vendredi » | Conversation |
+| **21/12** | **Compte à rebours** « The Loop · 24 déc. » | Rappel du lancement (la date est publique depuis le 17/12) |
+
+### Levier 6 — Instagram en miroir
+
+Chaque publication Facebook part aussi sur **Instagram** (publication croisée dans Meta Business Suite), avec le lieu **Conakry**. Sur Instagram, la légende dit **« Lien en bio »** et la bio porte le lien du jour (`utm_source=instagram`, voir `utm-grille.md`).
 
 ---
 
@@ -83,14 +89,39 @@ Ajouter des stickers sur les stories **déjà prévues**, sans créer de nouvell
 | Heure (Conakry) | Action |
 |-----------------|--------|
 | 18h30 | Vérifier que le site d’inscription fonctionne (faire un test d’inscription) |
-| **19h00** | Vidéo face caméra + carrousel + stories (programmés) |
+| **19h00** | Ta vidéo face caméra (Reel, couverture `COVER_17-11_liste-ouverte.png`) |
 | 19h00 | Statut WhatsApp avec le lien |
-| 19h05 | Message aux relais : « C’est en ligne » |
+| 19h05 | Carrousel « 100 places » · message aux relais : « C’est en ligne » |
+| 19h10 | Stories ×3 (lien sur la 3e) |
 | 19h → 20h | Répondre à tous les commentaires et messages |
 | 20h00 | Lancer le boost de la vidéo (si pas déjà programmé) |
-| 21h00 | Noter le nombre d’inscrits |
+| 21h00 | Noter le nombre d’inscrits (il sert à la story compteur du 18/11) |
 
-Si les 100 places partent vite, l’annoncer **avec le vrai chiffre** dans la story déjà prévue du 19/11 ou du 22/11 (« Les 100 premières places sont parties. La liste reste ouverte. »). Ne jamais annoncer un chiffre qui n’est pas vrai.
+Si les 100 places partent vite, publier la story compteur **`STORY_COMPTEUR_complet.png`** le 18/11 ou le 20/11 (« Les 100 places sont prises. La liste reste ouverte. »), puis passer à « **Premiers inscrits, premiers invités** ». Ne jamais annoncer un chiffre qui n’est pas vrai.
+
+---
+
+## 3 bis. Les deux autres jours clés
+
+### Jeudi 17 décembre — la révélation
+
+| Heure | Action |
+|-------|--------|
+| 11h30 | Tester le lien d’activation de l’e-mail sur un vrai compte |
+| **12h00** | E-mail aux 100 premiers · ta vidéo « Les invitations partent » (Reel + story) |
+| 12h05 | Statut WhatsApp : « Les invitations partent. Ouverture pour tous le 24 décembre. » |
+| **19h00** | Photo feed « Accès anticipé » + story |
+| 19h → 20h | Répondre aux invités · leur demander une story (repartage le 19/12) |
+
+### Jeudi 24 décembre — l’ouverture
+
+| Heure | Action |
+|-------|--------|
+| 9h00 | Test complet : inscription, connexion, Agenda, Spots |
+| **10h00** | Ta vidéo « C’est ouvert » (Reel + story) · boost 3 jours |
+| 10h10 | Stories Jour J ×5 · statut WhatsApp avec le lien · message aux relais |
+| 12h · 15h · 21h | Créneaux de réponses aux commentaires |
+| **19h00** | Reel « Cadeau de Noël » + story |
 
 ---
 
@@ -119,7 +150,9 @@ Si les 100 places partent vite, l’annoncer **avec le vrai chiffre** dans la st
 | « C’est quoi ? » | Un guide sélectif pour Conakry : des adresses, l’agenda, des idées de sorties et des outils pratiques. Pas un annuaire. |
 | « C’est payant ? » | L’inscription sur la liste est gratuite. |
 | « Comment je m’inscris ? » (avant le 17/11) | La liste ouvre le 17 novembre à 19h. Active le rappel dans la story 😉 |
-| « Comment je m’inscris ? » (à partir du 17/11) | Ici : theloop-app.com — les 100 premiers ont un accès anticipé. |
+| « Comment je m’inscris ? » (à partir du 17/11) | Ici : theloop-app.com — premiers inscrits, premiers invités. |
+| « Ça ouvre quand ? » (avant le 17/12) | Bientôt ! Les premiers inscrits seront invités en premier, par e-mail. |
+| « Ça ouvre quand ? » (à partir du 17/12) | Le 24 décembre, pour tout le monde. Les premiers inscrits sont déjà à l’intérieur. |
 | « Vous mettez quel lieu ? » | On ne nomme aucun lieu avant leur accord. Tu découvriras la sélection à l’ouverture. |
 | « Je peux proposer mon adresse ? » | Avec plaisir, écris-nous en message privé. |
 
@@ -140,4 +173,4 @@ Si les 100 places partent vite, l’annoncer **avec le vrai chiffre** dans la st
 
 ## 6. Récap en une ligne
 
-**19h chaque jour prévu · statut WhatsApp à chaque story · 20–30 relais le 17/11 · boost sur 4 publications · réponse à tous les commentaires dans l’heure · chiffres chaque lundi.**
+**19h chaque jour prévu · statut WhatsApp à chaque story · Instagram en miroir · 20–30 relais le 17/11 · compteur honnête · boost sur 4 publications · réponse à tous les commentaires dans l’heure · chiffres chaque lundi.**

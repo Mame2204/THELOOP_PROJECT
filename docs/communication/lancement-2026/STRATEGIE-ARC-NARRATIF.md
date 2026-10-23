@@ -1,57 +1,45 @@
-# Stratégie com — arc narratif (révision)
+# Stratégie — l’histoire racontée de novembre à Noël
 
-## Problème identifié
+## L’idée en une phrase
 
-Montrer l’**intérieur de l’app** dès le post #1 alors qu’on ouvre une **liste d’attente** pour un guide **sélectif encore vide** :
+**The Loop ne montre pas tout de suite son contenu : on fait d’abord ressentir le besoin, puis on ouvre la porte, puis on révèle la date, puis on ouvre la ville.**
 
-- casse la promesse « sélectif » ;
-- vide l’**accès anticipé** (les 100 ont déjà tout vu en com) ;
-- tue le **storytelling** ;
-- expose le **produit** (copie possible) avant partenaires signés.
+Montrer l’app pleine trop tôt casserait la promesse « sélectif », viderait l’accès anticipé de son intérêt et exposerait le produit avant que les partenaires aient signé.
 
-## Principe corrigé
+## Ce que le public voit, et quand
 
-| Public voit | Public ne voit pas (jusqu’à date T) |
-|-------------|-------------------------------------|
-| **Pourquoi** The Loop existe | Fiches, noms, carousel « à la une » |
-| **Comment on pense** (critères) | Captures lisibles Agenda/Spots remplis |
-| **Quand** ouvrir la liste / entrer | Parcours éditoriaux détaillés |
-| **Ambiance** (Conakry, calme vs bruit) | UI complète, sondages, contenu démo |
+| Période | Le public voit | Le public ne voit pas encore |
+|---------|----------------|------------------------------|
+| 3 → 16/11 | Le besoin (« on fait quoi ce week-end ? »), l’ambiance, la date du **17/11** | Aucun lien, aucune capture d’app |
+| 17/11 → 16/12 | La liste ouverte, les critères de sélection, le terrain, l’app **floutée** | Aucune date d’ouverture : l’accès anticipé arrive « **bientôt** » |
+| **À partir du 17/12** | Les invitations, la date du **24 décembre**, l’app **nette** | — |
+| 24/12 → | Le guide ouvert à tous | — |
 
-**Liste d’attente = accès à la porte, pas visite guidée du app en public.**
+## Les 4 temps
 
-## Les 4 actes (nov. → déc.)
+### 1. Le besoin — 3 → 16 novembre
+Dilemme du vendredi soir, envie de calme, citation signature, J-5, J-1. **Zéro lien, zéro capture.** Un seul rendez-vous annoncé : **17 novembre, 19h**.
 
-### Acte A — Récit (3 → 16/11) · **zéro capture app**
-- Dilemme, bruit, envie, signature, critères, J-x.
-- Visuels : photo atmosphère, typo sur fond **sans écran**, logo seul, frame WhatsApp **sans** app.
-- **Pas de lien** jusqu’au 17/11.
+### 2. La porte s’ouvre — 17 novembre → 9 décembre
+Ta vidéo face caméra ouvre la liste. Compteur honnête (18/11, 20/11), puis « **Premiers inscrits, premiers invités** ». Série « Une règle » 1/3 → 3/3 : on montre **comment on choisit**, pas ce qu’on a choisi.
 
-### Acte B — Ouverture liste (17/11 → ~30/11) · **app en silhouette**
-- Message : **100 places** = entrer **avant** Noël, pas « voir le catalogue en preview Facebook ».
-- Visuels : téléphone **de dos / flou extrême**, 1 icône, **bande floutée** (10 % de l’UI max), ou animation logo.
-- Légende : *« Le guide se construit en décembre ; les premiers inscrits entrent en premier. »*
+### 3. Le terrain — 7 → 16 décembre
+Stories « Sur le terrain » : rencontres, critères, outils, parcours. Des preuves de travail, **sans nom de lieu et sans catalogue**. Les derniers jours annoncent les invitations **bientôt**.
 
-### Acte C — Remplissage (7 → 16/12 terrain) · **preuves sans catalogue**
-- Stories : mains, charte, flou, « une adresse rejoint » **sans nom**.
-- Pas de dump captures.
+### 4. La révélation et l’ouverture — 17 → 24 décembre
+- **17/12** : les 100 premiers reçoivent l’e-mail ; ta vidéo révèle **pour la première fois** la date du **24 décembre**.
+- **19/12 → 23/12** : les invités en parlent, J-3, carrousel « Demain ».
+- **24/12** : « C’est ouvert », notre cadeau de Noël pour Conakry.
 
-### Acte D — Révélation (17/12 pré-launch → 24/12) · **app nette**
-- **17/12** : e-mail 100 → première vraie exploration.
-- **24/12** : vidéo lancement avec captures **à jour** (partenaires signés si dispo).
+## Pourquoi garder la date secrète jusqu’au 17/12
 
-## Valeur des 100 places (copy)
+- **Un seul rendez-vous à la fois** : le public retient le 17/11, puis le 24/12, sans confusion.
+- **L’accès anticipé garde sa valeur** : on promet d’entrer *avant les autres*, sans montrer le calendrier.
+- **Un deuxième temps fort** : le 17/12 devient une vraie annonce, pas un simple rappel.
+- **De la marge** : si la mise en ligne prend du retard, aucune date publique n’est à corriger.
 
-- Accès **17/12** avant le public **24/12**.
-- Voir le guide **se remplir** (partenaires réels), pas revoir la com.
-- **Influence implicite** : early users = premiers à profiter du contenu réel (sans promettre Pass).
+## Ce que valent les 100 premières places
 
-## Anti-copie (réalisme)
-
-- Ne pas publier **structure + contenu éditorial** 1 mois avant.
-- Montrer **l’expérience** seulement quand tu as **des partenaires signés** à montrer (floutés ou partiels) ou au lancement.
-
-## Impact calendrier visuel
-
-- **Pack v2 « capture plein écran »** : reporter aux posts **≥ 17/12** ou **24/12**, sauf versions **illisible volontaire** (flou 90 %).
-- **Refonte #1** : sans app → `exports-png-v3/` (acte A).
+- Entrer **avant** l’ouverture publique.
+- Voir le guide **se remplir** avec les vrais partenaires.
+- Être les premiers à recommander The Loop autour d’eux (sans promesse de Pass ni d’avantage payant).

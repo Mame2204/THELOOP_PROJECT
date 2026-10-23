@@ -1,60 +1,55 @@
 # Télécharger les visuels sur téléphone
 
-Branche : **`main`** (pack fusionné — un simple `git pull` suffit)  
-Dossier : **`exports-png-v4-light/`** (~130 PNG)  
-Liste : `LISTE-VISUELS-VALIDES.md` · état global : `STATUT-COM-2026.md`
+Branche : **`main`** · Dossiers : **`exports-png-v4-light/`** (images), **`exports-png-telephone-fete/`** (fêtes 9:16), **`exports-mp4/`** (Reels)  
+Vue d’ensemble par date : `galerie-calendrier.html` · calendrier : `CALENDRIER-PUBLICATION-GUIDE-2026.md`
 
 ---
 
-## Méthode 1 — ZIP (la plus simple sur mobile)
+## Méthode 1 — ZIP (la plus simple)
 
-1. Sur un **PC** (ou GitHub web) :  
+1. Sur un PC (ou GitHub web) :
    https://github.com/Mame2204/THELOOP_PROJECT/archive/refs/heads/main.zip
-2. Dézippe sur le PC.
-3. Ouvre le dossier :  
-   `THELOOP_PROJECT-…/docs/communication/lancement-2026/exports-png-v4-light/`
-4. Envoie le dossier (ou les PNG dont tu as besoin) sur ton téléphone : **AirDrop**, **WhatsApp**, **Google Drive**, **Files**, etc.
+2. Dézipper.
+3. Ouvrir `THELOOP_PROJECT-…/docs/communication/lancement-2026/`.
+4. Envoyer sur le téléphone les fichiers de la semaine (WhatsApp « Moi-même », Google Drive, AirDrop…).
 
-Tu peux aussi ne copier qu’un sous-ensemble (ex. tout `STORY_07-12_*` pour la semaine terrain).
-
----
-
-## Méthode 2 — App GitHub (iPhone / Android)
-
-1. Repo **THELOOP_PROJECT** → branche **`main`**
-2. Navigue : `docs` → `communication` → `lancement-2026` → **`exports-png-v4-light`**
-3. Ouvre un **.png** → menu **⋯** → **Télécharger** / **Save image**
-
-Fastidieux pour 115 fichiers → préfère le **ZIP**.
+Astuce : un envoi par semaine (ex. tous les `STORY_07-12_*` à `STORY_12-12_*` pour la semaine terrain).
 
 ---
 
-## Méthode 3 — Aperçu rapide (PC)
+## Méthode 2 — App GitHub (un fichier à la fois)
+
+1. Dépôt **THELOOP_PROJECT** → branche **`main`**
+2. `docs` → `communication` → `lancement-2026` → dossier voulu
+3. Ouvrir le fichier → menu **⋯** → **Télécharger**
+
+---
+
+## Méthode 3 — Galerie sur PC
 
 ```bash
 cd docs/communication/lancement-2026
 python3 -m http.server 8765
 ```
 
-Navigateur : http://localhost:8765/galerie-preview-lots.html  
-(échantillon 17/11 + lots A/B/C — pas les 115 fichiers.)
+Navigateur : http://localhost:8765/galerie-calendrier.html — tous les visuels et Reels, classés par date.
 
 ---
 
-## Lien raw (un seul fichier)
+## Lien direct vers un fichier
 
-Remplace `NOM_DU_FICHIER.png` :
+Remplacer `DOSSIER/NOM_DU_FICHIER` :
 
 ```
-https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/main/docs/communication/lancement-2026/exports-png-v4-light/NOM_DU_FICHIER.png
+https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/main/docs/communication/lancement-2026/DOSSIER/NOM_DU_FICHIER
 ```
 
-Exemple 17/11 :
+Exemple (Reel du 6/11) :
 
-https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/main/docs/communication/lancement-2026/exports-png-v4-light/CARROUSEL_17-11_01_liste-ouverte.png
+https://raw.githubusercontent.com/Mame2204/THELOOP_PROJECT/main/docs/communication/lancement-2026/exports-mp4/VIDEO_0611_dilemme-PUBLIER.mp4
 
 ---
 
-## Fiches publication
+## Légendes
 
-`fiches/01-2026-11-03.md` … `19-LOT-C-17-23-12.md` + lots `17` · `18` · `19`
+`fiches/00-INDEX.md` → une fiche par date, avec la légende à copier-coller.

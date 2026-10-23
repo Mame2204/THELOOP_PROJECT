@@ -1,44 +1,33 @@
-# Checklist publication — après merge du dossier com
+# Checklist — avant chaque programmation
 
-**Pack visuel :** `exports-png-v4-light/` · **Légendes / UTM :** `fiches/` + lots `17`–`20`  
-**Aucun autre PNG** prévu au calendrier public 3/11 → 24/12.
+**Visuels :** `exports-png-v4-light/` · **Reels :** `exports-mp4/` · **Légendes et liens :** `fiches/` · **Calendrier :** `CALENDRIER-PUBLICATION-GUIDE-2026.md`
 
----
+## À chaque publication
 
-## 1. Fusion repo
+- [ ] Bon fichier, bonne date, **bonne heure** (19h00 par défaut — exceptions : 17/12 12h00, 24/12 10h00, 25/12 10h00, 1/1 10h00)
+- [ ] Légende copiée **depuis la fiche** (pas réécrite de mémoire)
+- [ ] Lien de suivi présent (à partir du 17/11 seulement)
+- [ ] **Publication croisée Instagram** activée dans Meta Business Suite
+- [ ] Sur Instagram : remplacer le lien par **« Lien en bio »**, et mettre à jour le lien de la bio
+- [ ] Lieu : **Conakry**
+- [ ] **Partage en story** programmé à la même heure (post feed ou Reel → story)
+- [ ] Reel : couverture choisie (voir `VIDEOS-AUTO-REELS.md`)
 
-- [ ] Merger **PR #107** (`cursor/com-lancement-video-1711-3dfe` → `main`)
-- [ ] Télécharger le ZIP ou garder la branche pour photothèque locale
+## Règles de dates
 
-## 2. Vidéos (CapCut)
+- [ ] Avant le 17/11 : aucun lien
+- [ ] Avant le 17/12 : accès anticipé « **bientôt** », sans date — jamais « 17 décembre » ni « 24 décembre »
+- [ ] À partir du 17/12 : la date du **24 décembre** peut être dite partout
+- [ ] Jusqu’au 19/11 : « 100 premières places » · ensuite : « **Premiers inscrits, premiers invités** »
 
-Frames + SRT dans le repo — exporter **.mp4** toi-même :
+## Contrôles de marque
 
-| Date | SRT / note |
-|------|------------|
-| 5/11 | `srt/POST_5-11_signature.srt` |
-| 6/11 | `srt/POST_6-11_dilemme.srt` |
-| 13/11 | `srt/POST_13-11_envie.srt` |
-| 17/11 | `srt/POST_17-11_frequence.srt` |
-| 21/11 | `srt/POST_21-11_pourquoi.srt` |
-| 28/11 | `srt/POST_28-11_outil.srt` |
-| 5/12 | `srt/POST_05-12_anti-annuaire.srt` |
-| 24/12 | `srt/POST_24-12_noel.srt` |
+- [ ] Aucun nom de lieu sans accord écrit
+- [ ] Pas de Pass / Prime en publicité
+- [ ] App **floutée** jusqu’au 17/12 · captures nettes autorisées à partir du 17/12
+- [ ] Stories compteur : le **vrai** nombre de places restantes, arrondi à la dizaine inférieure
 
-## 3. Publication Meta (ordre = calendrier)
+## Après publication
 
-- [ ] Programmer feed / stories / carrousels aux dates des fiches
-- [ ] Coller **UTM** depuis `utm-grille.md` (un lien par format quand indiqué)
-- [ ] **7–16/12** : stories terrain (`jour_07` … `jour_16`) + tes rush optionnels
-- [ ] **17/12** : e-mail 100 premiers (produit) + post optionnel sans CTA agressif
-- [ ] **24/12** : vidéo + stories Lot D · `noel_2412`
-
-## 4. Contrôles marque
-
-- [ ] Pas de noms de lieux sans accord écrit
-- [ ] Pas Pass / Prime en pub
-- [ ] App nette surtout **24/12** (remplacer frame 3 si capture à jour)
-
-## 5. Après le 24/12
-
-- Série **« Le pouls de la ville »** (hebdo) — hors scope PR #107 · à planifier séparément
+- [ ] Répondre aux commentaires et messages dans les **2 heures**
+- [ ] Le lendemain : noter vues, clics et inscriptions (voir `utm-grille.md`)

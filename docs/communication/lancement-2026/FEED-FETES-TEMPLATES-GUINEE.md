@@ -1,43 +1,44 @@
-# Templates « bonne fête » — Guinée & calendrier (hors lancement)
+# Templates « bonne fête » — Guinée et calendrier
 
-**Objectif :** une **affiche réutilisable** (story ou feed) : logo The Loop + message + **option** décoration (Noël, etc.).  
-**Hors pack 3/11→24/12** sauf **24/12** déjà couvert par Lot D.
+**Objectif :** une affiche réutilisable chaque année, **sans année inscrite** : logo The Loop (avec son point) + message court.
 
-## Fichier maquette HTML (à regénérer en PNG)
+## Les 4 modèles prêts
 
-- **Source :** `export-visuels-template-fete.html`  
-- **Regénérer feed 4:5 :** `node scripts/export-template-fete.mjs`  
-- **Téléphone / Story / Reels 9:16 :** `exports-png-telephone-fete/` · `node scripts/export-template-fete-telephone.mjs`  
-- **Année :** champ `data-annee="2026"` — laisser **vide** dans le HTML pour une version **sans année** (réutilisable).
+| Modèle | Feed 4:5 (`exports-png-v4-light/`) | Téléphone 9:16 (`exports-png-telephone-fete/`) | Utilisation 2026 |
+|--------|------------------------------------|-----------------------------------------------|------------------|
+| **Neutre** « Joyeuses fêtes, Conakry » | `TEMPLATE_fete_neutre-PUBLIER.png` | `FETE_neutre_9x16_TELEPHONE.png` | toute fête (Tabaski, Indépendance…) |
+| **Noël** (logo avec bonnet de Noël) | `TEMPLATE_fete_noel-PUBLIER.png` | `FETE_noel_9x16_TELEPHONE.png` | ven. 25/12 · 10h00 |
+| **Fin d’année** | `TEMPLATE_fete_fin-annee-PUBLIER.png` | `FETE_fin-annee_9x16_TELEPHONE.png` | jeu. 31/12 · 19h00 |
+| **Bonne année** | `TEMPLATE_fete_bonne-annee-PUBLIER.png` | `FETE_bonne-annee_9x16_TELEPHONE.png` | ven. 1/1/2027 · 10h00 |
 
-## Liste suggérée (priorité Conakry / communauté)
+Légendes 2026 : `fiches/21-APRES-24-12.md`.
 
-| Événement | Date (2026 indicatif) | Message type |
-|-----------|------------------------|--------------|
-| **Noël** | 24–25/12 | *(Lot D lancement — ne pas doubler)* · vœux simple 25/12 possible |
-| **Fin d’année** | 31/12 | Bonne fin d’année · à l’année prochaine sur The Loop |
-| **Nouvel An** | 1/1/2027 | Bonne année · Conakry |
-| **Fête de l’Indépendance (GN)** | 2/10 | Bonne fête · Guinée |
-| **Fête des mères** | (variable) | Bonne fête |
-| **Tabaski (Aïd al-Adha)** | (lune) | Bonne fête · paix |
-| **Ramadan / fin Ramadan (Aïd el-Fitr)** | (lune) | Bon Ramadan / Bonne fête |
-| **Fête des armées (GN)** | 1/11 | Hommage · Conakry |
-| **8 Mars** | 8/3 | Journée des droits des femmes |
-| **Assomption** | 15/8 | Bonne fête |
-| **Pâques / Ascension** | (variable) | Bonne fête |
-| **1er mai** | 1/5 | Bonne fête du travail |
+## Créer une nouvelle fête
 
-*Dates islamiques : recaler chaque année (calendrier lunaire).*
+1. Copier un bloc dans `export-visuels-template-fete.html` (feed) **et** `export-visuels-template-fete-story.html` (téléphone).
+2. Changer le surtitre, le titre et la phrase (ex. « Tabaski » · « Bonne fête » · « Paix et partage à Conakry. »).
+3. Ajouter le nom du fichier dans `scripts/visuels-manifest.mjs`, puis : `node scripts/export-all.mjs`.
 
-## Règles marque (templates fêtes)
+## Calendrier des fêtes (Conakry)
 
-- **The Loop** visible · pas de promo agressive Pass/Prime  
-- **Pas de lien** obligatoire sur vœux purs · lien app **optionnel** si post = « on est ouvert »  
-- Décoration **légère** (filet or, motif discret) — pas mascotte Noël lourde sur tout le feed  
-- **Noël lancement 24/12** : utiliser **Lot D**, pas le template générique
+| Événement | Date | Message type |
+|-----------|------|--------------|
+| Nouvel An | 1/1 | Bonne année · Conakry |
+| Journée internationale des droits des femmes | 8/3 | Hommage, sans promotion |
+| Ramadan · Aïd el-Fitr (Korité) | calendrier lunaire | Bon Ramadan / Bonne fête |
+| Pâques | variable | Joyeuses Pâques |
+| Fête du travail | 1/5 | Bonne fête du travail |
+| Tabaski (Aïd al-Adha) | calendrier lunaire | Bonne fête · paix et partage |
+| Assomption | 15/8 | Bonne fête |
+| Fête de l’Indépendance | 2/10 | Bonne fête de l’Indépendance, Guinée |
+| Fête de l’Armée | 1/11 | Hommage · Conakry |
+| Noël | 25/12 | Joyeux Noël |
+| Fin d’année | 31/12 | Bonne fin d’année |
 
-## Prochaine étape design
+*Fêtes musulmanes : vérifier la date chaque année (calendrier lunaire, annonce officielle).*
 
-1. Valider **1 visuel** template (fond clair Loop + bandeau « Bonne fête » + sous-titre éditable).  
-2. Dupliquer en variantes **Noël** / **Neutre** / **Indépendance** (couleur ruban).  
-3. Après validation : script export PNG + entrée dans ce doc.
+## Règles
+
+- **The Loop** visible, aucune promotion Pass / Prime.
+- Vœux purs : pas de lien obligatoire ; lien du guide possible en légende après le 24/12.
+- Décoration légère : le bonnet de Noël sur le logo uniquement pour Noël.
