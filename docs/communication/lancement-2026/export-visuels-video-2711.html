@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 27/11 · Outil pour ça · frames</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; --muted: #3d5560; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      background: linear-gradient(175deg, #ecf4f7 0%, #c8e3ec 40%, #96c4d4 100%); color: var(--deep);
+    }
+    .slide.dark { background: linear-gradient(165deg, #0f7a8e 0%, #0a3a44 55%, #062830 100%); color: #fff; }
+    .atmo { position: absolute; inset: -20%; background: url('assets/capture-accueil-2.jpg') center 20% / cover no-repeat; filter: blur(44px); opacity: 0.26; }
+    .atmo-teal { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(236,244,247,0.82) 100%); z-index: 1; }
+    .inner {
+      position: relative; z-index: 2; height: 100%; padding: 140px 64px 220px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box;
+    }
+    .panel {
+      background: #fff; border-radius: 36px; padding: 72px 56px; width: 100%; max-width: 920px;
+      box-shadow: 0 24px 64px rgba(10,58,68,0.14); border: 2px solid rgba(15,122,142,0.12); box-sizing: border-box;
+    }
+    .slide.dark .panel { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); box-shadow: none; }
+    .ey { font-size: 24px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); margin-bottom: 24px; }
+    .slide.dark .ey { color: rgba(255,255,255,0.85); }
+    .line { font-size: 64px; font-weight: 800; line-height: 1.12; margin: 0; }
+    .line.sm { font-size: 52px; }
+    .sub { font-size: 34px; font-weight: 600; margin-top: 28px; color: var(--muted); line-height: 1.4; }
+    .slide.dark .sub { color: rgba(255,255,255,0.9); }
+    .gold { color: #9a7720; font-weight: 800; }
+    .slide.dark .gold { color: var(--gold); }
+    .rule { width: 88px; height: 5px; background: var(--gold); border-radius: 3px; margin: 32px auto; }
+    .tags { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 24px; }
+    .tags span { font-size: 26px; font-weight: 800; padding: 16px 22px; border-radius: 16px; background: rgba(10,58,68,0.06); border: 2px solid rgba(15,122,142,0.2); }
+    .slide.dark .tags span { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); color: #fff; }
+    .mark-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 28px; }
+    .mark-row span { font-size: 28px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; }
+    .cta { font-size: 56px; font-weight: 800; margin: 0; line-height: 1.1; }
+    .url { font-size: 36px; font-weight: 700; margin-top: 28px; }
+    .hint { margin-top: 40px; font-size: 24px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(10,58,68,0.4); }
+  </style>
+</head>
+<body>
+
+  <div class="label">28/11 · 1 · friction</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <p class="ey">Le quotidien</p>
+      <div class="panel"><h1 class="line">Changer de monnaie.</h1></div>
+    </div>
+  </div>
+
+  <div class="label">28/11 · 2</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <div class="panel"><h1 class="line sm">Trouver un créneau.</h1></div>
+    </div>
+  </div>
+
+  <div class="label">28/11 · 3</div>
+  <div class="slide">
+    <div class="atmo"></div><div class="atmo-teal"></div>
+    <div class="inner">
+      <div class="panel">
+        <h1 class="line sm">Savoir quoi faire ce soir.</h1>
+        <div class="tags">
+          <span>Spots</span><span>Agenda</span><span>Parcours</span><span>Outils</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">28/11 · 4</div>
+  <div class="slide dark">
+    <div class="inner">
+      <div class="panel">
+        <h1 class="line sm">Il y a un endroit pour ça.</h1>
+        <div class="rule"></div>
+        <p class="sub">Un seul endroit. <span class="gold">En clair.</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">28/11 · 5 · CTA</div>
+  <div class="slide dark">
+    <div class="inner">
+      <div class="mark-row">
+        <svg width="48" height="48" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#fff" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="3.5" fill="#fff"/></svg>
+        <span>The Loop</span>
+      </div>
+      <div class="panel">
+        <p class="ey">Premiers inscrits, premiers invités</p>
+        <h1 class="cta gold">Réserve ta place</h1>
+        <p class="url">theloop-app.com</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
