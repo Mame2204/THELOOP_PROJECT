@@ -3,8 +3,12 @@
 **Légendes complètes :** dossier `fiches/` (numérotées) · **UTM :** `utm-grille.md`  
 **Visuels :** `exports-png-v4-light/` · **Index :** `fiches/00-INDEX-20-POSTS.md`
 
+**Suivi (ne plus rouvrir) :**
+- **3/11** — publication photo **19h00** Conakry. Story non prévue comme obligation. Pas de Reel.
+- **5/11** — publication photo **et** story programmées. Pas de Reel.
+
 **Ta stratégie (validée avec toi) :**
-- **3/11 et 5/11** : déjà programmés · on ne change pas.
+- **3/11 et 5/11** : programmés · on ne change pas.
 - **Avant le 17/11** : surtout **images / stories / carrousels** (pas de gros montage).
 - **Tes vidéos face caméra** : **17/11**, **17/12**, **24/12** (+ rappel **16/11** optionnel).
 - **Milieu de calendrier** : les PNG « vidéo » existent en **secours** ; pas obligatoire de monter des Reels.
@@ -17,8 +21,8 @@
 
 | Date | Format pack | Objectif du post | Légende / contenu (résumé) | Vidéo toi ? |
 |------|-------------|------------------|----------------------------|-------------|
-| **3/11** mar. | Feed photo | Première prise de contact · « ça arrive » | Conakry n’a pas besoin d’un fil bruyant. **The Loop** arrive — guide sélectif. Liste d’attente : **17 nov.** | Non (déjà programmé) |
-| **5/11** jeu. | Feed photo | Signature marque | *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* **17 nov.** · 100 premières places · accès anticipé **bientôt** | Non (déjà programmé — **mettre à jour la légende** si l’ancienne dit « on ne vend pas ») |
+| **3/11** mar. | Feed photo **19h** · pas de story obligatoire · pas de Reel | Première prise de contact | Conakry n’a pas besoin d’un fil bruyant. **The Loop** arrive — guide sélectif. Liste d’attente : **17 nov.** | **OK programmé** |
+| **5/11** jeu. | Feed photo **+ story** · pas de Reel | Signature marque | *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* **17 nov.** · 100 premières places · accès anticipé **bientôt** | **OK programmé** |
 | **6/11** ven. | Reels **option** ou 6 stories `FRAME_0611_*` | Problème du week-end (dilemme) | Vendredi soir, la même question. Guide sélectif · liste **17 nov.** · accès anticipé **bientôt** | **Non** |
 | **8/11** dim. | Story ×3 | Vocabulaire marque | 1) Guide sélectif 2) Spots·Agenda·Parcours·Outils 3) **17 nov.** | Non |
 | **11/11** mar. | Carrousel ×4 | **Expliquer l’esprit** (sans adresses) | Sélectif, discret. Esprit de la sélection The Loop. Liste **17 nov.** · 100 premières places | Non |
