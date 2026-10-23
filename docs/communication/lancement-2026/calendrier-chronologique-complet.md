@@ -63,7 +63,7 @@ Signature The Loop.
 
 ---
 
-### Mardi 11/11/2026 · Carrousel « Ce qu’on retient » (4 slides, 4:5)
+### Mercredi 11/11/2026 · Carrousel « Ce qu’on retient » (4 slides, 4:5)
 
 | Slide | Texte |
 |-------|--------|
@@ -164,7 +164,7 @@ The Loop ouvre sa liste. **100 premières places** pour un accès anticipé — 
 
 ---
 
-### Vendredi 21/11/2026 · Vidéo « Pourquoi The Loop » (35–42 s)
+### Samedi 21/11/2026 · Vidéo « Pourquoi The Loop » (35–42 s)
 
 | TC | Texte écran | Voix off |
 |----|-------------|----------|
@@ -179,14 +179,14 @@ The Loop ouvre sa liste. **100 premières places** pour un accès anticipé — 
 
 ---
 
-### Mardi 25/11/2026 · Image « Une règle » (1/3 série)
+### Mercredi 25/11/2026 · Image « Une règle » (1/3 série)
 
 **Visuel :** **Une règle** / Pas la bousculade.  
 **Légende :** Comment on pense la sélection — série courte. Liste toujours ouverte · lien inscription.
 
 ---
 
-### Mercredi 26/11/2026 · Carrousel « 4 piliers » (5 slides)
+### Jeudi 26/11/2026 · Carrousel « 4 piliers » (5 slides)
 
 1. **Spots** / Lieux choisis pour leur valeur — calme, service, cadre.  
 2. **Agenda** / Ce qui vaut le déplacement, sans noyer l’essentiel.  
@@ -196,7 +196,7 @@ The Loop ouvre sa liste. **100 premières places** pour un accès anticipé — 
 
 ---
 
-### Vendredi 28/11/2026 · Vidéo « Il y a un outil pour ça » (30–38 s)
+### Samedi 28/11/2026 · Vidéo « Il y a un outil pour ça » (30–38 s)
 
 | TC | Texte écran | Voix |
 |----|-------------|------|
@@ -210,26 +210,26 @@ The Loop ouvre sa liste. **100 premières places** pour un accès anticipé — 
 
 ---
 
-### Dimanche 30/11/2026 · Story
+### Lundi 30/11/2026 · Story
 
 Citation signature + lien discret inscription.
 
 ---
 
-### Mardi 2/12/2026 · Image « Une règle » (2/3)
+### Mercredi 2/12/2026 · Image « Une règle » (2/3)
 
 **Texte :** **Une règle** / Une vraie plus-value.
 
 ---
 
-### Jeudi 4/12/2026 · Image J-20 (lancement public)
+### Vendredi 4/12/2026 · Image J-20 (lancement public)
 
 **Visuel :** **J-20** · Ouverture publique **24 décembre**  
 **Légende :** Noël : The Loop s’ouvre à tous. D’ici là : **100 premières places** = accès anticipé **17 décembre**. **Réserve ta place.**
 
 ---
 
-### Vendredi 5/12/2026 · Vidéo « On ne promet pas tout Conakry » (28–35 s)
+### Samedi 5/12/2026 · Vidéo « On ne promet pas tout Conakry » (28–35 s)
 
 | TC | Texte écran | Voix |
 |----|-------------|------|
@@ -242,7 +242,7 @@ Citation signature + lien discret inscription.
 
 ---
 
-### Dimanche 7/12/2026 · Story
+### Lundi 7/12/2026 · Story
 
 **Frame :** Retour terrain · Coulisses · The Loop se construit à Conakry *(pas de visage)*
 
@@ -269,17 +269,17 @@ Citation signature + lien discret inscription.
 
 **Lien story (1×/jour max, frame finale) :** `utm_campaign=terrain_gn_2026&utm_content=jour_XX`
 
-**Posts feed cette période :** alléger — **1 post/semaine** si fatigue : mardi **9/12** image « Une règle 3/3 » **Expérience soignée ou rare** ; pas de vidéo obligatoire sauf si énergie.
+**Posts feed cette période :** alléger — **1 post/semaine** si fatigue : mercredi **9/12** image « Une règle 3/3 » **Expérience soignée ou rare** ; pas de vidéo obligatoire sauf si énergie.
 
 ---
 
-### Mardi 9/12/2026 · Image « Une règle » (3/3)
+### Mercredi 9/12/2026 · Image « Une règle » (3/3)
 
 **Texte :** **Une règle** / Expérience soignée ou rare.
 
 ---
 
-### Mercredi 17/12/2026 · Pré-lancement (100 premiers inscrits)
+### Jeudi 17/12/2026 · Pré-lancement (100 premiers inscrits)
 
 **Pas un post public massif** — e-mail automatique invitation (produit déjà en place).  
 **Story / post optionnel léger :**  
@@ -289,13 +289,13 @@ Citation signature + lien discret inscription.
 
 ---
 
-### Dimanche 21/12/2026 · Story J-3
+### Lundi 21/12/2026 · Story J-3
 
 **24 décembre** · The Loop · cadeau de Noël · ouverture publique
 
 ---
 
-### Mardi 23/12/2026 · Carrousel lancement (4 slides)
+### Mercredi 23/12/2026 · Carrousel lancement (4 slides)
 
 1. **24 décembre** / The Loop s’ouvre.  
 2. Spots · Agenda · Parcours · Outils  
@@ -306,7 +306,7 @@ Citation signature + lien discret inscription.
 
 ## ACTE 3 — Lancement public 24/12/2026
 
-### Mercredi 24/12/2026 · Vidéo lancement « Cadeau de Noël » (45–55 s)
+### Jeudi 24/12/2026 · Vidéo lancement « Cadeau de Noël » (45–55 s)
 
 | TC | Image | Texte écran | Voix off |
 |----|--------|-------------|----------|

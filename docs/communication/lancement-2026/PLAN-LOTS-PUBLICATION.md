@@ -19,7 +19,7 @@ Chaque lot = un bloc à valider d’un coup · PNG dans `exports-png-v4-light/` 
 | 5/12 | Vidéo ×4 | `FRAME_0512_01`…`04` | `anti_annuaire_0512` |
 | 9/12 | Feed | `POST_09-12_regle-3-PUBLIER` | `regle3_0912` |
 
-**Note :** le 7/12 ouvre aussi la story terrain (Lot B) — publier Lot A avant ou le même dimanche sans mélanger les messages.
+**Note :** le 7/12 ouvre aussi la story terrain (Lot B) — publier Lot A avant ou le même lundi sans mélanger les messages.
 
 ## Lot B — détail
 

@@ -1,7 +1,8 @@
 # Calendrier publication — 3 nov. → 24 déc. 2026 (vue simple)
 
 **Légendes complètes :** dossier `fiches/` (numérotées) · **UTM :** `utm-grille.md`  
-**Visuels :** `exports-png-v4-light/` · **Index :** `fiches/00-INDEX-20-POSTS.md`
+**Visuels :** `exports-png-v4-light/` · **Index :** `fiches/00-INDEX-20-POSTS.md`  
+**Propositions à valider (dates, horaires, contenus) :** `PROPOSITIONS-AMELIORATION-COM.md`
 
 **Règle de programmation :** à **19h00** heure de Conakry, on publie **uniquement le format prévu**. Story si une story est prévue. Vidéo ou Reel si une vidéo est prévue. On n’ajoute pas une story les jours où elle n’est pas au calendrier. On ne remplace pas une vidéo par des images.
 
@@ -27,11 +28,11 @@
 | **5/11** jeu. | Feed photo **+ story** · pas de Reel | Signature marque | *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* **17 nov.** · 100 premières places · accès anticipé **bientôt** | **OK programmé** |
 | **6/11** ven. | Reels **option** ou 6 stories `FRAME_0611_*` | Problème du week-end (dilemme) | Vendredi soir, la même question. Guide sélectif · liste **17 nov.** · accès anticipé **bientôt** | **Non** |
 | **8/11** dim. | Story ×3 | Vocabulaire marque | 1) Guide sélectif 2) Spots·Agenda·Parcours·Outils 3) **17 nov.** | Non |
-| **11/11** mar. | Carrousel ×4 | **Expliquer l’esprit** (sans adresses) | Sélectif, discret. Esprit de la sélection The Loop. Liste **17 nov.** · 100 premières places | Non |
+| **11/11** mer. | Carrousel ×4 | **Expliquer l’esprit** (sans adresses) | Sélectif, discret. Esprit de la sélection The Loop. Liste **17 nov.** · 100 premières places | Non |
 | **12/11** jeu. | Feed J-5 | Compte à rebours | Cinq jours. Liste **17 nov.** · 100 places · accès anticipé **bientôt** | Non |
-| **13/11** jeu. | Reels **option** ou stories `FRAME_1311_*` | Envie vs bruit | Une envie, pas le bruit · sélectif · **17 nov.** | Non |
-| **15/11** sam. | Story ×3 | Dernière ligne droite | J-2 · 100 places · mardi = réserve | Non |
-| **16/11** dim. | Feed J-1 | Veille d’ouverture | Demain, la liste s’ouvre. 100 places · accès anticipé **bientôt** | **Option** 15–20 s « demain c’est ouvert » |
+| **13/11** ven. | Reels **option** ou stories `FRAME_1311_*` | Envie vs bruit | Une envie, pas le bruit · sélectif · **17 nov.** | Non |
+| **15/11** dim. | Story ×3 | Dernière ligne droite | J-2 · 100 places · mardi = réserve | Non |
+| **16/11** lun. | Feed J-1 | Veille d’ouverture | Demain, la liste s’ouvre. 100 places · accès anticipé **bientôt** | **Option** 15–20 s « demain c’est ouvert » |
 
 ---
 
@@ -43,14 +44,14 @@
 | **19/11** jeu. | Feed merci | Remercier + relance inscription | Merci pour l’élan · liste toujours ouverte · **Réserve ta place** | Non |
 | **21/11** sam. | Reels **option** `FRAME_2111_*` ou **1 phrase en story** | **Pourquoi** The Loop existe | Conakry avance · infos dispersées · **en clair** · sélectif · lien | Non (ta voix possible en **story** courte, pas obligatoire) |
 | **22/11** dim. | Story ×2 (+ sondage Meta) | Engagement + rappel liste | Sondage week-end · puis **Réserve ta place** · 100 premières places | Non |
-| **25/11** mar. | Feed règle 1/3 | Éducation « sélection » | Une vraie plus-value · pas la bousculade · lien | Non |
-| **26/11** mer. | Carrousel ×5 | **4 piliers** détaillés | Spots · Agenda · Parcours · Outils · **Réserve ta place** | Non |
-| **28/11** ven. | Reels **option** `FRAME_2811_*` | Outil du quotidien | Moins de dispersion · repère · lien | Non |
-| **30/11** dim. | Story ×2 | Signature + lien discret | Transmission · sticker liste | Non |
-| **2/12** mar. | Feed règle 2/3 | Plus-value | Une vraie plus-value · lien | Non |
-| **4/12** jeu. | Feed J-20 | Rappel **24/12** public | J-20 · ouverture publique **24 déc.** · accès anticipé **17 déc.** | Non |
-| **5/12** ven. | Reels **option** anti-annuaire | Positionnement | Pas un annuaire. Un guide. · lien | Non |
-| **9/12** mar. | Feed règle 3/3 | Expérience soignée | Expérience soignée ou rare · lien | Non |
+| **25/11** mer. | Feed règle 1/3 | Éducation « sélection » | Une vraie plus-value · pas la bousculade · lien | Non |
+| **26/11** jeu. | Carrousel ×5 | **4 piliers** détaillés | Spots · Agenda · Parcours · Outils · **Réserve ta place** | Non |
+| **28/11** sam. | Reels **option** `FRAME_2811_*` | Outil du quotidien | Moins de dispersion · repère · lien | Non |
+| **30/11** lun. | Story ×2 | Signature + lien discret | Transmission · sticker liste | Non |
+| **2/12** mer. | Feed règle 2/3 | Plus-value | Une vraie plus-value · lien | Non |
+| **4/12** ven. | Feed J-20 | Rappel **24/12** public | J-20 · ouverture publique **24 déc.** · accès anticipé **17 déc.** | Non |
+| **5/12** sam. | Reels **option** anti-annuaire | Positionnement | Pas un annuaire. Un guide. · lien | Non |
+| **9/12** mer. | Feed règle 3/3 | Expérience soignée | Expérience soignée ou rare · lien | Non |
 
 ---
 
@@ -68,10 +69,10 @@
 
 | Date | Format pack | Objectif | Légende / contenu (résumé) | Vidéo toi ? |
 |------|-------------|----------|----------------------------|-------------|
-| **17/12** mer. | Feed pré-launch | **100 premiers** · e-mail | Accès anticipé. **Vérifie ta boîte mail** si tu es dans les 100. Pour tout le monde : The Loop arrive **bientôt** (pas la date du 24 dans cette légende) | **OUI** · « Regarde ta mail si tu étais dans les 100 premiers. Pour tout le monde : bientôt. » |
-| **21/12** dim. | Story ×2 J-3 | Teaser Noël | **24 déc.** · ouverture publique · cadeau de Noël · lien option story 2 | Non (ou 10 s toi en story) |
-| **23/12** mar. | Carrousel ×4 | Veille lancement | Demain **The Loop** s’ouvre · 4 piliers · **lien** UTM `launch_teaser_2312` | Non |
-| **24/12** mer. | **Reels** pack + **Story ×5** | **Lancement public** | Cadeau de Noël pour Conakry · guide ouvert · **Entrez dans le guide** + lien `noel_2412` | **OUI** · matin **24/12** : c’est ouvert · Bon Noël · lien |
+| **17/12** jeu. | Feed pré-launch | **100 premiers** · e-mail | Accès anticipé. **Vérifie ta boîte mail** si tu es dans les 100. Pour tout le monde : The Loop arrive **bientôt** (pas la date du 24 dans cette légende) | **OUI** · « Regarde ta mail si tu étais dans les 100 premiers. Pour tout le monde : bientôt. » |
+| **21/12** lun. | Story ×2 J-3 | Teaser Noël | **24 déc.** · ouverture publique · cadeau de Noël · lien option story 2 | Non (ou 10 s toi en story) |
+| **23/12** mer. | Carrousel ×4 | Veille lancement | Demain **The Loop** s’ouvre · 4 piliers · **lien** UTM `launch_teaser_2312` | Non |
+| **24/12** jeu. | **Reels** pack + **Story ×5** | **Lancement public** | Cadeau de Noël pour Conakry · guide ouvert · **Entrez dans le guide** + lien `noel_2412` | **OUI** · matin **24/12** : c’est ouvert · Bon Noël · lien |
 
 ---
 
