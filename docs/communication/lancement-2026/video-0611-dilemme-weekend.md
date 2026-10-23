@@ -73,7 +73,8 @@ Vendredi soir, la même question.
 
 Spots · agenda · parcours · outils — **en clair**, sans fil bruyant.
 
-La liste d’attente ouvre le **17 novembre**. D’ici là, pas d’inscription · **pas de lien**.
+Liste d’attente : **17 novembre**.
+**100 premières places** · accès anticipé bientôt.
 
 ---
 
@@ -86,6 +87,6 @@ La liste d’attente ouvre le **17 novembre**. D’ici là, pas d’inscription 
 
 ## Commentaire épinglé (option)
 
-« Ouverture de la liste le **17 novembre**. Pas de lien avant cette date. »
+« La liste ouvre le **17 novembre**. »
 
 **UTM :** n/a (Acte A).

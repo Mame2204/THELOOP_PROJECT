@@ -61,7 +61,8 @@ Sous-titres : `srt/POST_5-11_signature.srt`
 
 **The Loop** — guide **sélectif** pour Conakry.
 
-Liste et **100 premières places** le **17 novembre**. Pas de lien aujourd’hui.
+Le **17 novembre** : liste d’attente.
+**100 premières places** pour un accès anticipé — bientôt.
 
 ---
 

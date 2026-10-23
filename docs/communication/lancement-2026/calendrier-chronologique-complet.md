@@ -19,7 +19,7 @@ Bas : **The Loop** · Bientôt
 **Légende :**  
 Conakry n’a pas besoin d’un énième fil bruyant.  
 The Loop arrive — guide **sélectif** : spots, agenda, parcours, outils.  
-Pas d’inscription aujourd’hui. On ouvre la liste le **17 novembre**.
+Liste d’attente : **17 novembre**.
 
 **Story (même jour, option) :** fond bleu-vert · texte : **Bientôt.** · sticker « restez connectés » sans lien.
 
@@ -35,7 +35,7 @@ Pas d’inscription aujourd’hui. On ouvre la liste le **17 novembre**.
 **Légende :**  
 Signature The Loop.  
 **17 novembre** : ouverture des **100 premières places** (accès anticipé).  
-D’ici là : on tease, on ne vend pas.
+**100 premières places** pour un accès anticipé — bientôt.
 
 ---
 
@@ -50,7 +50,7 @@ D’ici là : on tease, on ne vend pas.
 | 0:20–0:28 | Bleu-vert + logo | **The Loop** · **Bientôt.** | The Loop arrive. | Montée |
 | 0:28–0:32 | Carte | **Les bonnes adresses ne s'annoncent pas.** | Elles se transmettent. | Cut |
 
-**Légende :** Vendredi soir, la même question. The Loop prépare un guide **sélectif** pour Conakry. Pas un annuaire — un repère. Liste d’attente : **17 novembre** (pas d’inscription avant · pas de lien).  
+**Légende :** Vendredi soir, la même question. The Loop prépare un guide **sélectif** pour Conakry. Pas un annuaire — un repère. Liste d’attente : **17 novembre**. **100 premières places** · accès anticipé bientôt.  
 **Lien :** aucun · **UTM :** n/a
 
 ---
@@ -112,7 +112,7 @@ D’ici là : on tease, on ne vend pas.
 ### Lundi 16/11/2026 · Image J-1
 
 **Visuel :** #0A3A44 · **Demain.** · Ouverture de la liste  
-**Légende :** Dernier rappel avant l’ouverture. Demain : vidéo + carrousel + lien.
+**Légende :** Demain. Mardi **17 novembre**, la liste d’attente s’ouvre. **100 premières places** · accès anticipé bientôt. On se retrouve demain.
 
 ---
 
@@ -121,13 +121,13 @@ D’ici là : on tease, on ne vend pas.
 ### Mardi 17/11/2026 · Vidéo « La fréquence » (38 s) + Carrousel (5 slides)
 
 **Vidéo — voix off intégrale :**  
-Tout crie. Peu de choses guident. Conakry mérite un repère. Spots. Agenda. Parcours. Outils. Un seul endroit pour décider. The Loop. Cent premières places. Accès anticipé avant l’ouverture publique. Réserve ta place.
+Tout crie. Peu de choses guident. Conakry mérite un repère. Spots. Agenda. Parcours. Outils. Un seul endroit pour décider. The Loop. Cent premières places. Accès anticipé, bientôt. Réserve ta place.
 
 *(Timecode détaillé : voir `video-1711-script-angle-a.md`.)*
 
 **Légende vidéo :**  
 Le bruit ne manque pas. Un repère, si.  
-The Loop ouvre sa liste : **100 premières places** pour l’accès anticipé (17 décembre), avant l’ouverture du 24.  
+The Loop ouvre sa liste. **100 premières places** pour un accès anticipé — bientôt.  
 **Réserve ta place** 👇  
 `https://theloop-app.com/?utm_source=facebook&utm_medium=video&utm_campaign=waitlist_open_2026&utm_content=frequence_1711`
 
@@ -136,7 +136,7 @@ The Loop ouvre sa liste : **100 premières places** pour l’accès anticipé (1
 2. **Pourquoi The Loop** / Un repère, pas un fil bruyant  
 3. **Spots · Agenda · Parcours · Outils**  
 4. **Sélectif, pas exhaustif** / Valeur réelle, expérience soignée  
-5. **Réserve ta place** / theloop-app.com · Accès anticipé 17/12 · Public 24/12  
+5. **Réserve ta place** / theloop-app.com · 100 premières places · accès anticipé bientôt  
 
 **Légende carrousel + lien :**  
 `utm_medium=carousel&utm_content=100places_1711`

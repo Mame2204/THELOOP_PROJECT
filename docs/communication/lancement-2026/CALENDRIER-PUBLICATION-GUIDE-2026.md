@@ -13,19 +13,19 @@
 
 ---
 
-## Phase 1 — Teasing (3 → 16 nov.) · pas de lien
+## Phase 1 — Teasing (3 → 16 nov.) · une seule promesse : liste le 17 nov.
 
 | Date | Format pack | Objectif du post | Légende / contenu (résumé) | Vidéo toi ? |
 |------|-------------|------------------|----------------------------|-------------|
 | **3/11** mar. | Feed photo | Première prise de contact · « ça arrive » | Conakry n’a pas besoin d’un fil bruyant. **The Loop** arrive — guide sélectif. Liste d’attente : **17 nov.** | Non (déjà programmé) |
-| **5/11** jeu. | Feed photo | Signature marque | *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* Guide sélectif · **17 nov.** · 100 premières places · accès anticipé **17 déc.** | Non (déjà programmé) |
-| **6/11** ven. | Reels **option** ou 6 stories `FRAME_0611_*` | Problème du week-end (dilemme) | Vendredi soir, la même question. The Loop prépare un repère sélectif · liste **17 nov.** · pas de lien | **Non** (montage auto ou stories ; ton montage WhatsApp = option) |
+| **5/11** jeu. | Feed photo | Signature marque | *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* **17 nov.** · 100 premières places · accès anticipé **bientôt** | Non (déjà programmé — **mettre à jour la légende** si l’ancienne dit « on ne vend pas ») |
+| **6/11** ven. | Reels **option** ou 6 stories `FRAME_0611_*` | Problème du week-end (dilemme) | Vendredi soir, la même question. Guide sélectif · liste **17 nov.** · accès anticipé **bientôt** | **Non** |
 | **8/11** dim. | Story ×3 | Vocabulaire marque | 1) Guide sélectif 2) Spots·Agenda·Parcours·Outils 3) **17 nov.** | Non |
 | **11/11** mar. | Carrousel ×4 | **Expliquer l’esprit** (sans adresses) | Sélectif, discret. Esprit de la sélection The Loop. Liste **17 nov.** · 100 premières places | Non |
-| **12/11** jeu. | Feed J-5 | Compte à rebours | J-5 · ouverture liste **17 nov.** | Non |
+| **12/11** jeu. | Feed J-5 | Compte à rebours | Cinq jours. Liste **17 nov.** · 100 places · accès anticipé **bientôt** | Non |
 | **13/11** jeu. | Reels **option** ou stories `FRAME_1311_*` | Envie vs bruit | Une envie, pas le bruit · sélectif · **17 nov.** | Non |
 | **15/11** sam. | Story ×3 | Dernière ligne droite | J-2 · 100 places · mardi = réserve | Non |
-| **16/11** dim. | Feed J-1 | Veille d’ouverture | Demain · liste ouverte · **17 nov.** | **Option** 15–20 s « demain c’est ouvert » |
+| **16/11** dim. | Feed J-1 | Veille d’ouverture | Demain, la liste s’ouvre. 100 places · accès anticipé **bientôt** | **Option** 15–20 s « demain c’est ouvert » |
 
 ---
 
@@ -33,7 +33,7 @@
 
 | Date | Format pack | Objectif | Légende / contenu (résumé) | Vidéo toi ? |
 |------|-------------|----------|----------------------------|-------------|
-| **17/11** mar. | **Carrousel ×5** + **Story ×3** + Reels **option** pack | **JOUR J** · expliquer **à quoi sert** The Loop + **inscrire** | Le bruit ne manque pas. Un repère, si. Liste **ouverte**. 100 premières places · accès **17 déc.** · public **24 déc.** **Lien + UTM.** | **OUI — priorité** · 30–45 s : guide sélectif, 4 piliers, liste ouverte, dates 17/12 et 24/12, CTA lien |
+| **17/11** mar. | **Carrousel ×5** + **Story ×3** + Reels **option** pack | **JOUR J** · expliquer **à quoi sert** The Loop + **inscrire** | Le bruit ne manque pas. Un repère, si. Liste **ouverte**. 100 premières places · accès anticipé **bientôt**. **Lien + UTM.** | **OUI — priorité** · 30–45 s : guide sélectif, 4 piliers, liste ouverte, accès anticipé bientôt, CTA lien |
 | **19/11** jeu. | Feed merci | Remercier + relance inscription | Merci pour l’élan · liste toujours ouverte · **Réserve ta place** | Non |
 | **21/11** sam. | Reels **option** `FRAME_2111_*` ou **1 phrase en story** | **Pourquoi** The Loop existe | Conakry avance · infos dispersées · **en clair** · sélectif · lien | Non (ta voix possible en **story** courte, pas obligatoire) |
 | **22/11** dim. | Story ×2 (+ sondage Meta) | Engagement + rappel liste | Sondage week-end · puis **Réserve ta place** · 100 premières places | Non |
@@ -62,7 +62,7 @@
 
 | Date | Format pack | Objectif | Légende / contenu (résumé) | Vidéo toi ? |
 |------|-------------|----------|----------------------------|-------------|
-| **17/12** mer. | Feed pré-launch | **100 premiers** · e-mail produit | Si tu es inscrit·e : **vérifie ta boîte mail**. Invitations aujourd’hui. Public **24 déc.** · pas de gros CTA inscription | **OUI** · matin **17/12** : « Regarde ta mail si tu étais dans les 100 premiers · pour tous : **24 déc.** » |
+| **17/12** mer. | Feed pré-launch | **100 premiers** · e-mail | Accès anticipé. **Vérifie ta boîte mail** si tu es dans les 100. Pour tout le monde : The Loop arrive **bientôt** (pas la date du 24 dans cette légende) | **OUI** · « Regarde ta mail si tu étais dans les 100 premiers. Pour tout le monde : bientôt. » |
 | **21/12** dim. | Story ×2 J-3 | Teaser Noël | **24 déc.** · ouverture publique · cadeau de Noël · lien option story 2 | Non (ou 10 s toi en story) |
 | **23/12** mar. | Carrousel ×4 | Veille lancement | Demain **The Loop** s’ouvre · 4 piliers · **lien** UTM `launch_teaser_2312` | Non |
 | **24/12** mer. | **Reels** pack + **Story ×5** | **Lancement public** | Cadeau de Noël pour Conakry · guide ouvert · **Entrez dans le guide** + lien `noel_2412` | **OUI** · matin **24/12** : c’est ouvert · Bon Noël · lien |
@@ -80,12 +80,12 @@
 ## Tes 3 vidéos « assise, je parle » — script ultra-court
 
 ### 17/11 (liste ouverte)
-> « Bonjour. The Loop, c’est un guide **sélectif** pour Conakry : où sortir, quoi faire, des parcours, des outils — **en clair**, pas un annuaire. **Aujourd’hui** la liste est ouverte. Les **100 premières** inscriptions auront un accès **le 17 décembre** par e-mail. **Tout le monde** pourra entrer **le 24 décembre**. Le lien est juste en dessous : **Réserve ta place**. »
+> « Bonjour. The Loop, c’est un guide **sélectif** pour Conakry : où sortir, quoi faire, des parcours, des outils — **en clair**, pas un annuaire. **Aujourd’hui** la liste est ouverte. Les **100 premières** inscriptions auront un accès anticipé, **bientôt**, par e-mail. Le lien est juste en dessous : **Réserve ta place**. »
 
 *Montage : toi à l’écran + **option** 2–3 captures app **floues** ou plans Conakry entre les phrases — pas obligatoire.*
 
 ### 17/12 (100 premiers)
-> « Aujourd’hui, les **100 premières** personnes inscrites reçoivent leur invitation par **e-mail**. Si tu t’es inscrit tôt, **vérifie ta boîte mail**. Pour le grand public : **The Loop** ouvre **le 24 décembre**. »
+> « Aujourd’hui, les **100 premières** personnes inscrites reçoivent leur invitation par **e-mail**. Si tu t’es inscrit tôt, **vérifie ta boîte mail**. Pour tout le monde : **The Loop** arrive **bientôt**. »
 
 ### 24/12 (lancement)
 > « **Joyeux Noël.** The Loop est **ouvert** pour Conakry. Entrez dans le guide — le lien est en dessous. Merci d’avoir suivi l’aventure. »

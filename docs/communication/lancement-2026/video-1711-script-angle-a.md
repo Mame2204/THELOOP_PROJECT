@@ -20,7 +20,7 @@
 | 0:12–0:16 | Écran bleu-vert profond (#0A3A44), typo Manrope. | **Conakry mérite un repère.** | « Conakry mérite un repère. » | Pad + léger swell. |
 | 0:16–0:22 | Captures app **floutées** (Agenda → Spot → Parcours), transitions propres. | **Spots · Agenda · Parcours · Outils** | « Spots. Agenda. Parcours. Outils. Un seul endroit pour décider. » | Beat régulier, discret (80–90 BPM). |
 | 0:22–0:28 | Logo (arc + point) sur fond clair bleuté. Anneau **fermé** 1 s → **arc ouvert** (animation simple ou cut). | **The Loop** | « The Loop. » | Hit musical soft sur l’ouverture de l’arc. |
-| 0:28–0:34 | Carte finale : fond #0F7A8E, filet doré. | **100 premières places** · **Accès anticipé** | « Cent premières places. Accès anticipé avant l’ouverture publique. » | Musique monte légèrement. |
+| 0:28–0:34 | Carte finale : fond #0F7A8E, filet doré. | **100 premières places** · **Accès anticipé · bientôt** | « Cent premières places. Accès anticipé, bientôt. » | Musique monte légèrement. |
 | 0:34–0:38 | Même carte + URL. | **Réserve ta place** · **theloop-app.com** | « Réserve ta place. » | Musique se résout (fade 1 s). |
 
 ---
@@ -30,7 +30,8 @@
 **Texte principal :**  
 Le bruit ne manque pas. Un repère, si.
 
-The Loop ouvre sa liste : **100 premières places** pour l’accès anticipé (17 décembre), avant l’ouverture du 24.
+The Loop ouvre sa liste.
+**100 premières places** pour un accès anticipé — bientôt.
 
 Spots · Agenda · Parcours · Outils — Conakry, en clair.
 
