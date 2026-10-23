@@ -5,7 +5,7 @@
 
 export const LOOP_ARC = 'M 13.5 10.21 A 9 9 0 1 1 13.5 25.79';
 
-export function loopMarkInner({ color, strokeWidth = 3, dotR = 3 }) {
+export function loopMarkInner({ color, strokeWidth = 3, dotR = 3.5 }) {
   const sw = strokeWidth;
   return `<circle cx="18" cy="18" r="15" stroke="${color}" stroke-width="${sw}"/><path d="${LOOP_ARC}" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/><circle cx="10" cy="18" r="${dotR}" fill="${color}"/>`;
 }
@@ -27,7 +27,7 @@ export function loopMarkSvg(opts) {
     color,
     width = 48,
     strokeWidth = 3,
-    dotR = strokeWidth <= 2 ? 2.5 : 3,
+    dotR = strokeWidth <= 2 ? 2.75 : 3.5,
     santaHat = false,
     className = '',
   } = opts;

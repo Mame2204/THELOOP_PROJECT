@@ -18,7 +18,7 @@ function patchContent(html) {
       if (!strokeMatch) return full;
       const color = strokeMatch[1];
       const sw = Number(strokeMatch[2]);
-      const dotR = sw <= 2 ? 2.5 : 3;
+      const dotR = sw <= 2 ? 2.75 : 3.5;
       const mark = loopMarkInner({ color, strokeWidth: sw, dotR });
       n += 1;
       return `<svg${svgAttrs}>${mark}</svg>`;
