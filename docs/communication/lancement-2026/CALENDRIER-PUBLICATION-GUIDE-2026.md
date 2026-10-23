@@ -14,7 +14,7 @@
 | **Places** | « **100 premières places** » jusqu’au 19/11. Ensuite : « **Premiers inscrits, premiers invités** » (vrai, que les 100 places soient prises ou non). Le chiffre réel n’apparaît que dans les stories compteur. |
 | **Interdits** | Pas de nom de lieu sans accord écrit. Pas de capture nette de l’app avant le 17/12. Pas de Pass / Prime. |
 
-**Déjà programmés (on n’y touche plus) :** 3/11 photo 19h00 · 5/11 photo + story 19h00.
+**Déjà programmés (on n’y touche plus) :** 3/11 photo 19h00 *(revoir IG + story si besoin — fiche 01)* · 5/11 photo + story 19h00 · **6/11 Reel FB + IG + story + couverture**.
 
 ---
 
@@ -22,9 +22,9 @@
 
 | Date | Heure | À publier | Fichiers | Fiche |
 |------|-------|-----------|----------|-------|
-| **mar. 3/11** | 19h00 | Photo feed | `POST_3-11_feed-PUBLIER-3nov.png` | 01 · **programmé** |
+| **mar. 3/11** | 19h00 | Photo feed **+ story** · FB + **@app.theloop** | `POST_3-11_feed-PUBLIER-3nov.png` · story : `POST_3-11_reels-PUBLIER-3nov.png` | 01 · **revue Meta** |
 | **jeu. 5/11** | 19h00 | Photo feed + story | `POST_5-11_citation-PUBLIER-5nov.png` · `STORY_5-11_01…03` | 02 · **programmé** |
-| **ven. 6/11** | 19h00 | **Reel** + story | `VIDEO_0611_dilemme-PUBLIER.mp4` | 03 · boost |
+| **ven. 6/11** | 19h00 | **Reel** + story · FB + IG | `VIDEO_0611_dilemme-PUBLIER.mp4` | 03 · **programmé** |
 | **dim. 8/11** | 19h00 | Story ×3 | `STORY_8-11_01_marque` · `02_piliers` · `03_17nov` | 04 |
 | **mer. 11/11** | 19h00 | Carrousel ×4 + story (slide 4) | `CARROUSEL_11-11_01…04` | 05 |
 | **jeu. 12/11** | 19h00 | Photo feed J-5 + story | `POST_12-11_J-5-PUBLIER.png` | 06 |
