@@ -9,6 +9,7 @@ Tout le pack vit sous **`docs/communication/lancement-2026/`** dans le dépôt T
 | **PNG finaux** (feed, story, frames vidéo) | [`exports-png-v4-light/`](./exports-png-v4-light/) |
 | **Sous-titres vidéo** (.srt) | [`srt/`](./srt/) |
 | **Légendes + liens UTM** (pas sur les visuels) | [`fiches/`](./fiches/) + [`utm-grille.md`](./utm-grille.md) |
+| **Plan pour attirer du monde** (WhatsApp, relais, boost, réponses) | [`PLAN-ATTRACTION-NOV-DEC-2026.md`](./PLAN-ATTRACTION-NOV-DEC-2026.md) |
 
 ## Sources pour modifier le texte / le design
 
