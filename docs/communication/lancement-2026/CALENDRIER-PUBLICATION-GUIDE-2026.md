@@ -14,7 +14,7 @@
 | **Places** | « **100 premières places** » jusqu’au 19/11. Ensuite : « **Premiers inscrits, premiers invités** » (vrai, que les 100 places soient prises ou non). Le chiffre réel n’apparaît que dans les stories compteur. |
 | **Interdits** | Pas de nom de lieu sans accord écrit. Pas de capture nette de l’app avant le 17/12. Pas de Pass / Prime. |
 
-**Déjà programmés (on n’y touche plus) :** 3/11 feed + story (repartage post) · 5/11 feed + 3 stories · **6/11 Reel FB + IG + story + couverture**.
+**Déjà programmés (on n’y touche plus) :** 3/11 · 5/11 · 6/11 · **8/11** stories ×3 · **11/11** carrousel + story · **13/11** Reel + story.
 
 ---
 
