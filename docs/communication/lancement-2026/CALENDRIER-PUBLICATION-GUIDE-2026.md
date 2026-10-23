@@ -3,7 +3,7 @@
 **Légendes complètes :** dossier `fiches/` (numérotées) · **UTM :** `utm-grille.md`  
 **Visuels :** `exports-png-v4-light/` · **Index :** `fiches/00-INDEX-20-POSTS.md`
 
-**Règle de programmation (validée) :** tout le **feed** prévu et toutes les **stories** prévues, à **19h00** heure de Conakry. Pas de Reel photo. Les jours « vidéo » du pack passent en **stories image** (frames), sans montage.
+**Règle de programmation :** à **19h00** heure de Conakry, on publie **uniquement le format prévu**. Story si une story est prévue. Vidéo ou Reel si une vidéo est prévue. On n’ajoute pas une story les jours où elle n’est pas au calendrier. On ne remplace pas une vidéo par des images.
 
 **Suivi (ne plus rouvrir) :**
 - **3/11** — publication photo **19h00**. Pas de story obligatoire. Pas de Reel.
