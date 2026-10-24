@@ -30,6 +30,19 @@ Dossier visuels : `exports-png-v4-light/` · Relais : `MESSAGES-RELAIS-WHATSAPP.
 
 **Après montage :** export MP4 · **sous-titres auto** Meta + relire · pas de nom de lieu identifiable.
 
+### Plans visuels (fictif store — important)
+
+Les captures actuelles = **démo stores** (lieux / events **inventés**, ex. Penthouse). **Ne jamais** laisser ces infos **lisibles** dans une Reel publique.
+
+| Plan script | Ambiance | Quoi utiliser |
+|-------------|----------|----------------|
+| 0–2 s | Stress / scroll | **main.mp4** ou main qui scroll · **pas** d’écran app lisible |
+| 2–10 s | Hésitation, ville | **Photo verre / sunset** (calme premium) **ou** crop **Fragment** sans noms d’event · **pas** « Penthouse / Les Passages » |
+| 10–18 s | Produit clair | UI **structure seule** : barre **Accueil · Agenda · Spots · Outils** + blocs **floutés à 40 %+** · **ou** 1 plan **Singulier** avec **titre + lieu masqués**, garder « Rendre Conakry lisible ensemble » |
+| 18–40 s | Annonce + CTA | `COVER_17-11_liste-ouverte.png` + logo |
+
+Détail : `CONTENU-FICTIF-APP-STORES.md`.
+
 ### Script face caméra (optionnel — si tu changes d’avis)
 
 > Bonjour Conakry. Moi, c’est Mariame. … *(voir `CALENDRIER-PUBLICATION-GUIDE-2026.md`)*
