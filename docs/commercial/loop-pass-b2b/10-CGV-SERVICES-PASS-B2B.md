@@ -17,11 +17,13 @@ Toute signature de convention, bon de commande ou essai vaut **acceptation** des
 
 ### 2. Identité du Prestataire
 
-**Période de transition (ex. avant immatriculation) :**  
-[NOM PRÉNOM], agissant pour le projet THE LOOP Pass, contact@theloop-app.com, +224 626 68 06 06.
+**Période de transition (ex. avant RCCM complet — décembre 2026) :**  
+[NOM PRÉNOM], agissant pour **AELY** et le service **THE LOOP Pass**,  
+https://aelygroup.com · contact@aelygroup.com · contact@theloop-app.com · +224 626 68 06 06.
 
-**À compter de [date / immatriculation] :**  
-[RAISON SOCIALE], [forme juridique], RCCM n° […], NIF […], siège [adresse], représentée par […].
+**À compter de l’immatriculation (visée janvier 2027) :**  
+**AELY** (ou [dénomination sociale exacte]), [forme juridique], RCCM n° […], NIF […],  
+siège : [adresse — ex. Dixinn, Conakry], représentée par […].
 
 ---
 
@@ -156,7 +158,8 @@ Le Prestataire peut modifier les CGV. Les Clients actifs en sont informés par *
 
 ### 16. Contact
 
-THE LOOP Pass · contact@theloop-app.com · WhatsApp +224 626 68 06 06 · https://pass.theloop-app.com
+AELY · THE LOOP Pass · https://aelygroup.com · https://pass.theloop-app.com  
+contact@aelygroup.com · contact@theloop-app.com · WhatsApp +224 626 68 06 06
 
 ---
 

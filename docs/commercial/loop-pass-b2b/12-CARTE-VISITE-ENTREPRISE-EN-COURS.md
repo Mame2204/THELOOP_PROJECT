@@ -1,81 +1,64 @@
-# Cartes de visite — Nom de société avant immatriculation
+# Cartes de visite — AELY (imprimées avant RCCM janvier 2027)
 
 ## Votre situation
 
-Vous avez **déjà imprimé** des cartes avec le **nom de l’entreprise** que vous créerez **en janvier 2027**, et vous les utiliserez **en décembre 2026** alors que la société **n’existe pas encore** officiellement.
+Vous avez imprimé des cartes avec le nom **AELY** (ou AELY Group).  
+Le site **https://aelygroup.com** est **en ligne** (AELY — solutions numériques & data, Conakry).  
+L’**immatriculation formelle** (RCCM / NIF pour factures au nom légal) est prévue **janvier 2027**.
 
 ---
 
-## Est-ce « très grave » ?
+## Est-ce grave d’utiliser ces cartes en décembre 2026 ?
 
-**En pratique, non — ce n’est en général pas très grave**, surtout si :
+**Non — c’est même cohérent et rassurant**, à condition de :
 
-1. Le nom sur la carte est **celui que vous allez réellement immatriculer** (pas un nom fictif).  
-2. Vous **ne mentionnez pas** de numéros **RCCM / NIF** que vous n’avez pas encore.  
-3. Vous **ne facturez pas** au nom de la société avant qu’elle existe (décembre = essai / pas de facture société, ou reçu au nom de la personne — voir convention doc 09).  
-4. À l’oral, vous pouvez dire : *« La société est **en cours de création** ; le service THE LOOP Pass, c’est ce que je vous montre aujourd’hui. »*
+1. **Ne pas imprimer** de numéros **RCCM / NIF** tant qu’ils ne sont **pas** officiels.  
+2. Renforcer la preuve avec **aelygroup.com** en RDV (« voici notre site groupe »).  
+3. Ne pas **facturer** au nom de la société immatriculée avant **janvier 2027** sans avis comptable (essai + convention doc 09).  
+4. Si besoin à l’oral : *« AELY, c’est notre structure ; l’immatriculation RCCM est finalisée en janvier ; le service que je vous montre, c’est **THE LOOP Pass**. »*
 
-Ce n’est **pas** une arnaque si vous êtes **transparente** et que vous **honorez** vos engagements (démo, essai, création effective en janvier).
+Ce n’est **pas** une arnaque : marque + site + démo + documents > nom sans visibilité.
 
 ---
 
-## Ce qui serait problématique (à éviter)
+## Ce qui serait problématique
 
 | Risque | Pourquoi |
 |--------|----------|
-| RCCM / NIF **inventés** sur la carte | Fausse représentation |
-| Demander un **paiement élevé** au nom d’une société inexistante | Renforce la méfiance « arnaque » |
-| Nom sur la carte **≠** futur nom légal | Contrats et factures incohérents |
+| **RCCM / NIF fictifs** sur la carte | Fausse représentation |
+| Paiement exigé **sans RDV** au nom « AELY » | Renforce la méfiance |
+| Carte **sans** moyen de vérifier (ni site, ni tel) | Pire qu’AELY + aelygroup.com |
 
 ---
 
-## Comment utiliser vos cartes en décembre (sans les jeter)
+## Modèle carte recommandé (aligné avec vos cartes actuelles)
 
-**Option A — Utiliser telles quelles**  
-- Carte multi-projets avec **THE LOOP Pass** + **site** + **WhatsApp** + **votre prénom**.  
-- Si le nom société est présent : ajouter à l’oral *« en cours d’immatriculation »*.  
-- Contrats signés au **nom du porteur** + mention projet (doc 09), pas « RCCM ».
+```
+AELY
+Solutions numériques · Conakry
+aelygroup.com
 
-**Option B — Autocollant discret** (si vous voulez être ultra clair)  
-- Petit sticker au verso : *« Société en cours d’immatriculation — janv. 2027 »*  
-- Ou sticker avec **QR** vers pass.theloop-app.com
+[Prénom Nom]
+THE LOOP Pass · Fidélité commerçants
+pass.theloop-app.com · +224 626 68 06 06
+```
 
-**Option C — Prochaine impression**  
-- Ligne 1 : **THE LOOP Pass**  
-- Ligne 2 : **[Prénom Nom]** · Fondateur / Directrice  
-- Ligne 3 : pass.theloop-app.com · +224 626 68 06 06  
-- Ligne 4 (option) : **[Raison sociale]** *(immatriculation en cours)*  
+**Optionnel** (verso ou petite ligne) : *RCCM en cours — janv. 2027*  
+**Uniquement après janvier** : ajouter RCCM / NIF sur **nouvelle** impression.
 
 ---
 
-## Lien avec la confiance commerçants
+## En RDV décembre — ordre de confiance
 
-Les commerçants guinéens se méfient surtout de :
-
-- Paiement **avant** service ;  
-- Promesses **floues** ;  
-- **Aucune** présence physique.
-
-Votre carte avec un **nom futur** est **secondaire** si vous :
-
-- Faites la **démo chez eux** ;  
-- Proposez **essai 14 j** ;  
-- Montrez le **site** et un **document** signé (convention) ;  
-- **Reportez facturation société** à janvier.
-
----
-
-## Checklist avant RDV décembre
-
-- [ ] Carte : pas de faux RCCM  
-- [ ] Convention + CGV (PDF ou papier)  
-- [ ] Phrase oral « société en cours de création » prête  
-- [ ] WhatsApp pro identifiable (photo, nom)  
-- [ ] Site à jour (recommandations doc 06)
+1. Démo **THE LOOP Pass** sur leur téléphone  
+2. **pass.theloop-app.com**  
+3. **aelygroup.com** (crédibilité structure)  
+4. Convention + CGV (docs 09–10)  
+5. Essai 14 j · pas de paiement immédiat si prospect froid  
 
 ---
 
 ## Conclusion
 
-**Imprimer le nom de la future société n’est pas une bêtise grave** : c’est courant en phase de lancement. Soyez **transparente**, **ne facturez pas** au nom de la société avant janvier sans avis comptable, et **alignez** les contrats (doc 09 + 11).  
-Pour la prochaine batch de cartes, privilégiez **THE LOOP Pass + votre nom + contacts** ; la raison sociale peut apparaître avec *« en cours d’immatriculation »* si vous le souhaitez.
+Mettre **AELY** sur la carte **n’était pas une bêtise** : ça correspond au site **aelygroup.com**.  
+Le seul point de vigilance : **RCCM/NIF et factures** au nom légal à partir de **janvier 2027** (avenant doc 11).

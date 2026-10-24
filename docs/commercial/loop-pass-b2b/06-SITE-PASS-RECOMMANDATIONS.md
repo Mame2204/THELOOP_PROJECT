@@ -82,6 +82,14 @@ Remplacer jargon corporate par : *« Voyez combien de clients ont la carte et co
 
 ---
 
+## Pied de page / crédibilité AELY
+
+Ajouter une ligne discrète :
+
+*« THE LOOP Pass — un service **AELY** · [aelygroup.com](https://aelygroup.com) · Conakry »*
+
+Cela rassure les commerçants (structure identifiable) sans mélanger avec le guide The Loop grand public.
+
 ## Optionnel (phase 2)
 
 - Mockup **QR + carte wallet** (1 image).  

@@ -8,8 +8,9 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Porteur de projet | |
-| Raison sociale prévue | |
+| Porteur de projet | [Prénom Nom] |
+| Marque / groupe | **AELY** — https://aelygroup.com |
+| Raison sociale / RCCM | **AELY** — immatriculation visée janv. 2027 |
 | Mois création société | Janvier 2027 |
 | WhatsApp commercial | +224 626 68 06 06 |
 | Site | https://pass.theloop-app.com |

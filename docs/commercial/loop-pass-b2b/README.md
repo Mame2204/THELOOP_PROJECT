@@ -1,9 +1,12 @@
 # THE LOOP Pass — Documentation B2B (Guinée)
 
-Pack opérationnel pour le lancement commerciale de **THE LOOP Pass** (fidélisation digitale commerçants, white-label Boomerangme).
+Pack opérationnel pour le lancement commerciale de **THE LOOP Pass** (fidélisation digitale commerçants, white-label Boomerangme), porté par **AELY**.
 
-**Site vitrine :** https://pass.theloop-app.com  
-**Contact commercial :** WhatsApp +224 626 68 06 06 · contact@theloop-app.com
+| | |
+|--|--|
+| **Groupe** | **AELY** — https://aelygroup.com · contact@aelygroup.com |
+| **Produit Pass** | https://pass.theloop-app.com |
+| **Contact Pass** | WhatsApp +224 626 68 06 06 · contact@theloop-app.com |
 
 ---
 
@@ -11,6 +14,7 @@ Pack opérationnel pour le lancement commerciale de **THE LOOP Pass** (fidélisa
 
 | Ordre | Fichier | Usage |
 |-------|---------|--------|
+| 0 | [00-IDENTITE-AELY-ET-PASS.md](./00-IDENTITE-AELY-ET-PASS.md) | AELY, aelygroup.com, lien avec THE LOOP Pass |
 | 1 | [01-STRATEGIE-MARKETING.md](./01-STRATEGIE-MARKETING.md) | Vision, canaux, ce qu’on ne fait pas (pas de com grand public) |
 | 2 | [02-CALENDRIER-ACTIVITES.md](./02-CALENDRIER-ACTIVITES.md) | Oct → déc : essai Boomerang, liste, contact, terrain |
 | 3 | [03-PLAYBOOK-PROSPECTION-SCRIPTS.md](./03-PLAYBOOK-PROSPECTION-SCRIPTS.md) | WhatsApp, appels, relances, fiche cible |

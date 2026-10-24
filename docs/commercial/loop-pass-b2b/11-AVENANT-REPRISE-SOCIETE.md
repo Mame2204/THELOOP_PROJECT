@@ -11,8 +11,8 @@
 [NOM PRÉNOM], auteur de la convention du **[DATE]** avec le Client (ci-après « **Convention initiale** »),
 
 **B. La Société repreneuse :**  
-**[RAISON SOCIALE]**, [forme], RCCM n° **[…]**, NIF **[…]**,  
-siège : **[ADRESSE]**,  
+**AELY** (ou **[dénomination sociale immatriculée]**), [forme], RCCM n° **[…]**, NIF **[…]**,  
+siège : **[ADRESSE — ex. Dixinn, Conakry]**,  
 représentée par **[NOM]**, **[QUALITÉ]**,  
 (ci-après « **la Société** »),
 

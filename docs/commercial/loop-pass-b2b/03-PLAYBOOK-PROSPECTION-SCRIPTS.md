@@ -29,7 +29,7 @@
 
 > Bonjour [Nom / prénom si connu],  
 >  
-> Je suis **[Prénom Nom]**, je développe **THE LOOP Pass** à Conakry : une **carte fidélité sur le téléphone** de vos clients (iPhone / Android), **sans application à installer pour eux**. Vous **scannez** en boutique et vous pouvez **relancer** les clients qui ne reviennent plus.  
+> Je suis **[Prénom Nom]**, **AELY** (aelygroup.com) — je développe **THE LOOP Pass** à Conakry : une **carte fidélité sur le téléphone** de vos clients (iPhone / Android), **sans application à installer pour eux**. Vous **scannez** en boutique et vous pouvez **relancer** les clients qui ne reviennent plus.  
 >  
 > **J’arrive à Conakry le 7 décembre** et je passe voir les commerces **[secteur / quartier]** **du 8 au 20 décembre** pour une **démo gratuite de 15 minutes**, chez vous.  
 > **Aucun paiement par message** : on se voit, vous testez sur votre téléphone, et vous décidez ensuite.  

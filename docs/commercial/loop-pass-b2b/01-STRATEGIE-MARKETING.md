@@ -6,7 +6,8 @@
 - **Modèle :** agence **white-label Boomerangme** (cartes Apple Wallet / Google Wallet, scan en boutique, campagnes, sous-comptes commerçants).
 - **Cible :** **commerçants B2B** (pas le grand public).
 - **Vitrine :** https://pass.theloop-app.com
-- **Statut au lancement terrain (décembre 2026) :** projet commercial ; **société formalisée prévue en janvier 2027** (voir documents 09 et 11).
+- **House brand :** **AELY** (https://aelygroup.com) — solutions numériques & data, Conakry.
+- **Statut au lancement terrain (décembre 2026) :** commercialisation Pass sous marque AELY ; **immatriculation formelle (RCCM / factures)** visée **janvier 2027** (voir documents 09 et 11).
 
 ## 2. Contexte marché
 

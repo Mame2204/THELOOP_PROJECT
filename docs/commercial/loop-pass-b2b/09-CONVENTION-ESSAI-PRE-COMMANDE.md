@@ -8,11 +8,12 @@
 ### ENTRE LES SOUSSIGNÉS
 
 **Le Prestataire :**  
-[NOM PRÉNOM DU PORTEUR DE PROJET],  
+[NOM PRÉNOM DU SIGNATAIRE],  
 demeurant [ADRESSE],  
-WhatsApp : +224 626 68 06 06 · E-mail : contact@theloop-app.com,  
-agissant pour le compte du projet commercial **« THE LOOP Pass »**,  
-en cours d’immatriculation sous la dénomination **[RAISON SOCIALE À CRÉER]**  
+agissant pour le compte de la marque **AELY** (https://aelygroup.com)  
+et du service **THE LOOP Pass**,  
+WhatsApp : +224 626 68 06 06 · E-mail : contact@theloop-app.com · contact@aelygroup.com,  
+société **AELY** en cours de finalisation d’immatriculation (RCCM / NIF — **janvier 2027**),  
 (ci-après « **le Prestataire** »),
 
 **ET**
@@ -108,7 +109,7 @@ La facturation de l’abonnement mensuel débute le **1er janvier 2027**, ou à 
 L’abonnement est payable **mensuellement et d’avance**, par **Orange Money** (ou autre moyen convenu), au plus tard le **5** de chaque mois, sauf accord différent.
 
 **5.3 Première facture**  
-La première facture couvrira la période **[mois]** 2027. Elle sera émise au nom de **[RAISON SOCIALE]** dès immatriculation effective, ou, pour les règlements intervenus avant celle-ci, selon modalité indiquée par le Prestataire (reçu / facture de transition — **à valider avec comptable**).
+La première facture couvrira la période **[mois]** 2027. Elle sera émise au nom de **AELY** (ou dénomination sociale immatriculée équivalente) dès **RCCM / NIF** disponibles, ou, pour les règlements intervenus avant celle-ci, selon modalité indiquée par le Prestataire (reçu / facture de transition — **à valider avec comptable**).
 
 **5.4 Retard**  
 En cas de retard supérieur à **15 jours**, le Prestataire peut **suspendre** l’accès au service après mise en demeure par WhatsApp ou e-mail.
@@ -156,7 +157,7 @@ Le Prestataire n’est pas responsable des **indisponibilités** liées aux opé
 ### ARTICLE 10 — ÉVOLUTION — REPRISE PAR LA SOCIÉTÉ
 
 Le Client est informé que le Prestataire personne physique agit pour un projet en cours d’**immatriculation**.  
-À compter de l’immatriculation de **[RAISON SOCIALE]**, les droits et obligations pourront être **repris** par cette société, sans modification substantielle des conditions économiques, par **avenant** ou **notification** (modèle document n° 11).
+À compter de l’immatriculation de **AELY** (ou société dédiée portant la marque), les droits et obligations pourront être **repris** par cette personne morale, sans modification substantielle des conditions économiques, par **avenant** ou **notification** (modèle document n° 11).
 
 ---
 
