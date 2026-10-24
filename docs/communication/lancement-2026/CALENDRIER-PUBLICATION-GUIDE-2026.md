@@ -29,16 +29,16 @@
 | **mer. 11/11** | 19h00 | Carrousel ×4 + story | `CARROUSEL_11-11_01…04` | 05 · **programmé** |
 | **jeu. 12/11** | 19h00 | Photo feed J-5 + story | `POST_12-11_J-5-PUBLIER.png` | 06 · **programmé** |
 | **ven. 13/11** | 19h00 | **Reel** + story | `VIDEO_1311_envie-PUBLIER.mp4` | 07 · **programmé** |
-| **dim. 15/11** | 19h00 | Story ×3 J-2 | `STORY_15-11_01_J-2` · `02_100-places` · `03_mardi-reserve` | 08 |
+| **dim. 15/11** | 19h00 | Story ×3 J-2 | `STORY_15-11_01_J-2` · `02_100-places` · `03_mardi-reserve` | 08 · **programmé** |
 | **lun. 16/11** | 19h00 | Photo feed J-1 + story · **messages WhatsApp aux relais** | `POST_16-11_J-1-PUBLIER.png` | 09 · **programmé** |
 
 ## Phase 2 — Liste ouverte : inscrire un maximum de personnes
 
 | Date | Heure | À publier | Fichiers | Fiche |
 |------|-------|-----------|----------|-------|
-| **mar. 17/11** | **19h00** | **Reel : ta vidéo face caméra** + story avec lien | ta vidéo · couverture `COVER_17-11_liste-ouverte.png` | 10 · boost |
-| | 19h05 | Carrousel ×5 avec lien | `CARROUSEL_17-11_01…05` | 10 |
-| | 19h10 | Story ×3 (lien sur la 3ᵉ) | `STORY_17-11_01…03` | 10 |
+| **mar. 17/11** | **19h00** | **Reel : ta vidéo** + story (en attente) | ta vidéo · `COVER_17-11_liste-ouverte.png` | 10 · boost |
+| | 19h05 | Carrousel ×5 avec lien | `CARROUSEL_17-11_01…05` | 10 · **programmé** |
+| | 19h10 | Story ×3 (lien sur la 3ᵉ) | `STORY_17-11_01…03` | 10 · **programmé** |
 | **mer. 18/11** | 19h00 | **Reel** « La fréquence » + story **compteur** | `VIDEO_1811_frequence-PUBLIER.mp4` · `STORY_COMPTEUR_*` | 10b |
 | **jeu. 19/11** | 19h00 | Photo feed merci + story | `POST_19-11_merci-PUBLIER.png` | 11 |
 | **ven. 20/11** | 19h00 | **Reel** « Pourquoi The Loop » + story | `VIDEO_2011_pourquoi-PUBLIER.mp4` | 12 |
