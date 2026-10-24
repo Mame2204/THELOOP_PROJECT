@@ -6,7 +6,15 @@ Dossier visuels : `exports-png-v4-light/` · Relais : `MESSAGES-RELAIS-WHATSAPP.
 
 ---
 
-## Étape A — Vidéo 19h00 (sans visage · accroche)
+## Étape A — Vidéo 19h00 (scénario recommandé · vendredi + scroll)
+
+**Scénario principal :** `video-1711-montage/SCENARIO-VENDREDI-SCROLL.md` (FB / IG / TikTok → bruit → screen record The Loop → liste ouverte).
+
+**Plan B (PNG / MOOD) :** `video-1711-montage/MONTAGE-17-11.md`.
+
+---
+
+## Étape A (archive) — Vidéo 19h00 (cartes MOOD · sans scroll réseaux)
 
 **Format :** vertical 9:16 · **38–42 secondes** · **voix off** (ta voix OK, **sans dire ton prénom**) · gros textes à l’écran dès la 1ʳᵉ seconde.
 
