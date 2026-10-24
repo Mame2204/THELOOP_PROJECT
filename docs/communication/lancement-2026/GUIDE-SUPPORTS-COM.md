@@ -20,6 +20,7 @@ Tout le pack vit sous **`docs/communication/lancement-2026/`** dans le dépôt T
 | [`PLAN-ATTRACTION-NOV-DEC-2026.md`](./PLAN-ATTRACTION-NOV-DEC-2026.md) | Attirer du monde : WhatsApp, relais, boosts, réponses |
 | [`MESSAGES-RELAIS-WHATSAPP.md`](./MESSAGES-RELAIS-WHATSAPP.md) | Textes relais à copier-coller (16/11, 17/11, 24/12) |
 | [`PREPARATION-17-11.md`](./PREPARATION-17-11.md) | Jour J liste ouverte : script vidéo, légendes, horaires |
+| [`PROGRAMMATION-META-17-20-NOV.md`](./PROGRAMMATION-META-17-20-NOV.md) | Copier-coller Meta : 17→20 nov. (sans vidéo 17/11 ni compteurs) |
 | [`CHECKLIST-PUBLICATION-2026.md`](./CHECKLIST-PUBLICATION-2026.md) | Avant chaque programmation |
 | [`STRATEGIE-ARC-NARRATIF.md`](./STRATEGIE-ARC-NARRATIF.md) | L’histoire racontée de novembre à Noël |
 | [`VOIX-FONDATRICE.md`](./VOIX-FONDATRICE.md) | Le ton (« je » face caméra, « The Loop » en légende) |
