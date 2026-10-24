@@ -12,6 +12,14 @@ OUT = ROOT / "video-1711-montage"
 ASSETS = Path("/home/ubuntu/.cursor/projects/workspace/assets")
 UPLOAD_ZIP = Path("/home/ubuntu/.cursor/projects/workspace/uploads/main_3296.zip")
 
+# Compte membre (publication com) — priorité sur les captures admin
+MEMBER_SCREENS = {
+    "164f7dfa-989f-4152-9601-e5197bcbd48e.png": "APP_agenda-com.png",
+    "b1319370-3754-45a3-ae76-4e3358a1f6f9.png": "APP_spots-com.png",
+    "5159c11e-6d0a-4888-a96c-7ca3c2391b40.png": "APP_outils-com.png",
+    "8add86a8-f3ee-43ce-9ddf-1a02eb938126.png": "APP_favoris-com.png",
+}
+
 
 def blur_band(im: Image.Image, y0: int, y1: int, radius: int = 26) -> Image.Image:
     out = im.copy()
@@ -42,8 +50,6 @@ def app_screen_com_safe(src: Path, dest: Path) -> None:
     w, h = im.size
     # Cartes + noms fictifs : zone centrale. Header + bottom nav lisibles.
     im = blur_band(im, int(h * 0.22), int(h * 0.86), radius=28)
-    # Masquer onglet Administration (demo interne)
-    im = blur_rect(im, (int(w * 0.62), int(h * 0.92), w, h), radius=18)
     im.save(dest, quality=92, optimize=True)
 
 
@@ -79,15 +85,24 @@ def main() -> None:
         "Pack montage 17/11 — voir MONTAGE-17-11.md\n", encoding="utf-8"
     )
 
-    mapping = {
+    for src_name, out_name in MEMBER_SCREENS.items():
+        src = ASSETS / src_name
+        if src.exists():
+            app_screen_com_safe(src, OUT / out_name)
+
+    # Fallback admin (legacy) si membre absent
+    legacy = {
         "9cef7fb8-bee4-4211-aa8d-3dee7893d55f.png": "APP_agenda-com.png",
         "247c3637-4bf3-441a-90bc-c1a738a8375d.png": "APP_spots-com.png",
         "adacf4a3-62cf-431e-b9cf-a168e82f8d1c.png": "APP_outils-com.png",
     }
-    for src_name, out_name in mapping.items():
+    for src_name, out_name in legacy.items():
+        dest = OUT / out_name
+        if dest.exists():
+            continue
         src = ASSETS / src_name
         if src.exists():
-            app_screen_com_safe(src, OUT / out_name)
+            app_screen_com_safe(src, dest)
 
     pairs = [
         ("5771ab5c-5c8e-4d48-9096-d776faa5df3e.jpg", "APP_accueil-com.png", accueil_com_safe),
@@ -99,13 +114,7 @@ def main() -> None:
         if src.exists():
             fn(src, OUT / out_name)
 
-    for jpg, out in [
-        ("acdab83f-8a36-446d-8b05-26b9dd4801d8.jpg", "LIFESTYLE_sunset-verre.jpg"),
-        ("47b55be4-99ce-4256-aa7e-33e5189f4423.jpg", "LIFESTYLE_verres-restaurant.jpg"),
-    ]:
-        src = ASSETS / jpg
-        if src.exists():
-            shutil.copy2(src, OUT / out)
+    # Photos lifestyle : non utilisées dans le montage 17/11 (hors sujet vs texte)
 
     cover = ROOT / "exports-png-v4-light" / "COVER_17-11_liste-ouverte.png"
     if cover.exists():

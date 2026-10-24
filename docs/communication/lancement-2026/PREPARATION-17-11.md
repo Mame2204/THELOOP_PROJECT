@@ -36,9 +36,9 @@ Les captures actuelles = **démo stores** (lieux / events **inventés**, ex. Pen
 
 | Plan script | Ambiance | Quoi utiliser |
 |-------------|----------|----------------|
-| 0–2 s | Stress / scroll | **main.mp4** ou main qui scroll · **pas** d’écran app lisible |
-| 2–10 s | Hésitation, ville | **Photo verre / sunset** (calme premium) **ou** crop **Fragment** sans noms d’event · **pas** « Penthouse / Les Passages » |
-| 10–18 s | Produit clair | UI **structure seule** : barre **Accueil · Agenda · Spots · Outils** + blocs **floutés à 40 %+** · **ou** 1 plan **Singulier** avec **titre + lieu masqués**, garder « Rendre Conakry lisible ensemble » |
+| 0–6 s | Galère / scroll | **`B-roll-main.mp4`** (pas verre/sunset — hors texte) |
+| 6–10 s | Bruit / repères | **`APP_fragment-seuil-com.png`** (texte éditorial, pas de faux lieu) |
+| 10–20 s | Produit clair | **`APP_agenda/spots/outils-com.png`** (captures **compte membre**, cartes floutées) |
 | 18–40 s | Annonce + CTA | `COVER_17-11_liste-ouverte.png` + logo |
 
 Détail : `CONTENU-FICTIF-APP-STORES.md`.
