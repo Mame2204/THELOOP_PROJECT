@@ -4,7 +4,8 @@
 
 | Où | Qui parle | Exemple |
 |----|-----------|---------|
-| **Tes vidéos face caméra** (17/11, 17/12, 24/12) | **Toi, en « je »** | « J’ai créé The Loop pour ça. » |
+| **17/11 · vidéo d’ouverture (sans visage)** | **Voix humaine + marque** · pas de prénom | « Ce week-end, tu vas où ? … **The Loop** ouvre sa liste. » |
+| **Tes vidéos face caméra** (17/12, 24/12 — si tu montres ton visage) | **Toi, en « je »** | « J’ai créé The Loop pour ça. » |
 | **Légendes, visuels, Reels automatiques** | **The Loop**, en « on » / « nous », et « tu » au public | « On lit tout. Réserve ta place. » |
 | **Réponses aux commentaires** | The Loop (tu peux signer « — Mariame » sur les réponses importantes) | « Merci ! Les premiers inscrits seront invités en premier. » |
 

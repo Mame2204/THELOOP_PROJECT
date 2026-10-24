@@ -6,19 +6,33 @@ Dossier visuels : `exports-png-v4-light/` · Relais : `MESSAGES-RELAIS-WHATSAPP.
 
 ---
 
-## Étape A — Tourner ta vidéo (avant de programmer)
+## Étape A — Vidéo 19h00 (sans visage · accroche)
 
-**Format :** vertical 9:16 · **35–45 secondes** · tu parles en **« je »**.
+**Format :** vertical 9:16 · **38–42 secondes** · **voix off** (ta voix OK, **sans dire ton prénom**) · gros textes à l’écran dès la 1ʳᵉ seconde.
 
-**Cadre :** face à une fenêtre, téléphone à hauteur des yeux, pièce calme (écouteurs filaires = mieux).
-
-### Script (teleprompter / 2–3 prises)
-
-> Bonjour Conakry. Moi, c’est Mariame. Chaque week-end, on se pose la même question : on va où ? Et on finit toujours au même endroit. J’ai créé **The Loop** pour ça : un guide **sélectif** de Conakry. Les bonnes adresses, l’agenda, des idées de sorties et des outils du quotidien, **en clair**. Aujourd’hui, la liste d’attente est **ouverte**. Les **100 premiers inscrits** auront un **accès anticipé**, bientôt. Le lien est juste en dessous. Inscris-toi, et partage à ceux qui cherchent toujours où sortir.
-
-**Après tournage :** export depuis ton téléphone (pas de montage obligatoire) · activer **sous-titres auto** dans Meta à la publication.
+**Pourquoi pas « Moi, c’est Mariame » ?** Ce script était pour **face caméra** (confiance = visage + prénom). Sans visage, le prénom pose la question « c’est qui ? » sans réponse → on parle **direct au public** (« tu ») et on signe **The Loop**. Tu pourras te présenter en **« je »** plus tard (ex. 17/12 ou 24/12) **si** tu montres ton visage ce jour-là.
 
 **Couverture du Reel :** `COVER_17-11_liste-ouverte.png`
+
+### Montage simple (CapCut / InShot)
+
+| Sec | À l’écran (texte gros, safe zone) | Voix off | Plans (libres de droits ou tiens) |
+|-----|-----------------------------------|----------|-----------------------------------|
+| 0–2 | **Ce week-end, tu vas où ?** | *(silence ou petit hit)* | 2–3 cuts rapides : scroll, foule floue, notifications |
+| 2–6 | **Encore le même endroit.** | « Encore le même endroit. » | Plan calme : terrasse vide, ciel, café |
+| 6–10 | **Trop de bruit. Peu de repères.** | « Trop de bruit. Peu de repères. » | Même ambiance calme |
+| 10–18 | **Spots · Agenda · Parcours · Outils** | « **The Loop**, c’est un guide **sélectif** pour Conakry. Spots, agenda, parcours, outils — **en clair**. » | Captures app **floutées** ou visuels carrousel 17/11 |
+| 18–26 | **LISTE OUVERTE** · **100 premières places** | « Aujourd’hui, la liste est **ouverte**. Cent premières places pour un **accès anticipé**, bientôt. » | Carte `COVER_17-11_liste-ouverte.png` ou fond Loop |
+| 26–32 | **Premiers inscrits, premiers invités.** | « Premiers inscrits, premiers invités. » | Logo / arc Loop |
+| 32–40 | **Réserve ta place** ↓ | « Le lien est juste en dessous. Réserve ta place. » | Même carte + URL en petit |
+
+**Son :** musique tendue 0–2 s → **coupure** → pad calme + voix claire (pièce silencieuse, écouteurs filaires pour enregistrer la voix).
+
+**Après montage :** export MP4 · **sous-titres auto** Meta + relire · pas de nom de lieu identifiable.
+
+### Script face caméra (optionnel — si tu changes d’avis)
+
+> Bonjour Conakry. Moi, c’est Mariame. … *(voir `CALENDRIER-PUBLICATION-GUIDE-2026.md`)*
 
 ---
 
