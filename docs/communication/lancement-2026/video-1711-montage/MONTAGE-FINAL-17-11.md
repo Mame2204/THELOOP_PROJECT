@@ -12,7 +12,7 @@ Regénérer scroll + bulles : `python3 scripts/build-scroll-reseaux-bulles.py`
 | Fichier | Qui | Rôle |
 |---------|-----|------|
 | `SCROLL_reseaux-bulles.mp4` | **Prêt** | 9 s · FB → IG → TikTok (3×3 s) sur scroll |
-| `BULLE_reseau-*.png` | **Prêt** | Si tu remontes à la main dans CapCut |
+| `DIALOGUE_bulle-*.png` | **Prêt** | Bulles blanches + icône réseau · remontage manuel |
 | **`SEARCH_recherche-efface.mp4`** | **Toi** | 3–5 s · loupe → 2–3 lettres → effacer · **à déposer ici** |
 | `APP_agenda-com.png` | **Prêt** | Loop · membre · flouté |
 | `APP_spots-com.png` | **Prêt** | idem |
@@ -42,6 +42,18 @@ Regénérer scroll + bulles : `python3 scripts/build-scroll-reseaux-bulles.py`
 **Son :** petites notifs sur **2–11 s** → **stop** à **15 s** → musique douce sous la voix à partir de **17 s**.
 
 **App :** PNG OK avec **zoom 100→108 %** sur 2 s ; screen record Loop possible plus tard en remplacement.
+
+---
+
+## On n’utilise **pas** dans cette vidéo
+
+| Fichier | Pourquoi |
+|---------|----------|
+| **Fragment « Le seuil »** | Texte **trop éditorial / beau** — casse le ton « vendredi + scroll galère » |
+| **Singulier / Accueil** (stores) | Contenu **fictif** (Penthouse…) + mood magazine |
+| **MOOD_*.png** | Remplacés par scroll + bulles dialogue |
+
+**Captures Loop à garder :** uniquement **`APP_agenda` · `APP_spots` · `APP_outils`** (+ `APP_favoris` option) — compte **membre**, cartes floutées.
 
 ---
 
