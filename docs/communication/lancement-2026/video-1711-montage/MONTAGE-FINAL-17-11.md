@@ -29,8 +29,9 @@ Regénérer scroll + bulles : `python3 scripts/build-scroll-reseaux-bulles.py`
 |-----|--------|----------------------|-----------------------------|
 | **0–2** | Noir ou 1er frame `SCROLL_reseaux-bulles` | **Vendredi · 19h · Conakry** | *(silence)* |
 | **2–11** | **`SCROLL_reseaux-bulles.mp4`** | **Un plan pour le week-end ?** | Ce soir, je cherche un plan pour le week-end. |
-| **11–15** | **`SEARCH_recherche-efface.mp4`** *(ton fichier)* | **Où c’était déjà… ?** | Posts, stories, reels… Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. |
-| **15–17** | Coupure (noir 0,2 s) ou freeze | **Trop de bruit. Peu de repères.** | Trop de bruit. Peu de repères. |
+| **11–14** | **`SEARCH_recherche-efface.mp4`** *(ton fichier)* | **Où c’était déjà… ?** | Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. |
+| **14–18** | **`APP_fragment-seuil-com.png`** *(zoom lent)* | **Trop de bruit. Peu de repères.** | Posts, stories, reels… Trop de bruit. Peu de repères. *(Le texte à l’écran **Le seuil** renforce — pas besoin de le relire en voix.)* |
+| **18–19** | Coupure (noir 0,2 s) | — | *(respiration)* |
 | **17–21** | `APP_agenda-com.png` *(zoom lent)* | **Agenda** | **The Loop**, c’est un guide **sélectif** pour Conakry. |
 | **21–24** | `APP_spots-com.png` | **Spots** | Spots, agenda, parcours, outils — |
 | **24–27** | `APP_outils-com.png` | **Outils** | **en clair**. |
