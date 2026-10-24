@@ -146,7 +146,7 @@ Facebook : **Calme** / **Festif** · Instagram : + **Business** / **Surprends-mo
 
 - [x] 17/11 carrousel 19h05
 - [x] 17/11 stories 19h10 (lien sur 03)
-- [ ] 18/11 Reel + story 19h00
+- [x] 18/11 Reel + story 19h00
 - [ ] 19/11 photo + story 19h00
 - [ ] 20/11 Reel + story 19h00
 - [ ] 20/11 story sondage 19h10
