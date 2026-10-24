@@ -131,7 +131,9 @@ Réserve ta place 👇
 https://theloop-app.com/?utm_source=facebook&utm_medium=video&utm_campaign=waitlist_open_2026&utm_content=pourquoi_2011
 ```
 
-### 19h10 — Story sondage
+### 19h10 — Story sondage (**jour J · mobile**)
+
+Non programmable dans Meta (sticker Sondage) → **à la main** le 20/11.
 
 `STORY_20-11_01_sondage.png` · sticker **Sondage** : *Ce week-end, tu cherches plutôt…*  
 Facebook : **Calme** / **Festif** · Instagram : + **Business** / **Surprends-moi** si possible.
