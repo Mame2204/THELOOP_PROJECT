@@ -40,7 +40,7 @@
 | | 19h05 | Carrousel ×5 avec lien | `CARROUSEL_17-11_01…05` | 10 · **programmé** |
 | | 19h10 | Story ×3 (lien sur la 3ᵉ) | `STORY_17-11_01…03` | 10 · **programmé** |
 | **mer. 18/11** | 19h00 | **Reel** « La fréquence » + story | `VIDEO_1811_frequence-PUBLIER.mp4` · compteur **jour J** | 10b · **programmé** |
-| **jeu. 19/11** | 19h00 | Photo feed merci + story | `POST_19-11_merci-PUBLIER.png` | 11 |
+| **jeu. 19/11** | 19h00 | Photo feed merci + story | `POST_19-11_merci-PUBLIER.png` | 11 · **programmé** |
 | **ven. 20/11** | 19h00 | **Reel** « Pourquoi The Loop » + story | `VIDEO_2011_pourquoi-PUBLIER.mp4` | 12 |
 | | 19h10 | Story sondage + story **compteur** | `STORY_20-11_01_sondage.png` · `STORY_COMPTEUR_*` | 12 |
 | **mer. 25/11** | 19h00 | Photo feed « Une règle » 1/3 + story | `POST_25-11_regle-1-PUBLIER.png` | 14 |
