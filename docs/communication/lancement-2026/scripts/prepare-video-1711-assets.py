@@ -90,31 +90,22 @@ def main() -> None:
         if src.exists():
             app_screen_com_safe(src, OUT / out_name)
 
-    # Fallback admin (legacy) si membre absent
-    legacy = {
-        "9cef7fb8-bee4-4211-aa8d-3dee7893d55f.png": "APP_agenda-com.png",
-        "247c3637-4bf3-441a-90bc-c1a738a8375d.png": "APP_spots-com.png",
-        "adacf4a3-62cf-431e-b9cf-a168e82f8d1c.png": "APP_outils-com.png",
-    }
-    for src_name, out_name in legacy.items():
-        dest = OUT / out_name
-        if dest.exists():
-            continue
-        src = ASSETS / src_name
-        if src.exists():
-            app_screen_com_safe(src, dest)
+    # Fragment éditorial (texte générique, pas de faux lieu)
+    frag_src = ASSETS / "e6b700b8-18d2-4152-aa69-ff0da54f10b3.jpg"
+    if frag_src.exists():
+        fragment_seuil_crop(frag_src, OUT / "APP_fragment-seuil-com.png")
 
-    pairs = [
-        ("5771ab5c-5c8e-4d48-9096-d776faa5df3e.jpg", "APP_accueil-com.png", accueil_com_safe),
-        ("e6b700b8-18d2-4152-aa69-ff0da54f10b3.jpg", "APP_fragment-seuil-com.png", fragment_seuil_crop),
-        ("d4902cbd-8a49-45f3-8698-5f506d647b03.jpg", "APP_singulier-com.png", singulier_com_safe),
-    ]
-    for src_name, out_name, fn in pairs:
-        src = ASSETS / src_name
-        if src.exists():
-            fn(src, OUT / out_name)
+    # Cartes mood 17/11 (remplace verre / sunset)
+    mood_script = ROOT / "scripts" / "export-video-1711-mood.mjs"
+    if mood_script.exists():
+        import subprocess
 
-    # Photos lifestyle : non utilisées dans le montage 17/11 (hors sujet vs texte)
+        subprocess.run(
+            ["node", str(mood_script)],
+            cwd=str(ROOT / "scripts"),
+            check=False,
+            capture_output=True,
+        )
 
     cover = ROOT / "exports-png-v4-light" / "COVER_17-11_liste-ouverte.png"
     if cover.exists():
@@ -126,6 +117,16 @@ def main() -> None:
         with zipfile.ZipFile(UPLOAD_ZIP) as zf:
             zf.extract("main.mp4", OUT)
         (OUT / "main.mp4").rename(OUT / "B-roll-main.mp4")
+
+    for stale in (
+        "APP_accueil-com.png",
+        "APP_singulier-com.png",
+        "LIFESTYLE_sunset-verre.jpg",
+        "LIFESTYLE_verres-restaurant.jpg",
+    ):
+        p = OUT / stale
+        if p.exists():
+            p.unlink()
 
     print(f"OK → {OUT} ({len(list(OUT.iterdir()))} fichiers)")
 

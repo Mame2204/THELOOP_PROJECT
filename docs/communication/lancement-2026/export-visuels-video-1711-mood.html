@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — 17/11 · cartes mood vidéo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; --muted: #3d5560; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      box-sizing: border-box;
+    }
+    .slide.m1 {
+      background: linear-gradient(180deg, #e8eef0 0%, #c5d4da 45%, #9eb5bf 100%);
+      color: var(--deep);
+    }
+    .slide.m2 {
+      background: linear-gradient(180deg, #dfe6ea 0%, #b8c5cc 50%, #8fa3ad 100%);
+      color: var(--deep);
+    }
+    .slide.m3 {
+      background: linear-gradient(165deg, #0f7a8e 0%, #0a3a44 55%, #062830 100%);
+      color: #fff;
+    }
+    .noise {
+      position: absolute; inset: 0; opacity: 0.07; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .inner {
+      position: relative; z-index: 2; height: 100%; padding: 160px 72px 320px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    }
+    .ey { font-size: 24px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); margin-bottom: 32px; }
+    .slide.m3 .ey { color: rgba(255,255,255,0.75); }
+    .h { font-size: 72px; font-weight: 800; line-height: 1.08; margin: 0; max-width: 920px; }
+    .h.sm { font-size: 64px; }
+    .sub { font-size: 32px; font-weight: 600; line-height: 1.35; margin-top: 36px; max-width: 840px; color: var(--muted); }
+    .slide.m3 .sub { color: rgba(255,255,255,0.88); }
+    .rule { width: 96px; height: 5px; background: var(--gold); border-radius: 3px; margin: 40px auto; }
+    .repeat {
+      margin-top: 48px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 880px;
+    }
+    .repeat span {
+      font-size: 26px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 14px 22px; border-radius: 999px; border: 2px solid rgba(10,58,68,0.2); color: rgba(10,58,68,0.45);
+    }
+    .mark {
+      position: absolute; bottom: 120px; left: 0; right: 0; text-align: center;
+      font-size: 22px; font-weight: 800; letter-spacing: 0.28em; text-transform: uppercase;
+    }
+    .slide.m1 .mark, .slide.m2 .mark { color: rgba(10,58,68,0.35); }
+    .slide.m3 .mark { color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+
+  <div class="label">17/11 · MOOD_01_weekend</div>
+  <div class="slide m1">
+    <div class="noise"></div>
+    <div class="inner">
+      <p class="ey">Conakry</p>
+      <h1 class="h">Ce week-end,<br />tu vas où ?</h1>
+    </div>
+    <div class="mark">The Loop</div>
+  </div>
+
+  <div class="label">17/11 · MOOD_02_encore</div>
+  <div class="slide m2">
+    <div class="noise"></div>
+    <div class="inner">
+      <p class="ey">Chaque fois</p>
+      <h1 class="h sm">Encore le<br />même endroit.</h1>
+      <div class="repeat">
+        <span>Scroll</span><span>Hésite</span><span>Recommence</span>
+      </div>
+    </div>
+    <div class="mark">The Loop</div>
+  </div>
+
+  <div class="label">17/11 · MOOD_03_bruit</div>
+  <div class="slide m3">
+    <div class="noise"></div>
+    <div class="inner">
+      <p class="ey">Conakry</p>
+      <h1 class="h sm">Trop de bruit.<br />Peu de repères.</h1>
+      <div class="rule"></div>
+      <p class="sub">Un guide sélectif, en clair — bientôt dans ta poche.</p>
+    </div>
+    <div class="mark">The Loop</div>
+  </div>
+
+</body>
+</html>

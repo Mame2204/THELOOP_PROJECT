@@ -11,9 +11,16 @@ Les écrans utilisés pour **Apple / Google (validation stores)** contiennent de
 | Texte éditorial **générique** sans faux lieu (ex. fragment « ville / bruit / ce soir ») | **Oui**, si aucun nom d’événement ou lieu inventé visible |
 | Photos **hors app** (ambiance, Conakry, lifestyle) | **Oui** — privilégier pour l’accroche et le « sélectif » |
 
+## Captures com
+
+| Profil | Usage |
+|--------|--------|
+| **Membre** | Vidéo 17/11 · stories · com publique (`APP_*-com.png`) |
+| **Admin / super admin** | Interne · **ne pas** utiliser en Meta |
+
 ## Vidéo 17/11
 
-Voir `PREPARATION-17-11.md` · section **Plans visuels (fictif store)**.
+Voir `video-1711-montage/MONTAGE-17-11.md` · cartes **MOOD_*** (pas photos stock verre/sunset).
 
 ## Plus tard
 
