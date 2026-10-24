@@ -150,9 +150,9 @@ Facebook : **Calme** / **Festif** · Instagram : + **Business** / **Surprends-mo
 - [x] 17/11 stories 19h10 (lien sur 03)
 - [x] 18/11 Reel + story 19h00
 - [x] 19/11 photo + story 19h00
-- [ ] 20/11 Reel + story 19h00
+- [x] 20/11 Reel + story 19h00
 - [ ] 20/11 story sondage 19h10 — **jour J (mobile)**
 - [ ] 17/11 vidéo 19h00 — **quand prête**
 - [ ] 18/11 et 20/11 compteurs — **à la main le jour J**
 
-**Suite (2e vague Meta ~ fin oct.) :** 25/11 · 26/11 · 27/11 · 30/11 · 2/12 · 3/12 · 4/12 → fiches 14–17 Lot A.
+**Suite (2e vague Meta) :** 25/11 · 26/11 · … → fiches 14+ · **voir `PROGRAMMATION-META-FENETRE-29J.md`** (25/11 bloqué avant **≥ 27/10**).
