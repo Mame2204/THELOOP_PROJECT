@@ -8,9 +8,9 @@ Dossier visuels : `exports-png-v4-light/` · Relais : `MESSAGES-RELAIS-WHATSAPP.
 
 ## Étape A — Vidéo 19h00 (scénario recommandé · vendredi + scroll)
 
-**Scénario principal :** `video-1711-montage/SCENARIO-VENDREDI-SCROLL.md` (FB / IG / TikTok → bruit → screen record The Loop → liste ouverte).
+**Montage final (scroll + bulles prêts) :** `video-1711-montage/MONTAGE-FINAL-17-11.md` · tu ajoutes seulement `SEARCH_recherche-efface.mp4`.
 
-**Plan B (PNG / MOOD) :** `video-1711-montage/MONTAGE-17-11.md`.
+**Détails narratif :** `video-1711-montage/SCENARIO-VENDREDI-SCROLL.md` · **Plan B :** `MONTAGE-17-11.md`.
 
 ---
 
