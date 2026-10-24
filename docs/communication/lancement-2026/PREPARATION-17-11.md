@@ -43,6 +43,8 @@ Les captures actuelles = **démo stores** (lieux / events **inventés**, ex. Pen
 
 Détail : `CONTENU-FICTIF-APP-STORES.md`.
 
+**Pack prêt à monter :** dossier `video-1711-montage/` · guide `MONTAGE-17-11.md` · regénérer : `python3 scripts/prepare-video-1711-assets.py`.
+
 ### Script face caméra (optionnel — si tu changes d’avis)
 
 > Bonjour Conakry. Moi, c’est Mariame. … *(voir `CALENDRIER-PUBLICATION-GUIDE-2026.md`)*
