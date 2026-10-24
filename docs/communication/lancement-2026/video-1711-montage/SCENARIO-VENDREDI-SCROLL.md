@@ -14,12 +14,34 @@
 
 ---
 
+## Scroll réseaux : deux méthodes (au choix)
+
+### Méthode 1 — **Recommandée si tu veux zero prise de tête** · scroll neutre + bulles
+
+- **1 seul** enregistrement : main qui scroll (feed **quelconque** : FB, IG, ou même page d’accueil) **ou** réutiliser `B-roll-main.mp4`.
+- Dans **CapCut**, enchaîner **3 cartons** (2–3 s chacun) par-dessus **le même plan** ou avec jump cuts :
+  - pastille **Facebook** + petit logo ;
+  - puis **Instagram** ;
+  - puis **TikTok**.
+- Le public comprend : « elle passe d’un réseau à l’autre » — **pas besoin** de 3 vrais comptes ni de montrer des posts lisibles.
+
+**Avantages :** pas de visages / posts de tiers, montage rapide, même arc narratif.
+
+### Méthode 2 — **Plus crédible** · vrais écrans (ton compte)
+
+- Screen record **réel** FB → IG → TikTok (2–3 s **utiles** par app).
+- Plans **courts**, fil **perso**, flou CapCut si contenu sensible.
+
+**Quand la choisir :** si tu as 15 min et un feed « propre ».
+
+---
+
 ## À tourner (checklist matériel)
 
 | # | Plan | Comment |
 |---|------|---------|
-| 1 | **Main + téléphone** | Scroll rapide (FB puis IG puis TikTok), 5–8 s par app **ou** 2–3 s chacun en cuts |
-| 2 | **Recherche** | Barre de recherche : tu tapes 2–3 lettres d’un lieu, tu **effaces** / tu abandonnes (nom oublié) |
+| 1 | **Scroll** | Méthode **1** (neutre + bulles) **ou** **2** (3 apps) |
+| 2 | **Recherche** | Barre de recherche : tu tapes 2–3 lettres d’un lieu, tu **effaces** / tu abandonnes (nom oublié) — **1 app suffit** |
 | 3 | **Pause** | Pouce qui s’arrête, 1 s écran figé ou noir |
 | 4 | **The Loop** | **Screen record** membre : Agenda → Spots → Outils (scroll fluide, 12–15 s) |
 | 5 | *(déjà prêt)* | `COVER_17-11_liste-ouverte.png` pour fin |
