@@ -151,7 +151,7 @@ Facebook : **Calme** / **Festif** · Instagram : + **Business** / **Surprends-mo
 - [x] 18/11 Reel + story 19h00
 - [x] 19/11 photo + story 19h00
 - [ ] 20/11 Reel + story 19h00
-- [ ] 20/11 story sondage 19h10
+- [ ] 20/11 story sondage 19h10 — **jour J (mobile)**
 - [ ] 17/11 vidéo 19h00 — **quand prête**
 - [ ] 18/11 et 20/11 compteurs — **à la main le jour J**
 
