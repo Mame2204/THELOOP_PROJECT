@@ -91,9 +91,16 @@ def main() -> None:
             app_screen_com_safe(src, OUT / out_name)
 
     # Fragment éditorial (texte générique, pas de faux lieu)
-    frag_src = ASSETS / "e6b700b8-18d2-4152-aa69-ff0da54f10b3.jpg"
-    if frag_src.exists():
-        fragment_seuil_crop(frag_src, OUT / "APP_fragment-seuil-com.png")
+    frag_full = ASSETS / "2c31c32f-6e27-497a-940e-ecbfc3f943c0.jpg"
+    frag_feed = ASSETS / "e6b700b8-18d2-4152-aa69-ff0da54f10b3.jpg"
+    frag_dest = OUT / "APP_fragment-seuil-com.png"
+    if frag_full.exists():
+        im = Image.open(frag_full).convert("RGB")
+        w, h = im.size
+        im = im.crop((0, 0, w, int(h * 0.84)))  # sans CTA fictif
+        im.save(frag_dest, quality=93, optimize=True)
+    elif frag_feed.exists():
+        fragment_seuil_crop(frag_feed, frag_dest)
 
     # Cartes mood 17/11 (remplace verre / sunset)
     mood_script = ROOT / "scripts" / "export-video-1711-mood.mjs"
