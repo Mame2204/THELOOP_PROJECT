@@ -6,7 +6,7 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const scripts = [
   'export-story-3011.mjs',
   'export-regle-0212.mjs',
-  'export-j20-0412.mjs',
+  'export-j13-0412.mjs',
   'export-video-0512-frames.mjs',
   'export-regle-0912.mjs',
 ];

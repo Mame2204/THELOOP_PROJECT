@@ -18,7 +18,7 @@
 | Outil 28/11 | `waitlist_open_2026` | Facebook | Vidéo | `facebook` | `video` | `outil_2811` |
 | Signature 30/11 | `waitlist_open_2026` | Facebook | Story | `facebook` | `story` | `signature_3011` |
 | Règle 2/3 2/12 | `waitlist_open_2026` | Facebook | Image | `facebook` | `image` | `regle2_0212` |
-| J-20 4/12 | `waitlist_open_2026` | Facebook | Image | `facebook` | `image` | `j20_0412` |
+| J-13 4/12 | `waitlist_open_2026` | Facebook | Image | `facebook` | `image` | `j13_0412` |
 | Anti-annuaire 5/12 | `waitlist_open_2026` | Facebook | Vidéo | `facebook` | `video` | `anti_annuaire_0512` |
 | Règle 3/3 9/12 | `waitlist_open_2026` | Facebook | Image | `facebook` | `image` | `regle3_0912` |
 | Teasing | `teasing_2026` | Instagram (secondaire) | Vidéo | `instagram` | `video` | `mirror_fb_*` |
