@@ -4,7 +4,7 @@ Chaque lot = un bloc à valider d’un coup · PNG dans `exports-png-v4-light/` 
 
 | Lot | Période | Contenu | Statut |
 |-----|---------|---------|--------|
-| **A** | 30/11 → 9/12 | Fin Acte B liste : story signature · règles 2/3 & 3/3 · J-20 · vidéo anti-annuaire | **Validé** · `17-LOT-A-30-11-09-12.md` |
+| **A** | 30/11 → 9/12 | Fin Acte B liste : story signature · règles 2/3 & 3/3 · **J-13 (4/12)** · vidéo anti-annuaire | **Validé** · `17-LOT-A-30-11-09-12.md` |
 | **B** | 7/12 → 16/12 | Stories terrain quotidiennes (10 j × ~3 frames) · UTM `terrain_gn_2026` · `jour_07`…`jour_16` | **Validé** · `18-LOT-B-terrain-7-16.md` |
 | **C** | 17/12 → 23/12 | Pré-launch 100 · story J-3 (21/12) · carrousel teaser Noël | **Validé** · `19-LOT-C-17-23-12.md` |
 | **D** | 24/12 | Vidéo lancement + 5 stories Jour J · UTM `launch_2026` | **Validé** · `20-LOT-D-24-12.md` |
@@ -15,7 +15,7 @@ Chaque lot = un bloc à valider d’un coup · PNG dans `exports-png-v4-light/` 
 |------|------|---------------|-----|
 | 30/11 | Story ×2 | `STORY_30-11_01_signature` · `02_lien` | `signature_3011` |
 | 2/12 | Feed | `POST_02-12_regle-2-PUBLIER` | `regle2_0212` |
-| 4/12 | Feed | `POST_04-12_J-20-PUBLIER` | `j20_0412` |
+| 4/12 | Feed | `POST_04-12_J-13-PUBLIER` | `j13_0412` |
 | 5/12 | Vidéo ×4 | `FRAME_0512_01`…`04` | `anti_annuaire_0512` |
 | 9/12 | Feed | `POST_09-12_regle-3-PUBLIER` | `regle3_0912` |
 

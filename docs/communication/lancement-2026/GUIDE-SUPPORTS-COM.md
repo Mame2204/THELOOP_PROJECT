@@ -31,7 +31,8 @@ Dossier : [`scripts/`](./scripts/)
 | `node scripts/export-carousel-1711.mjs` · `export-story-1711.mjs` · `export-video-1711-frames.mjs` | 17/11 |
 | `node scripts/export-merci-1911.mjs` · `export-video-2111-frames.mjs` · `export-story-2211.mjs` | 19–22/11 |
 | `node scripts/export-regle-2511.mjs` · `export-carousel-2611.mjs` · `export-video-2811-frames.mjs` | 25–28/11 |
-| `node scripts/export-lot-a-nov-dec.mjs` | Lot A (30/11–9/12) |
+| `node scripts/export-j13-0412.mjs` | Affiche feed **4/12 J-13** |
+| `node scripts/export-lot-a-nov-dec.mjs` | Lot A (30/11–9/12, inclut J-13) |
 | `node scripts/export-terrain-7-16.mjs` | Lot B terrain (7–16/12) |
 | `node scripts/export-lot-c-dec.mjs` | Lot C (17–23/12) |
 | `node scripts/export-lot-d-2412.mjs` | Lot D (24/12) |

@@ -222,10 +222,11 @@ Citation signature + lien discret inscription.
 
 ---
 
-### Jeudi 4/12/2026 · Image J-20 (lancement public)
+### Jeudi 4/12/2026 · Image J-13 (accès anticipé 17/12)
 
-**Visuel :** **J-20** · Ouverture publique **24 décembre**  
-**Légende :** Noël : The Loop s’ouvre à tous. D’ici là : **100 premières places** = accès anticipé **17 décembre**. **Réserve ta place.**
+**Visuel :** **J-13** · Accès anticipé **17 décembre** · **100 premières places** · liste ouverte  
+**PNG :** `POST_04-12_J-13-PUBLIER.png` · regénérer : `scripts/export-j13-0412.mjs`  
+**Légende :** **J-13.** Dans **13 jours** : accès anticipé pour les **100 premières** inscriptions — **17 décembre**. Liste encore ouverte. **Réserve ta place.** UTM `j13_0412`. *(Pas de date du 24/12 sur ce post — chaîne J-4 / J-1 en stories terrain, puis 21/12 J-3 pour le public.)*
 
 ---
 

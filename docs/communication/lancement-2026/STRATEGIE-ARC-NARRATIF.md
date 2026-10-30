@@ -55,3 +55,14 @@ Montrer l’**intérieur de l’app** dès le post #1 alors qu’on ouvre une **
 
 - **Pack v2 « capture plein écran »** : reporter aux posts **≥ 17/12** ou **24/12**, sauf versions **illisible volontaire** (flou 90 %).
 - **Refonte #1** : sans app → `exports-png-v3/` (acte A).
+
+### Compte à rebours **17/12** (accès 100)
+
+| Date | Support | Message |
+|------|---------|---------|
+| **4/12** | Feed | **J-13** · accès anticipé **17 déc.** · liste ouverte (`POST_04-12_J-13-PUBLIER.png`) |
+| **13/12** | Story terrain | **J-4** |
+| **16/12** | Story terrain | **J-1** |
+| **17/12** | Feed pré-launch | Mail 100 · pas de CTA inscription agressif |
+
+Le **24/12** public : **21/12 J-3**, **23/12** veille, **24/12** Lot D — **pas** de J-20 au **4/12** (ancienne affiche retirée).

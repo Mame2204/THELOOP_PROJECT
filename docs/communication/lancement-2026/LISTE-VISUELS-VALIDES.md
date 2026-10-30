@@ -85,7 +85,7 @@ Regénérer : `node scripts/export-video-2811-frames.mjs` · Fiche : `fiches/16-
 |------|----------|
 | 30/11 | `STORY_30-11_01_signature.png` · `STORY_30-11_02_lien.png` |
 | 2/12 | `POST_02-12_regle-2-PUBLIER.png` |
-| 4/12 | `POST_04-12_J-20-PUBLIER.png` |
+| 4/12 | `POST_04-12_J-13-PUBLIER.png` · `export-j13-0412.mjs` |
 | 5/12 | `FRAME_0512_01_pas-tout-conakry.png` … `04_reserve.png` |
 | 9/12 | `POST_09-12_regle-3-PUBLIER.png` |
 

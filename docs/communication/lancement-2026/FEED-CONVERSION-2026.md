@@ -25,6 +25,7 @@
 | 13/11 | Plan calme 1 s → cut bruit | « Une envie. Pas le bruit. » |
 | 17/11 | Bruit 1 s → **ta capture app** | « Tout crie. » → scroll app |
 | 21/11 | Scroll Spots/Agenda | « Dispersé ? » |
+| 4/12 | Fond teal · **J-13** | « Accès anticipé · 17 décembre · 100 premières places » |
 | 5/12 | Capture nette | « Pas tout Conakry. Un repère. » |
 | 24/12 | Lumière dorée + app | « 24 décembre. The Loop est ouvert. » |
 

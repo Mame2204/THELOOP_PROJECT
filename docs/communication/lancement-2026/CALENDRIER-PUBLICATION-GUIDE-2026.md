@@ -42,7 +42,7 @@
 | **28/11** ven. | Reels **option** `FRAME_2811_*` | Outil du quotidien | Moins de dispersion · repère · lien | Non |
 | **30/11** dim. | Story ×2 | Signature + lien discret | Transmission · sticker liste | Non |
 | **2/12** mar. | Feed règle 2/3 | Plus-value | Une vraie plus-value · lien | Non |
-| **4/12** jeu. | Feed J-20 | Rappel **24/12** public | J-20 · ouverture publique **24 déc.** · accès anticipé **17 déc.** | Non |
+| **4/12** jeu. | Feed **J-13** | Compte à rebours **17/12** (100 premiers) | J-13 · accès anticipé **17 déc.** · liste ouverte · **Réserve ta place** · UTM `j13_0412` | Non |
 | **5/12** ven. | Reels **option** anti-annuaire | Positionnement | Pas un annuaire. Un guide. · lien | Non |
 | **9/12** mar. | Feed règle 3/3 | Expérience soignée | Expérience soignée ou rare · lien | Non |
 

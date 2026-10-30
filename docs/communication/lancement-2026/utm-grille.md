@@ -34,4 +34,10 @@
 https://theloop-app.com/?utm_source=facebook&utm_medium=video&utm_campaign=waitlist_open_2026&utm_content=frequence_1711
 ```
 
+**Exemple lien 4/12 (J-13 feed) :**
+
+```
+https://theloop-app.com/?utm_source=facebook&utm_medium=image&utm_campaign=waitlist_open_2026&utm_content=j13_0412
+```
+
 **Suivi sans outil analytics lourd :** colonne ou tag côté table waitlist = `utm_content` si tu ajoutes un champ hidden sur la landing (option dev ultérieure). En attendant, différencier surtout **email vs Facebook vs story**.

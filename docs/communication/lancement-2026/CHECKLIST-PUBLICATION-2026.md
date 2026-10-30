@@ -28,6 +28,7 @@ Frames + SRT dans le repo — exporter **.mp4** toi-même :
 ## 3. Publication Meta (ordre = calendrier)
 
 - [ ] Programmer feed / stories / carrousels aux dates des fiches
+- [ ] **4/12** : `POST_04-12_J-13-PUBLIER.png` · UTM `j13_0412` (pas l’ancienne J-20 / `j20_0412`)
 - [ ] Coller **UTM** depuis `utm-grille.md` (un lien par format quand indiqué)
 - [ ] **7–16/12** : stories terrain (`jour_07` … `jour_16`) + tes rush optionnels
 - [ ] **17/12** : e-mail 100 premiers (produit) + post optionnel sans CTA agressif
