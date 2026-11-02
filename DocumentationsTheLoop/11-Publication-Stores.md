@@ -34,7 +34,7 @@ Réponses générales :
 |------------------|--------|-----------|-------------|-----------|
 | Infos personnelles | Nom | Oui | Oui | Fonctionnement de l'app, gestion du compte |
 | Infos personnelles | Adresse e-mail | Oui | Oui | Gestion du compte, communications |
-| Infos personnelles | Numéro de téléphone | Oui | Oui | Gestion du compte, paiement mobile money |
+| Infos personnelles | Numéro de téléphone | Oui | **Non** (facultatif) | Gestion du compte, paiement mobile money |
 | Infos personnelles | Autres infos (date de naissance, ville, pays, entreprise/poste partenaire) | Oui | Non | Fonctionnement de l'app, personnalisation |
 | Infos financières | Historique d'achats (PASS) | Oui | Non | Fonctionnement de l'app |
 | Photos et vidéos | Photos (comptes partenaires : visuels des lieux/événements) | Oui | Non | Fonctionnement de l'app |
@@ -50,7 +50,9 @@ Non collectés : localisation GPS, contacts, micro, SMS, historique web. La cam�
 
 | Catégorie Apple | Données |
 |-----------------|---------|
-| Coordonnées | Nom, adresse e-mail, numéro de téléphone |
+| Coordonnées | Nom, adresse e-mail, numéro de téléphone (**facultatif**) |
+
+> Le téléphone n'est **jamais** exigé pour s'inscrire, activer une invitation, consulter l'app ou demander un partenariat (build 71+). Il n'est demandé qu'au paiement mobile money d'un PASS. Si le questionnaire propose « requis / facultatif », répondre **facultatif**.
 | Achats | Historique d'achats (PASS) |
 | Contenu utilisateur | Photos (partenaires) |
 | Identifiants | ID de l'appareil (jeton push) |
@@ -87,6 +89,7 @@ Les textes affichés par l'app et par le site viennent désormais tous de la tab
 | Inscription (`signupEnabled`) | **OFF** |
 | Achat PASS (`passPurchaseEnabled`) | **ON** |
 | Privilèges (`privilegesVisible`) | **Visible** (recommandé) |
+| Navigation sans compte (`guestBrowseEnabled`) | **ON** — exigé (refus Apple 5.1.1 du build 70) |
 | Pré-lancement | **OFF** |
 
 Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu’à décembre) **sans nouveau build** si le **même binaire** a été approuvé avec l’achat montré — cf. §6.
@@ -94,6 +97,8 @@ Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu�
 ### Texte FR — « Notes pour la vérification »
 
 > THE LOOP est un guide de sorties et d'expériences à Conakry (Guinée). Les privilèges Loop Prime se consomment **sur place** chez les établissements partenaires (carte QR, validation au comptoir).
+>
+> **Sans compte** : l'app s'ouvre sur l'Accueil ; Agenda, Spots et Outils se consultent librement. Un compte est demandé uniquement pour les fonctions personnelles (favoris, sondages, carte membre, privilèges, PASS). Le numéro de téléphone est **facultatif** partout ; il n'est demandé qu'au paiement mobile money.
 >
 > **Compte membre (test achat PASS)**  
 > E-mail : member@theloop-app.com · Mot de passe : [MDP]  
@@ -109,6 +114,8 @@ Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu�
 ### Texte EN — App Store (recommandé)
 
 > THE LOOP is a city guide for Conakry, Guinea. Loop Prime benefits are redeemed **in person** at partner venues (member QR card, validated by staff).
+>
+> **No account needed to browse**: the app opens on Home; Agenda, Spots and Tools are freely accessible. An account is only required for personal features (favorites, polls, member card, benefits, PASS). Phone number is **optional** everywhere; it is only requested for mobile-money checkout.
 >
 > **Member account (PASS purchase flow)**  
 > Email: member@theloop-app.com · Password: [PWD]  
@@ -126,7 +133,7 @@ Après **approbation** : piloter gates (ex. PASS OFF + pré-lancement ON jusqu�
 - [x] Compte **membre** review : `member@theloop-app.com`, jamais Prime, sert au parcours achat + annulation Djomy.
 - [x] Compte **Prime** review : `prime@theloop-app.com`, statut Prime **actif en base** (admin), pas via paiement test.
 - [x] Contenu visible (Guinée) ; **pas** de compte admin pour la review.
-- [x] L'app sans compte n'affiche que la **connexion** — les reviewers doivent se connecter.
+- [x] Build **71** : l'app s'ouvre **sans compte** sur l'Accueil (refus 5.1.1 du build 70 corrigé). Vérifier `guestBrowseEnabled` = ON avant envoi.
 - [x] Envoi build **70** : voir `16-Suivi-Review-Build-70.md`.
 
 ## 6. PASS Prime et achats intégrés (Apple 3.1.1 / 3.1.3(e) · Google Paiements)
