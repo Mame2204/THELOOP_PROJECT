@@ -141,6 +141,7 @@ export function AdminSuperSettingsScreen({ navigation }: Props) {
   const {
     gates,
     setSignupEnabled,
+    setGuestBrowseEnabled,
     setPassPurchaseEnabled,
     setPrivilegesVisible,
     setPrelaunchGate,
@@ -242,6 +243,27 @@ export function AdminSuperSettingsScreen({ navigation }: Props) {
           }}
           activeLabel="Visible"
           inactiveLabel="Masqué"
+          activeColor={ADMIN_THEME.accent}
+          shell={shell}
+        />
+      </View>
+
+      <View style={[styles.settingsCard, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}>
+        <Text style={[styles.settingsLabel, { color: shell.pageTitle }]}>Navigation sans compte</Text>
+        <Text style={[styles.settingsHint, { color: shell.pageKicker }]}>
+          Accueil, Agenda, Spots et Outils consultables sans compte (hors LoopX). Favoris, sondages, privilèges et
+          PASS restent réservés aux membres. Exigé par l’App Store : ne pas désactiver tant que l’app est publiée sur
+          iOS, sinon refus à la prochaine vérification.
+        </Text>
+        <TogglePill
+          value={gates.guestBrowseEnabled}
+          onChange={(next) => {
+            void (async () => {
+              syncWarn(await setGuestBrowseEnabled(next));
+            })();
+          }}
+          activeLabel="Ouverte"
+          inactiveLabel="Connexion obligatoire"
           activeColor={ADMIN_THEME.accent}
           shell={shell}
         />

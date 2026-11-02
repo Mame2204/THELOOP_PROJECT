@@ -43,7 +43,7 @@ export function VisitorGatewaySheet({ visible, onClose, onSignup, onLogin, onSug
             <Text style={[styles.body, { color: shell.pageKicker }]}>
               {signupEnabled
                 ? 'Crée un compte gratuit pour sauvegarder tes favoris (événements, spots, outils) et recevoir des offres personnalisées.'
-                : 'Connecte-toi pour sauvegarder tes favoris. Les inscriptions sont temporairement fermées.'}
+                : 'Connecte-toi pour tes favoris, les sondages et tes privilèges. L’accès membre se fait sur invitation.'}
             </Text>
 
             <View style={styles.accountRow}>

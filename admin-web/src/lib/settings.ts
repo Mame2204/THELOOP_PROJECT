@@ -8,6 +8,8 @@ export type PrelaunchMode = 'text' | 'countdown';
 
 export interface AppGates {
   signupEnabled: boolean;
+  /** Guide public sans compte dans l’app (App Store 5.1.1) — pilote aussi la lecture catalogue anon en base. */
+  guestBrowseEnabled: boolean;
   passPurchaseEnabled: boolean;
   /** Privilèges visibles sur les fiches / cartes de l’app (indépendant de l’achat PASS). */
   privilegesVisible: boolean;
@@ -27,6 +29,7 @@ export interface AppGates {
 
 export const DEFAULT_APP_GATES: AppGates = {
   signupEnabled: false,
+  guestBrowseEnabled: true,
   passPurchaseEnabled: false,
   privilegesVisible: true,
   prelaunch: {
@@ -65,6 +68,7 @@ export function normalizeAppGates(raw: unknown): AppGates {
     : {}) as Record<string, unknown>;
   return {
     signupEnabled: asBool(row.signupEnabled, DEFAULT_APP_GATES.signupEnabled),
+    guestBrowseEnabled: asBool(row.guestBrowseEnabled, DEFAULT_APP_GATES.guestBrowseEnabled),
     passPurchaseEnabled: asBool(row.passPurchaseEnabled, DEFAULT_APP_GATES.passPurchaseEnabled),
     privilegesVisible: asBool(row.privilegesVisible, DEFAULT_APP_GATES.privilegesVisible),
     prelaunch: {
