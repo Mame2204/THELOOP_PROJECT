@@ -261,6 +261,15 @@ export function ParametresPage() {
           <label className="check-inline" style={{ display: 'flex', marginBottom: 10 }}>
             <input
               type="checkbox"
+              checked={gates.guestBrowseEnabled}
+              onChange={(e) => setGates((g) => ({ ...g, guestBrowseEnabled: e.target.checked }))}
+            />
+            Navigation sans compte (Accueil, Agenda, Spots, Outils hors LoopX) — exigé par l’App Store, ne pas couper
+            tant que l’app iOS est publiée
+          </label>
+          <label className="check-inline" style={{ display: 'flex', marginBottom: 10 }}>
+            <input
+              type="checkbox"
               checked={gates.passPurchaseEnabled}
               onChange={(e) => setGates((g) => ({ ...g, passPurchaseEnabled: e.target.checked }))}
             />

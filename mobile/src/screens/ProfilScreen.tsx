@@ -124,7 +124,7 @@ export function ProfilScreen({ navigation }: Props) {
         <PageHeader title="Mon compte" shell={shell} />
         <View style={styles.guestBody}>
           <Text style={[styles.meta, { color: shell.pageKicker, textAlign: 'center' }]}>
-            Connectez-vous pour accéder à votre carte membre.
+            Connectez-vous pour accéder à votre carte membre, vos favoris et vos privilèges.
           </Text>
           <Pressable
             style={[styles.btnGold, { backgroundColor: shell.filterActiveBg }]}

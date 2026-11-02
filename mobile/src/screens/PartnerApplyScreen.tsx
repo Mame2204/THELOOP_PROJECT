@@ -48,8 +48,8 @@ export function PartnerApplyScreen({ navigation }: Props) {
       Alert.alert('Champs requis', 'Indiquez le nom de l\'établissement et un email professionnel.');
       return;
     }
-    if (!phone.trim() || !isPhoneIdentifier(phone)) {
-      Alert.alert('Téléphone requis', 'Indiquez un numéro WhatsApp valide (+224 6XX XX XX XX).');
+    if (phone.trim() && !isPhoneIdentifier(phone)) {
+      Alert.alert('Téléphone invalide', 'Numéro invalide — laissez vide ou utilisez le format +224 6XX XX XX XX.');
       return;
     }
 
@@ -57,7 +57,7 @@ export function PartnerApplyScreen({ navigation }: Props) {
     const result = await submitPartnershipRequest({
       companyName: companyName.trim(),
       email: email.trim(),
-      phone: normalizePhone(phone),
+      phone: phone.trim() ? normalizePhone(phone) : '',
       activityType: 'restaurant',
       message: message.trim(),
     });
@@ -71,7 +71,9 @@ export function PartnerApplyScreen({ navigation }: Props) {
     }
     Alert.alert(
       'Merci',
-      'Votre demande a été transmise. Nous vous recontacterons sur WhatsApp ou par email.',
+      phone.trim()
+        ? 'Votre demande a été transmise. Nous vous recontacterons sur WhatsApp ou par e-mail.'
+        : 'Votre demande a été transmise. Nous vous recontacterons par e-mail.',
       [{ text: 'OK', onPress: () => navigation.goBack() }],
     );
   }
@@ -116,7 +118,7 @@ export function PartnerApplyScreen({ navigation }: Props) {
         keyboardType="email-address"
       />
 
-      <FieldLabel required color={shell.pageKicker}>Téléphone / WhatsApp</FieldLabel>
+      <FieldLabel color={shell.pageKicker}>Téléphone / WhatsApp (optionnel)</FieldLabel>
       <TextInput
         style={inputStyle}
         placeholder={authIdentifierHint()}

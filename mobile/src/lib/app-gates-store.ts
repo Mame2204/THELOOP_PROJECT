@@ -20,6 +20,12 @@ export interface MaintenanceGateConfig {
 
 export interface AppGates {
   signupEnabled: boolean;
+  /**
+   * Guide public sans compte (Accueil, Agenda, Spots, Outils en lecture).
+   * ON par défaut : exigé par l’App Store (5.1.1). OFF = écran de connexion obligatoire.
+   * Pilote aussi la lecture du catalogue côté base (`guest_browse_enabled()`).
+   */
+  guestBrowseEnabled: boolean;
   /** Achat PASS / Djomy visible dans l’app. OFF par défaut — activable sans rebuild. */
   passPurchaseEnabled: boolean;
   /** Privilèges visibles sur les fiches et cartes (indépendant de l’achat PASS). ON par défaut. */
@@ -34,6 +40,7 @@ const REMOTE_KEY = 'app_gates';
 export const DEFAULT_APP_GATES: AppGates = {
   /** Invite-only par défaut (lancement public / Dec). Activer via super admin si besoin. */
   signupEnabled: false,
+  guestBrowseEnabled: true,
   passPurchaseEnabled: false,
   privilegesVisible: true,
   prelaunch: {
@@ -74,6 +81,7 @@ export function normalizeAppGates(raw: unknown): AppGates {
   const mode = pre.mode === 'countdown' ? 'countdown' : 'text';
   return {
     signupEnabled: asBool(row.signupEnabled, DEFAULT_APP_GATES.signupEnabled),
+    guestBrowseEnabled: asBool(row.guestBrowseEnabled, DEFAULT_APP_GATES.guestBrowseEnabled),
     passPurchaseEnabled: asBool(row.passPurchaseEnabled, DEFAULT_APP_GATES.passPurchaseEnabled),
     privilegesVisible: asBool(row.privilegesVisible, DEFAULT_APP_GATES.privilegesVisible),
     prelaunch: {
@@ -176,6 +184,15 @@ export async function setSignupEnabled(enabled: boolean): Promise<{
 }> {
   const current = await getAppGates();
   return commitGates({ ...current, signupEnabled: enabled });
+}
+
+export async function setGuestBrowseEnabled(enabled: boolean): Promise<{
+  gates: AppGates;
+  synced: boolean;
+  error?: string;
+}> {
+  const current = await getAppGates();
+  return commitGates({ ...current, guestBrowseEnabled: enabled });
 }
 
 export async function setPassPurchaseEnabled(enabled: boolean): Promise<{

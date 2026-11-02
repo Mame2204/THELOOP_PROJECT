@@ -90,6 +90,8 @@ export function RootNavigator() {
   const authenticated = isAuthenticated(role);
   /** Session recovery/invite : rester sur Auth pour saisir le nouveau MDP. */
   const appUnlocked = authenticated && !passwordRecoveryPending;
+  /** Guide public sans compte (App Store 5.1.1) — interrupteur super admin `guestBrowseEnabled`. */
+  const showMainShell = appUnlocked || (!passwordRecoveryPending && gates.guestBrowseEnabled);
   const { setScope } = useThemeContext();
   const { shell } = useMemberTheme();
   const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
@@ -211,7 +213,7 @@ export function RootNavigator() {
         <ThemedStatusBar />
         <Stack.Navigator
           key={appUnlocked ? 'member' : 'guest'}
-          initialRouteName={appUnlocked ? 'Tabs' : 'Auth'}
+          initialRouteName={showMainShell ? 'Tabs' : 'Auth'}
           screenOptions={{
             headerStyle: { backgroundColor: shell.pageBg },
             headerTintColor: shell.tabIndicator,
@@ -222,7 +224,7 @@ export function RootNavigator() {
             animation: Platform.OS === 'android' ? 'fade' : 'default',
           }}
         >
-          {!appUnlocked ? (
+          {!showMainShell ? (
             <>
               <Stack.Screen
                 name="Auth"
