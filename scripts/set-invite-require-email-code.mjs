@@ -59,8 +59,12 @@ if (!res.ok) {
 }
 
 console.log(`OK — INVITE_REQUIRE_EMAIL_CODE=${value}`);
-console.log('Effet immédiat sur member-activate-invite (sans redéploiement).');
+console.log('Effet immédiat sur member-activate-invite (sans redéploiement du secret).');
+console.log('Vérifier (nom + date, pas la valeur) : node scripts/verify-invite-edge-config.mjs');
 if (enabled) {
-  console.log('Les invités doivent saisir le code reçu par e-mail (build 54+).');
-  console.log('Vérifiez le modèle recovery : .\\configure-auth-invite-email.cmd');
+  console.log('Les invités doivent saisir le code reçu par e-mail (build 57+ · UX 2 étapes).');
+  console.log('Redeploy Edge si besoin : node scripts/deploy-edge-invite-functions.mjs');
+  console.log('Modèle e-mail recovery (code 6 chiffres) : .\\configure-auth-invite-email.cmd');
+} else {
+  console.log('ATTENTION : false désactive la protection — réservé rollback temporaire.');
 }
