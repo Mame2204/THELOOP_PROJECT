@@ -27,6 +27,7 @@ Pack opérationnel pour le lancement commerciale de **THE LOOP Pass** (fidélisa
 | 10 | [10-CGV-SERVICES-PASS-B2B.md](./10-CGV-SERVICES-PASS-B2B.md) | Conditions générales de service |
 | 11 | [11-AVENANT-REPRISE-SOCIETE.md](./11-AVENANT-REPRISE-SOCIETE.md) | Reprise du contrat par la société créée en janvier |
 | 12 | [12-CARTE-VISITE-ENTREPRISE-EN-COURS.md](./12-CARTE-VISITE-ENTREPRISE-EN-COURS.md) | Cartes imprimées avant création société |
+| 13 | [13-PARCOURS-RDV-ETAPES.md](./13-PARCOURS-RDV-ETAPES.md) | **RDV commerçant : 12 étapes** (démo, prix, essai, contrat) |
 
 ---
 
