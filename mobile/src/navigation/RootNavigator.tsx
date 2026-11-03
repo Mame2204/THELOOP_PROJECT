@@ -161,6 +161,33 @@ export function RootNavigator() {
     return () => clearTimeout(t0);
   }, [passwordRecoveryPending]);
 
+  /**
+   * Mur de connexion : une seule pile d’écrans (évite crash natif quand l’interrupteur
+   * `guestBrowseEnabled` coupe l’accès invité alors que Tabs / fiches détail sont montés).
+   */
+  useEffect(() => {
+    if (appUnlocked || passwordRecoveryPending || showMainShell) return;
+
+    const forceAuthWall = (): boolean => {
+      const nav = navigationRef.current;
+      if (!nav?.isReady()) return false;
+      const root = nav.getRootState();
+      const top = root?.routes[root.index ?? 0];
+      if (top?.name === 'Auth' || top?.name === 'PartnerApply') return true;
+      nav.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Auth' }],
+        }),
+      );
+      return true;
+    };
+
+    if (forceAuthWall()) return undefined;
+    const t = setTimeout(forceAuthWall, 50);
+    return () => clearTimeout(t);
+  }, [showMainShell, appUnlocked, passwordRecoveryPending]);
+
   const navTheme = useMemo(
     () => ({
       ...DefaultTheme,
@@ -224,55 +251,13 @@ export function RootNavigator() {
             animation: Platform.OS === 'android' ? 'fade' : 'default',
           }}
         >
-          {!showMainShell ? (
-            <>
-              <Stack.Screen
-                name="Auth"
-                getComponent={requireScreen(() => require('@/screens/AuthScreen').AuthScreen, 'Auth')}
-                options={{ headerShown: false }}
-                initialParams={passwordRecoveryPending ? { mode: 'set_password' } : undefined}
-              />
-              <Stack.Screen
-                name="PartnerApply"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerApplyScreen').PartnerApplyScreen,
-                  'PartnerApply',
-                )}
-                options={{ title: 'Partenariat' }}
-              />
-              <Stack.Screen
-                name="PartnerValidationCode"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerValidationCodeScreen').PartnerValidationCodeScreen,
-                  'PartnerValidationCode',
-                )}
-                options={{
-                  headerShown: false,
-                  presentation: DETAIL_MODAL_PRESENTATION,
-                  animation: DETAIL_MODAL_ANIMATION,
-                  contentStyle: { backgroundColor: 'transparent' },
-                }}
-              />
-              <Stack.Screen
-                name="PartnerBenefitScan"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerBenefitScanScreen').PartnerBenefitScanScreen,
-                  'PartnerBenefitScan',
-                )}
-                options={{ title: 'Scanner membre', headerShown: false }}
-              />
-              <Stack.Screen
-                name="PartnerBenefitConfirm"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerBenefitConfirmScreen').PartnerBenefitConfirmScreen,
-                  'PartnerBenefitConfirm',
-                )}
-                options={{ title: 'Valider privilège' }}
-              />
-            </>
-          ) : (
-            <>
           <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Auth"
+            getComponent={requireScreen(() => require('@/screens/AuthScreen').AuthScreen, 'Auth')}
+            options={{ headerShown: false }}
+            initialParams={passwordRecoveryPending ? { mode: 'set_password' } : undefined}
+          />
           <Stack.Screen
             name="EventDetail"
             getComponent={requireScreen(
@@ -359,11 +344,6 @@ export function RootNavigator() {
               'PartnerPublic',
             )}
             options={{ title: 'Partenaire', headerBackTitle: 'Retour' }}
-          />
-          <Stack.Screen
-            name="Auth"
-            getComponent={requireScreen(() => require('@/screens/AuthScreen').AuthScreen, 'Auth')}
-            options={{ title: 'Compte', presentation: 'modal' }}
           />
           <Stack.Screen
             name="Prime"
@@ -775,8 +755,6 @@ export function RootNavigator() {
             )}
             options={{ headerShown: false }}
           />
-            </>
-          )}
         </Stack.Navigator>
       </NavigationContainer>
     </View>
