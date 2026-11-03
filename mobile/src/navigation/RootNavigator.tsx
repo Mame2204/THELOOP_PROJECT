@@ -259,6 +259,19 @@ export function RootNavigator() {
             initialParams={passwordRecoveryPending ? { mode: 'set_password' } : undefined}
           />
           <Stack.Screen
+            name="VisitorGateway"
+            getComponent={requireScreen(
+              () => require('@/screens/VisitorGatewayScreen').VisitorGatewayScreen,
+              'VisitorGateway',
+            )}
+            options={{
+              headerShown: false,
+              presentation: DETAIL_MODAL_PRESENTATION,
+              animation: DETAIL_MODAL_ANIMATION,
+              contentStyle: { backgroundColor: 'transparent' },
+            }}
+          />
+          <Stack.Screen
             name="EventDetail"
             getComponent={requireScreen(
               () => withDetailPopup(require('@/screens/EventDetailScreen').EventDetailScreen),
