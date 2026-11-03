@@ -173,16 +173,8 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               style={styles.tab}
               onPress={() => {
                 if (tab.name === 'Profil' && !loggedIn) {
-                  const parent = navigation.getParent();
-                  openSignupSheet({
-                    navigate: (name, params) => {
-                      if (parent) {
-                        (parent.navigate as (screen: string, p?: object) => void)(name, params);
-                        return;
-                      }
-                      (navigation.navigate as (screen: string) => void)(name);
-                    },
-                  });
+                  const stackNav = navigation.getParent() ?? navigation;
+                  openSignupSheet(stackNav as Parameters<typeof openSignupSheet>[0]);
                   return;
                 }
                 navigation.navigate(tab.name);
