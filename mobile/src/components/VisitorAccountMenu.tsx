@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { useFavoritesSignup } from '@/context/FavoritesSignupContext';
+import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
 import type { RootStackParamList } from '@/navigation/types';
 import type { ShellTheme } from '@/lib/member-grade-theme';
 
@@ -11,11 +11,11 @@ interface Props {
 
 export function VisitorAccountMenu({ shell }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { openSignupSheet } = useFavoritesSignup();
+  const openFavoritesSignup = usePromptFavoritesSignup();
 
   return (
     <Pressable
-      onPress={() => openSignupSheet(navigation)}
+      onPress={() => openFavoritesSignup(navigation)}
       hitSlop={10}
       style={[styles.avatarBtn, { borderColor: shell.filterInactiveBorder, backgroundColor: shell.filterInactiveBg }]}
       accessibilityLabel="Connexion, inscription ou partenariat"

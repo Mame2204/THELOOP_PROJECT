@@ -10,6 +10,7 @@ import {
   resolveRootStackNavigation,
   type NavLike,
 } from '@/lib/resolve-root-stack-navigation';
+import { navigateRoot } from '@/navigation/root-navigation-ref';
 
 export type AuthNavigation = NavLike & {
   navigate: (name: string, params?: object) => void;
@@ -33,8 +34,8 @@ export function FavoritesSignupProvider({ children }: { children: ReactNode }) {
 
   const openSignupSheet = useCallback((nav: AuthNavigation) => {
     pendingAuthNavRef.current = nav;
-    const stack = resolveRootStackNavigation(nav);
-    stack.navigate?.('VisitorGateway');
+    if (navigateRoot('VisitorGateway')) return;
+    resolveRootStackNavigation(nav).navigate?.('VisitorGateway');
   }, []);
 
   const value = useMemo(

@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNotifications } from '@/context/NotificationsContext';
 import { useAuthContext } from '@/context/AuthContext';
-import { useFavoritesSignup } from '@/context/FavoritesSignupContext';
+import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
 import { isAuthenticated } from '@/types';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -24,7 +24,7 @@ export function MemberHeaderActions({
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { unreadCount } = useNotifications();
   const { role } = useAuthContext();
-  const { openSignupSheet } = useFavoritesSignup();
+  const openFavoritesSignup = usePromptFavoritesSignup();
   const loggedIn = isAuthenticated(role);
 
   return (
@@ -45,7 +45,7 @@ export function MemberHeaderActions({
         style={styles.iconBtn}
         onPress={() => {
           if (!loggedIn) {
-            openSignupSheet(navigation);
+            openFavoritesSignup(navigation);
             return;
           }
           navigation.navigate('Notifications');

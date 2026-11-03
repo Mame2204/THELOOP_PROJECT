@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContent } from '@/context/ContentContext';
-import { useFavoritesSignup } from '@/context/FavoritesSignupContext';
+import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
 import type { RootStackParamList } from '@/navigation/types';
 import { subscribeHomeRefresh } from '@/lib/home-refresh';
 import {
@@ -45,7 +45,7 @@ export function OneTapPoll({
   const { user } = useAuthContext();
   const { activeCountryCode } = useContent();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { openSignupSheet } = useFavoritesSignup();
+  const openFavoritesSignup = usePromptFavoritesSignup();
   const [snap, setSnap] = useState<HomePollSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
@@ -109,7 +109,7 @@ export function OneTapPoll({
   async function onVote(optionId: string) {
     if (!snap || snap.userOptionId || voting) return;
     if (!voter.userId) {
-      openSignupSheet(navigation);
+      openFavoritesSignup(navigation);
       return;
     }
     setVoting(true);

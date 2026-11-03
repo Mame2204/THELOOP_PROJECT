@@ -6,8 +6,8 @@ import {
   CommonActions,
   NavigationContainer,
   DefaultTheme,
-  type NavigationContainerRef,
 } from '@react-navigation/native';
+import { rootNavigationRef } from '@/navigation/root-navigation-ref';
 import { CustomTabBar } from '@/components/CustomTabBar';
 import { ThemedStatusBar } from '@/components/ThemedStatusBar';
 import { syncAdminThemeScopeFromState } from '@/navigation/admin-theme-scope';
@@ -94,11 +94,10 @@ export function RootNavigator() {
   const showMainShell = appUnlocked || (!passwordRecoveryPending && gates.guestBrowseEnabled);
   const { setScope } = useThemeContext();
   const { shell } = useMemberTheme();
-  const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
   const wasAuthenticatedRef = useRef(appUnlocked);
 
   const applyAdminThemeScope = useCallback(
-    (state = navigationRef.current?.getRootState()) => {
+    (state = rootNavigationRef.getRootState()) => {
       syncAdminThemeScopeFromState(state, role, setScope);
     },
     [role, setScope],
@@ -115,8 +114,8 @@ export function RootNavigator() {
     if (wasAuth || !appUnlocked) return;
 
     const goAccueil = (): boolean => {
-      const nav = navigationRef.current;
-      if (!nav?.isReady()) return false;
+      if (!rootNavigationRef.isReady()) return false;
+      const nav = rootNavigationRef;
       const names = nav.getRootState()?.routeNames ?? [];
       if (!names.includes('Tabs')) return false;
       nav.dispatch(
@@ -148,9 +147,8 @@ export function RootNavigator() {
   useEffect(() => {
     if (!passwordRecoveryPending) return;
     const goSetPassword = (): boolean => {
-      const nav = navigationRef.current;
-      if (!nav?.isReady()) return false;
-      nav.navigate('Auth', { mode: 'set_password' });
+      if (!rootNavigationRef.isReady()) return false;
+      rootNavigationRef.navigate('Auth', { mode: 'set_password' });
       return true;
     };
     if (goSetPassword()) return undefined;
@@ -169,8 +167,8 @@ export function RootNavigator() {
     if (appUnlocked || passwordRecoveryPending || showMainShell) return;
 
     const forceAuthWall = (): boolean => {
-      const nav = navigationRef.current;
-      if (!nav?.isReady()) return false;
+      if (!rootNavigationRef.isReady()) return false;
+      const nav = rootNavigationRef;
       const root = nav.getRootState();
       const top = root?.routes[root.index ?? 0];
       if (top?.name === 'Auth' || top?.name === 'PartnerApply') return true;
@@ -232,7 +230,7 @@ export function RootNavigator() {
   return (
     <View style={{ flex: 1, backgroundColor: shell.pageBg }}>
       <NavigationContainer
-        ref={navigationRef}
+        ref={rootNavigationRef}
         theme={navTheme}
         onReady={() => applyAdminThemeScope()}
         onStateChange={(state) => syncAdminThemeScopeFromState(state, role, setScope)}
