@@ -10,7 +10,7 @@
 | Utiliser | Ignorer |
 |----------|---------|
 | Tes rushs scroll / recherche · **`COVER_17-11_liste-ouverte.png`** (fin) | **`FRAME_1711_01` … `06`** (vidéo « La fréquence » — secours seulement) |
-| **`APP_fragment-seuil-com.png`** (Le Fragment) | Cover **« Je t’explique tout en 40 secondes »** |
+| **`CARROUSEL_17-11_03_piliers.png`** (plan 5 · affiche) | Ancienne **`COVER_17-11_liste-ouverte`** avec « 40 secondes » — refaire `git pull` + regén PNG |
 | Bulles `BULLE_reseau-*` · `B-roll-main.mp4` (option) | Rafale **Agenda / Spots / Outils** (ancien scénario 109 lignes) |
 | SRT : `../archives/srt/POST_17-11_scroll-recherche.srt` | Vidéo auto stitch PNG |
 

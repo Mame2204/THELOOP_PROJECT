@@ -3,47 +3,46 @@
 **Format :** 9:16 · 1080×1920 · **Reels + feed Facebook**  
 **UTM :** `frequence_1711` · **SRT :** `../archives/srt/POST_17-11_scroll-recherche.srt`
 
-> **Ne pas utiliser** dans ce montage : `FRAME_1711_01` … `06`, cover « je t’explique tout en 40 secondes », capture Accueil « démo app » (Agenda/Spots en rafale).  
-> Fin CTA : **`COVER_17-11_liste-ouverte.png`** (déjà dans ce dossier) **ou** copies `09` / `10` (voir `README.md`).
+> **Interdit dans ce montage :** PNG **face caméra** avec « 40 secondes » (ancienne version de `COVER_17-11_liste-ouverte` — regénérer après pull), `FRAME_1711_01`…`06`, rafale Agenda/Spots/Outils.
 
 ---
 
-## Fichiers dans `video-1711-montage/` (ordre timeline)
+## Affiches à utiliser (PNG prêts)
 
-| # | Fichier | Qui le fournit |
-|---|---------|----------------|
-| 02 | `02_SCROLL_main.mp4` ou `SCROLL_reseaux-bulles.mp4` | **Toi** · scroll réseaux |
-| 04 | `04_SEARCH_taper-efface.mp4` | **Toi** · recherche puis effacer |
-| 05 | `05_APP_fragment-seuil.png` ou `APP_fragment-seuil-com.png` | Capture **Le Fragment** |
-| 06 | `06_LOGO_the-loop.png` | Optionnel · logo · **ou** overlay CapCut seul |
-| fin | `COVER_17-11_liste-ouverte.png` | CTA · liste ouverte (pack dossier) |
+| Rôle | Fichier | Où le prendre |
+|------|---------|----------------|
+| **Plan 5 · promesse** | `CARROUSEL_17-11_03_piliers.png` | `exports-png-v4-light/` (copier dans ce dossier si tu veux) |
+| **Plans 6–8 · CTA** | `COVER_17-11_liste-ouverte.png` | `video-1711-montage/` **ou** `exports-png-v4-light/` *(sans texte « 40 secondes » — voir README)* |
+| **Option fin URL** | `CARROUSEL_17-11_05_reserve.png` | dernier plan « Réserve ta place » si tu préfères l’affiche carrousel |
+
+**Ne pas utiliser :** `export-visuels-covers-fondatrice.html` slide « Je t’explique… » (réservé **autre** vidéo, texte corrigé dans le repo).
 
 ---
 
-## Tableau montage
+## Rushs (toi)
 
-| Plan | Début | Fin | Durée | Visuel | Texte à l’écran (CapCut) | Voix off |
-|------|-------|-----|-------|--------|--------------------------|----------|
-| 1 | 0:00 | 0:02 | 2 s | début scroll | **Vendredi · 19h · Conakry** | *(silence)* |
+| Fichier | Contenu |
+|---------|---------|
+| `SCROLL_reseaux-bulles.mp4` ou `02_SCROLL_main.mp4` | Scroll |
+| `04_SEARCH_taper-efface.mp4` | Recherche → effacer |
+| `APP_fragment-seuil-com.png` | Le Fragment |
+
+---
+
+## Tableau montage CapCut (ordre des pistes)
+
+| Plan | Début | Fin | Durée | Visuel | Texte CapCut | Voix off |
+|------|-------|-----|-------|--------|--------------|----------|
+| 1 | 0:00 | 0:02 | 2 s | scroll | **Vendredi · 19h · Conakry** | *(silence)* |
 | 2 | 0:02 | 0:10 | 8 s | scroll | **Un plan pour le week-end ?** | Ce soir, je cherche un plan pour le week-end. |
-| 3 | 0:10 | 0:16 | 6 s | recherche | **Où c’était déjà… ?** | Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. Posts, stories, reels… Trop de bruit. Peu de repères. |
-| 4 | 0:16 | 0:24 | **8 s** | Fragment | ***(aucun gros texte — lire l’image)*** | *(silence)* **ou** *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* |
-| 5 | 0:24 | 0:29 | 5 s | logo ou fond teal | **The Loop** · *guide sélectif* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
-| 6 | 0:29 | 0:35 | 6 s | cover liste | *(déjà dans le PNG)* | Aujourd’hui, la liste est ouverte. Cent premières places pour un accès anticipé, bientôt. |
-| 7 | 0:35 | 0:38 | 3 s | cover (même) | *(PNG)* | Premiers inscrits, premiers invités. |
-| 8 | 0:38 | 0:42 | 4 s | cover | **Réserve ta place ↓** | Le lien est juste en dessous. Réserve ta place. |
+| 3 | 0:10 | 0:16 | 6 s | recherche | **Où c’était déjà… ?** | Toujours les mêmes endroits… Posts, stories, reels… Trop de bruit. Peu de repères. |
+| 4 | 0:16 | 0:24 | **8 s** | Fragment | *(rien)* | *(silence)* ou *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* |
+| 5 | 0:24 | 0:29 | 5 s | **`CARROUSEL_17-11_03_piliers.png`** | *(texte sur l’affiche)* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
+| 6 | 0:29 | 0:35 | 6 s | **`COVER_17-11_liste-ouverte.png`** | *(affiche)* | Aujourd’hui, la liste est ouverte. Cent premières places… |
+| 7 | 0:35 | 0:38 | 3 s | même cover | *(affiche)* | Premiers inscrits, premiers invités. |
+| 8 | 0:38 | 0:42 | 4 s | cover **ou** `CARROUSEL_17-11_05_reserve.png` | *(affiche)* | Le lien est juste en dessous. Réserve ta place. |
 
-**Total ~42 s** — « 40 s » = durée cible, **pas** une phrase de cover Reels.
-
----
-
-## Texte écran vs image
-
-| Type | Règle |
-|------|--------|
-| Scroll / recherche | Overlay CapCut **oui** (1–2 lignes courtes) |
-| **Le Fragment** | Pas de « bruit / reels » par-dessus · **7–8 s** de lecture |
-| **Cover** | Ne pas recopier le texte en double |
+**Pas de logo seul · pas de fond teal vide · pas de cover « 40 secondes ».**
 
 ---
 
@@ -60,6 +59,6 @@
 
 ---
 
-## Plus de détail (scroll FB/IG/TikTok, bulles)
+## Cover Reels Meta (miniature)
 
-Voir aussi `MONTAGE-17-11.md` et `PREPARATION-17-11.md` (méthode longue · plan B).
+Frame **Vendredi 19h** ou **`CARROUSEL_17-11_01_liste-ouverte.png`** — **jamais** l’ancienne cover « 40 secondes ».
