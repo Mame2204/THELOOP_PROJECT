@@ -465,7 +465,7 @@ export function DemandesPage() {
                   <div>
                     <strong>{p.establishmentName || p.managerName}</strong>
                     <div className="meta">
-                      {p.managerName} · {p.email} · {p.phone}
+                      {p.managerName} · {p.email} · {p.phone && p.phone !== 'non_renseigne' ? p.phone : 'téléphone non renseigné'}
                     </div>
                     <div className="meta">{formatWhen(p.createdAt)}</div>
                   </div>

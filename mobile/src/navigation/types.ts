@@ -84,6 +84,8 @@ export type RootStackParamList = {
   LoopWalkDetail: { slug: string };
   LoopWalksList: undefined;
   PartnerPublic: { partnerId: string; partnerName: string; logoUrl?: string | null };
+  /** Invité : favoris / vote — au-dessus des fiches détail (évite Modal iOS invisible). */
+  VisitorGateway: undefined;
 };
 
 export type TabParamList = {

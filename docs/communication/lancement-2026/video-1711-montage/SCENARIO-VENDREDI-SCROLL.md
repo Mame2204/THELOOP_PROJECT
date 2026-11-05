@@ -1,9 +1,10 @@
 # Scénario 17/11 · Vendredi scroll + recherche (~42 s)
 
 **Format :** 9:16 · 1080×1920 · **Reels + feed Facebook**  
-**UTM :** `frequence_1711` · **SRT :** `../srt/POST_17-11_scroll-recherche.srt`
+**UTM :** `frequence_1711` · **SRT :** `../archives/srt/POST_17-11_scroll-recherche.srt`
 
-> **Ne pas utiliser** dans ce montage : `FRAME_1711_01` … `06`, cover « je t’explique tout en 40 secondes », capture Accueil « démo app ».
+> **Ne pas utiliser** dans ce montage : `FRAME_1711_01` … `06`, cover « je t’explique tout en 40 secondes », capture Accueil « démo app » (Agenda/Spots en rafale).  
+> Fin CTA : **`COVER_17-11_liste-ouverte.png`** (déjà dans ce dossier) **ou** copies `09` / `10` (voir `README.md`).
 
 ---
 
@@ -11,12 +12,11 @@
 
 | # | Fichier | Qui le fournit |
 |---|---------|----------------|
-| 02 | `02_SCROLL_main.mp4` | **Toi** · scroll réseaux |
+| 02 | `02_SCROLL_main.mp4` ou `SCROLL_reseaux-bulles.mp4` | **Toi** · scroll réseaux |
 | 04 | `04_SEARCH_taper-efface.mp4` | **Toi** · recherche puis effacer |
-| 05 | `05_APP_fragment-seuil.png` | Capture **Le Fragment** (écran ouvert) |
-| 06 | `06_LOGO_the-loop.png` | Optionnel · copie logo (voir `README.md`) — **ou** overlay CapCut seul |
-| 09 | `09_COVER_100-places.png` | CTA · liste ouverte |
-| 10 | `10_COVER_reserve.png` | CTA · lien |
+| 05 | `05_APP_fragment-seuil.png` ou `APP_fragment-seuil-com.png` | Capture **Le Fragment** |
+| 06 | `06_LOGO_the-loop.png` | Optionnel · logo · **ou** overlay CapCut seul |
+| fin | `COVER_17-11_liste-ouverte.png` | CTA · liste ouverte (pack dossier) |
 
 ---
 
@@ -24,16 +24,16 @@
 
 | Plan | Début | Fin | Durée | Visuel | Texte à l’écran (CapCut) | Voix off |
 |------|-------|-----|-------|--------|--------------------------|----------|
-| 1 | 0:00 | 0:02 | 2 s | début `02_SCROLL` | **Vendredi · 19h · Conakry** | *(silence)* |
-| 2 | 0:02 | 0:10 | 8 s | `02_SCROLL_main.mp4` | **Un plan pour le week-end ?** | Ce soir, je cherche un plan pour le week-end. |
-| 3 | 0:10 | 0:16 | 6 s | `04_SEARCH` | **Où c’était déjà… ?** | Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. Posts, stories, reels… Trop de bruit. Peu de repères. |
-| 4 | 0:16 | 0:24 | **8 s** | `05_APP_fragment-seuil.png` | ***(aucun gros texte — lire l’image)*** | *(silence)* **ou** *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* |
-| 5 | 0:24 | 0:29 | 5 s | `06_LOGO_the-loop.png` **ou** fond teal + texte | **The Loop** · *guide sélectif* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
-| 6 | 0:29 | 0:35 | 6 s | `09_COVER_100-places.png` | *(déjà dans le PNG)* | Aujourd’hui, la liste est ouverte. Cent premières places pour un accès anticipé, bientôt. |
-| 7 | 0:35 | 0:38 | 3 s | `09_COVER` (même) | *(PNG)* | Premiers inscrits, premiers invités. |
-| 8 | 0:38 | 0:42 | 4 s | `10_COVER_reserve.png` | *(PNG)* | Le lien est juste en dessous. Réserve ta place. |
+| 1 | 0:00 | 0:02 | 2 s | début scroll | **Vendredi · 19h · Conakry** | *(silence)* |
+| 2 | 0:02 | 0:10 | 8 s | scroll | **Un plan pour le week-end ?** | Ce soir, je cherche un plan pour le week-end. |
+| 3 | 0:10 | 0:16 | 6 s | recherche | **Où c’était déjà… ?** | Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. Posts, stories, reels… Trop de bruit. Peu de repères. |
+| 4 | 0:16 | 0:24 | **8 s** | Fragment | ***(aucun gros texte — lire l’image)*** | *(silence)* **ou** *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* |
+| 5 | 0:24 | 0:29 | 5 s | logo ou fond teal | **The Loop** · *guide sélectif* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
+| 6 | 0:29 | 0:35 | 6 s | cover liste | *(déjà dans le PNG)* | Aujourd’hui, la liste est ouverte. Cent premières places pour un accès anticipé, bientôt. |
+| 7 | 0:35 | 0:38 | 3 s | cover (même) | *(PNG)* | Premiers inscrits, premiers invités. |
+| 8 | 0:38 | 0:42 | 4 s | cover | **Réserve ta place ↓** | Le lien est juste en dessous. Réserve ta place. |
 
-**Total ~42 s** — la durée « 40 s » est une **fourchette**, pas une phrase à mettre sur une cover.
+**Total ~42 s** — « 40 s » = durée cible, **pas** une phrase de cover Reels.
 
 ---
 
@@ -42,8 +42,8 @@
 | Type | Règle |
 |------|--------|
 | Scroll / recherche | Overlay CapCut **oui** (1–2 lignes courtes) |
-| **Le Fragment** | **Non** au gros « bruit / reels » · laisser lire le texte éditorial **7–8 s** |
-| Covers **09** / **10** | **Ne pas** recopier le texte en double |
+| **Le Fragment** | Pas de « bruit / reels » par-dessus · **7–8 s** de lecture |
+| **Cover** | Ne pas recopier le texte en double |
 
 ---
 
@@ -60,6 +60,6 @@
 
 ---
 
-## Où va « bruit / reels » ?
+## Plus de détail (scroll FB/IG/TikTok, bulles)
 
-Uniquement **plan 3** (recherche), **avant** Le Fragment — jamais par-dessus Le Fragment.
+Voir aussi `MONTAGE-17-11.md` et `PREPARATION-17-11.md` (méthode longue · plan B).

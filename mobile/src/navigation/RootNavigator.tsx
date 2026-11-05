@@ -6,8 +6,8 @@ import {
   CommonActions,
   NavigationContainer,
   DefaultTheme,
-  type NavigationContainerRef,
 } from '@react-navigation/native';
+import { rootNavigationRef } from '@/navigation/root-navigation-ref';
 import { CustomTabBar } from '@/components/CustomTabBar';
 import { ThemedStatusBar } from '@/components/ThemedStatusBar';
 import { syncAdminThemeScopeFromState } from '@/navigation/admin-theme-scope';
@@ -90,13 +90,14 @@ export function RootNavigator() {
   const authenticated = isAuthenticated(role);
   /** Session recovery/invite : rester sur Auth pour saisir le nouveau MDP. */
   const appUnlocked = authenticated && !passwordRecoveryPending;
+  /** Guide public sans compte (App Store 5.1.1) — interrupteur super admin `guestBrowseEnabled`. */
+  const showMainShell = appUnlocked || (!passwordRecoveryPending && gates.guestBrowseEnabled);
   const { setScope } = useThemeContext();
   const { shell } = useMemberTheme();
-  const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
   const wasAuthenticatedRef = useRef(appUnlocked);
 
   const applyAdminThemeScope = useCallback(
-    (state = navigationRef.current?.getRootState()) => {
+    (state = rootNavigationRef.getRootState()) => {
       syncAdminThemeScopeFromState(state, role, setScope);
     },
     [role, setScope],
@@ -113,8 +114,8 @@ export function RootNavigator() {
     if (wasAuth || !appUnlocked) return;
 
     const goAccueil = (): boolean => {
-      const nav = navigationRef.current;
-      if (!nav?.isReady()) return false;
+      if (!rootNavigationRef.isReady()) return false;
+      const nav = rootNavigationRef;
       const names = nav.getRootState()?.routeNames ?? [];
       if (!names.includes('Tabs')) return false;
       nav.dispatch(
@@ -146,9 +147,8 @@ export function RootNavigator() {
   useEffect(() => {
     if (!passwordRecoveryPending) return;
     const goSetPassword = (): boolean => {
-      const nav = navigationRef.current;
-      if (!nav?.isReady()) return false;
-      nav.navigate('Auth', { mode: 'set_password' });
+      if (!rootNavigationRef.isReady()) return false;
+      rootNavigationRef.navigate('Auth', { mode: 'set_password' });
       return true;
     };
     if (goSetPassword()) return undefined;
@@ -158,6 +158,33 @@ export function RootNavigator() {
     }, 40);
     return () => clearTimeout(t0);
   }, [passwordRecoveryPending]);
+
+  /**
+   * Mur de connexion : une seule pile d’écrans (évite crash natif quand l’interrupteur
+   * `guestBrowseEnabled` coupe l’accès invité alors que Tabs / fiches détail sont montés).
+   */
+  useEffect(() => {
+    if (appUnlocked || passwordRecoveryPending || showMainShell) return;
+
+    const forceAuthWall = (): boolean => {
+      if (!rootNavigationRef.isReady()) return false;
+      const nav = rootNavigationRef;
+      const root = nav.getRootState();
+      const top = root?.routes[root.index ?? 0];
+      if (top?.name === 'Auth' || top?.name === 'PartnerApply') return true;
+      nav.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Auth' }],
+        }),
+      );
+      return true;
+    };
+
+    if (forceAuthWall()) return undefined;
+    const t = setTimeout(forceAuthWall, 50);
+    return () => clearTimeout(t);
+  }, [showMainShell, appUnlocked, passwordRecoveryPending]);
 
   const navTheme = useMemo(
     () => ({
@@ -203,7 +230,7 @@ export function RootNavigator() {
   return (
     <View style={{ flex: 1, backgroundColor: shell.pageBg }}>
       <NavigationContainer
-        ref={navigationRef}
+        ref={rootNavigationRef}
         theme={navTheme}
         onReady={() => applyAdminThemeScope()}
         onStateChange={(state) => syncAdminThemeScopeFromState(state, role, setScope)}
@@ -211,7 +238,7 @@ export function RootNavigator() {
         <ThemedStatusBar />
         <Stack.Navigator
           key={appUnlocked ? 'member' : 'guest'}
-          initialRouteName={appUnlocked ? 'Tabs' : 'Auth'}
+          initialRouteName={showMainShell ? 'Tabs' : 'Auth'}
           screenOptions={{
             headerStyle: { backgroundColor: shell.pageBg },
             headerTintColor: shell.tabIndicator,
@@ -222,55 +249,26 @@ export function RootNavigator() {
             animation: Platform.OS === 'android' ? 'fade' : 'default',
           }}
         >
-          {!appUnlocked ? (
-            <>
-              <Stack.Screen
-                name="Auth"
-                getComponent={requireScreen(() => require('@/screens/AuthScreen').AuthScreen, 'Auth')}
-                options={{ headerShown: false }}
-                initialParams={passwordRecoveryPending ? { mode: 'set_password' } : undefined}
-              />
-              <Stack.Screen
-                name="PartnerApply"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerApplyScreen').PartnerApplyScreen,
-                  'PartnerApply',
-                )}
-                options={{ title: 'Partenariat' }}
-              />
-              <Stack.Screen
-                name="PartnerValidationCode"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerValidationCodeScreen').PartnerValidationCodeScreen,
-                  'PartnerValidationCode',
-                )}
-                options={{
-                  headerShown: false,
-                  presentation: DETAIL_MODAL_PRESENTATION,
-                  animation: DETAIL_MODAL_ANIMATION,
-                  contentStyle: { backgroundColor: 'transparent' },
-                }}
-              />
-              <Stack.Screen
-                name="PartnerBenefitScan"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerBenefitScanScreen').PartnerBenefitScanScreen,
-                  'PartnerBenefitScan',
-                )}
-                options={{ title: 'Scanner membre', headerShown: false }}
-              />
-              <Stack.Screen
-                name="PartnerBenefitConfirm"
-                getComponent={requireScreen(
-                  () => require('@/screens/PartnerBenefitConfirmScreen').PartnerBenefitConfirmScreen,
-                  'PartnerBenefitConfirm',
-                )}
-                options={{ title: 'Valider privilège' }}
-              />
-            </>
-          ) : (
-            <>
           <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Auth"
+            getComponent={requireScreen(() => require('@/screens/AuthScreen').AuthScreen, 'Auth')}
+            options={{ headerShown: false }}
+            initialParams={passwordRecoveryPending ? { mode: 'set_password' } : undefined}
+          />
+          <Stack.Screen
+            name="VisitorGateway"
+            getComponent={requireScreen(
+              () => require('@/screens/VisitorGatewayScreen').VisitorGatewayScreen,
+              'VisitorGateway',
+            )}
+            options={{
+              headerShown: false,
+              presentation: DETAIL_MODAL_PRESENTATION,
+              animation: DETAIL_MODAL_ANIMATION,
+              contentStyle: { backgroundColor: 'transparent' },
+            }}
+          />
           <Stack.Screen
             name="EventDetail"
             getComponent={requireScreen(
@@ -357,11 +355,6 @@ export function RootNavigator() {
               'PartnerPublic',
             )}
             options={{ title: 'Partenaire', headerBackTitle: 'Retour' }}
-          />
-          <Stack.Screen
-            name="Auth"
-            getComponent={requireScreen(() => require('@/screens/AuthScreen').AuthScreen, 'Auth')}
-            options={{ title: 'Compte', presentation: 'modal' }}
           />
           <Stack.Screen
             name="Prime"
@@ -773,8 +766,6 @@ export function RootNavigator() {
             )}
             options={{ headerShown: false }}
           />
-            </>
-          )}
         </Stack.Navigator>
       </NavigationContainer>
     </View>

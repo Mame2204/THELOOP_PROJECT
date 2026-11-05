@@ -934,6 +934,22 @@ export function AuthScreen({ navigation, route }: Props) {
               Activer un compte invité par THE LOOP
             </Text>
           </Pressable>
+
+          {gates.guestBrowseEnabled ? (
+            <Pressable
+              onPress={() => {
+                if (navigation.canGoBack()) {
+                  navigation.goBack();
+                  return;
+                }
+                resetToAccueil(navigation);
+              }}
+              style={styles.inlineLink}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.link, { color: shell.tabIndicator }]}>Continuer sans compte →</Text>
+            </Pressable>
+          ) : null}
         </View>
       )}
 

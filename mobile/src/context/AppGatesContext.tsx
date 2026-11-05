@@ -17,6 +17,7 @@ import {
   setPrelaunchGate as persistPrelaunchGate,
   setPrivilegesVisible as persistPrivilegesVisible,
   setSignupEnabled as persistSignupEnabled,
+  setGuestBrowseEnabled as persistGuestBrowseEnabled,
   type ActiveSystemGate,
   type AppGates,
   type MaintenanceGateConfig,
@@ -31,6 +32,7 @@ interface AppGatesContextValue {
   unlockSessionBypass: () => void;
   refreshGates: (force?: boolean) => Promise<void>;
   setSignupEnabled: (enabled: boolean) => Promise<{ synced: boolean; error?: string }>;
+  setGuestBrowseEnabled: (enabled: boolean) => Promise<{ synced: boolean; error?: string }>;
   setPassPurchaseEnabled: (enabled: boolean) => Promise<{ synced: boolean; error?: string }>;
   setPrivilegesVisible: (visible: boolean) => Promise<{ synced: boolean; error?: string }>;
   setPrelaunchGate: (patch: Partial<PrelaunchGateConfig>) => Promise<{ synced: boolean; error?: string }>;
@@ -68,6 +70,13 @@ export function AppGatesProvider({ children }: { children: ReactNode }) {
   const setSignupEnabled = useCallback(async (enabled: boolean) => {
     setGates((prev) => ({ ...prev, signupEnabled: enabled }));
     const result = await persistSignupEnabled(enabled);
+    setGates(result.gates);
+    return { synced: result.synced, error: result.error };
+  }, []);
+
+  const setGuestBrowseEnabled = useCallback(async (enabled: boolean) => {
+    setGates((prev) => ({ ...prev, guestBrowseEnabled: enabled }));
+    const result = await persistGuestBrowseEnabled(enabled);
     setGates(result.gates);
     return { synced: result.synced, error: result.error };
   }, []);
@@ -117,6 +126,7 @@ export function AppGatesProvider({ children }: { children: ReactNode }) {
       unlockSessionBypass,
       refreshGates,
       setSignupEnabled,
+      setGuestBrowseEnabled,
       setPassPurchaseEnabled,
       setPrivilegesVisible,
       setPrelaunchGate,
@@ -130,6 +140,7 @@ export function AppGatesProvider({ children }: { children: ReactNode }) {
       unlockSessionBypass,
       refreshGates,
       setSignupEnabled,
+      setGuestBrowseEnabled,
       setPassPurchaseEnabled,
       setPrivilegesVisible,
       setPrelaunchGate,
@@ -151,6 +162,7 @@ export function useAppGates(): AppGatesContextValue {
       unlockSessionBypass: () => {},
       refreshGates: async () => {},
       setSignupEnabled: async () => ({ synced: true }),
+      setGuestBrowseEnabled: async () => ({ synced: true }),
       setPassPurchaseEnabled: async () => ({ synced: true }),
       setPrivilegesVisible: async () => ({ synced: true }),
       setPrelaunchGate: async () => ({ synced: true }),

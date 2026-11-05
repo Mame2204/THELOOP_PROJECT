@@ -59,9 +59,10 @@ export async function submitPartnershipRequest(
     return { ok: false, error: 'Supabase non configuré.' };
   }
 
-  const phone = normalizePhone(input.phone);
+  const phone = input.phone.trim() ? normalizePhone(input.phone) : '';
   const email = input.email.trim().toLowerCase();
   const countryCode = inferCountryCodeFromPhone(phone);
+  const phoneLabel = phone || 'téléphone non renseigné';
   const projectNote = input.message.trim();
 
   if (await hasOpenPartnershipRequest(email)) {
@@ -91,7 +92,7 @@ export async function submitPartnershipRequest(
 
   if (!rpcError && rpcId) {
     const title = 'Nouvelle demande de partenariat';
-    const message = `${input.companyName.trim()} — ${email} · ${phone}`;
+    const message = `${input.companyName.trim()} — ${email} · ${phoneLabel}`;
     const { data: adminIds, error: notifyError } = await supabase.rpc(
       'notify_admins_for_partnership_request',
       { p_email: email },
@@ -109,7 +110,7 @@ export async function submitPartnershipRequest(
     manager_name: input.companyName,
     establishment_name: input.companyName,
     email,
-    phone,
+    phone: phone || 'non_renseigne',
     country_code: countryCode,
     status: 'pending',
     admin_notes: projectNote || null,
@@ -132,7 +133,7 @@ export async function submitPartnershipRequest(
   }
 
   const title = 'Nouvelle demande de partenariat';
-  const message = `${input.companyName.trim()} — ${email} · ${phone}`;
+  const message = `${input.companyName.trim()} — ${email} · ${phoneLabel}`;
 
   const { data: adminIds, error: notifyError } = await supabase.rpc(
     'notify_admins_for_partnership_request',

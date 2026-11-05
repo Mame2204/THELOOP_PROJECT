@@ -90,3 +90,30 @@ Suppression de compte, des deux côtés : Profil → Paramètres → Fermer mon 
 Ensuite, les gates se pilotent sans nouveau binaire, selon `15-Lancement-Gates-Prod.md` : pré-lancement possible, inscription encore OFF, achat PASS laissé tel que la review l’a vu tant que la vente publique n’est pas ouverte.
 
 La description publique des fiches peut changer sans nouveau binaire. Ne pas écrire « aucun achat dans l’app » tant que l’achat PASS est visible.
+
+## 7. Refus Apple du 2 nov. 2026 (build 1.0 (70)) → build 71
+
+Apple (iPad Air 11" M3 et iPhone 17 Pro Max) a refusé pour **deux points**, tous deux sous la guideline **5.1.1(v)** :
+
+| Point Apple | Cause dans le build 70 | Correction build 71 |
+|-------------|------------------------|---------------------|
+| Connexion exigée avant d'accéder à l'app | Sans compte = écran de connexion seul | L'app s'ouvre sur l'Accueil. Agenda, Spots, Outils, Parcours et fiches publiques se consultent sans compte (hors LoopX). Interrupteur super admin `guestBrowseEnabled` (ON par défaut) ; migration `20261022_guest_browse_public_catalog.sql` pour la lecture catalogue sans compte |
+| Téléphone exigé | Lien « Demande de partenariat » de l'écran de connexion : téléphone obligatoire | Téléphone **facultatif** (e-mail suffit). Inscription et activation : déjà facultatif |
+
+Reste réservé aux comptes : favoris, vote aux sondages, notifications, carte membre, privilèges, LoopX, PASS, parrainage. Inscription toujours **sur invitation**.
+
+**Avant de resoumettre :**
+1. Merger la PR (la migration part en prod automatiquement), puis vérifier `guestBrowseEnabled` = ON dans Paramètres.
+2. App Store Connect → Confidentialité de l'app : le téléphone est **facultatif** (pas requis pour utiliser l'app).
+3. Build iOS **71** → TestFlight → remplacer le build dans la version 1.0 → mettre à jour les notes de vérification (§5 de `11-Publication-Stores.md`) → répondre dans le Resolution Center.
+
+**Réponse Resolution Center (EN) :**
+
+> Thank you for your review. We have addressed both points of Guideline 5.1.1(v) in build 71:
+>
+> 1. The app no longer requires an account to access non-account-based features. On launch, users land on the Home screen and can freely browse the Agenda, Spots, Tools and all public detail pages without registering. An account is only requested for account-based features: favorites, polls, member card, partner benefits and the PASS membership.
+> 2. The phone number is no longer required anywhere. It is optional at sign-up, at invitation activation and in the partnership request form (email is sufficient). It is only requested when a user chooses to pay for a PASS with mobile money, where it is needed to process the payment.
+>
+> Review accounts remain the same (see App Review Information).
+
+**Android :** pas de refus. Le build 70 reste en test fermé pendant les 14 jours ; le 71 passe ensuite par le même canal (voir PR build 71).

@@ -1,110 +1,78 @@
-import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useMemberTheme } from '@/hooks/useMemberTheme';
-import { useAppSettings } from '@/context/AppSettingsContext';
 import { useAppGates } from '@/context/AppGatesContext';
-import { ContactChoiceSheet } from '@/components/ContactChoiceSheet';
 import { COMMUNITY_CONTACT_CTA } from '@/lib/community-copy';
 
-interface Props {
-  visible: boolean;
+interface PanelProps {
   onClose: () => void;
   onSignup: () => void;
   onLogin: () => void;
-  onSuggest: () => void;
+  onOpenContact: () => void;
 }
 
-export function VisitorGatewaySheet({ visible, onClose, onSignup, onLogin, onSuggest }: Props) {
+/** Contenu « Rejoins le club » — affiché en écran stack (au-dessus des fiches détail iOS). */
+export function VisitorGatewayPanel({ onClose, onSignup, onLogin, onOpenContact }: PanelProps) {
   const { shell } = useMemberTheme();
-  const { settings } = useAppSettings();
   const { gates } = useAppGates();
   const signupEnabled = gates.signupEnabled;
-  const [contactOpen, setContactOpen] = useState(false);
-
-  function handleClose() {
-    setContactOpen(false);
-    onClose();
-  }
 
   return (
-    <>
-      <Modal visible={visible && !contactOpen} transparent animationType="fade" onRequestClose={handleClose}>
-        <Pressable style={styles.backdrop} onPress={handleClose}>
-          <Pressable
-            style={[styles.sheet, { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder }]}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <Pressable style={styles.closeBtn} onPress={handleClose} hitSlop={12}>
-              <Text style={[styles.closeText, { color: shell.pageKicker }]}>✕</Text>
-            </Pressable>
+    <Pressable
+      style={[styles.sheet, { backgroundColor: shell.pageBg, borderColor: shell.filterInactiveBorder }]}
+      onPress={(e) => e.stopPropagation()}
+    >
+      <Pressable style={styles.closeBtn} onPress={onClose} hitSlop={12}>
+        <Text style={[styles.closeText, { color: shell.pageKicker }]}>✕</Text>
+      </Pressable>
 
-            <Text style={[styles.kicker, { color: shell.pageKicker }]}>THE LOOP</Text>
-            <Text style={[styles.title, { color: shell.pageTitle }]}>Rejoins le club</Text>
-            <Text style={[styles.body, { color: shell.pageKicker }]}>
-              {signupEnabled
-                ? 'Crée un compte gratuit pour sauvegarder tes favoris (événements, spots, outils) et recevoir des offres personnalisées.'
-                : 'Connecte-toi pour sauvegarder tes favoris. Les inscriptions sont temporairement fermées.'}
+      <Text style={[styles.kicker, { color: shell.pageKicker }]}>THE LOOP</Text>
+      <Text style={[styles.title, { color: shell.pageTitle }]}>Rejoins le club</Text>
+      <Text style={[styles.body, { color: shell.pageKicker }]}>
+        {signupEnabled
+          ? 'Crée un compte gratuit pour sauvegarder tes favoris (événements, spots, outils) et recevoir des offres personnalisées.'
+          : 'Connecte-toi pour tes favoris, les sondages et tes privilèges. L’accès membre se fait sur invitation.'}
+      </Text>
+
+      <View style={styles.accountRow}>
+        {signupEnabled ? (
+          <Pressable style={[styles.halfBtn, { backgroundColor: shell.filterActiveBg }]} onPress={onSignup}>
+            <Text style={[styles.halfPrimaryText, { color: shell.filterActiveText }]}>
+              Créer mon compte
             </Text>
-
-            <View style={styles.accountRow}>
-              {signupEnabled ? (
-                <Pressable
-                  style={[styles.halfBtn, { backgroundColor: shell.filterActiveBg }]}
-                  onPress={onSignup}
-                >
-                  <Text style={[styles.halfPrimaryText, { color: shell.filterActiveText }]}>
-                    Créer mon compte
-                  </Text>
-                </Pressable>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.halfBtn,
-                  signupEnabled ? styles.halfSecondary : null,
-                  signupEnabled
-                    ? { borderColor: shell.filterInactiveBorder }
-                    : { backgroundColor: shell.filterActiveBg },
-                ]}
-                onPress={onLogin}
-              >
-                <Text
-                  style={[
-                    signupEnabled ? styles.halfSecondaryText : styles.halfPrimaryText,
-                    { color: signupEnabled ? shell.pageTitle : shell.filterActiveText },
-                  ]}
-                >
-                  {signupEnabled ? 'Déjà un compte' : 'Se connecter'}
-                </Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.contactWrap}>
-              <Text style={[styles.contactPrefix, { color: shell.pageKicker }]}>Besoin d'aide ?</Text>
-              <Pressable onPress={() => setContactOpen(true)} hitSlop={8}>
-                <Text style={[styles.contactLink, { color: shell.tabIndicator }]}>{COMMUNITY_CONTACT_CTA}</Text>
-              </Pressable>
-            </View>
           </Pressable>
+        ) : null}
+        <Pressable
+          style={[
+            styles.halfBtn,
+            signupEnabled ? styles.halfSecondary : null,
+            signupEnabled
+              ? { borderColor: shell.filterInactiveBorder }
+              : { backgroundColor: shell.filterActiveBg },
+          ]}
+          onPress={onLogin}
+        >
+          <Text
+            style={[
+              signupEnabled ? styles.halfSecondaryText : styles.halfPrimaryText,
+              { color: signupEnabled ? shell.pageTitle : shell.filterActiveText },
+            ]}
+          >
+            {signupEnabled ? 'Déjà un compte' : 'Se connecter'}
+          </Text>
         </Pressable>
-      </Modal>
+      </View>
 
-      <ContactChoiceSheet
-        visible={visible && contactOpen}
-        onClose={() => setContactOpen(false)}
-        onSuggestion={() => {
-          setContactOpen(false);
-          onSuggest();
-        }}
-        onWhatsAppDone={handleClose}
-        shell={shell}
-        showSuggestion={settings.showCommunitySuggestion}
-      />
-    </>
+      <View style={styles.contactWrap}>
+        <Text style={[styles.contactPrefix, { color: shell.pageKicker }]}>Besoin d'aide ?</Text>
+        <Pressable onPress={onOpenContact} hitSlop={8}>
+          <Text style={[styles.contactLink, { color: shell.tabIndicator }]}>{COMMUNITY_CONTACT_CTA}</Text>
+        </Pressable>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 24 },
   sheet: {
     borderRadius: 20,
     borderWidth: 1,

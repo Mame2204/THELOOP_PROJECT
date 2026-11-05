@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>The Loop — couvertures des vidéos face caméra (17/11 · 17/12 · 24/12)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --deep: #0a3a44; --teal: #0f7a8e; --gold: #e6b93a; }
+    body { margin: 0; font-family: Manrope, sans-serif; background: #ccc; padding: 20px; }
+    .label { color: #555; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin: 28px 0 10px; }
+    .slide {
+      width: 1080px; height: 1920px; margin: 0 auto 16px; position: relative; overflow: hidden;
+      background: linear-gradient(165deg, #0f7a8e 0%, #0a3a44 55%, #062830 100%); color: #fff;
+    }
+    .slide.noel { background: linear-gradient(165deg, #5c4520 0%, #0a3a44 52%, #062830 100%); }
+    .glow { position: absolute; inset: 0; background: radial-gradient(ellipse 75% 40% at 50% 50%, rgba(230,185,58,0.22), transparent 62%); }
+    /* Texte dans la zone centrale 1080×1350 : reste lisible quand Facebook recadre la couverture en 4:5. */
+    .inner { position: relative; z-index: 2; height: 100%; padding: 285px 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; }
+    .mark { margin-bottom: 56px; }
+    .ey { font-size: 30px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255,255,255,0.82); margin: 0 0 32px; }
+    .h { font-size: 116px; font-weight: 800; line-height: 1.04; margin: 0; }
+    .gold { color: var(--gold); }
+    .rule { width: 110px; height: 6px; background: var(--gold); border-radius: 3px; margin: 52px auto 44px; }
+    .p { font-size: 40px; font-weight: 700; line-height: 1.4; color: rgba(255,255,255,0.92); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="label">Couverture · 17/11 · vidéo face caméra</div>
+  <div class="slide">
+    <div class="glow"></div>
+    <div class="inner">
+      <svg class="mark" width="96" height="96" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#fff" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="3.5" fill="#fff"/></svg>
+      <p class="ey">The Loop · Conakry</p>
+      <h1 class="h">La liste<br />est <span class="gold">ouverte</span>.</h1>
+      <div class="rule"></div>
+      <p class="p">Je t’explique tout<br />en 40 secondes.</p>
+    </div>
+  </div>
+
+  <div class="label">Couverture · 17/12 · vidéo face caméra</div>
+  <div class="slide">
+    <div class="glow"></div>
+    <div class="inner">
+      <svg class="mark" width="96" height="96" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#fff" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="3.5" fill="#fff"/></svg>
+      <p class="ey">Accès anticipé</p>
+      <h1 class="h">Les invitations<br /><span class="gold">partent</span>.</h1>
+      <div class="rule"></div>
+      <p class="p">Et une date pour tout le monde.</p>
+    </div>
+  </div>
+
+  <div class="label">Couverture · 24/12 · vidéo face caméra</div>
+  <div class="slide noel">
+    <div class="glow"></div>
+    <div class="inner">
+      <svg class="mark" width="104" height="118" viewBox="-6 -14 48 50" fill="none"><g aria-hidden="true"><path fill="#fff" d="M4 11.5h28v5H4z"/><path fill="#c62828" d="M7 11.5 18-2.5 29 11.5z"/><circle cx="18" cy="-2.5" r="4.2" fill="#fff"/></g><circle cx="18" cy="18" r="15" stroke="#fff" stroke-width="3"/><path d="M 13.5 10.21 A 9 9 0 1 1 13.5 25.79" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="18" r="3.5" fill="#fff"/></svg>
+      <p class="ey">Joyeux Noël</p>
+      <h1 class="h">C’est<br /><span class="gold">ouvert</span>.</h1>
+      <div class="rule"></div>
+      <p class="p">The Loop, notre cadeau<br />pour Conakry.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -168,7 +168,9 @@ export function AdminPartnershipsScreen({ navigation, route }: Props) {
           <View key={p.id} style={adminCardStyle(shell)}>
             <Text style={[styles.title, { color: shell.pageTitle }]}>{p.establishmentName}</Text>
             <Text style={[styles.meta, { color: shell.pageKicker }]}>{p.managerName} · {p.email}</Text>
-            <Text style={[styles.meta, { color: shell.pageKicker }]}>{p.phone}</Text>
+            <Text style={[styles.meta, { color: shell.pageKicker }]}>
+              {p.phone && p.phone !== 'non_renseigne' ? p.phone : 'Téléphone non renseigné'}
+            </Text>
             {p.adminNotes ? (
               <Text style={[styles.requestBody, { color: shell.pageTitle }]} numberOfLines={4}>{p.adminNotes}</Text>
             ) : null}

@@ -2,14 +2,14 @@
 
 ## Règle
 
-- **Visuel (pills)** : posts **charte** #1, #2, story **8/11**, carrousel **26/11**, contenus **17/11+** conversion.
-- **Légende (liste des 4 mots)** : ~**1 post sur 2** en Acte A ; toujours OK en une ligne courte.
-- **Vidéos dilemme / voix** (#3, #13) : **pas de pills** à l’écran — émotion d’abord.
+- **À l’image (pastilles)** : 3/11, 5/11, stories 8/11, carrousels 17/11 et 26/11, Reels 20/11 et 3/12 (floutées), 23/12 et 24/12.
+- **En légende (les 4 mots)** : environ une publication sur deux, en une ligne courte.
+- **Reels d’émotion** (6/11, 13/11) : pas de pastilles au début — l’émotion d’abord, les piliers à la fin seulement.
 
-## Anti-pattern
+## À éviter
 
-Quatre pills sur **chaque** frame + légende qui répète + story qui re-répète = l’audience retient « une app avec 4 onglets », pas « un repère sélectif ».
+Quatre pastilles sur chaque image + une légende qui les répète + une story qui les re-répète : le public retient « une app à 4 onglets », pas « un repère sélectif ».
 
-## Phrase de remplacement (sans énumérer)
+## Phrase de remplacement
 
-« Un repère **sélectif** pour Conakry » — utiliser quand le post est déjà chargé visuellement.
+« Un repère **sélectif** pour Conakry » — quand la publication est déjà chargée visuellement.

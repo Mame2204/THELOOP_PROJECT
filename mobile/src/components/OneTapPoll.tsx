@@ -6,8 +6,12 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthContext } from '@/context/AuthContext';
 import { useContent } from '@/context/ContentContext';
+import { usePromptFavoritesSignup } from '@/lib/favorites-auth-prompt';
+import type { RootStackParamList } from '@/navigation/types';
 import { subscribeHomeRefresh } from '@/lib/home-refresh';
 import {
   getPollPhoneId,
@@ -28,7 +32,7 @@ interface OneTapPollProps {
   epoch?: number;
 }
 
-/** Vote one-tap : compte connecté ou id téléphone local (anonyme). */
+/** Vote one-tap réservé aux comptes ; sans compte = résultats visibles, vote → « Rejoins le club ». */
 export function OneTapPoll({
   accent,
   surface,
@@ -40,6 +44,8 @@ export function OneTapPoll({
 }: OneTapPollProps) {
   const { user } = useAuthContext();
   const { activeCountryCode } = useContent();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const openFavoritesSignup = usePromptFavoritesSignup();
   const [snap, setSnap] = useState<HomePollSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
@@ -102,6 +108,10 @@ export function OneTapPoll({
 
   async function onVote(optionId: string) {
     if (!snap || snap.userOptionId || voting) return;
+    if (!voter.userId) {
+      openFavoritesSignup(navigation);
+      return;
+    }
     setVoting(true);
     try {
       const next = await voteHomePoll(snap.poll.id, optionId, voter, activeCountryCode);
