@@ -199,28 +199,19 @@ for (const [name, file] of [
 }
 
 // --- Son -----------------------------------------------------------------------
-// Notifications pendant le scroll, silence sur le Fragment, nappe calme à partir de « Un repère », baissée sous la voix.
+// Voix seule, plus quelques notifications pendant le scroll : aucune nappe ni musique de fond.
 {
   const sr = 48000;
   const notif = [0.7, 3.1, 5.3, 7.4];
   const ding = (at, i) =>
     `aevalsrc='0.22*(sin(2*PI*1568*t)+0.6*sin(2*PI*2349*t))*exp(-18*t)':s=${sr}:d=0.35,adelay=${Math.round(at * 1000)}|${Math.round(at * 1000)},apad=whole_dur=${total}[n${i}]`;
-  const padStart = seg('repere').start;
-  const padDur = total - padStart;
-  const pad =
-    `aevalsrc='0.05*(sin(2*PI*220*t)+0.8*sin(2*PI*277.18*t)+0.7*sin(2*PI*329.63*t)+0.4*sin(2*PI*415.30*t))*(0.75+0.25*sin(2*PI*0.18*t))':s=${sr}:d=${padDur},` +
-    `lowpass=f=1400,afade=t=in:d=2.5,afade=t=out:st=${padDur - 2.5}:d=2.5,adelay=${Math.round(padStart * 1000)}|${Math.round(padStart * 1000)},apad=whole_dur=${total}[pad]`;
-  const fragStart = seg('fragment').start;
-  const room =
-    `aevalsrc='0.012*sin(2*PI*110*t)*(0.7+0.3*sin(2*PI*0.25*t))':s=${sr}:d=${seg('fragment').dur},` +
-    `afade=t=in:d=1.5,afade=t=out:st=${seg('fragment').dur - 1.5}:d=1.5,adelay=${Math.round(fragStart * 1000)}|${Math.round(fragStart * 1000)},apad=whole_dur=${total}[room]`;
 
   const voInputs = cue.flatMap((c) => ['-i', vo[c.k].file]);
   const voChains = cue
     .map((c, i) => `[${i}:a]aresample=${sr},aformat=channel_layouts=mono,adelay=${Math.round(c.at * 1000)},apad=whole_dur=${total}[v${i}]`)
     .join(';');
   const voMix = `${cue.map((_, i) => `[v${i}]`).join('')}amix=inputs=${cue.length}:normalize=0,volume=1.15,asplit[voice][key]`;
-  const fx = `${notif.map(ding).join(';')};${pad};${room};${notif.map((_, i) => `[n${i}]`).join('')}[pad][room]amix=inputs=${notif.length + 2}:normalize=0[bed]`;
+  const fx = `${notif.map(ding).join(';')};${notif.map((_, i) => `[n${i}]`).join('')}amix=inputs=${notif.length}:normalize=0[bed]`;
   const duck = `[bed][key]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=350[bedd]`;
   ffmpeg([
     ...voInputs,
