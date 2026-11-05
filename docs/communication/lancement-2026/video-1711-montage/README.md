@@ -1,35 +1,17 @@
-# 17/11 · Dossier montage CapCut (vidéo prioritaire)
+# 17/11 · Dossier montage CapCut
 
-**Une seule vidéo à monter pour le 17/11 :** scroll + recherche + Fragment + CTA.  
-**Source de vérité :** **`SCENARIO-VENDREDI-SCROLL.md`** (tableau timecode ~42 s).
+**Suis uniquement `SCENARIO-VENDREDI-SCROLL.md`.** Tout ce qu’il faut est à la racine de ce dossier.
 
----
+| À la racine (à utiliser) | Rôle |
+|--------------------------|------|
+| `SCROLL_reseaux-bulles.mp4` | Scroll avec étiquettes Facebook / Instagram / TikTok |
+| ta vidéo de recherche | À déposer ici |
+| `APP_fragment-seuil-com.png` | Le Fragment « Le seuil » |
+| `AFFICHE_1711_02` → `05` | Affiches de fin (9:16) |
+| `AFFICHE_1711_01_cover-reels.png` | Couverture du Reel dans Meta |
+| `VOIX-OFF-17-11.txt` | Texte à enregistrer |
 
-## Ce dossier sert à quoi
+`_ancien/` = anciens montages (cartes MOOD, captures Agenda/Spots/Outils, timecodes précédents). **Ne pas utiliser.**  
+`B-roll-main.mp4` et `BULLE_reseau-*.png` = sources du scroll, déjà intégrées dans `SCROLL_reseaux-bulles.mp4`.
 
-| Utiliser | Ignorer |
-|----------|---------|
-| Tes rushs scroll / recherche · **`COVER_17-11_liste-ouverte.png`** (fin) | **`FRAME_1711_01` … `06`** (vidéo « La fréquence » — secours seulement) |
-| **`CARROUSEL_17-11_03_piliers.png`** (plan 5 · affiche) | Ancienne **`COVER_17-11_liste-ouverte`** avec « 40 secondes » — refaire `git pull` + regén PNG |
-| Bulles `BULLE_reseau-*` · `B-roll-main.mp4` (option) | Rafale **Agenda / Spots / Outils** (ancien scénario 109 lignes) |
-| SRT : `../archives/srt/POST_17-11_scroll-recherche.srt` | Vidéo auto stitch PNG |
-
----
-
-## Cover Reels Meta (miniature)
-
-**Pas** de texte « 40 secondes ». Choisir :
-
-- frame **Vendredi · 19h · Conakry**, **ou**
-- **`COVER_17-11_liste-ouverte.png`**.
-
----
-
-## Autres fichiers (option / plan B)
-
-| Fichier | Rôle |
-|---------|------|
-| `MONTAGE-17-11.md` · `MONTAGE-FINAL-17-11.md` | Méthodes scroll FB/IG/TikTok · détails |
-| `../PREPARATION-17-11.md` | Jour J · programmation Meta |
-| `../fiches/10-2026-11-17.md` | Légendes · UTM |
-| `../archives/video-1811-montage-la-frequence.md` | Option B · slides `FRAME_1711_*` |
+Regénérer les affiches : `node scripts/export-all.mjs 2026-11-17` (source `export-visuels-video-1711-affiches.html`).

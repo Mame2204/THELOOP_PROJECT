@@ -51,6 +51,10 @@ export const manifest = [
     names: ['CARROUSEL_17-11_01_liste-ouverte.png', 'CARROUSEL_17-11_02_pourquoi.png', 'CARROUSEL_17-11_03_piliers.png', 'CARROUSEL_17-11_04_selectif.png', 'CARROUSEL_17-11_05_reserve.png'],
   },
   {
+    date: '2026-11-17', html: 'export-visuels-video-1711-affiches.html', format: 'story', outDir: 'video-1711-montage',
+    names: ['AFFICHE_1711_01_cover-reels.png', 'AFFICHE_1711_02_un-repere.png', 'AFFICHE_1711_03_liste-ouverte.png', 'AFFICHE_1711_04_premiers-invites.png', 'AFFICHE_1711_05_reserve.png'],
+  },
+  {
     date: '2026-11-17', html: 'export-visuels-story-1711.html', format: 'story',
     names: ['STORY_17-11_01_ouvert.png', 'STORY_17-11_02_100-places.png', 'STORY_17-11_03_lien.png'],
   },

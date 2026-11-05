@@ -1,64 +1,61 @@
-# Scénario 17/11 · Vendredi scroll + recherche (~42 s)
+# Scénario 17/11 · 19h00 · « Vendredi soir · le scroll » (~41 s)
 
-**Format :** 9:16 · 1080×1920 · **Reels + feed Facebook**  
-**UTM :** `frequence_1711` · **SRT :** `../archives/srt/POST_17-11_scroll-recherche.srt`
+**Format :** 9:16 · 1080×1920 · Reel Facebook + Instagram + story  
+**Voix off :** ta voix, **sans dire ton prénom** · on parle au public (« tu »)  
+**SRT :** `../archives/srt/POST_17-11_scroll-recherche.srt` · **Lien :** `utm_content=fondatrice_1711` (fiche `../fiches/10-2026-11-17.md`)
 
-> **Interdit dans ce montage :** PNG **face caméra** avec « 40 secondes » (ancienne version de `COVER_17-11_liste-ouverte` — regénérer après pull), `FRAME_1711_01`…`06`, rafale Agenda/Spots/Outils.
-
----
-
-## Affiches à utiliser (PNG prêts)
-
-| Rôle | Fichier | Où le prendre |
-|------|---------|----------------|
-| **Plan 5 · promesse** | `CARROUSEL_17-11_03_piliers.png` | `exports-png-v4-light/` (copier dans ce dossier si tu veux) |
-| **Plans 6–8 · CTA** | `COVER_17-11_liste-ouverte.png` | `video-1711-montage/` **ou** `exports-png-v4-light/` *(sans texte « 40 secondes » — voir README)* |
-| **Option fin URL** | `CARROUSEL_17-11_05_reserve.png` | dernier plan « Réserve ta place » si tu préfères l’affiche carrousel |
-
-**Ne pas utiliser :** `export-visuels-covers-fondatrice.html` slide « Je t’explique… » (réservé **autre** vidéo, texte corrigé dans le repo).
+**L’histoire en une phrase :** vendredi soir, tu cherches où sortir sur les réseaux → bruit, nom oublié → Le Fragment met des mots dessus → The Loop = un repère → la liste est ouverte.
 
 ---
 
-## Rushs (toi)
+## Les fichiers (tous dans ce dossier, dans l’ordre)
 
-| Fichier | Contenu |
-|---------|---------|
-| `SCROLL_reseaux-bulles.mp4` ou `02_SCROLL_main.mp4` | Scroll |
-| `04_SEARCH_taper-efface.mp4` | Recherche → effacer |
-| `APP_fragment-seuil-com.png` | Le Fragment |
-
----
-
-## Tableau montage CapCut (ordre des pistes)
-
-| Plan | Début | Fin | Durée | Visuel | Texte CapCut | Voix off |
-|------|-------|-----|-------|--------|--------------|----------|
-| 1 | 0:00 | 0:02 | 2 s | scroll | **Vendredi · 19h · Conakry** | *(silence)* |
-| 2 | 0:02 | 0:10 | 8 s | scroll | **Un plan pour le week-end ?** | Ce soir, je cherche un plan pour le week-end. |
-| 3 | 0:10 | 0:16 | 6 s | recherche | **Où c’était déjà… ?** | Toujours les mêmes endroits… Posts, stories, reels… Trop de bruit. Peu de repères. |
-| 4 | 0:16 | 0:24 | **8 s** | Fragment | *(rien)* | *(silence)* ou *Les bonnes adresses ne s’annoncent pas. Elles se transmettent.* |
-| 5 | 0:24 | 0:29 | 5 s | **`CARROUSEL_17-11_03_piliers.png`** | *(texte sur l’affiche)* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
-| 6 | 0:29 | 0:35 | 6 s | **`COVER_17-11_liste-ouverte.png`** | *(affiche)* | Aujourd’hui, la liste est ouverte. Cent premières places… |
-| 7 | 0:35 | 0:38 | 3 s | même cover | *(affiche)* | Premiers inscrits, premiers invités. |
-| 8 | 0:38 | 0:42 | 4 s | cover **ou** `CARROUSEL_17-11_05_reserve.png` | *(affiche)* | Le lien est juste en dessous. Réserve ta place. |
-
-**Pas de logo seul · pas de fond teal vide · pas de cover « 40 secondes ».**
+| # | Fichier | Statut |
+|---|---------|--------|
+| 1 | `SCROLL_reseaux-bulles.mp4` | Prêt · 9 s · étiquettes Facebook → Instagram → TikTok |
+| 2 | **ta vidéo de recherche** (taper → effacer) | **Toi** · à déposer ici |
+| 3 | `APP_fragment-seuil-com.png` | Prêt · Le Fragment « Le seuil » |
+| 4 | `AFFICHE_1711_02_un-repere.png` | Prêt |
+| 5 | `AFFICHE_1711_03_liste-ouverte.png` | Prêt |
+| 6 | `AFFICHE_1711_04_premiers-invites.png` | Prêt |
+| 7 | `AFFICHE_1711_05_reserve.png` | Prêt |
+| — | `AFFICHE_1711_01_cover-reels.png` | **Couverture Meta uniquement** (pas dans la timeline) |
 
 ---
 
-## Script voix off (intégral)
+## Timeline CapCut
 
-> Ce soir, je cherche un plan pour le week-end.  
-> Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.  
-> Posts, stories, reels… Trop de bruit. Peu de repères.  
-> *(pause Fragment — option : Les bonnes adresses ne s’annoncent pas. Elles se transmettent.)*  
-> The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair.  
-> Aujourd’hui, la liste est ouverte. Cent premières places pour un accès anticipé, bientôt.  
-> Premiers inscrits, premiers invités.  
-> Le lien est juste en dessous. Réserve ta place.
+| Plan | Temps | Fichier | Texte CapCut à ajouter | Voix off |
+|------|-------|---------|------------------------|----------|
+| 1 | 0:00 → 0:09 | `SCROLL_reseaux-bulles.mp4` | 0:00–0:02 **Vendredi · 19h · Conakry** puis 0:02–0:09 **Un plan pour le week-end ?** | *(0–2 s silence)* Ce soir, je cherche un plan pour le week-end. Posts, stories, reels… |
+| 2 | 0:09 → 0:15 | ta recherche | **Où c’était déjà… ?** | Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. Trop de bruit. Peu de repères. |
+| 3 | 0:15 → 0:23 | `APP_fragment-seuil-com.png` | *(rien)* | *(silence — on lit l’écran)* |
+| 4 | 0:23 → 0:28 | `AFFICHE_1711_02_un-repere.png` | *(rien, texte sur l’affiche)* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
+| 5 | 0:28 → 0:34 | `AFFICHE_1711_03_liste-ouverte.png` | *(rien)* | Aujourd’hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde. |
+| 6 | 0:34 → 0:37 | `AFFICHE_1711_04_premiers-invites.png` | *(rien)* | Premiers inscrits, premiers invités. |
+| 7 | 0:37 → 0:41 | `AFFICHE_1711_05_reserve.png` | *(rien)* | Le lien est juste en dessous. Réserve ta place. |
+
+**Durée : ~41 s.** Si ta recherche dure plus de 6 s : accélère-la (×1,5) ou coupe le début, ne rallonge pas la vidéo.
 
 ---
 
-## Cover Reels Meta (miniature)
+## Réglages CapCut
 
-Frame **Vendredi 19h** ou **`CARROUSEL_17-11_01_liste-ouverte.png`** — **jamais** l’ancienne cover « 40 secondes ».
+- **Scroll :** zoom **~120 %** pour faire disparaître les bandes noires en haut et en bas · garde les étiquettes réseaux visibles.
+- **Fragment :** zoom lent 100 → 106 % sur 8 s · **recadre le bas** pour cacher le bouton « Découvrir l’événement » (événement fictif).
+- **Affiches 4 → 7 :** fondu court (0,3 s) entre elles · **aucun texte CapCut par-dessus**.
+- **Son :** notifications légères pendant le scroll → **coupure** à la fin de la recherche → silence sur le Fragment → musique calme à partir de l’affiche « Un repère ».
+- **Sous-titres :** importer le SRT ou générer automatiquement, puis relire.
+
+---
+
+## Pourquoi « avant tout le monde » et pas une date
+
+Règle de la campagne : **aucune date d’ouverture avant le 17/12** (on garde les dates 17/12 et 24/12 pour relancer en décembre).  
+« Bientôt » est vague ; « **tu entres avant tout le monde** » dit le vrai bénéfice sans date. Les carrousels et stories déjà programmés avec « bientôt » restent valables : les deux formulations ne se contredisent pas.
+
+---
+
+## Couverture du Reel (miniature)
+
+Dans Meta, **Modifier la couverture → importer** `AFFICHE_1711_01_cover-reels.png` (*Vendredi · 19h · On va où ce week-end ?*). Elle reprend l’accroche de la vidéo et le texte reste lisible en recadrage 4:5.

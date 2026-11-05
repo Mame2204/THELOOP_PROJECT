@@ -8,9 +8,7 @@ Dossier visuels : `exports-png-v4-light/` · Relais : `MESSAGES-RELAIS-WHATSAPP.
 
 ## Étape A — Vidéo 19h00 (scénario recommandé · vendredi + scroll)
 
-**Montage final (scroll + bulles prêts) :** `video-1711-montage/MONTAGE-FINAL-17-11.md` · tu ajoutes seulement `SEARCH_recherche-efface.mp4`.
-
-**Détails narratif :** `video-1711-montage/SCENARIO-VENDREDI-SCROLL.md` · **Plan B :** `MONTAGE-17-11.md`.
+**Seul guide à suivre :** `video-1711-montage/SCENARIO-VENDREDI-SCROLL.md` (scroll avec étiquettes réseaux + ta recherche + Le Fragment + affiches `AFFICHE_1711_02` → `05`). Couverture : `AFFICHE_1711_01_cover-reels.png`.
 
 ---
 
@@ -77,25 +75,14 @@ Sur la **story 3** : sticker **lien** →
 
 | Heure | Contenu |
 |-------|---------|
-| **19h00** | Reel = **ta vidéo** · couverture `COVER_17-11_liste-ouverte.png` |
+| **19h00** | Reel = **ta vidéo** · couverture `video-1711-montage/AFFICHE_1711_01_cover-reels.png` |
 | **19h00** | Story = **même vidéo** (publication story à part si la case se décoche) · sticker **lien** (`reserve_1711`) |
 
 ---
 
 ## Légende Reel (19h00)
 
-```
-C’est ouvert. 🎉
-
-The Loop, le guide sélectif de Conakry : les bonnes adresses, l’agenda, des idées de sorties et des outils du quotidien, en clair.
-
-Les 100 premiers inscrits auront un accès anticipé, bientôt.
-
-Réserve ta place 👇
-https://theloop-app.com/?utm_source=facebook&utm_medium=video&utm_campaign=waitlist_open_2026&utm_content=fondatrice_1711
-
-Tu connais quelqu’un qui cherche toujours où sortir ? Identifie-le en commentaire.
-```
+Voir `fiches/10-2026-11-17.md` (légende alignée sur la vidéo « Vendredi soir · le scroll »).
 
 ## Légende carrousel (19h05)
 

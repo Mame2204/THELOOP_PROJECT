@@ -1,25 +1,31 @@
 1
-00:00:02,000 --> 00:00:10,000
+00:00:02,000 --> 00:00:06,000
 Ce soir, je cherche un plan pour le week-end.
 
 2
-00:00:10,000 --> 00:00:16,000
-Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.
-Posts, stories, reels… Trop de bruit. Peu de repères.
+00:00:06,000 --> 00:00:09,000
+Posts, stories, reels…
 
 3
-00:00:24,000 --> 00:00:29,000
-The Loop, c'est un guide sélectif pour Conakry.
-Spots, agenda, parcours, outils — en clair.
+00:00:09,000 --> 00:00:13,000
+Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.
 
 4
-00:00:29,000 --> 00:00:35,000
-Aujourd'hui, la liste est ouverte. Cent premières places pour un accès anticipé, bientôt.
+00:00:13,000 --> 00:00:15,000
+Trop de bruit. Peu de repères.
 
 5
-00:00:35,000 --> 00:00:38,000
-Premiers inscrits, premiers invités.
+00:00:23,000 --> 00:00:28,000
+The Loop, c'est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair.
 
 6
-00:00:38,000 --> 00:00:42,000
+00:00:28,000 --> 00:00:34,000
+Aujourd'hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.
+
+7
+00:00:34,000 --> 00:00:37,000
+Premiers inscrits, premiers invités.
+
+8
+00:00:37,000 --> 00:00:41,000
 Le lien est juste en dessous. Réserve ta place.
