@@ -49,7 +49,7 @@
 | **lun. 30/11** | 19h00 | Story ×2 | `STORY_30-11_01_signature` · `02_lien` | Lot A |
 | **mer. 2/12** | 19h00 | Photo feed « Une règle » 2/3 + story | `POST_02-12_regle-2-PUBLIER.png` | Lot A |
 | **jeu. 3/12** | 19h00 | **Reel** « On ne promet pas tout Conakry » + story | `VIDEO_0312_anti-annuaire-PUBLIER.mp4` | Lot A |
-| **ven. 4/12** | 19h00 | Photo feed **question du vendredi** + story | `POST_04-12_question-PUBLIER.png` | Lot A |
+| **ven. 4/12** | 19h00 | Photo feed **J-13** (17/12) + story | `POST_04-12_J-13-PUBLIER.png` | Lot A |
 
 ## Phase 3 — Sur le terrain (7 → 16 déc.) : montrer que ça se construit
 
