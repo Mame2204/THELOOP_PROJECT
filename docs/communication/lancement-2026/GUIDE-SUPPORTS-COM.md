@@ -22,6 +22,7 @@ Tout le pack vit sous **`docs/communication/lancement-2026/`** dans le dépôt T
 | [`PREPARATION-17-11.md`](./PREPARATION-17-11.md) | Jour J liste ouverte : script vidéo, légendes, horaires |
 | [`CONTENU-FICTIF-APP-STORES.md`](./CONTENU-FICTIF-APP-STORES.md) | Captures app stores = fictif · ne pas promouvoir en com |
 | [`PROGRAMMATION-META-17-20-NOV.md`](./PROGRAMMATION-META-17-20-NOV.md) | Copier-coller Meta : 17→20 nov. (sans vidéo 17/11 ni compteurs) |
+| [`PROGRAMMATION-META-21-NOV-ONWARD.md`](./PROGRAMMATION-META-21-NOV-ONWARD.md) | **2ᵉ vague** : 25/11 → 4/12 (puis rappels 7/12+) |
 | [`CHECKLIST-PUBLICATION-2026.md`](./CHECKLIST-PUBLICATION-2026.md) | Avant chaque programmation |
 | [`STRATEGIE-ARC-NARRATIF.md`](./STRATEGIE-ARC-NARRATIF.md) | L’histoire racontée de novembre à Noël |
 | [`VOIX-FONDATRICE.md`](./VOIX-FONDATRICE.md) | Le ton (« je » face caméra, « The Loop » en légende) |
