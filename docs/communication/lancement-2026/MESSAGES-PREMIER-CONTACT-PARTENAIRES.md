@@ -9,7 +9,7 @@
 - Remplacer tous les **[crochets]**, dont **[numéro]**.
 - Écrire « **pourrait apparaître** dans l’application », jamais « vous êtes sélectionné » : la décision se prend **après la visite**.
 - **Pas de date d’ouverture** (le 24/12 n’est public qu’à partir du 17/12) : dire « fin d’année ».
-- **Pas de prix** : la gratuité et les formules se détaillent **au rendez-vous**.
+- **Pas de prix ni de gratuité par écrit** : les offres et la plus-value se présentent **au rendez-vous**.
 - **Pas de lien** vers THE LOOP Pass : c’est un autre projet.
 - La **phrase personnalisée** (ce que vous avez vu ou ce qu’on vous a dit du lieu) est obligatoire : c’est elle qui fait répondre.
 
@@ -20,7 +20,7 @@
 | Qui je suis + ce qu’est The Loop | Crédibilité |
 | Phrase personnalisée | Montrer qu’on les connaît |
 | Objectif : apparaître dans l’application + ce qu’ils y gagnent | Intérêt |
-| Sans engagement + gratuité détaillée au RDV + rien publié sans validation | Mise en confiance |
+| Sans engagement + offres et plus-value présentées au RDV + rien publié sans validation | Mise en confiance |
 | Sélection limitée | Envie de dire oui |
 | RDV 15 min, chez eux, + question à choix (matin / fin d’après-midi) | Faciliter le oui |
 | Joignable sur [numéro] | Rassurer |
@@ -38,7 +38,7 @@ Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui
 
 Je vous écris parce que j'aimerais voir avec vous comment [nom de l'établissement] pourrait apparaître dans l'application. Vous seriez visible auprès d'un public qui cherche justement où sortir et à qui faire confiance, et vous pourriez gérer vous-même vos informations depuis un espace professionnel.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'adresses, c'est pourquoi je préfère vous rencontrer en personne.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'adresses, c'est pourquoi je préfère vous rencontrer en personne.
 
 Je serai à Conakry à partir du 8 décembre. Accepteriez-vous un échange de 15 minutes, chez vous, au moment qui vous arrange ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -64,7 +64,7 @@ On m'a recommandé [nom du restaurant] pour [votre cuisine / votre cadre / votre
 
 J'aimerais voir avec vous comment votre restaurant pourrait apparaître dans l'application, dans la rubrique des tables qu'on recommande pour un dîner important ou une belle soirée. Vous seriez visible auprès d'une clientèle qui cherche une adresse de qualité, et vous pourriez mettre à jour vous-même vos informations (horaires, menus, soirées spéciales).
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous retenons peu de tables, c'est pourquoi je tiens à vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous retenons peu de tables, c'est pourquoi je tiens à vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Auriez-vous 15 minutes à m'accorder, sur place, au moment qui vous arrange ? Plutôt avant ou après le service ?
 
@@ -86,7 +86,7 @@ Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui
 
 J'aimerais voir avec vous comment votre établissement pourrait apparaître dans l'application. Vous seriez visible auprès de personnes qui cherchent où dormir, se retrouver ou organiser un rendez-vous, et vous pourriez y annoncer vos événements (brunchs, soirées, expositions).
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'établissements, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'établissements, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Pourrais-je échanger 15 minutes avec vous ou avec la personne en charge de la communication ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -108,7 +108,7 @@ Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui
 
 J'aimerais voir avec vous comment [nom du lieu] pourrait apparaître dans l'application. Vous seriez visible auprès d'un public qui cherche justement où sortir, et vous pourriez annoncer vous-même vos soirées et vos événements dans l'agenda.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de lieux, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de lieux, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Auriez-vous 15 minutes à m'accorder sur place ? Plutôt en fin d'après-midi, avant l'ouverture ?
 
@@ -130,7 +130,7 @@ On m'a recommandé [nom du lieu] pour [raison précise : accueil, savoir-faire, 
 
 J'aimerais voir avec vous comment votre établissement pourrait apparaître dans l'application. Vous seriez visible auprès d'un public qui cherche des adresses de confiance, et vous pourriez gérer vous-même vos informations depuis un espace professionnel.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'adresses, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'adresses, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Accepteriez-vous un échange de 15 minutes, chez vous ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -156,7 +156,7 @@ Vos événements [nom / type : afterworks, conférences, rencontres pro] touchen
 
 J'aimerais voir avec vous comment vos événements pourraient apparaître dans l'agenda de l'application. Vous pourriez y publier vous-même vos dates, toucher un public qualifié qui cherche ce type de rendez-vous, et suivre l'intérêt suscité par chaque événement.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'organisateurs, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'organisateurs, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Auriez-vous 15 minutes à m'accorder ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -178,7 +178,7 @@ Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui
 
 J'aimerais voir avec vous comment vos soirées pourraient apparaître dans l'agenda de l'application. Vous pourriez y publier vous-même vos dates et toucher un public qui cherche justement où sortir le week-end.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'organisateurs, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité d'organisateurs, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Auriez-vous 15 minutes à m'accorder ? Plutôt en début ou en fin de semaine ?
 
@@ -200,7 +200,7 @@ Nous voulons que la culture ait toute sa place dans l'agenda : expositions, conc
 
 J'aimerais voir avec vous comment vos événements pourraient apparaître dans l'application. Vous pourriez y annoncer vous-même votre programmation et toucher un public curieux, qui cherche autre chose que les sorties habituelles.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de partenaires, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de partenaires, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Auriez-vous 15 minutes à m'accorder ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -222,7 +222,7 @@ Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui
 
 J'aimerais voir avec vous comment vos événements pourraient apparaître dans l'agenda de l'application. Vous pourriez y publier vous-même vos dates et toucher un public qui aime découvrir de nouvelles tables et de nouvelles expériences.
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de partenaires, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de partenaires, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Auriez-vous 15 minutes à m'accorder ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -250,7 +250,7 @@ Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui
 
 J'aimerais voir avec vous comment [nom du service] pourrait apparaître dans la rubrique Outils de l'application. [Phrase « ce que vous y gagnez », voir tableau]
 
-C'est sans engagement de votre part, et je vous présenterai au rendez-vous tout ce qui est gratuit pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de services, c'est pourquoi je préfère vous rencontrer.
+C'est sans engagement de votre part : au rendez-vous, je vous présenterai nos offres ainsi que la plus-value concrète pour vous. Rien n'est publié sans votre validation. Nous démarrons avec un nombre limité de services, c'est pourquoi je préfère vous rencontrer.
 
 Je serai à Conakry à partir du 8 décembre. Pourrais-je échanger 15 minutes avec vous ou avec la personne en charge des partenariats ? Plutôt en matinée ou en fin d'après-midi ?
 
@@ -302,6 +302,14 @@ Mariame
 
 Toujours envoyer un **WhatsApp récapitulatif** après l’appel (date, heure, lieu).
 
+### Rappel de créneau (1er–5 décembre, pour les RDV pris en novembre)
+
+```
+Bonjour [Nom], j'arrive bientôt à Conakry et je me réjouis de notre rendez-vous. Je vous confirme le [jour] [date] à [heure] chez [lieu] : est-ce que c'est toujours bon pour vous ?
+
+Mariame · The Loop · [numéro]
+```
+
 ### Confirmation RDV (la veille)
 
 ```
@@ -320,10 +328,10 @@ Mariame · The Loop · [numéro]
 The Loop est une application qui sort en fin d'année : un guide des meilleures adresses de Conakry, un agenda des événements qui valent le déplacement, des parcours et des outils utiles. Nous sélectionnons peu d'adresses pour que chaque recommandation compte. Je vous montrerai tout sur place, en 15 minutes.
 ```
 
-### « C’est payant ? »
+### « C’est payant ? » / « Combien ça coûte ? »
 
 ```
-C'est sans engagement, et une partie est gratuite pour vous : je vous détaillerai tout au rendez-vous, pour que vous puissiez choisir en connaissance de cause.
+Nous avons plusieurs offres, et je préfère vous les présenter de vive voix avec la plus-value concrète pour [nom], pour que vous puissiez choisir en connaissance de cause. Dans tous les cas, ce premier échange est sans engagement.
 ```
 
 ### « Envoyez-moi les infos par message »
@@ -359,3 +367,19 @@ Merci pour votre réponse, je comprends tout à fait. Si vous changez d'avis, je
 | | Spot / Event / Outil | | Liste perso / reco [Prénom] | | | | À contacter · Contacté · RDV · Visité · Retenu · Non retenu |
 
 **Rythme conseillé :** 10 à 15 messages par jour, pas plus, pour pouvoir répondre à chacun le jour même.
+
+---
+
+## 9. Calendrier d’envoi (aligné sur les dates de lancement)
+
+| Période | Action |
+|---------|--------|
+| **11/11 → 16/11** | Première vague : les spots et organisateurs **prioritaires**. Proposer en priorité des créneaux du **8 au 12/12**. |
+| **17/11** | Ouverture publique de la liste d’attente. Dans les relances suivantes, on peut ajouter : « Vous avez peut-être vu notre annonce sur Instagram. » |
+| **17/11 → 30/11** | Deuxième vague (le reste de la liste) + relances J+3 et appels J+5. Créneaux du **13 au 22/12**. |
+| **1/12 → 5/12** | Rappel de créneau à tous les RDV pris en novembre. |
+| **8/12 → 16/12** | RDV des prioritaires : leurs fiches doivent être prêtes **avant le 17/12** (contenu du pré-lancement). |
+| **17/12** | La date du 24/12 devient publique : on peut désormais la donner aux partenaires. |
+| **17/12 → 22/12** | Derniers RDV : ces partenaires sont publiés pour l’ouverture du **24/12** ou juste après. |
+
+Jusqu’au 17/12 : « fin d’année » dans tous les messages, jamais « 24 décembre ».
