@@ -157,6 +157,8 @@ export function ProfilScreen({ navigation }: Props) {
     passProfileReady &&
     (role === 'USER_PRIME' || (role === 'USER_FREE' && hasPrimeHistory));
   const showPartnershipLink = role === 'USER_FREE' || role === 'USER_PRIME';
+  const showMyBenefitsLink =
+    role === 'USER_FREE' || role === 'USER_PRIME' || role === 'PARTNER' || role === 'ADMIN';
   return (
     <ScrollView style={{ backgroundColor: shell.pageBg }} contentContainerStyle={styles.container}>
       <PageHeader title="Profil" shell={shell} />
@@ -193,6 +195,21 @@ export function ProfilScreen({ navigation }: Props) {
               : 'À communiquer à votre équipe pour valider les privilèges membres au comptoir.'}
           </Text>
         </View>
+      ) : null}
+
+      {showMyBenefitsLink ? (
+        <Pressable
+          style={[styles.subCard, { borderColor: accent.accentBorder, backgroundColor: accent.accentSoft }]}
+          onPress={() => navigation.navigate('MyBenefits')}
+        >
+          <Text style={[styles.detailLabel, { color: shell.pageKicker }]}>Mes privilèges</Text>
+          <Text style={[styles.detailValue, { color: shell.pageTitle, marginTop: 4 }]}>
+            Vos octrois, tirages et avantages partenaires
+          </Text>
+          <Text style={[styles.linkBtnText, { color: accent.accent, marginTop: 8 }]}>
+            Voir le détail (lieu, quota, validité) →
+          </Text>
+        </Pressable>
       ) : null}
 
       {showReferralCard ? (
