@@ -11,7 +11,7 @@ Un lieu ou un service doit viser **au moins 2 des 3** pour être recommandé à 
 
 | # | Règle | Questions à se poser |
 |---|--------|----------------------|
-| **1** | **Pas la bousculade** | Peut-on **s’asseoir**, discuter, manger, boire ou recevoir un service **sans chaos** ? Le bruit permet-il une **vraie soirée** ou une discussion ? |
+| **1** | **Pas la bousculade** | Pas le chaos **physique** ni la **querelle** : stade / balle poussière où on se pousse, insécurité, bagarres. **Pas** « interdit de danser » : une **boîte ou un lounge sélectif** où le public se tient peut y entrer. À l’inverse : **hype réseaux sans fond**, foule ingérable, impossible de profiter. (La **musique forte** seule n’élimine pas un lieu.) |
 | **2** | **Vraie plus-value** | Y a-t-il un **service attentionné**, un **cadre**, un **détail** ou une **expérience** qu’on ne trouve pas « partout » ? Ce n’est pas seulement « c’est ouvert ». |
 | **3** | **Expérience soignée ou rare** | Le recommanderiez-vous **à un ami** exigeant ? En parlerait-on **le lendemain** ? Est-ce **mémorable** (pas générique) ? |
 

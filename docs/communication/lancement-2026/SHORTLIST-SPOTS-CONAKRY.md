@@ -24,37 +24,27 @@ Les notes **1–5** portent sur les 3 règles, **telles qu’elles se lisent de 
 
 **Déjà dans les données démo de l’app (à traiter comme vrais partenaires, pas comme fiction) :** L’Avenue, Hôtel Noom, Le Petit Bateau, Palm Camayenne. *Sky Lounge Kaloum* et *The Roof* n’ont pas d’équivalent public évident : à ne pas contacter sous ces noms.
 
-**Lecture depuis ici :** sections [0](#0-pourquoi-pas-code-barre-et-le-milliardaire-sur-the-loop) et [0 bis](#0-bis-tableau-fusionné--shortlist--formulaire) = tout en un coup d’œil. Le détail par catégorie commence en [§1](#1-fine-dining--tables).
+**Lecture depuis ici :** [canvas Shortlist](https://cursor.com/canvas/store-15aa65ba-bc89-4c82-9912-b7aed140c0a2/97233cad-17db-4ae6-ae74-09795cabadb0) (filtres + détails) · sections [0](#0-boîtes-de-nuit--ce-que-pas-la-bousculade-veut-dire-et-code-barre--milliardaire) et [0 bis](#0-bis-tableau-fusionné--shortlist--formulaire). Le détail par catégorie commence en [§1](#1-fine-dining--tables).
 
 ---
 
-## 0. Pourquoi pas Code Barre et Le Milliardaire sur The Loop ?
+## 0. Boîtes de nuit — ce que « pas la bousculade » veut dire (et Code Barre / Milliardaire)
 
-Ce n’est **pas** un jugement sur « c’est mauvais » ou « les gens n’aiment pas ». Le formulaire peut leur mettre 8/10 sur l’ambiance ou la nuit. The Loop, c’est un **guide sélectif** : on recommande des adresses où l’on peut **manger, boire ou recevoir un service sans chaos**, avec une **vraie plus-value**, et qu’on recommanderait à un ami exigeant.
+**Ce que la règle 1 vise :** concerts en stade ou **balle poussière** où tout le monde se pousse, **querelles**, arnaques, lieux où le **bruit RS** promet plus que la réalité. **Ce n’est pas** « toute boîte est interdite ».
 
-### Code Barre (lounge · resto · boîte)
+**Ce qu’une boîte peut être dans un guide sélectif :** tu vas **danser un peu**, bonne musique, **mood**, tu rentres — **sans bagarre**, avec **vraie plus-value** (cadre, DJ, sécurité, accueil). Fiche possible en **« Nuit sélective »** ou en **agenda** (soirée précise).
 
-| Critère Loop | Ce qu’on sait (sources publiques) |
-|--------------|-----------------------------------|
-| **Pas la bousculade** | Ouvert **tous les jours ~16h → 3h**. Le lieu est décrit comme un hotspot qui **s’anime fort le soir** (musique, « night out »). Sur le formulaire c’est explicitement **lounge + resto + boîte de nuit** : trois usages, le troisième casse la règle 1. |
-| **Plus-value** | Carte locale + internationale, mais c’est le **même modèle** que beaucoup de lounges Conakry (style, cocktails, musique). Pas l’identité que tu veux porter à l’ouverture. |
-| **Expérience soignée ou rare** | Peut être sympa pour une **sortie festif-festive**. Ce n’est pas « demain tu y emmènes ta mère / ton client pour un dîner posé ». |
+| Lieu | Verdict shortlist | Publier au 24/12 ? | Avis éditorial (à trancher en visite) |
+|------|-------------------|---------------------|----------------------------------------|
+| **Code Barre** | **C** | Pas prioritaire lancement | **Pas exclu** parce que « boîte ». Doute : **hype + tard** vs dîner/lounge posé ; visiter **jeudi vs samedi**. Si le mood est premium et calme → **B** (spot ou agenda). |
+| **Le Milliardaire** | **C** | Après avis cercle + visite | **24h** = imprévisible ; **peu d’avis** publics. Peut être une adresse « on se pose » hors pics — à prouver sur place. |
+| **911 Lounge** | **C** | Sous réserve | Festif Kipé ; même grille que ci-dessus. |
+| **Imperium** | **C** | Sous réserve | Profil « by night » ; standing à confirmer. |
+| **Upstairs** | **C** | Plutôt après lancement | 17h–4h, chicha ; volume tard. |
+| **Le Baron (club ven–sam)** | **C** | Agenda possible | Afterwork **jeudi** = déjà **B** ; club 6h = pas priorité ouverture. |
+| **Geneva / PP+** | **Hors** | Non (pour l’instant) | Réputation **trop générique / VIP chaotique** dans les retours — pas seulement « c’est une boîte ». |
 
-**Exception possible après visite :** s’il existe un **vrai service restaurant calme** (pas la piste) en **début de soirée en semaine**, on peut reclasser en **B** pour un créneau précis — mais **pas une fiche « boîte »** au lancement du 24/12.
-
-### Le Milliardaire (lounge)
-
-| Critère Loop | Ce qu’on sait |
-|--------------|---------------|
-| **Pas la bousculade** | Lounge annoncé **ouvert 24h/24**. Un lieu qui ne ferme pas = pics de monde imprévisibles, pas un repère « on s’assoit et on parle ». |
-| **Plus-value** | Signal public **faible** (peu d’avis récents, note ~3,0 sur certaines fiches). Rien qui justifie une place **limitée** dans le guide. |
-| **Expérience rare** | Plutôt **club / lounge de quartier** que destination. The Loop a déjà mieux pour « soirée chic » : Pool Noom, Terrasse Palm, Lounge 27, afterwork jeudi Riviera — **sans** aller jusqu’à 3h ou 24h. |
-
-### En une phrase
-
-**Code Barre et Le Milliardaire = nuit & volume.** The Loop au 24/12 = **tables, rooftops où l’on parle, culture, brunch, spas, îles** — pas l’annuaire des boîtes. Les mettre dedans dilue la promesse « pas la bousculade » et fait ressembler l’app à Instagram nightlife.
-
-*(Même logique pour Imperium, 911, Upstairs jusqu’à 4h, Geneva, Petit Pihé Plus.)*
+**Tableau interactif (filtre « Boîte / lounge nuit ») :** voir le [canvas Shortlist Conakry](https://cursor.com/canvas/store-15aa65ba-bc89-4c82-9912-b7aed140c0a2/97233cad-17db-4ae6-ae74-09795cabadb0).
 
 ---
 
@@ -130,12 +120,12 @@ Ce n’est **pas** un jugement sur « c’est mauvais » ou « les gens n’aime
 | **Artemis / Palacio / Damas / Ghazal / Ben’s / Jardin d’Eden / Acile / Black House** | F | Divers | — | **C** | Avis local | Identification faible | Score formulaire |
 | **Musée national** | S | Musée | Sandervalia | **C** | Pas avant réouverture | En travaux | — |
 | **Waraba** (île) | S | Hôtel + club | Roume | **C** | Avis local | Night-club | — |
-| **Code Barre** | F | Lounge · resto · boîte | Conakry | **Hors** | **Non** | 16h–3h, boîte — voir [§0](#0-pourquoi-pas-code-barre-et-le-milliardaire-sur-the-loop) | Hors 24/12 |
-| **Le Milliardaire** | F | Lounge 24h | Conakry | **Hors** | **Non** | 24h, faible signal — [§0](#0-pourquoi-pas-code-barre-et-le-milliardaire-sur-the-loop) | Hors 24/12 |
-| **Imperium Lounge** | F | Boîte | Conakry | **Hors** | Non | Conakry by night | Hors 24/12 |
-| **911 Lounge** | F | Lounge | Kipé | **Hors** | Non | Festif tardif | Hors 24/12 |
-| **Upstairs Lounge** | F | Lounge | Résidence 2000 | **Hors** | Non 24/12 | 17h–4h, chicha | Hors 24/12 |
-| **Le Baron (club ven–sam)** | S+F | Club | Riviera | **Hors** | Non | 23h–6h | Afterwork jeu = B |
+| **Code Barre** | F | Lounge · resto · boîte | Conakry | **C** | Sous réserve visite | Mood nuit OK si pas chaos — [§0](#0-boîtes-de-nuit--ce-que-pas-la-bousculade-veut-dire-et-code-barre--milliardaire) | Visite 8–22/12 |
+| **Le Milliardaire** | F | Lounge 24h | Conakry | **C** | Après avis local | Peu d’avis ; 24h imprévisible — [§0](#0-boîtes-de-nuit--ce-que-pas-la-bousculade-veut-dire-et-code-barre--milliardaire) | Score formulaire |
+| **Imperium Lounge** | F | Boîte | Conakry | **C** | Sous réserve | By night | Visite |
+| **911 Lounge** | F | Lounge | Kipé | **C** | Sous réserve | Festif Kipé | Visite |
+| **Upstairs Lounge** | F | Lounge | Résidence 2000 | **C** | Après lancement | 17h–4h, chicha | Visite |
+| **Le Baron (club ven–sam)** | S+F | Club | Riviera | **C** | Agenda | 23h–6h ; afterwork jeu = **B** | — |
 | **Geneva / Petit Pihé Plus** | S | Club | Kipé / Concasseur | **Hors** | Non | — | — |
 | **RFC** | F | Fast food | Kipé, Nongo… | **Hors** | Non | Chaîne | — |
 | **Mim’s / Brasserie U** | S+F | Fast food | — | **Hors** | Non | — | — |
