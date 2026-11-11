@@ -364,7 +364,9 @@ Merci pour votre réponse, je comprends tout à fait. Si vous changez d'avis, je
 
 | Nom | Type | Catégorie | Source | Envoyé le | Relance | RDV | Statut |
 |-----|------|-----------|--------|-----------|---------|-----|--------|
-| | Spot / Event / Outil | | Liste perso / reco [Prénom] | | | | À contacter · Contacté · RDV · Visité · Retenu · Non retenu |
+| | Spot / Event / Outil | | Liste perso / reco [Prénom] / formulaire CONTENUS THELOOP | | | | À contacter · Contacté · RDV · Visité · Retenu · Non retenu |
+
+**Source formulaire :** [CONTENUS THELOOP](https://forms.gle/cau6jWLQvNJZAUBWA). Ne pas écrire à toute la liste. Vague 1 = shortlist A. Du formulaire, seulement **Loura** et **UMIÏ** méritent un message tôt (plus-value claire). Le reste : visite ou avis local d’abord (`SHORTLIST-SPOTS-CONAKRY.md` §15–16).
 
 **Rythme conseillé :** 10 à 15 messages par jour, pas plus, pour pouvoir répondre à chacun le jour même.
 

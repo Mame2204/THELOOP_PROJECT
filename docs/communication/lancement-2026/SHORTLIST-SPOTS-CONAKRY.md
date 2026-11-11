@@ -7,6 +7,8 @@
 
 Sources croisées : Diatigui, Petit Futé 2026, Tripadvisor, VisitConakry, sites hôtels (Noom, Riviera, Radisson), GuineaFirst, pages établissements.
 
+**Formulaire local** [CONTENUS THELOOP](https://forms.gle/cau6jWLQvNJZAUBWA) (« Des spots qui méritent le détour ») : 51 enseignes notées 1–10 (globale, ambiance, service, nourriture, cadre, prix). C’est une **longue liste de terrain**, pas un oui automatique. Détail : [section 15](#15-formulaire-local-contenus-theloop).
+
 ---
 
 ## Comment lire cette liste
@@ -208,7 +210,27 @@ Les hôtels The Loop : on fiche l’hôtel **si** le séjour ou au moins un espa
 - Intérêt Loop = **Rooftop H2**, pas forcément les chambres.
 - **The Loop :** ficher le **rooftop** ; l’hôtel seulement si le standing suit.
 
-#### 25. Autres (Mariador, Grand Hôtel de l’Indépendance, etc.)
+#### 25. Millenium Suites — Landréah (Dixinn)
+- **Verdict B — OUI sous réserve**
+- Hôtel mer, resto The West, Martini Lounge (Asie + sunset). Sur le formulaire local (deux fois). Google ~4,3.
+- **The Loop :** visiter resto + lounge, pas seulement la réception. Peut remplacer un 4e hôtel « chaîne » si le standing est plus chaleureux que ONOMO.
+
+#### 26. Atlantic View — Ratoma, face lycée français
+- **Verdict B / C**
+- Hôtel souvent cité avec Millenium. Notes ~4,0 sur un gros volume.
+- **The Loop :** seulement si la visite sort du lot (vue, petit-déj, calme). Sinon doublon.
+
+#### 27. Mariador Park — Taouyah (Ratoma)
+- **Verdict B**
+- Rénové, réouverture 2024. Piscine, Marsy Restaurant. Petit Futé 2026 plutôt positif. Le Mariador Palace, lui, est privatisé.
+- **The Loop :** oui à visiter (Ratoma, pas que Kaloum).
+
+#### 28. Setifana — Ratoma, ouverture mer
+- **Verdict C**
+- Petit hôtel (27 chambres, piscine, mer). Peu d’avis publics.
+- **The Loop :** avis local + visite. Pas vague 1.
+
+#### 29. Autres (Grand Hôtel de l’Indépendance, etc.)
 - **Hors lancement** tant qu’un avis local fort n’existe pas. Beaucoup d’hôtels « connus » sont datés.
 
 ---
@@ -403,9 +425,11 @@ Ordre suggéré (15 contacts, mix catégories) :
 
 KAKI, Aquarium, Mille Pattes, Petit Bateau, Italia Box, Palm Camayenne (Terrasse), La Croisière, H2 Lounge, Ocean’s Lounge, Atlantic Souzini, Villa des Arts, Studios Kirah, Mina Spa, OFICI, Hôtel Sogué.
 
+**Ajouts du formulaire local (à visiter, pas à promettre) :** Loura (tajine / plage Camayenne), UMIÏ (Coléah), Millenium Suites, Mariador Park, Cherry, Amore Mio, Eldorado (steak, Prima Center), Salma’s (si tu vas déjà à Avenue).
+
 ### Ne pas écrire pour l’ouverture
 
-Geneva, Petit Pihé Plus, Prima Center (comme adresse), Mim’s Burger, Brasserie U, Yango, Orange Money, By Issa (sauf besoin logistique perso), Musée national tant qu’il est en travaux.
+Geneva, Petit Pihé Plus, Prima Center (comme adresse), Mim’s Burger, Brasserie U, RFC, Yango, Orange Money, By Issa (sauf besoin logistique perso), Musée national tant qu’il est en travaux, **clubs du formulaire** (Code Barre, Imperium, Milliardaire, 911, Le Pavillon concerts, Upstairs jusqu’à 4h), **Coco Tea / Cake and Tea** tant que la marque CoCo internationale signale un magasin non autorisé à Conakry.
 
 ---
 
@@ -442,3 +466,86 @@ Envoie-leur la grille `CRITERES-AVIS-PARTENAIRES-CONAKRY.md` et pose **uniquemen
 - Un organisateur **fiable** (pas un flyer WhatsApp) pour décembre ?
 
 Leurs réponses = shortlist A/B. **Ta visite = publication.**
+
+---
+
+## 15. Formulaire local « CONTENUS THELOOP »
+
+Lien : [forms.gle/cau6jWLQvNJZAUBWA](https://forms.gle/cau6jWLQvNJZAUBWA)  
+Titre interne : **CONTENUS THELOOP** · sous-titre : « Des spots qui méritent le détour ».  
+Barème du formulaire : **1 à 10** sur note globale, ambiance, service, nourriture, cadre, prix.
+
+**Comment s’en servir.** Les notes 1–10 mesurent le **plaisir local**. The Loop ajoute deux filtres que le formulaire n’a pas : **pas la bousculade** et **expérience rare / soignée**. Un club à 9/10 peut être un **hors lancement**. Un glacier à 7/10 peut entrer s’il est calme et unique.
+
+Millenium est listé **deux fois** dans le formulaire : une seule fiche.
+
+| Enseigne (formulaire) | Type | Quartier / repère | Verdict Loop | The Loop ? | Commentaire |
+|----------------------|------|-------------------|--------------|------------|-------------|
+| **Noom Hotel** | Hôtel | Kaloum | **A** | Déjà prioritaire | — |
+| **Riviera Royal / La Siete** | Hôtel + rooftop | Tombo | **A** | Déjà prioritaire | Une enseigne, deux espaces |
+| **Radisson Blue** | Hôtel | Kipé | **A** | Déjà prioritaire | Orthographe : **Blu** |
+| **Nomad** | Brunch / resto | Kipé | **A** | Déjà prioritaire | — |
+| **La Félicité** | Fine dining | Kipé | **A** | Déjà prioritaire | — |
+| **Avenue** | Fine dining | Résidence 2000 | **B** | Oui sous réserve | Groupe : aussi Salma’s + Upstairs |
+| **KAKI** | Brasserie | Kakimbo | **B** | Oui | — |
+| **Aquarium** | Resto mer | Tombo | **B** | Oui sous réserve | Live week-end |
+| **Palm Camayenne** | Hôtel | Camayenne | **B** | Oui sous réserve | Terrasse > chambres si l’entretien a glissé |
+| **ONOMO** | Hôtel | Conakry | **B** | Pas ouverture | Redondant |
+| **Hôtel Kaloum** | Hôtel | Almamya | **C** | Si un espace sort du lot | Sur le formulaire = demande locale, pas une preuve de standing |
+| **Heroes** | Café / cantine | Kaloum, Kipé, T2, Matam | **B** | Quotidien, 1 fiche enseigne | Utile, pas rare |
+| **Jardin de Guinée** | Resto | Coléah / Matam | **C** | Pas ouverture | Déjà noté ~3,5 |
+| **Mims** | Burger | Camayenne | **Hors** | Non | — |
+| **Loura Restaurant** | Marocain | Plage Camayenne | **B** | **Oui à visiter** | Tajine / couscous, sunset, avis 2025–26 très positifs. Cuisine rare à Conakry. |
+| **UMIÏ** | Resto-bar | Coléah, Cité Douane Adoha | **B** | **Oui à visiter** | Site propre, horaires mar–dim 13h–22h30, lounge à part. Ton compatible. |
+| **Millenium Suites** | Hôtel | Landréah, Dixinn | **B** | Oui à visiter | The West + Martini Lounge |
+| **Atlantic View** | Hôtel | Ratoma, lycée français | **C** | Après visite | Doublon possible avec Millenium |
+| **Mariador Park** | Hôtel | Taouyah | **B** | Oui à visiter | Rénové 2024, piscine, Marsy |
+| **Setifana Hotel** | Hôtel | Ratoma, mer | **C** | Avis local | Petit, peu d’avis |
+| **Cherry** | Café / resto / pâtisserie | Camayenne (et Nongo cité) | **B** | Oui en B | Petit-déj, famille, pâtisserie. Un avis 2025 : bruyant au rush déjeuner. |
+| **Amore Mio** | Glacier | Nongo Taady | **B** | Oui « goûter » | Glacier, pas un dîner. Une fiche sucrée suffit avec Mammamia. |
+| **Mammamiya** (Mammamia) | Glacier + resto | Taouyah | **B / C** | Goûter | Ouvert 2025, glaces + pizza/burger. Juger si c’est soigné ou fast-food sucré. |
+| **Cake by Zaza** (souvent Cake by Zena) | Pâtisserie | Lambanyi | **C** | Commande / quartier | Pas une expérience de lieu |
+| **SLM** | Resto-pâtisserie | Lambanyi + Sonfonia T7 | **B / C** | Couverture Ratoma nord | Utile géographiquement ; standing à voir |
+| **Salma’s** | Libanais | Résidence 2000 (Avenue Group) | **B** | Visiter **avec** Avenue | Carte libanaise distincte |
+| **Upstairs Lounge** | Lounge | Résidence 2000 | **C / hors ouverture** | Non pour le 24/12 | 17h–4h, chicha, +23 ans. Trop nightlife. |
+| **Eldorado** | Steakhouse | Prima Center, Kipé | **B** | Oui sous réserve | Viande Angus / Bonsmara, 50 couverts. Le **mall** est un moins (foule). Tester le calme en salle. |
+| **MAF Village** | Écolodge | Maférinya (~66 km) | **B** | Escapade, pas « Conakry centre » | Hébergement + resto + séminaires. Une fiche « week-end hors ville » si la visite est belle. |
+| **Minghao Club** | Chinois + karaoké | Corniche nord | **C** | Avis + visite | Vue mer, notes ~3,8, karaoké = risque bruit. |
+| **911 Lounge** | Lounge resto | Kipé | **C / hors** | Non ouverture | Ton « on va s’amuser comme d’hab », matchs, fermetures irrégulières. |
+| **Milliardaire** | Lounge 24h | Conakry | **Hors** | Non | Lounge 24h, note publique faible. |
+| **Code Barre** | Lounge / resto / boîte | Conakry | **Hors** | Non | Ouvert jusqu’à 3h. |
+| **Imperium Lounge** | Boîte | Conakry | **Hors** | Non | Dress code, entrée + jus, « Conakry by night ». |
+| **Le Pavillon** | Salle / concerts | Kobayah, carrefour Fall | **Hors comme spot** | Agenda seulement si un concert soigné | Rap / tickets / cérémonies. Pas un lieu à « aimer ». |
+| **RFC** | Fried chicken | Kipé, Kaloum, Nongo | **Hors** | Non | Chaîne pratique, pas sélective. |
+| **Rayi** | Café / cuisine guinéenne | Nongo Conteya (UNC) | **C** | Plus tard si exceptionnel | Fonio, lafidi, riz au gras. Vrai quotidien, risque maquis. |
+| **TMI Lambanyi** | Resto ? | Lambanyi | **C** | Avis local | Horaires 7h–21h, peu d’infos éditoriales. |
+| **Sucré Salé** | Resto / livraison | Kipé ou « Maman d’Amina » | **C** | Trancher **quel** Sucré Salé | Deux enseignes possibles. |
+| **Jardin d’Eden** | ? | — | **C** | Avis local | Pas assez d’infos publiques fiables. |
+| **Coco Tea** / **Cake and Tea** | Bubble tea / pâtisserie | Conakry | **Hors tant que doute marque** | Non | CoCo Fresh Tea & Juice a signalé un magasin **non autorisé** à Conakry (2025). Risque réputation. |
+| **Privilege by Heroes** | ? (ligne Heroes) | — | **C** | Visiter si c’est **l’adresse premium** | Peut être le Heroes « chic ». Si c’est la même cantine : une seule fiche Heroes. |
+| **Black House** | Bar / lounge | — | **C / hors** | Avis : jusqu’à 6h ? | Si boîte tardive = non. |
+| **Ben’s** | ? | — | **C** | Avis local | — |
+| **Acile** | Café | Kipé T2 | **C** | Quotidien | Coffee shop, pas une destination. |
+| **Artemis** | ? | — | **C** | Avis local | Pas d’identification publique claire. |
+| **Palacio Complexe** | Complexe | — | **C** | Avis local | Nom = souvent resto + salle + nuit : juger chaque espace. |
+| **Damas** | Resto | — | **C** | Avis local | Souvent syrien / chawarma : utile si le cadre est soigné. |
+| **Ghazal** | Resto | — | **C** | Avis local | Idem, probablement oriental. |
+
+**À faire scorer 1–10 + 3 règles Loop par tes connaissances (priorité formulaire) :** Loura · UMIÏ · Cherry · Millenium · Mariador Park · Eldorado · Privilege by Heroes · Minghao (soir **sans** karaoké).
+
+---
+
+## 16. Avis global (11 novembre 2026)
+
+**Le formulaire est plus précieux que les guides web**, parce qu’il sort de Kipé–Kaloum : Nongo, Lambanyi, Sonfonia, Coléah, Kobayah, Maférinya. C’est exactement le trou de la première shortlist (trop « 10 adresses Instagram »).
+
+**Ce n’est pas une liste à tout contacter.** Sur ~51 noms :
+
+- ~**12** étaient déjà dans la shortlist A/B (Noom, Riviera/Siete, Radisson, Nomad, Félicité, Avenue, KAKI, Aquarium, Palm, Heroes, ONOMO, Hôtel Kaloum).
+- ~**8** méritent d’entrer en **visite B** : Loura, UMIÏ, Millenium, Mariador, Cherry, Amore Mio, Eldorado, MAF Village (escapade).
+- ~**15** restent **C** (pas assez d’infos, ou fast-casual / oriental générique).
+- ~**10** sont **hors lancement** : boîtes, fried chicken, Mim’s, Coco Tea (risque marque).
+
+**Le vrai risque :** traiter un 8/10 « on s’amuse » comme un oui The Loop. Le formulaire note le plaisir, pas la sélectivité. Garde tes 15 messages de la vague 1. Ajoute **Loura et UMIÏ** si tu as de la bande passante — ce sont les deux plus-values nouvelles (Maroc plage, resto-bar Coléah). Le reste du formulaire = **grille à faire remplir**, pas WhatsApp de masse.
+
+**Couverture géographique après fusion :** Kaloum / Camayenne / Kipé **et** Ratoma nord + Coléah + une escapade hors ville. C’est un meilleur guide. N’ouvre pas avec 50 fiches : **18–25 lieux publiés** au 24/12, le reste en janvier.

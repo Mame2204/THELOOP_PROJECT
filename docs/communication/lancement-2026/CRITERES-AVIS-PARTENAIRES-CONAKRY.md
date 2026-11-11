@@ -152,6 +152,7 @@ Merci de me proposer ou évaluer des lieux / events / services selon :
 ## 7. Rappel pour Marianne (interne)
 
 - Avis connaissances = **shortlist** (priorité A/B).
+- **Formulaire local** [CONTENUS THELOOP](https://forms.gle/cau6jWLQvNJZAUBWA) (notes 1–10 : globale, ambiance, service, nourriture, cadre, prix) = **longue liste de terrain**, pas un oui. Croiser avec les 3 règles Loop. Synthèse : `SHORTLIST-SPOTS-CONAKRY.md` §15.
 - **Contact partenaire** possible dès **9/11**.
 - **Publication** = après **visite décembre** + modération + accord écrit.
 - **Retrait** possible si le lieu ne tient pas la promesse.
