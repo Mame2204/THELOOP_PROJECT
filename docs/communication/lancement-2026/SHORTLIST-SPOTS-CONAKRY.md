@@ -24,6 +24,133 @@ Les notes **1–5** portent sur les 3 règles, **telles qu’elles se lisent de 
 
 **Déjà dans les données démo de l’app (à traiter comme vrais partenaires, pas comme fiction) :** L’Avenue, Hôtel Noom, Le Petit Bateau, Palm Camayenne. *Sky Lounge Kaloum* et *The Roof* n’ont pas d’équivalent public évident : à ne pas contacter sous ces noms.
 
+**Lecture depuis ici :** sections [0](#0-pourquoi-pas-code-barre-et-le-milliardaire-sur-the-loop) et [0 bis](#0-bis-tableau-fusionné--shortlist--formulaire) = tout en un coup d’œil. Le détail par catégorie commence en [§1](#1-fine-dining--tables).
+
+---
+
+## 0. Pourquoi pas Code Barre et Le Milliardaire sur The Loop ?
+
+Ce n’est **pas** un jugement sur « c’est mauvais » ou « les gens n’aiment pas ». Le formulaire peut leur mettre 8/10 sur l’ambiance ou la nuit. The Loop, c’est un **guide sélectif** : on recommande des adresses où l’on peut **manger, boire ou recevoir un service sans chaos**, avec une **vraie plus-value**, et qu’on recommanderait à un ami exigeant.
+
+### Code Barre (lounge · resto · boîte)
+
+| Critère Loop | Ce qu’on sait (sources publiques) |
+|--------------|-----------------------------------|
+| **Pas la bousculade** | Ouvert **tous les jours ~16h → 3h**. Le lieu est décrit comme un hotspot qui **s’anime fort le soir** (musique, « night out »). Sur le formulaire c’est explicitement **lounge + resto + boîte de nuit** : trois usages, le troisième casse la règle 1. |
+| **Plus-value** | Carte locale + internationale, mais c’est le **même modèle** que beaucoup de lounges Conakry (style, cocktails, musique). Pas l’identité que tu veux porter à l’ouverture. |
+| **Expérience soignée ou rare** | Peut être sympa pour une **sortie festif-festive**. Ce n’est pas « demain tu y emmènes ta mère / ton client pour un dîner posé ». |
+
+**Exception possible après visite :** s’il existe un **vrai service restaurant calme** (pas la piste) en **début de soirée en semaine**, on peut reclasser en **B** pour un créneau précis — mais **pas une fiche « boîte »** au lancement du 24/12.
+
+### Le Milliardaire (lounge)
+
+| Critère Loop | Ce qu’on sait |
+|--------------|---------------|
+| **Pas la bousculade** | Lounge annoncé **ouvert 24h/24**. Un lieu qui ne ferme pas = pics de monde imprévisibles, pas un repère « on s’assoit et on parle ». |
+| **Plus-value** | Signal public **faible** (peu d’avis récents, note ~3,0 sur certaines fiches). Rien qui justifie une place **limitée** dans le guide. |
+| **Expérience rare** | Plutôt **club / lounge de quartier** que destination. The Loop a déjà mieux pour « soirée chic » : Pool Noom, Terrasse Palm, Lounge 27, afterwork jeudi Riviera — **sans** aller jusqu’à 3h ou 24h. |
+
+### En une phrase
+
+**Code Barre et Le Milliardaire = nuit & volume.** The Loop au 24/12 = **tables, rooftops où l’on parle, culture, brunch, spas, îles** — pas l’annuaire des boîtes. Les mettre dedans dilue la promesse « pas la bousculade » et fait ressembler l’app à Instagram nightlife.
+
+*(Même logique pour Imperium, 911, Upstairs jusqu’à 4h, Geneva, Petit Pihé Plus.)*
+
+---
+
+## 0 bis. Tableau fusionné — shortlist + formulaire
+
+**Sources :** `S` = shortlist (guides web) · `F` = [formulaire CONTENUS THELOOP](https://forms.gle/cau6jWLQvNJZAUBWA) · `S+F` = les deux.  
+**Action :** `Contact 11–16/11` · `Contact 17–30/11` · `Visite 8–22/12` · `Score formulaire` · `Hors 24/12` · `Agenda seulement` · `Plus tard`
+
+| Nom | Src | Type | Quartier | Verdict | The Loop ? | Pourquoi en une ligne | Action |
+|-----|-----|------|----------|---------|------------|------------------------|--------|
+| **Le Jacquier** | S+F | Fine dining | Kipé | **A** | Oui ouverture | Cuisine guinéenne revisitée, unique | Contact 11–16/11 |
+| **Le Patio** | S | Fine dining / pâtisserie | Minière | **A** | Oui | Art + boulangerie, très Loop | Contact 11–16/11 |
+| **Le Damier** | S | Fine dining / pâtisserie | Kaloum | **A** | Oui | Institution pâtisserie | Contact 11–16/11 |
+| **Nomad** (resto + coworking) | S+F | Brunch / resto / outil | Kipé | **A** | Oui | Meilleur brunch cité | Contact 11–16/11 |
+| **L’Adresse** (Noom) | S | Fine dining | Kaloum | **A** | Oui | Afro-fusion mer | Via Noom |
+| **Noom Hotel** | S+F | Hôtel + bar | Kaloum | **A** | Oui | Piscine, L’Adresse, pool bar | Contact 11–16/11 |
+| **Riviera Royal** | S+F | Hôtel + club | Tombo | **A** | Oui | Siete, spa ; pas le club 6h | Contact 11–16/11 |
+| **Siete / La Siete** | S+F | Fine dining rooftop | Riviera | **A** | Oui | Pan-asiatique vue mer | Via Riviera |
+| **Radisson Blu** | S+F | Hôtel + spa | Kipé | **A** | Oui (pas « Sheraton ») | Réouvert 2024 | Contact 11–16/11 |
+| **La Félicité** | S+F | Fine dining | Kipé | **A** | Oui | Table + brunch dimanche | Contact 11–16/11 |
+| **Lounge 27** | S | Bar / rooftop | Kakimbo 27e | **A** | Oui | Vue 360° unique | Contact 11–16/11 |
+| **La Terrasse** (Palm) | S | Bar / lounge | Camayenne | **A** | Oui | Jardin-océan, on parle | Via Palm |
+| **Pool Bar Noom** | S | Bar | Kaloum | **A** | Oui | Afterwork / jazz possible | Via Noom |
+| **Pool Bar Radisson** | S | Bar | Kipé | **A** | Oui | Sunset corniche | Via Radisson |
+| **Bacio Nero** | S | Café | Kipé + Kaloum | **A** | Oui | Café / gelato soigné | Contact 11–16/11 |
+| **Brasserie des Arts** (CCFG) | S | Café | Kaloum | **A** | Oui | Calme au centre | Contact 11–16/11 |
+| **CCFG** | S | Culture / events | Pont 8 Nov. | **A** | Agenda #1 | Expos, ciné, café-concert | Contact 11–16/11 |
+| **Villa des Arts** | S | Galerie | Kipé | **A** | Oui | Art contemporain | Visite 8–22/12 |
+| **Originel Spa** | S | Beauté | Conakry | **A** | Oui | Soins peaux noires | Contact 11–16/11 |
+| **Zen Garden Spa** | S | Beauté | Camayenne | **A** | Oui | Hammam, soins complets | Contact 11–16/11 |
+| **Kassa Kounki** | S | Île / lodge | Kassa | **A** | Oui | Écolodge plage | Contact 11–16/11 |
+| **Kiriboungni Chez Sylfatou** | S | Île | Roume | **A** | Oui | Mer + chambres | Visite 8–22/12 |
+| **Hôtel Sogué** | S | Île | Roume | **A** | Oui | Bungalows plage | Visite 8–22/12 |
+| **Avenue** | S+F | Fine dining | Résidence 2000 | **B** | Oui sous réserve | Sushi/poisson ; viande incertaine | Contact 11–16/11 |
+| **KAKI** | S+F | Brasserie | Kakimbo | **B** | Oui | Brunch + live vendredi | Contact 17–30/11 |
+| **L’Aquarium** | S+F | Resto mer | Tombo | **B** | Oui sous réserve | Vue mer ; live week-end | Visite 8–22/12 |
+| **Mille Pattes** | S | Resto terrasse | Sandervalia | **B** | Oui sous réserve | Océan ; service parfois long | Visite 8–22/12 |
+| **L’Étoile / Petit Bateau** | S+F | Resto mer | Corniche | **B** | Oui sous réserve | Cadre > cuisine | Visite 8–22/12 |
+| **Italia Box** | S | Italien | Camayenne | **B** | Oui en B | Pizza fiable | Visite 8–22/12 |
+| **Le Hanoï** | S | Vietnamien | Coléah | **B** | Oui en B | Rare à Conakry | Visite 8–22/12 |
+| **Le Cèdre** | S | Resto | Almamya | **B** | Oui en B | Déjeuner pro | Visite 8–22/12 |
+| **Palm Camayenne** | S+F | Hôtel | Camayenne | **B** | Oui sous réserve | Terrasse forte ; chambres clivées | Visite 8–22/12 |
+| **Loura Restaurant** | F | Marocain | Plage Camayenne | **B** | **Oui — priorité F** | Tajine, sunset, avis 2025–26 | Contact 17–30/11 |
+| **UMIÏ** (resto + lounge) | F | Resto-bar | Coléah | **B** | **Oui — priorité F** | Carte pro, ton soigné | Contact 17–30/11 |
+| **Millenium Suites** | S+F | Hôtel | Landréah | **B** | Oui à visiter | The West + Martini Lounge | Visite 8–22/12 |
+| **Mariador Park** | F | Hôtel | Taouyah | **B** | Oui à visiter | Rénové 2024 | Visite 8–22/12 |
+| **Cherry Resto Café** | F | Café / resto | Camayenne / Nongo | **B** | Oui en B | Petit-déj ; bruit au rush | Visite 8–22/12 |
+| **Salma’s Diner** | F | Libanais | Résidence 2000 | **B** | Avec Avenue | Groupe Avenue | Visite avec Avenue |
+| **Eldorado Steak House** | F | Steak | Prima Center | **B** | Sous réserve | Steak 50 couverts ; foule mall | Visite 8–22/12 |
+| **MAF Village** | F | Écolodge | Maférinya ~66 km | **B** | Escapade | Hors centre Conakry | Plus tard |
+| **La Croisière** | S | Rooftop | Dixinn | **B** | Sous réserve | Samedi = bruit | Visite 8–22/12 |
+| **Rooftop H2** | S | Rooftop | Maï Hôtel | **B** | Oui en B | Intime ; DJ week-end | Visite 8–22/12 |
+| **Ocean’s Lounge** | S | Lounge plage | Rogbané | **B** | Avis local d’abord | Ex-Bénars | Score formulaire |
+| **L’Atlantic Souzini** | S | Bar sunset | Boulbinet | **B** | Si ouvert | Phare, rare | Visite 8–22/12 |
+| **Heroes Coffee** | S+F | Cantine / café | Kaloum, Kipé… | **B** | 1 fiche max | Utile quotidien, pas rare | Pas prioritaire |
+| **Heroes — Privilege** | F | ? premium Heroes | — | **C** | Si ≠ Heroes standard | À clarifier sur place | Score formulaire |
+| **Spa Riviera / Radisson** | S | Beauté | Kaloum / Kipé | **B** | Via hôtels | — | Visite |
+| **Mina / Heavenly / OFICI / TOogueda** | S | Beauté / outil | Kipé / Lambanyi | **B** | Sous réserve | — | Visite |
+| **ONOMO** | F | Hôtel | Conakry | **B** | Pas ouverture | Redondant | — |
+| **Amore Mio** | F | Glacier | Nongo | **B** | 1 fiche sucrée | Glacier | Plus tard |
+| **SLM** | F | Resto-pâtisserie | Lambanyi / Sonfonia | **B/C** | Si standing OK | Couverture nord | Score formulaire |
+| **Studios Kirah** | S | Culture | Conakry | **B** | Oui | Jeunes créateurs | Visite |
+| **KAKI live vendredi** | S+F | Event | Kakimbo | **B** | Agenda | Si cadre tient | — |
+| **Brunchs Nomad / Félicité / Noom** | F | Event | Kipé / Kaloum | **A** | Agenda dimanche | — | — |
+| **Versailles / Indian Chowk** | S | Resto | — | **C** | Après visite | Peu de récit éditorial | Score formulaire |
+| **Les Jardins de Guinée** | S+F | Resto | Coléah | **C** | Non ouverture | Notes faibles | — |
+| **La Paillotte** | S | Resto mer | Corniche | **C** | Non | Service souvent déçu | — |
+| **Hôtel Kaloum** | S+F | Hôtel | Almamya | **C** | Si spa/resto sort | Correct, pas star | Visite |
+| **Atlantic View** | F | Hôtel | Ratoma | **C** | Après visite | Doublon Millenium ? | — |
+| **Setifana** | F | Hôtel | Ratoma | **C** | Avis local | Peu d’avis | — |
+| **Minghao Club** | F | Chinois / karaoké | Corniche nord | **C** | Karaoké = bruit | Vue mer | Score formulaire |
+| **Mammamiya / Cake by Zaza / Rayi / TMI** | F | Glacier / café / guinéen | Nongo, Lambanyi | **C** | Plus tard | Quotidien ou peu d’infos | Score formulaire |
+| **Artemis / Palacio / Damas / Ghazal / Ben’s / Jardin d’Eden / Acile / Black House** | F | Divers | — | **C** | Avis local | Identification faible | Score formulaire |
+| **Musée national** | S | Musée | Sandervalia | **C** | Pas avant réouverture | En travaux | — |
+| **Waraba** (île) | S | Hôtel + club | Roume | **C** | Avis local | Night-club | — |
+| **Code Barre** | F | Lounge · resto · boîte | Conakry | **Hors** | **Non** | 16h–3h, boîte — voir [§0](#0-pourquoi-pas-code-barre-et-le-milliardaire-sur-the-loop) | Hors 24/12 |
+| **Le Milliardaire** | F | Lounge 24h | Conakry | **Hors** | **Non** | 24h, faible signal — [§0](#0-pourquoi-pas-code-barre-et-le-milliardaire-sur-the-loop) | Hors 24/12 |
+| **Imperium Lounge** | F | Boîte | Conakry | **Hors** | Non | Conakry by night | Hors 24/12 |
+| **911 Lounge** | F | Lounge | Kipé | **Hors** | Non | Festif tardif | Hors 24/12 |
+| **Upstairs Lounge** | F | Lounge | Résidence 2000 | **Hors** | Non 24/12 | 17h–4h, chicha | Hors 24/12 |
+| **Le Baron (club ven–sam)** | S+F | Club | Riviera | **Hors** | Non | 23h–6h | Afterwork jeu = B |
+| **Geneva / Petit Pihé Plus** | S | Club | Kipé / Concasseur | **Hors** | Non | — | — |
+| **RFC** | F | Fast food | Kipé, Nongo… | **Hors** | Non | Chaîne | — |
+| **Mim’s / Brasserie U** | S+F | Fast food | — | **Hors** | Non | — | — |
+| **Prima Center** (comme spot) | S | Mall | Kipé | **Hors** | Non | Foule | Events ponctuels OK |
+| **Coco Tea / Cake and Tea** | F | Bubble tea | Conakry | **Hors** | Non | Marque non autorisée (alerte CoCo 2025) | — |
+| **Le Pavillon** | F | Salle concerts | Kobayah | **Hors** | Agenda si event soigné | Rap / concerts | Agenda |
+| **By Issa** | S | Prestataire event | Camayenne | **Hors** | Non | B2B chapiteaux | — |
+| **Luxiole / 72h du Livre** | S+F | Events | — | **B** | Agenda | Pas spot | — |
+| **Maï Hôtel** (chambres) | S | Hôtel | Coléah | **B** | Rooftop d’abord | H2 Lounge | — |
+| **Yango / Orange Money** | S | Outil | Ville | **Hors** | Plus tard / non | Infra | — |
+
+**Compteurs fusion (indicatif) :** ~22 **A** · ~28 **B** · ~18 **C** · ~14 **Hors** (doublons Siete/Noom comptés une fois).
+
+**Vague messages WhatsApp (inchangée) :** 15 en §11 + **Loura** + **UMIÏ** si tu as la bande passante.
+
 ---
 
 ## 1. Fine dining & tables
