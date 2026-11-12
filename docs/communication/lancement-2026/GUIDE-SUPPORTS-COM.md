@@ -29,6 +29,7 @@ Tout le pack vit sous **`docs/communication/lancement-2026/`** dans le dépôt T
 | [`CRITERES-AVIS-PARTENAIRES-CONAKRY.md`](./CRITERES-AVIS-PARTENAIRES-CONAKRY.md) | Grille à envoyer aux connaissances sur place |
 | [`SHORTLIST-SPOTS-CONAKRY.md`](./SHORTLIST-SPOTS-CONAKRY.md) | Shortlist interne : avis, verdict Loop, formulaire local |
 | [`MESSAGES-PREMIER-CONTACT-PARTENAIRES.md`](./MESSAGES-PREMIER-CONTACT-PARTENAIRES.md) | WhatsApp premier contact partenaires (sans engagement) |
+| [`PLAN-A-PLAN-B-THE-LOOP.md`](./PLAN-A-PLAN-B-THE-LOOP.md) | Plan A (guide gratuit) / Plan B (Prime, privilèges) vs THE LOOP Pass |
 | [`FEED-FETES-TEMPLATES-GUINEE.md`](./FEED-FETES-TEMPLATES-GUINEE.md) | Fêtes après le 24/12 · templates |
 | [`CHARTE-FOND-TEXTE.md`](./CHARTE-FOND-TEXTE.md) | Couleurs de fond et de texte |
 | [`archives/`](./archives/) | Anciennes versions — **ne pas utiliser** |

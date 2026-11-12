@@ -94,8 +94,9 @@ Repérage (RS, reco, terrain)
 
 ## 8. Synergie The Loop (guide app)
 
-- **Plus tard**, quand le guide public tourne : offre bundle « visibilité + Pass » pour partenaires.
-- **Décembre 2026 :** vendre **Pass seul** ; ne pas compliquer le pitch.
+- **Plan A (guide) / Plan B (Prime, privilèges in-app)** : voir [`PLAN-A-PLAN-B-THE-LOOP.md`](../../communication/lancement-2026/PLAN-A-PLAN-B-THE-LOOP.md) — ne pas confondre avec **THE LOOP Pass**.
+- **Plus tard**, quand le guide public tourne : offre bundle « visibilité + Pass » possible pour un même commerce.
+- **Décembre 2026 :** RDV guide = **Plan A** (+ amorce B) ; **Pass** = pitch séparé / 2ᵉ RDV si pertinent.
 
 ## 9. Indicateurs (6 premiers mois)
 

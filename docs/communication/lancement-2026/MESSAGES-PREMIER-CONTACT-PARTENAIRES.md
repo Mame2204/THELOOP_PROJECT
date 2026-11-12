@@ -4,6 +4,8 @@
 **Signature :** Mariame · The Loop · AELY  
 **RDV :** à Conakry à partir du **8 décembre (après-midi)**.
 
+**Plans produit (guide vs Pass) :** voir [`PLAN-A-PLAN-B-THE-LOOP.md`](./PLAN-A-PLAN-B-THE-LOOP.md) — **Plan A** = validation présence guide (gratuit au départ) · **Plan B** = Prime, privilèges, options payantes in-app (~phase 2) · **THE LOOP Pass** = projet séparé, RDV dédié si pertinent.
+
 ## Règles avant d’envoyer
 
 - Remplacer tous les **[crochets]**, dont **[numéro]**.
