@@ -22,20 +22,20 @@ const W = 1080;
 const H = 1920;
 const FPS = 30;
 const FADE = 0.35;
-/** Voix femme adulte (éviter Eloise = timbre très jeune). */
+/** Une seule voix sur tout le montage (femme adulte). */
 const VOICE = 'fr-FR-DeniseNeural';
-/** Anglais natif pour le nom de marque, puis Denise enchaîne en français. */
-const VOICE_BRAND = 'en-US-JennyNeural';
 
 /**
- * Scroll lent pour la tension · montée nette sur marque + ouverture liste
- * (Denise reste adulte : énergie = volume + débit modéré, pas voix enfantine).
+ * Début posé → montée marque → ouverture liste motivante (même voix partout).
  */
 const voiceFor = (key) => {
-  if (['f', 'g', 'h'].includes(key)) return { rate: '+4%', pitch: '+3Hz', volume: '+32%' };
-  if (['e1', 'e2'].includes(key)) return { rate: '-2%', pitch: '+0Hz', volume: '+18%' };
-  return { rate: '-12%', pitch: '-6Hz', volume: '+0%' };
+  if (['f', 'g', 'h'].includes(key)) return { rate: '+9%', pitch: '+6Hz', volume: '+45%' };
+  if (['e1', 'e2'].includes(key)) return { rate: '+6%', pitch: '+4Hz', volume: '+30%' };
+  if (key === 'd') return { rate: '-6%', pitch: '-4Hz', volume: '+0%' };
+  return { rate: '-4%', pitch: '-2Hz', volume: '+0%' };
 };
+
+const run = (cmd, args) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] }).toString();
 
 const synthPlain = (out, text, { rate, pitch, volume, voice = VOICE }) => {
   run('python3', [
@@ -45,73 +45,50 @@ const synthPlain = (out, text, { rate, pitch, volume, voice = VOICE }) => {
     voice,
     `--rate=${rate}`,
     `--pitch=${pitch}`,
-  `--volume=${volume}`,
+    `--volume=${volume}`,
     '--text',
     text,
     '--write-media',
     out,
   ]);
 };
-
-/** « The Loop » en anglais correct, puis la phrase en français au même rythme. */
-const synthBrandGuide = (out) => {
-  const en = t('e1_brand.mp3');
-  const fr = t('e1_fr.mp3');
-  const { rate, pitch } = voiceFor('e1');
-  synthPlain(en, 'The Loop.', { rate: '+2%', pitch: '+2Hz', volume: '+15%', voice: VOICE_BRAND });
-  synthPlain(fr, "C'est un guide sélectif pour Conakry.", { rate, pitch, volume: '+18%', voice: VOICE });
-  ffmpeg([
-    '-i',
-    en,
-    '-i',
-    fr,
-    '-filter_complex',
-    '[0:a][1:a]concat=n=2:v=0:a=1[out]',
-    '-map',
-    '[out]',
-    out,
-  ]);
-};
-
-const run = (cmd, args) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] }).toString();
 const ffmpeg = (args) => run('ffmpeg', ['-v', 'error', '-y', ...args]);
 const duration = (f) => Number(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]));
 const m = (f) => path.join(montage, f);
 const t = (f) => path.join(tmp, f);
 
 // --- Voix off ---------------------------------------------------------------
-/** `sub` = texte sous-titres · `say` = TTS (si absent, = sub) · `brand` = prononciation The Loop */
+/** `sub` = sous-titres · `say` = TTS (même voix) */
 const lines = {
   a: { sub: 'Ce soir, je cherche un plan pour le week-end.' },
   b: { sub: 'Des posts, des stories, des reels…' },
   c: { sub: 'Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.' },
   d: { sub: 'Trop de bruit. Peu de repères.' },
-  e1: { sub: "The Loop, c'est un guide sélectif pour Conakry.", brand: true },
+  e1: {
+    sub: "The Loop, c'est un guide sélectif pour Conakry.",
+    say: "The Loop — c'est un guide sélectif pour Conakry. Vraiment.",
+  },
   e2: {
     sub: 'Spots, agenda, parcours, outils : en clair.',
-    say: 'Spots, agenda, parcours, outils — tout ça, en clair, pour vous.',
+    say: 'Spots, agenda, parcours, outils — tout est là, en clair, pour vous.',
   },
   f: {
     sub: 'La liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.',
-    say: 'La liste est ouverte ! Les cent premiers inscrits passent avant tout le monde — aujourd’hui.',
+    say: "On y est ! La liste est ouverte. Les cent premiers inscrits passent avant tout le monde — aujourd'hui.",
   },
   g: {
     sub: 'Premiers inscrits, premiers invités.',
-    say: 'Premiers inscrits, premiers invités. C’est le moment — place limitée.',
+    say: 'Premiers inscrits, premiers invités — tu mérites d’être parmi les premiers. Allez-y.',
   },
   h: {
     sub: 'Le lien est juste en dessous. Réserve ta place.',
-    say: 'Le lien est juste en dessous. Réserve ta place maintenant — on vous attend !',
+    say: 'Le lien est juste en dessous. Réserve ta place maintenant — on t’attend, fonce !',
   },
 };
 const vo = {};
 for (const [k, line] of Object.entries(lines)) {
   const mp3 = t(`vo_${k}.mp3`);
-  if (line.brand) synthBrandGuide(mp3);
-  else {
-    const text = line.say ?? line.sub;
-    synthPlain(mp3, text, voiceFor(k));
-  }
+  synthPlain(mp3, line.say ?? line.sub, voiceFor(k));
   vo[k] = { file: mp3, dur: duration(mp3), text: line.sub };
 }
 
@@ -275,7 +252,7 @@ for (const [name, file] of [
   const voChains = cue
     .map((c, i) => `[${i}:a]aresample=${sr},aformat=channel_layouts=mono,adelay=${Math.round(c.at * 1000)},apad=whole_dur=${total}[v${i}]`)
     .join(';');
-  const voMix = `${cue.map((_, i) => `[v${i}]`).join('')}amix=inputs=${cue.length}:normalize=0,volume=1.28,asplit[voice][key]`;
+  const voMix = `${cue.map((_, i) => `[v${i}]`).join('')}amix=inputs=${cue.length}:normalize=0,volume=1.34,asplit[voice][key]`;
   const fx = `${notif.map(ding).join(';')};${notif.map((_, i) => `[n${i}]`).join('')}amix=inputs=${notif.length}:normalize=0[bed]`;
   const duck = `[bed][key]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=350[bedd]`;
   ffmpeg([
