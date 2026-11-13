@@ -15,21 +15,21 @@ Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.
 Trop de bruit. Peu de repères.
 
 5
-00:00:30,352 --> 00:00:35,608
+00:00:30,352 --> 00:00:35,536
 The Loop, c’est un guide sélectif pour Conakry.
 
 6
-00:00:35,958 --> 00:00:40,974
+00:00:35,886 --> 00:00:41,214
 Spots, agenda, parcours, outils : en clair.
 
 7
-00:00:41,824 --> 00:00:48,640
-Aujourd’hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.
+00:00:42,064 --> 00:00:48,568
+La liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.
 
 8
-00:00:49,440 --> 00:00:52,800
+00:00:49,368 --> 00:00:53,904
 Premiers inscrits, premiers invités.
 
 9
-00:00:53,550 --> 00:00:58,566
+00:00:54,654 --> 00:01:00,126
 Le lien est juste en dessous. Réserve ta place.
