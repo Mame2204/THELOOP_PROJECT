@@ -1,5 +1,7 @@
 # Programmation Meta — après le 20/11 (2ᵉ vague)
 
+**Suivi validé jour par jour :** `STATUT-PROGRAMMATION-META.md`
+
 **Heure :** 19h00 Conakry · **FB + @app.theloop** · lieu **Conakry** · cocher **Publier aussi sur Instagram** quand c’est proposé.
 
 **Règle Meta :** une publication ne peut être programmée que **entre 20 min et 29 jours** après sa création dans Meta.  
