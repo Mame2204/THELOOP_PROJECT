@@ -28,12 +28,12 @@ const VOICE = 'fr-FR-DeniseNeural';
 const VOICE_BRAND = 'en-US-JennyNeural';
 
 /**
- * Débit posé sur le scroll · un peu plus de présence (volume, légèrement moins « grave »)
- * sur la révélation marque + ouverture liste — sans repasser en mode sprint.
+ * Scroll lent pour la tension · montée nette sur marque + ouverture liste
+ * (Denise reste adulte : énergie = volume + débit modéré, pas voix enfantine).
  */
 const voiceFor = (key) => {
-  if (['f', 'g', 'h'].includes(key)) return { rate: '-4%', pitch: '-1Hz', volume: '+18%' };
-  if (['e1', 'e2'].includes(key)) return { rate: '-8%', pitch: '-3Hz', volume: '+10%' };
+  if (['f', 'g', 'h'].includes(key)) return { rate: '+4%', pitch: '+3Hz', volume: '+32%' };
+  if (['e1', 'e2'].includes(key)) return { rate: '-2%', pitch: '+0Hz', volume: '+18%' };
   return { rate: '-12%', pitch: '-6Hz', volume: '+0%' };
 };
 
@@ -58,8 +58,8 @@ const synthBrandGuide = (out) => {
   const en = t('e1_brand.mp3');
   const fr = t('e1_fr.mp3');
   const { rate, pitch } = voiceFor('e1');
-  synthPlain(en, 'The Loop.', { rate: '-3%', pitch: '+0Hz', volume: '+8%', voice: VOICE_BRAND });
-  synthPlain(fr, "C'est un guide sélectif pour Conakry.", { rate, pitch, volume: '+10%', voice: VOICE });
+  synthPlain(en, 'The Loop.', { rate: '+2%', pitch: '+2Hz', volume: '+15%', voice: VOICE_BRAND });
+  synthPlain(fr, "C'est un guide sélectif pour Conakry.", { rate, pitch, volume: '+18%', voice: VOICE });
   ffmpeg([
     '-i',
     en,
@@ -89,19 +89,19 @@ const lines = {
   e1: { sub: "The Loop, c'est un guide sélectif pour Conakry.", brand: true },
   e2: {
     sub: 'Spots, agenda, parcours, outils : en clair.',
-    say: 'Spots, agenda, parcours, outils — le tout, en clair.',
+    say: 'Spots, agenda, parcours, outils — tout ça, en clair, pour vous.',
   },
   f: {
-    sub: "La liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.",
-    say: "La liste est ouverte, aujourd'hui. Les cent premiers inscrits passent avant tout le monde.",
+    sub: 'La liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.',
+    say: 'La liste est ouverte ! Les cent premiers inscrits passent avant tout le monde — aujourd’hui.',
   },
   g: {
     sub: 'Premiers inscrits, premiers invités.',
-    say: 'Premiers inscrits, premiers invités — c’est le moment de réserver.',
+    say: 'Premiers inscrits, premiers invités. C’est le moment — place limitée.',
   },
   h: {
     sub: 'Le lien est juste en dessous. Réserve ta place.',
-    say: 'Le lien est juste en dessous. Réserve ta place, on t’attend.',
+    say: 'Le lien est juste en dessous. Réserve ta place maintenant — on vous attend !',
   },
 };
 const vo = {};
@@ -275,7 +275,7 @@ for (const [name, file] of [
   const voChains = cue
     .map((c, i) => `[${i}:a]aresample=${sr},aformat=channel_layouts=mono,adelay=${Math.round(c.at * 1000)},apad=whole_dur=${total}[v${i}]`)
     .join(';');
-  const voMix = `${cue.map((_, i) => `[v${i}]`).join('')}amix=inputs=${cue.length}:normalize=0,volume=1.22,asplit[voice][key]`;
+  const voMix = `${cue.map((_, i) => `[v${i}]`).join('')}amix=inputs=${cue.length}:normalize=0,volume=1.28,asplit[voice][key]`;
   const fx = `${notif.map(ding).join(';')};${notif.map((_, i) => `[n${i}]`).join('')}amix=inputs=${notif.length}:normalize=0[bed]`;
   const duck = `[bed][key]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=350[bedd]`;
   ffmpeg([
