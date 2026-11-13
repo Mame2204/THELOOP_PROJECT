@@ -1,6 +1,7 @@
 # Index des fiches — 3 novembre 2026 → janvier 2027
 
 Chaque fiche contient : l’heure, les fichiers exacts, la légende à copier-coller et le lien de suivi.  
+**Suivi Meta (programmé / jour J) :** `STATUT-PROGRAMMATION-META.md`  
 Heure par défaut : **19h00** (Conakry). Tout post feed ou Reel est aussi partagé **en story**.  
 Visuels : `exports-png-v4-light/` · vidéos : `exports-mp4/` · vue d’ensemble : `galerie-calendrier.html`.
 
