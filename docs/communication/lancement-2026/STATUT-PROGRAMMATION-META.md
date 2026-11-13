@@ -22,6 +22,8 @@
 
 **Convention (depuis nov.) :** stories souvent **sans lien** dans Meta → **Lien story (app)** le soir de publication.
 
+**Liste complète des stories + URL sticker :** `STORIES-LIEN-JOUR-J.md`
+
 ---
 
 ## 3 → 14 novembre (teasing · pas de lien site)
@@ -92,8 +94,8 @@
 | **27/11** | 19h00 | Story vidéo | **Oui** (sans lien) | **Lien story (app)** | `16` |
 | **30/11** lun. | 19h00 | Story 1/2 signature | **Non** | **Jour J** (publier à la main le 30/11) | Lot A |
 | **30/11** | 19h00 | Story 2/2 lien | **Non** | **Jour J** + **Lien story (app)** | Lot A |
-| **2/12** mer. | 19h00 | Photo règle 2/3 | **Non** | **Lien story (app)** | Lot A |
-| **2/12** | 19h00 | Story (même) | **Non** | **Lien story (app)** | Lot A |
+| **2/12** mer. | 19h00 | Photo règle 2/3 | **Oui** | — | Lot A |
+| **2/12** | 19h00 | Story (même) | **Non** ou **Jour J** | **Lien story (app)** | Lot A |
 | **3/12** jeu. | 19h00 | Reel anti-annuaire | **Non** | **Lien story (app)** | Lot A |
 | **3/12** | 19h00 | Story vidéo | **Non** | **Lien story (app)** | Lot A |
 | **4/12** ven. | 19h00 | Photo J-13 | **Non** | **Lien story (app)** | Lot A |
@@ -130,5 +132,6 @@
 | 17/11 | **Boost** sur publication jour J (Reel / vague 17/11) |
 | 27/11 | Reel **Oui** · story **jour J** (lien app) |
 | 30/11 | **Pas** de programmation Meta · **2 stories jour J** (lien sur 2/2 en app) |
+| 2/12 | Post **Oui** · story lien **jour J** |
 
 *À chaque « c’est fait », on met à jour ce fichier et la fiche du jour.*
