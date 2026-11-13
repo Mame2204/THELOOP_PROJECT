@@ -22,8 +22,14 @@ const W = 1080;
 const H = 1920;
 const FPS = 30;
 const FADE = 0.35;
-const VOICE = 'fr-FR-VivienneMultilingualNeural';
-const RATE = '-8%';
+/** Denise / Eloise = ton « Friendly, Positive » · Vivienne = plus neutre. */
+const VOICE = 'fr-FR-EloiseNeural';
+/** Débit et pitch par réplique : calme au scroll, plus vif sur l’ouverture liste. */
+const voiceFor = (key) => {
+  if (['f', 'g', 'h'].includes(key)) return { rate: '+12%', pitch: '+6Hz' };
+  if (['e1', 'e2'].includes(key)) return { rate: '+6%', pitch: '+3Hz' };
+  return { rate: '+2%', pitch: '+0Hz' };
+};
 
 const run = (cmd, args) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] }).toString();
 const ffmpeg = (args) => run('ffmpeg', ['-v', 'error', '-y', ...args]);
@@ -39,14 +45,26 @@ const lines = {
   d: 'Trop de bruit. Peu de repères.',
   e1: "The Loop, c'est un guide sélectif pour Conakry.",
   e2: 'Spots, agenda, parcours, outils : en clair.',
-  f: "Aujourd'hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.",
-  g: 'Premiers inscrits, premiers invités.',
-  h: 'Le lien est juste en dessous. Réserve ta place.',
+  f: "Bonne nouvelle : la liste est ouverte ! Les cent premiers inscrits passent avant tout le monde.",
+  g: 'Premiers inscrits, premiers invités — c’est maintenant.',
+  h: 'Le lien est juste en dessous. Réserve ta place, ça prend trente secondes.',
 };
 const vo = {};
 for (const [k, text] of Object.entries(lines)) {
   const mp3 = t(`vo_${k}.mp3`);
-  run('python3', ['-m', 'edge_tts', '--voice', VOICE, `--rate=${RATE}`, '--text', text, '--write-media', mp3]);
+  const { rate, pitch } = voiceFor(k);
+  run('python3', [
+    '-m',
+    'edge_tts',
+    '--voice',
+    VOICE,
+    `--rate=${rate}`,
+    `--pitch=${pitch}`,
+    '--text',
+    text,
+    '--write-media',
+    mp3,
+  ]);
   vo[k] = { file: mp3, dur: duration(mp3), text };
 }
 
