@@ -90,8 +90,8 @@
 | **26/11** | 19h00 | Story slide `05_reserve` | **Oui** | **Lien story (app)** | `15` |
 | **27/11** ven. | 19h00 | Reel outils | **Oui** | — | `16` |
 | **27/11** | 19h00 | Story vidéo | **Oui** (sans lien) | **Lien story (app)** | `16` |
-| **30/11** lun. | 19h00 | Story 1/2 signature | **Non** | — | Lot A |
-| **30/11** | 19h00 | Story 2/2 lien | **Non** | **Lien story (app)** | Lot A |
+| **30/11** lun. | 19h00 | Story 1/2 signature | **Non** | **Jour J** (publier à la main le 30/11) | Lot A |
+| **30/11** | 19h00 | Story 2/2 lien | **Non** | **Jour J** + **Lien story (app)** | Lot A |
 | **2/12** mer. | 19h00 | Photo règle 2/3 | **Non** | **Lien story (app)** | Lot A |
 | **2/12** | 19h00 | Story (même) | **Non** | **Lien story (app)** | Lot A |
 | **3/12** jeu. | 19h00 | Reel anti-annuaire | **Non** | **Lien story (app)** | Lot A |
@@ -129,5 +129,6 @@
 | 26/11 | Carrousel **Oui** · story programmée **sans lien** → lien **jour J** |
 | 17/11 | **Boost** sur publication jour J (Reel / vague 17/11) |
 | 27/11 | Reel **Oui** · story **jour J** (lien app) |
+| 30/11 | **Pas** de programmation Meta · **2 stories jour J** (lien sur 2/2 en app) |
 
 *À chaque « c’est fait », on met à jour ce fichier et la fiche du jour.*
