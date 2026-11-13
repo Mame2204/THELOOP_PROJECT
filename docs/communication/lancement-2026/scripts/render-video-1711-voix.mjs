@@ -58,38 +58,23 @@ const m = (f) => path.join(montage, f);
 const t = (f) => path.join(tmp, f);
 
 // --- Voix off ---------------------------------------------------------------
-/** `sub` = sous-titres · `say` = TTS (même voix) */
+/** Une seule formulation : ce qui est dit est ce qui est sous-titré. */
 const lines = {
-  a: { sub: 'Ce soir, je cherche un plan pour le week-end.' },
-  b: { sub: 'Des posts, des stories, des reels…' },
-  c: { sub: 'Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.' },
-  d: { sub: 'Trop de bruit. Peu de repères.' },
-  e1: {
-    sub: "The Loop, c'est un guide sélectif pour Conakry.",
-    say: "The Loop — c'est un guide sélectif pour Conakry. Vraiment.",
-  },
-  e2: {
-    sub: 'Spots, agenda, parcours, outils : en clair.',
-    say: 'Spots, agenda, parcours, outils — tout est là, en clair, pour vous.',
-  },
-  f: {
-    sub: 'La liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.',
-    say: "On y est ! La liste est ouverte. Les cent premiers inscrits passent avant tout le monde — aujourd'hui.",
-  },
-  g: {
-    sub: 'Premiers inscrits, premiers invités.',
-    say: 'Premiers inscrits, premiers invités — tu mérites d’être parmi les premiers. Allez-y.',
-  },
-  h: {
-    sub: 'Le lien est juste en dessous. Réserve ta place.',
-    say: 'Le lien est juste en dessous. Réserve ta place maintenant — on t’attend, fonce !',
-  },
+  a: 'Ce soir, je cherche un plan pour le week-end.',
+  b: 'Des posts, des stories, des reels.',
+  c: 'Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.',
+  d: 'Trop de bruit. Peu de repères.',
+  e1: "The Loop, c'est le guide sélectif de Conakry.",
+  e2: 'Spots, agenda, parcours et outils, réunis en clair.',
+  f: "Aujourd'hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.",
+  g: "Les premiers à s'inscrire seront les premiers invités.",
+  h: "Le lien est juste en dessous. Réserve ta place.",
 };
 const vo = {};
-for (const [k, line] of Object.entries(lines)) {
+for (const [k, text] of Object.entries(lines)) {
   const mp3 = t(`vo_${k}.mp3`);
-  synthPlain(mp3, line.say ?? line.sub, voiceFor(k));
-  vo[k] = { file: mp3, dur: duration(mp3), text: line.sub };
+  synthPlain(mp3, text, voiceFor(k));
+  vo[k] = { file: mp3, dur: duration(mp3), text };
 }
 
 // --- Durées des plans (calées sur la voix) ----------------------------------
