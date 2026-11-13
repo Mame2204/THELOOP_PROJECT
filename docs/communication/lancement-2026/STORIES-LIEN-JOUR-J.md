@@ -33,7 +33,7 @@ Business Suite ne gère souvent pas le sticker lien → **story programmée sans
 | **27/11** | 19h00 | même vidéo Reel outils | `outil_2711` | Lien **jour J** ✓ |
 | **30/11** | 19h00 | `STORY_30-11_02_lien.png` *(après 01)* | `signature_3011` | **Tout jour J** (publier + lien) |
 | **2/12** | 19h00 | même que post règle 2/3 | `regle2_0212` | Lien **jour J** ✓ post programmé |
-| **3/12** | 19h00 | même vidéo Reel anti-annuaire | `anti_annuaire_0312` | Lien **jour J** · *à faire* |
+| **3/12** | 19h00 | même vidéo Reel anti-annuaire | `anti_annuaire_0312` | Lien **jour J** ✓ Reel programmé |
 | **4/12** | 19h00 | même que post J-13 | `j13_0412` | Lien **jour J** · *à faire* |
 
 ---
