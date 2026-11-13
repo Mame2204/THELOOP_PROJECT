@@ -30,7 +30,7 @@
 | 1 | 0:00 → 0:09 | `SCROLL_reseaux-bulles.mp4` | 0:00–0:02 **Vendredi · 19h · Conakry** puis 0:02–0:09 **Un plan pour le week-end ?** | *(0–2 s silence)* Ce soir, je cherche un plan pour le week-end. Posts, stories, reels… |
 | 2 | 0:09 → 0:15 | ta recherche | **Où c’était déjà… ?** | Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom. Trop de bruit. Peu de repères. |
 | 3 | 0:15 → 0:23 | `APP_fragment-seuil-com.png` | *(rien)* | *(silence — on lit l’écran)* |
-| 4 | 0:23 → 0:28 | `AFFICHE_1711_02_un-repere.png` | *(rien, texte sur l’affiche)* | The Loop, c’est un guide sélectif pour Conakry. Spots, agenda, parcours, outils — en clair. |
+| 4 | 0:23 → 0:28 | `AFFICHE_1711_02_un-repere.png` | *(rien, texte sur l’affiche)* | The Loop, c’est le guide sélectif de Conakry. Spots, agenda, parcours et outils, au même endroit. |
 | 5 | 0:28 → 0:34 | `AFFICHE_1711_03_liste-ouverte.png` | *(rien)* | Aujourd’hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde. |
 | 6 | 0:34 → 0:37 | `AFFICHE_1711_04_premiers-invites.png` | *(rien)* | Premiers inscrits, premiers invités. |
 | 7 | 0:37 → 0:41 | `AFFICHE_1711_05_reserve.png` | *(rien)* | Le lien est juste en dessous. Réserve ta place. |

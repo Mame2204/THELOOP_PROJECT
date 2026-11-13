@@ -65,7 +65,7 @@ const lines = {
   c: 'Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.',
   d: 'Trop de bruit. Peu de repères.',
   e1: "The Loop, c'est le guide sélectif de Conakry.",
-  e2: 'Spots, agenda, parcours et outils, réunis en clair.',
+  e2: 'Spots, agenda, parcours et outils, au même endroit.',
   f: "Aujourd'hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.",
   g: "Les premiers à s'inscrire seront les premiers invités.",
   h: "Le lien est juste en dessous. Réserve ta place.",
