@@ -88,8 +88,8 @@
 | **25/11** | 19h00 | Story (même) | **Oui** | **Lien story (app)** | `14` |
 | **26/11** jeu. | 19h00 | Carrousel ×5 | **Oui** | **Boost** (jour J si prévu plan) | `15` |
 | **26/11** | 19h00 | Story slide `05_reserve` | **Oui** | **Lien story (app)** | `15` |
-| **27/11** ven. | 19h00 | Reel outils | **Non** | **Lien story (app)** | `16` |
-| **27/11** | 19h00 | Story vidéo | **Non** | **Lien story (app)** | `16` |
+| **27/11** ven. | 19h00 | Reel outils | **Oui** | — | `16` |
+| **27/11** | 19h00 | Story vidéo | **Oui** (sans lien) | **Lien story (app)** | `16` |
 | **30/11** lun. | 19h00 | Story 1/2 signature | **Non** | — | Lot A |
 | **30/11** | 19h00 | Story 2/2 lien | **Non** | **Lien story (app)** | Lot A |
 | **2/12** mer. | 19h00 | Photo règle 2/3 | **Non** | **Lien story (app)** | Lot A |
@@ -128,5 +128,6 @@
 | 25/11 | Post **Oui** · story lien **jour J** |
 | 26/11 | Carrousel **Oui** · story programmée **sans lien** → lien **jour J** |
 | 17/11 | **Boost** sur publication jour J (Reel / vague 17/11) |
+| 27/11 | Reel **Oui** · story **jour J** (lien app) |
 
 *À chaque « c’est fait », on met à jour ce fichier et la fiche du jour.*
