@@ -1,35 +1,35 @@
 1
-00:00:02,200 --> 00:00:05,752
+00:00:02,200 --> 00:00:06,352
 Ce soir, je cherche un plan pour le week-end.
 
 2
-00:00:06,152 --> 00:00:09,560
+00:00:06,752 --> 00:00:10,568
 Des posts, des stories, des reels…
 
 3
-00:00:10,010 --> 00:00:15,122
+00:00:11,018 --> 00:00:16,970
 Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.
 
 4
-00:00:15,572 --> 00:00:19,124
+00:00:17,420 --> 00:00:21,452
 Trop de bruit. Peu de repères.
 
 5
-00:00:28,024 --> 00:00:31,648
+00:00:30,352 --> 00:00:35,608
 The Loop, c’est un guide sélectif pour Conakry.
 
 6
-00:00:31,998 --> 00:00:36,318
+00:00:35,958 --> 00:00:40,974
 Spots, agenda, parcours, outils : en clair.
 
 7
-00:00:37,168 --> 00:00:43,000
-Bonne nouvelle : la liste est ouverte ! Les cent premiers inscrits passent avant tout le monde.
+00:00:41,824 --> 00:00:48,640
+Aujourd’hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde.
 
 8
-00:00:43,800 --> 00:00:47,280
-Premiers inscrits, premiers invités — c’est maintenant.
+00:00:49,440 --> 00:00:52,800
+Premiers inscrits, premiers invités.
 
 9
-00:00:48,030 --> 00:00:53,406
-Le lien est juste en dessous. Réserve ta place, ça prend trente secondes.
+00:00:53,550 --> 00:00:58,566
+Le lien est juste en dessous. Réserve ta place.

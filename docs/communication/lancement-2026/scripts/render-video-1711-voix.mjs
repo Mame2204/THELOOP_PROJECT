@@ -22,13 +22,52 @@ const W = 1080;
 const H = 1920;
 const FPS = 30;
 const FADE = 0.35;
-/** Denise / Eloise = ton « Friendly, Positive » · Vivienne = plus neutre. */
-const VOICE = 'fr-FR-EloiseNeural';
-/** Débit et pitch par réplique : calme au scroll, plus vif sur l’ouverture liste. */
+/** Voix femme adulte (éviter Eloise = timbre très jeune). */
+const VOICE = 'fr-FR-DeniseNeural';
+/** Anglais natif pour le nom de marque, puis Denise enchaîne en français. */
+const VOICE_BRAND = 'en-US-JennyNeural';
+
+/** Débit lent, timbre plus grave : pas d’effet « petite fille » ni du sprint. */
 const voiceFor = (key) => {
-  if (['f', 'g', 'h'].includes(key)) return { rate: '+12%', pitch: '+6Hz' };
-  if (['e1', 'e2'].includes(key)) return { rate: '+6%', pitch: '+3Hz' };
-  return { rate: '+2%', pitch: '+0Hz' };
+  if (['f', 'g', 'h'].includes(key)) return { rate: '-8%', pitch: '-4Hz', volume: '+8%' };
+  if (['e1', 'e2'].includes(key)) return { rate: '-10%', pitch: '-6Hz', volume: '+0%' };
+  return { rate: '-12%', pitch: '-6Hz', volume: '+0%' };
+};
+
+const synthPlain = (out, text, { rate, pitch, volume, voice = VOICE }) => {
+  run('python3', [
+    '-m',
+    'edge_tts',
+    '--voice',
+    voice,
+    `--rate=${rate}`,
+    `--pitch=${pitch}`,
+  `--volume=${volume}`,
+    '--text',
+    text,
+    '--write-media',
+    out,
+  ]);
+};
+
+/** « The Loop » en anglais correct, puis la phrase en français au même rythme. */
+const synthBrandGuide = (out) => {
+  const en = t('e1_brand.mp3');
+  const fr = t('e1_fr.mp3');
+  const { rate, pitch } = voiceFor('e1');
+  synthPlain(en, 'The Loop.', { rate: '-5%', pitch: '-2Hz', volume: '+0%', voice: VOICE_BRAND });
+  synthPlain(fr, "C'est un guide sélectif pour Conakry.", { rate, pitch, volume: '+0%', voice: VOICE });
+  ffmpeg([
+    '-i',
+    en,
+    '-i',
+    fr,
+    '-filter_complex',
+    '[0:a][1:a]concat=n=2:v=0:a=1[out]',
+    '-map',
+    '[out]',
+    out,
+  ]);
 };
 
 const run = (cmd, args) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] }).toString();
@@ -38,34 +77,27 @@ const m = (f) => path.join(montage, f);
 const t = (f) => path.join(tmp, f);
 
 // --- Voix off ---------------------------------------------------------------
+/** `sub` = texte sous-titres · `say` = TTS (si absent, = sub) · `brand` = prononciation The Loop */
 const lines = {
-  a: 'Ce soir, je cherche un plan pour le week-end.',
-  b: 'Des posts, des stories, des reels…',
-  c: 'Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.',
-  d: 'Trop de bruit. Peu de repères.',
-  e1: "The Loop, c'est un guide sélectif pour Conakry.",
-  e2: 'Spots, agenda, parcours, outils : en clair.',
-  f: "Bonne nouvelle : la liste est ouverte ! Les cent premiers inscrits passent avant tout le monde.",
-  g: 'Premiers inscrits, premiers invités — c’est maintenant.',
-  h: 'Le lien est juste en dessous. Réserve ta place, ça prend trente secondes.',
+  a: { sub: 'Ce soir, je cherche un plan pour le week-end.' },
+  b: { sub: 'Des posts, des stories, des reels…' },
+  c: { sub: 'Toujours les mêmes endroits. Ou ce spot dont je ne retrouve plus le nom.' },
+  d: { sub: 'Trop de bruit. Peu de repères.' },
+  e1: { sub: "The Loop, c'est un guide sélectif pour Conakry.", brand: true },
+  e2: { sub: 'Spots, agenda, parcours, outils : en clair.' },
+  f: { sub: "Aujourd'hui, la liste est ouverte. Les cent premiers inscrits entrent avant tout le monde." },
+  g: { sub: 'Premiers inscrits, premiers invités.' },
+  h: { sub: 'Le lien est juste en dessous. Réserve ta place.' },
 };
 const vo = {};
-for (const [k, text] of Object.entries(lines)) {
+for (const [k, line] of Object.entries(lines)) {
   const mp3 = t(`vo_${k}.mp3`);
-  const { rate, pitch } = voiceFor(k);
-  run('python3', [
-    '-m',
-    'edge_tts',
-    '--voice',
-    VOICE,
-    `--rate=${rate}`,
-    `--pitch=${pitch}`,
-    '--text',
-    text,
-    '--write-media',
-    mp3,
-  ]);
-  vo[k] = { file: mp3, dur: duration(mp3), text };
+  if (line.brand) synthBrandGuide(mp3);
+  else {
+    const text = line.say ?? line.sub;
+    synthPlain(mp3, text, voiceFor(k));
+  }
+  vo[k] = { file: mp3, dur: duration(mp3), text: line.sub };
 }
 
 // --- Durées des plans (calées sur la voix) ----------------------------------
