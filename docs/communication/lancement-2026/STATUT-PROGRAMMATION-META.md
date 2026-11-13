@@ -55,9 +55,9 @@
 | **15/11** | 19h00 | Story 3/3 mardi | **Oui** | — | |
 | **16/11** lun. | 19h00 | Photo J-1 | **Oui** | — | Pas de lien |
 | **16/11** | 19h00 | Story (même) | **Oui** | — | |
-| **17/11** mar. | 19h00 | **Reel** scroll VOIX | **Oui** | **Lien story (app)** sur repartage story vidéo (option) | Légende = lien principal |
+| **17/11** mar. | 19h00 | **Reel** scroll VOIX | **Oui** | **Boost** + **Lien story (app)** (option story vidéo) | Boost confirmé terrain |
 | **17/11** | 19h00 | Story vidéo (option) | **Non** ou **Jour J** | **Lien story (app)** | Reel suffit si tu veux |
-| **17/11** | 19h05 | **Carrousel** ×5 | **Oui** | — | |
+| **17/11** | 19h05 | **Carrousel** ×5 | **Oui** | **Boost** (même vague 17/11) | |
 | **17/11** | 19h10 | Story 01 ouvert | **Oui** | — | |
 | **17/11** | 19h10 | Story 03 lien | **Oui** | **Lien story (app)** | Story 02 **non** utilisée |
 | **18/11** mer. | 19h00 | Reel fréquence | **Oui** | **Lien story (app)** si story vidéo | |
@@ -86,8 +86,8 @@
 |------|-------|------|----------------|--------|-------|
 | **25/11** mer. | 19h00 | Photo règle 1/3 | **Oui** | — | `14` |
 | **25/11** | 19h00 | Story (même) | **Oui** | **Lien story (app)** | `14` |
-| **26/11** jeu. | 19h00 | Carrousel ×5 | **Non** | **Boost** | `15` |
-| **26/11** | 19h00 | Story slide `05_reserve` | **Non** | **Lien story (app)** | `15` |
+| **26/11** jeu. | 19h00 | Carrousel ×5 | **Oui** | **Boost** (jour J si prévu plan) | `15` |
+| **26/11** | 19h00 | Story slide `05_reserve` | **Oui** | **Lien story (app)** | `15` |
 | **27/11** ven. | 19h00 | Reel outils | **Non** | **Lien story (app)** | `16` |
 | **27/11** | 19h00 | Story vidéo | **Non** | **Lien story (app)** | `16` |
 | **30/11** lun. | 19h00 | Story 1/2 signature | **Non** | — | Lot A |
@@ -126,6 +126,7 @@
 | 19/11 | Post **Oui** · story **sans lien** → lien **jour J** |
 | 20/11 | Reel **Oui** · sondage + décompte + story **jour J** |
 | 25/11 | Post **Oui** · story lien **jour J** |
-| 26/11 | *(en cours — carrousel + story à programmer)* |
+| 26/11 | Carrousel **Oui** · story programmée **sans lien** → lien **jour J** |
+| 17/11 | **Boost** sur publication jour J (Reel / vague 17/11) |
 
 *À chaque « c’est fait », on met à jour ce fichier et la fiche du jour.*
