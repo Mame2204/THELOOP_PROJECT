@@ -4,6 +4,8 @@
 **Signature :** Mariame · The Loop · AELY  
 **RDV :** à Conakry à partir du **8 décembre (après-midi)**.
 
+**Plans produit (guide vs Pass) :** voir [`PLAN-A-PLAN-B-THE-LOOP.md`](./PLAN-A-PLAN-B-THE-LOOP.md) — **Plan A** = validation présence guide (gratuit au départ) · **Plan B** = Prime, privilèges, options payantes in-app (~phase 2) · **THE LOOP Pass** = projet séparé, RDV dédié si pertinent.
+
 ## Règles avant d’envoyer
 
 - Remplacer tous les **[crochets]**, dont **[numéro]**.
@@ -32,7 +34,7 @@
 ```
 Bonjour [Prénom / nom de l'établissement],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleurs lieux, un agenda des événements qui valent le déplacement et des outils utiles au quotidien.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleurs lieux, un agenda des événements qui valent le déplacement et des outils utiles au quotidien.
 
 [Phrase personnalisée : ex. « On m'a beaucoup parlé de votre terrasse et de la qualité du service. »]
 
@@ -58,7 +60,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et des outils utiles au quotidien.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et des outils utiles au quotidien.
 
 On m'a recommandé [nom du restaurant] pour [votre cuisine / votre cadre / votre service], et c'est exactement le type de table que nous voulons mettre en avant.
 
@@ -80,7 +82,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et des outils utiles, pour les résidents comme pour les visiteurs réguliers.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et des outils utiles, pour les résidents comme pour les visiteurs réguliers.
 
 [Nom de l'hôtel] revient souvent quand on parle d'un lieu fiable à [quartier], notamment pour [votre restaurant / bar / rooftop / espace de réunion].
 
@@ -102,7 +104,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des sorties qui valent vraiment le déplacement, un agenda des événements et des outils utiles.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des sorties qui valent vraiment le déplacement, un agenda des événements et des outils utiles.
 
 [Votre ambiance / vos soirées / votre terrasse] revient souvent dans les recommandations qu'on me fait, et ça correspond exactement à l'esprit du guide : passer une bonne soirée, sans la bousculade.
 
@@ -124,7 +126,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et des outils utiles au quotidien.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et des outils utiles au quotidien.
 
 On m'a recommandé [nom du lieu] pour [raison précise : accueil, savoir-faire, cadre].
 
@@ -150,7 +152,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif, des outils utiles et un agenda des rendez-vous qui comptent.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif, des outils utiles et un agenda des rendez-vous qui comptent.
 
 Vos événements [nom / type : afterworks, conférences, rencontres pro] touchent exactement le public que nous visons : actifs, entrepreneurs et cadres de Conakry.
 
@@ -172,7 +174,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des sorties, un agenda des événements qui valent le déplacement et des outils utiles.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des sorties, un agenda des événements qui valent le déplacement et des outils utiles.
 
 [Vos soirées / votre dernier événement] reviennent souvent dans les recommandations qu'on me fait : bien organisées, et le public sait à quoi s'attendre. C'est exactement ce qu'on veut mettre en avant.
 
@@ -194,7 +196,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif, des outils utiles et un agenda des événements qui valent le déplacement.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif, des outils utiles et un agenda des événements qui valent le déplacement.
 
 Nous voulons que la culture ait toute sa place dans l'agenda : expositions, concerts, projections, rencontres. Votre travail sur [nom de l'événement / du lieu] correspond exactement à ce qu'on veut faire découvrir.
 
@@ -216,7 +218,7 @@ The Loop · AELY
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif, des outils utiles et un agenda des événements qui valent le déplacement.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif, des outils utiles et un agenda des événements qui valent le déplacement.
 
 [Votre brunch / dîner / dégustation] fait partie des rendez-vous gourmands qu'on m'a chaudement conseillés.
 
@@ -244,7 +246,7 @@ Tous les messages Outils suivent le même modèle. Seules la phrase personnalis�
 ```
 Bonjour [Nom],
 
-Je suis Mariame, fondatrice de The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et une rubrique d'outils utiles au quotidien.
+Je suis Mariame, je porte The Loop (AELY). The Loop est une application qui sort en fin d'année à Conakry : un guide sélectif des meilleures adresses, un agenda des événements et une rubrique d'outils utiles au quotidien.
 
 [Phrase personnalisée selon la catégorie, voir tableau]
 
@@ -364,7 +366,9 @@ Merci pour votre réponse, je comprends tout à fait. Si vous changez d'avis, je
 
 | Nom | Type | Catégorie | Source | Envoyé le | Relance | RDV | Statut |
 |-----|------|-----------|--------|-----------|---------|-----|--------|
-| | Spot / Event / Outil | | Liste perso / reco [Prénom] | | | | À contacter · Contacté · RDV · Visité · Retenu · Non retenu |
+| | Spot / Event / Outil | | Liste perso / reco [Prénom] / formulaire CONTENUS THELOOP | | | | À contacter · Contacté · RDV · Visité · Retenu · Non retenu |
+
+**Source formulaire :** [CONTENUS THELOOP](https://forms.gle/cau6jWLQvNJZAUBWA). Ne pas écrire à toute la liste. Vague 1 = shortlist A. Du formulaire, seulement **Loura** et **UMIÏ** méritent un message tôt (plus-value claire). Le reste : visite ou avis local d’abord (`SHORTLIST-SPOTS-CONAKRY.md` §15–16).
 
 **Rythme conseillé :** 10 à 15 messages par jour, pas plus, pour pouvoir répondre à chacun le jour même.
 
