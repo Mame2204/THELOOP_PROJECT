@@ -100,6 +100,11 @@
 | **3/12** | 19h00 | Story vidéo | **Oui** (sans lien) | **Lien story (app)** | Lot A |
 | **4/12** ven. | 19h00 | Photo J-13 | **Oui** | — | Lot A |
 | **4/12** | 19h00 | Story (même) | **Oui** (sans lien) | **Lien story (app)** | Lot A |
+| **9/12** mer. | 19h00 | Photo règle 3/3 | **Oui** | — | Lot A |
+| **9/12** | 19h10 | Stories terrain ×4 | **Non** | **Jour J** (publier à la main) | Lot B |
+| **9/12** | 19h10 | Story 4/4 `_04_experience` | — | **Lien story (app)** `jour_09` | Lot B |
+
+*9/12 : **pas** de story = repartage du post feed.*
 
 ---
 
@@ -135,5 +140,6 @@
 | 2/12 | Post **Oui** · story lien **jour J** |
 | 3/12 | Reel **Oui** · story **jour J** (lien app) |
 | 4/12 | Post **Oui** · story **jour J** (`j13_0412`) |
+| 9/12 | Post règle 3/3 **Oui** · **4 stories terrain 19h10 jour J** (lien sur 4/4 `jour_09`) |
 
 *À chaque « c’est fait », on met à jour ce fichier et la fiche du jour.*

@@ -38,11 +38,25 @@ Business Suite ne gère souvent pas le sticker lien → **story programmée sans
 
 ---
 
+## Stories terrain · 7/12 → 16/12
+
+**Un lien par jour**, sur la **dernière** story uniquement · `utm_campaign=terrain_gn_2026`
+
+| Date | Heure | Dernière story (sticker lien) | `utm_content` | Statut |
+|------|-------|-------------------------------|---------------|--------|
+| **9/12** | 19h10 | `STORY_09-12_04_experience.png` (après 01→03) | `jour_09` | **Jour J** ✓ post programmé |
+
+Ordre 9/12 : `01_criteres` → `02_calme` → `03_service` → `04_experience` + lien.
+
+Fiche complète : `fiches/18-LOT-B-terrain-7-16.md`
+
+---
+
 ## Plus tard (rappel)
 
 | Période | Règle | Fiche |
 |---------|--------|-------|
-| **7/12 → 16/12** | Lien sur **dernière story** du jour | `18-LOT-B-terrain-7-16.md` · `utm_campaign=terrain_gn_2026` |
+| **7/12, 8/12, 10–16/12** | Lien dernière story · `jour_07` … `jour_16` | `18-LOT-B-terrain-7-16.md` |
 | **17/12** | Story vidéo + post | `19-LOT-C` · `fondatrice_1712` / `prelaunch_1712` |
 | **21/12** | Story 2/2 | `j3_2112` |
 | **23/12** | Story carrousel teaser | `launch_teaser_2312` |
