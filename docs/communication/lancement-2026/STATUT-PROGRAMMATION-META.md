@@ -98,8 +98,8 @@
 | **2/12** | 19h00 | Story (même) | **Non** ou **Jour J** | **Lien story (app)** | Lot A |
 | **3/12** jeu. | 19h00 | Reel anti-annuaire | **Oui** | — | Lot A |
 | **3/12** | 19h00 | Story vidéo | **Oui** (sans lien) | **Lien story (app)** | Lot A |
-| **4/12** ven. | 19h00 | Photo J-13 | **Non** | **Lien story (app)** | Lot A |
-| **4/12** | 19h00 | Story (même) | **Non** | **Lien story (app)** | Lot A |
+| **4/12** ven. | 19h00 | Photo J-13 | **Oui** | — | Lot A |
+| **4/12** | 19h00 | Story (même) | **Oui** (sans lien) | **Lien story (app)** | Lot A |
 
 ---
 
@@ -134,5 +134,6 @@
 | 30/11 | **Pas** de programmation Meta · **2 stories jour J** (lien sur 2/2 en app) |
 | 2/12 | Post **Oui** · story lien **jour J** |
 | 3/12 | Reel **Oui** · story **jour J** (lien app) |
+| 4/12 | Post **Oui** · story **jour J** (`j13_0412`) |
 
 *À chaque « c’est fait », on met à jour ce fichier et la fiche du jour.*
